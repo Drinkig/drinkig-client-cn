@@ -132,7 +132,10 @@ const ProfileScreen = () => {
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>프로필</Text>
-        <TouchableOpacity style={styles.settingsButton}>
+        <TouchableOpacity 
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('Setting')}
+        >
           <Icon name="settings-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
