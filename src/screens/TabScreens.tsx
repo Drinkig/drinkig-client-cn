@@ -36,11 +36,3 @@ export const NoteScreen = () => (
     <Text style={{ color: '#888', marginTop: 10 }}>내가 마신 와인 기록</Text>
   </SafeAreaView>
 );
-
-export const MyPageScreen = () => (
-  <SafeAreaView style={styles.container}>
-    <Text style={styles.text}>마이페이지</Text>
-    <Text style={{ color: '#888', marginTop: 10 }}>내 정보 관리</Text>
-  </SafeAreaView>
-);
-
