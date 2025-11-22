@@ -6,6 +6,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import { HomeScreen, SearchScreen, NoteScreen } from './src/screens/TabScreens';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ProfileEditScreen from './src/screens/ProfileEditScreen';
+import SettingScreen from './src/screens/SettingScreen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from './src/types';
 import { UserProvider } from './src/context/UserContext';
@@ -63,6 +64,7 @@ function App(): React.JSX.Element {
               headerShown: false 
             }} 
           />
+          <Stack.Screen name="Setting" component={SettingScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </UserProvider>
