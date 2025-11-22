@@ -29,10 +29,3 @@ export const SearchScreen = () => (
     <Text style={{ color: '#888', marginTop: 10 }}>와인 검색하기</Text>
   </SafeAreaView>
 );
-
-export const NoteScreen = () => (
-  <SafeAreaView style={styles.container}>
-    <Text style={styles.text}>테이스팅 노트</Text>
-    <Text style={{ color: '#888', marginTop: 10 }}>내가 마신 와인 기록</Text>
-  </SafeAreaView>
-);
