@@ -1,20 +1,44 @@
 {
-  "root": "/Users/wiseungju/dev/drinkigclientcn",
-  "reactNativePath": "/Users/wiseungju/dev/drinkigclientcn/node_modules/react-native",
+  "root": "/Users/wiseungju/dev/drinkig-client-cn",
+  "reactNativePath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native",
   "reactNativeVersion": "0.82",
   "dependencies": {
+    "@invertase/react-native-apple-authentication": {
+      "root": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/@invertase/react-native-apple-authentication",
+      "name": "@invertase/react-native-apple-authentication",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/@invertase/react-native-apple-authentication/RNAppleAuthentication.podspec",
+          "version": "2.5.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/@invertase/react-native-apple-authentication/android",
+          "packageImportPath": "import com.RNAppleAuthentication.AppleAuthenticationAndroidPackage;",
+          "packageInstance": "new AppleAuthenticationAndroidPackage()",
+          "buildTypes": [],
+          "componentDescriptors": [],
+          "cmakeListsPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/@invertase/react-native-apple-authentication/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "react-native-safe-area-context": {
-      "root": "/Users/wiseungju/dev/drinkigclientcn/node_modules/react-native-safe-area-context",
+      "root": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-safe-area-context",
       "name": "react-native-safe-area-context",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/wiseungju/dev/drinkigclientcn/node_modules/react-native-safe-area-context/react-native-safe-area-context.podspec",
+          "podspecPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-safe-area-context/react-native-safe-area-context.podspec",
           "version": "5.6.2",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/wiseungju/dev/drinkigclientcn/node_modules/react-native-safe-area-context/android",
+          "sourceDir": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-safe-area-context/android",
           "packageImportPath": "import com.th3rdwave.safeareacontext.SafeAreaContextPackage;",
           "packageInstance": "new SafeAreaContextPackage()",
           "buildTypes": [],
@@ -23,7 +47,71 @@
             "RNCSafeAreaProviderComponentDescriptor",
             "RNCSafeAreaViewComponentDescriptor"
           ],
-          "cmakeListsPath": "/Users/wiseungju/dev/drinkigclientcn/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "react-native-screens": {
+      "root": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-screens",
+      "name": "react-native-screens",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-screens/RNScreens.podspec",
+          "version": "4.18.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-screens/android",
+          "packageImportPath": "import com.swmansion.rnscreens.RNScreensPackage;",
+          "packageInstance": "new RNScreensPackage()",
+          "buildTypes": [],
+          "libraryName": "rnscreens",
+          "componentDescriptors": [
+            "RNSFullWindowOverlayComponentDescriptor",
+            "RNSScreenContainerComponentDescriptor",
+            "RNSScreenNavigationContainerComponentDescriptor",
+            "RNSScreenStackHeaderConfigComponentDescriptor",
+            "RNSScreenStackHeaderSubviewComponentDescriptor",
+            "RNSScreenStackComponentDescriptor",
+            "RNSSearchBarComponentDescriptor",
+            "RNSScreenComponentDescriptor",
+            "RNSScreenFooterComponentDescriptor",
+            "RNSScreenContentWrapperComponentDescriptor",
+            "RNSModalScreenComponentDescriptor",
+            "RNSBottomTabsComponentDescriptor",
+            "RNSSafeAreaViewComponentDescriptor"
+          ],
+          "cmakeListsPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "react-native-vector-icons": {
+      "root": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-vector-icons",
+      "name": "react-native-vector-icons",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-vector-icons/RNVectorIcons.podspec",
+          "version": "10.3.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-vector-icons/android",
+          "packageImportPath": "import com.oblador.vectoricons.VectorIconsPackage;",
+          "packageInstance": "new VectorIconsPackage()",
+          "buildTypes": [],
+          "libraryName": "RNVectorIconsSpec",
+          "componentDescriptors": [],
+          "cmakeListsPath": "/Users/wiseungju/dev/drinkig-client-cn/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -194,7 +282,7 @@
         {
           "name": "--path <path>",
           "description": "Path to the React Native project root.",
-          "default": "/Users/wiseungju/dev/drinkigclientcn/ios"
+          "default": "/Users/wiseungju/dev/drinkig-client-cn/ios"
         },
         {
           "name": "--platform <string>",
@@ -250,8 +338,7 @@
         },
         {
           "name": "--terminal <string>",
-          "description": "Launches the Metro Bundler in a new window using the specified terminal path.",
-          "default": "Apple_Terminal"
+          "description": "Launches the Metro Bundler in a new window using the specified terminal path."
         },
         {
           "name": "--binary-path <string>",
@@ -418,8 +505,7 @@
         },
         {
           "name": "--terminal <string>",
-          "description": "Launches the Metro Bundler in a new window using the specified terminal path.",
-          "default": "Apple_Terminal"
+          "description": "Launches the Metro Bundler in a new window using the specified terminal path."
         },
         {
           "name": "--appId <string>",
@@ -494,16 +580,16 @@
   "assets": [],
   "project": {
     "ios": {
-      "sourceDir": "/Users/wiseungju/dev/drinkigclientcn/ios",
+      "sourceDir": "/Users/wiseungju/dev/drinkig-client-cn/ios",
       "xcodeProject": {
-        "name": "drinkigclientcn.xcodeproj",
+        "name": "drinkigclientcn.xcworkspace",
         "path": ".",
-        "isWorkspace": false
+        "isWorkspace": true
       },
       "assets": []
     },
     "android": {
-      "sourceDir": "/Users/wiseungju/dev/drinkigclientcn/android",
+      "sourceDir": "/Users/wiseungju/dev/drinkig-client-cn/android",
       "appName": "app",
       "packageName": "com.drinkigclientcn",
       "applicationId": "com.drinkigclientcn",
