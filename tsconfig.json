@@ -1,5 +1,9 @@
 {
   "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    // 나중에 절대경로 import(`from 'navigation/RootNavigator'`)를 쓰고 싶을 때 유용합니다.
+    "baseUrl": "./src"
+  },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["**/node_modules", "**/Pods"]
 }
