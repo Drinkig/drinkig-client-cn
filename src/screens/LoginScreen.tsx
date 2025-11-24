@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
 import { useNavigation } from '@react-navigation/native';
@@ -46,6 +47,14 @@ const LoginScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentContainer}>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/Logo Icon.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+        
         <View style={styles.bottomContainer}>
           {Platform.OS === 'ios' && (
             <AppleButton
@@ -68,16 +77,27 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#7E13B1',
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'center', // 화면 중앙 정렬
+    justifyContent: 'space-between', // 중앙 정렬에서 변경하여 로고와 버튼 영역 분리
     paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  logoContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 150,
+    height: 150,
   },
   bottomContainer: {
     width: '100%',
     gap: 16,
+    paddingBottom: 40, // 하단 여백 추가
   },
   appleButton: {
     width: '100%',
