@@ -2,8 +2,10 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View } from 'react-native';
 import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import CommunityScreen from './src/screens/CommunityScreen';
 import SearchScreen from './src/screens/SearchScreen';
 import MyWineScreen from './src/screens/MyWineScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
@@ -37,6 +39,8 @@ function MainTabNavigator() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Community') {
+            iconName = focused ? 'people' : 'people-outline';
           } else if (route.name === 'MyWine') {
             iconName = focused ? 'bottle-wine' : 'bottle-wine-outline';
             return <MaterialIcon name={iconName} size={size} color={color} />;
@@ -48,6 +52,7 @@ function MainTabNavigator() {
         },
       })}>
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: '홈' }} />
+      <Tab.Screen name="Community" component={CommunityScreen} options={{ title: '커뮤니티' }} />
       <Tab.Screen name="MyWine" component={MyWineScreen} options={{ title: '내 와인' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: '프로필' }} />
     </Tab.Navigator>
