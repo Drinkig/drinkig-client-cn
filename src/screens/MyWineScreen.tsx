@@ -80,6 +80,11 @@ const MyWineScreen = () => {
         />
       ) : (
         <View style={styles.emptyContent}>
+          <Image 
+            source={require('../assets/Drinky_1.png')} 
+            style={styles.emptyImage}
+            resizeMode="contain"
+          />
           <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
           <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
         </View>
@@ -117,6 +122,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptyImage: {
+    width: 150,
+    height: 150,
+    marginBottom: 20,
   },
   emptyText: {
     color: '#fff',
