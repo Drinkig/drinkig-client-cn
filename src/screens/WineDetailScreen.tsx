@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -34,7 +36,9 @@ const getRandomFeatures = () => ({
 });
 
 const DEFAULT_DESCRIPTION = "이 와인은 균형 잡힌 구조감과 풍부한 과실향이 특징입니다. 다양한 음식과 잘 어울리며, 특별한 날 즐기기에도 손색이 없습니다.";
-const DEFAULT_AROMAS = ['과일', '꽃', '오크', '허브'];
+const DEFAULT_NOSE = ['과일', '꽃'];
+const DEFAULT_PALATE = ['오크', '향신료'];
+const DEFAULT_FINISH = ['허브', '흙'];
 
 export default function WineDetailScreen() {
   const navigation = useNavigation();
@@ -43,11 +47,13 @@ export default function WineDetailScreen() {
   const isMyWineItem = isMyWine(wine);
 
   // 탭 상태: 
-  // DB 모드: info, review, vintage
+  // DB 모드: info, review, price
   // My 모드: my_record, info, others (다른 사람들 리뷰/정보)
-  const [activeTab, setActiveTab] = useState<string>(isMyWineItem ? 'my_record' : 'info');
+  const activeTabState = useState<string>(isMyWineItem ? 'my_record' : 'info');
+  const [activeTab, setActiveTab] = activeTabState;
   const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>('latest');
+  const [isVintageModalVisible, setVintageModalVisible] = useState(false);
 
   // 공통 필드 추출
   const nameKor = isMyWineItem ? wine.name : wine.nameKor;
@@ -59,22 +65,61 @@ export default function WineDetailScreen() {
   // 상세 데이터 준비
   const features = !isMyWineItem && wine.features ? wine.features : getRandomFeatures();
   const description = !isMyWineItem && wine.description ? wine.description : DEFAULT_DESCRIPTION;
-  const aromas = !isMyWineItem && wine.aromas ? wine.aromas : DEFAULT_AROMAS;
+  const nose = !isMyWineItem && wine.nose ? wine.nose : DEFAULT_NOSE;
+  const palate = !isMyWineItem && wine.palate ? wine.palate : DEFAULT_PALATE;
+  const finish = !isMyWineItem && wine.finish ? wine.finish : DEFAULT_FINISH;
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
-  // 데이터가 있는 빈티지만 필터링
-  const vintages = useMemo(() => rawVintages?.filter(v => 
-    (v.reviews && v.reviews.length > 0) || (v.prices && v.prices.length > 0)
-  ), [rawVintages]);
+  // 빈티지 리스트 생성: NV + 2025 ~ 1950
+  const vintages = useMemo(() => {
+    // 1. NV (Non-Vintage)
+    const list: VintageData[] = [{
+      year: 'NV',
+      rating: 0,
+      reviews: [],
+      prices: []
+    }];
 
-  // 모든 리뷰 통합 및 정렬
+    // 2. 2025 ~ 1950
+    for (let year = 2025; year >= 1950; year--) {
+      list.push({
+        year: year.toString(),
+        rating: 0,
+        reviews: [],
+        prices: []
+      });
+    }
+
+    // 3. 실제 데이터가 있으면 매핑
+    if (rawVintages) {
+      return list.map(vItem => {
+        const realData = rawVintages.find(rv => rv.year === vItem.year);
+        return realData ? realData : vItem;
+      });
+    }
+
+    return list;
+  }, [rawVintages]);
+
+  // 모든 리뷰 통합 및 정렬 (선택된 빈티지에 따라 필터링)
   const sortedReviews = useMemo(() => {
     if (!vintages) return [];
     
-    const reviews = vintages.flatMap(v => 
-      v.reviews.map(r => ({ ...r, vintageYear: v.year }))
-    );
+    // 1. 빈티지가 선택되어 있으면 해당 빈티지의 리뷰만 필터링
+    let reviews = [];
+    
+    if (selectedVintage) {
+      // 선택된 빈티지의 리뷰만 가져옴
+      reviews = selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
+    } else {
+      // (예외 케이스) 선택된 빈티지가 없으면 전체 리뷰 보여주기 (혹은 빈 배열)
+      // 현재 로직상 selectedVintage는 항상 설정되도록 되어 있으나 안전장치로 유지
+      reviews = vintages.flatMap(v => 
+        v.reviews.map(r => ({ ...r, vintageYear: v.year }))
+      );
+    }
 
+    // 2. 정렬
     return reviews.sort((a, b) => {
       switch (sortOption) {
         case 'rating_high':
@@ -86,12 +131,13 @@ export default function WineDetailScreen() {
           return b.date.localeCompare(a.date);
       }
     });
-  }, [vintages, sortOption]);
+  }, [vintages, sortOption, selectedVintage]);
 
-  // 초기 빈티지 설정
+  // 초기 빈티지 설정 (NV가 있으면 NV를, 아니면 가장 최신 빈티지를 기본 선택)
   useEffect(() => {
     if (vintages && vintages.length > 0 && !selectedVintage) {
-      setSelectedVintage(vintages[vintages.length - 1]);
+      // 정렬된 vintages의 첫 번째 요소가 NV 혹은 최신 연도이므로 [0]을 선택
+      setSelectedVintage(vintages[0]);
     }
   }, [vintages, selectedVintage]);
 
@@ -281,12 +327,42 @@ export default function WineDetailScreen() {
               </View>
 
               <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>아로마</Text>
+                <Text style={styles.sectionTitle}>
+                  노즈 <Text style={styles.subTitleText}>(Nose)</Text>
+                </Text>
                 <View style={styles.aromaContainer}>
-                  {aromas.map((aroma, index) => (
+                  {nose.map((item, index) => (
                     <View key={index} style={styles.aromaTag}>
                       <MaterialCommunityIcons name="scent" size={14} color="#8e44ad" style={{ marginRight: 4 }} />
-                      <Text style={styles.aromaText}>{aroma}</Text>
+                      <Text style={styles.aromaText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>
+                  팔레트 <Text style={styles.subTitleText}>(Palate)</Text>
+                </Text>
+                <View style={styles.aromaContainer}>
+                  {palate.map((item, index) => (
+                    <View key={index} style={styles.aromaTag}>
+                      <MaterialCommunityIcons name="water-outline" size={14} color="#8e44ad" style={{ marginRight: 4 }} />
+                      <Text style={styles.aromaText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>
+                  피니시 <Text style={styles.subTitleText}>(Finish)</Text>
+                </Text>
+                <View style={styles.aromaContainer}>
+                  {finish.map((item, index) => (
+                    <View key={index} style={styles.aromaTag}>
+                      <MaterialCommunityIcons name="timer-sand" size={14} color="#8e44ad" style={{ marginRight: 4 }} />
+                      <Text style={styles.aromaText}>{item}</Text>
                     </View>
                   ))}
                 </View>
@@ -310,7 +386,9 @@ export default function WineDetailScreen() {
         <View style={styles.tabContent}>
           <View style={styles.sectionContainer}>
             <View style={styles.reviewHeaderContainer}>
-              <Text style={styles.sectionTitle}>전체 리뷰 ({sortedReviews.length})</Text>
+              <Text style={styles.sectionTitle}>
+                {selectedVintage ? `${selectedVintage.year} 빈티지 리뷰` : '전체 리뷰'} ({sortedReviews.length})
+              </Text>
               <View style={styles.sortContainer}>
                 {renderSortButton('latest', '최신순')}
                 {renderSortButton('rating_high', '별점높은순')}
@@ -325,39 +403,28 @@ export default function WineDetailScreen() {
       );
     }
 
-    // [CASE 4] 빈티지 (공통)
-    if (activeTab === 'vintage') {
-      if (!vintages || vintages.length === 0) {
-        return (
+    // [CASE 4] 가격 (공통)
+    if (activeTab === 'price') {
+      if (!selectedVintage) {
+         return (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>등록된 빈티지 정보가 없습니다.</Text>
+            <Text style={styles.emptyStateText}>빈티지를 선택해주세요.</Text>
           </View>
         );
       }
+
+      if (!selectedVintage.prices || selectedVintage.prices.length === 0) {
+        return (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>선택한 빈티지의 가격 정보가 없습니다.</Text>
+          </View>
+        );
+      }
+
       return (
         <View style={styles.tabContent}>
           <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>빈티지 선택</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.vintageList}>
-              {vintages.map((v) => (
-                <TouchableOpacity
-                  key={v.year}
-                  style={[
-                    styles.vintageChip,
-                    selectedVintage?.year === v.year && styles.vintageChipSelected
-                  ]}
-                  onPress={() => setSelectedVintage(v)}
-                >
-                  <Text style={[
-                    styles.vintageChipText,
-                    selectedVintage?.year === v.year && styles.vintageChipTextSelected
-                  ]}>{v.year}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {selectedVintage && (
-              <View style={styles.vintageInfoContainer}>
+            <View style={styles.vintageInfoContainer}>
                 <Text style={styles.subSectionTitle}>구매가 정보 ({selectedVintage.year})</Text>
                 {renderPriceStats(selectedVintage.prices)}
                 
@@ -366,7 +433,6 @@ export default function WineDetailScreen() {
                    <Text style={styles.priceInfoText}>유저들이 등록한 구매 가격을 바탕으로 집계된 정보입니다.</Text>
                 </View>
               </View>
-            )}
           </View>
         </View>
       );
@@ -415,9 +481,27 @@ export default function WineDetailScreen() {
           </View>
         </View>
 
+        {/* 2. 빈티지 선택 버튼 - 상단 이동 */}
+        {!isMyWineItem && vintages && vintages.length > 0 && (
+          <View style={styles.vintageSelectContainer}>
+            <TouchableOpacity 
+              style={styles.vintageSelectButton}
+              onPress={() => setVintageModalVisible(true)}
+            >
+              <Text style={styles.vintageSelectLabel}>빈티지</Text>
+              <View style={styles.vintageSelectValueContainer}>
+                <Text style={styles.vintageSelectValue}>
+                  {selectedVintage ? selectedVintage.year : '선택'}
+                </Text>
+                <Ionicons name="chevron-forward" size={20} color="#888" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.divider} />
 
-        {/* 2. 탭 헤더 (가로 스크롤) */}
+        {/* 3. 탭 헤더 (가로 스크롤) */}
         <View style={styles.tabHeaderContainer}>
           <ScrollView 
             horizontal 
@@ -447,15 +531,15 @@ export default function WineDetailScreen() {
               <Text style={[styles.tabText, activeTab === 'review' && styles.activeTabText]}>리뷰</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.tabButton, activeTab === 'vintage' && styles.activeTabButton]}
-              onPress={() => setActiveTab('vintage')}
+              style={[styles.tabButton, activeTab === 'price' && styles.activeTabButton]}
+              onPress={() => setActiveTab('price')}
             >
-              <Text style={[styles.tabText, activeTab === 'vintage' && styles.activeTabText]}>빈티지</Text>
+              <Text style={[styles.tabText, activeTab === 'price' && styles.activeTabText]}>가격</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
 
-        {/* 3. 탭 컨텐츠 */}
+        {/* 4. 탭 컨텐츠 */}
         <View style={styles.tabBody}>
           {renderTabContent()}
         </View>
@@ -471,6 +555,55 @@ export default function WineDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* 빈티지 선택 모달 */}
+      <Modal
+        visible={isVintageModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setVintageModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>빈티지 선택</Text>
+              <TouchableOpacity 
+                onPress={() => setVintageModalVisible(false)}
+                style={styles.closeButton}
+              >
+                <Ionicons name="close" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={vintages}
+              keyExtractor={(item) => item.year}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[
+                    styles.vintageModalItem,
+                    selectedVintage?.year === item.year && styles.vintageModalItemSelected
+                  ]}
+                  onPress={() => {
+                    setSelectedVintage(item);
+                    setVintageModalVisible(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.vintageModalItemText,
+                    selectedVintage?.year === item.year && styles.vintageModalItemTextSelected
+                  ]}>
+                    {item.year}
+                  </Text>
+                  {selectedVintage?.year === item.year && (
+                    <Ionicons name="checkmark" size={20} color="#8e44ad" />
+                  )}
+                </TouchableOpacity>
+              )}
+              contentContainerStyle={styles.vintageModalList}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -603,6 +736,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 16,
   },
+  subTitleText: {
+    fontSize: 14,
+    fontWeight: 'normal',
+    color: '#aaa',
+  },
   subSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
@@ -701,31 +839,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  // 빈티지 스타일
-  vintageList: {
-    gap: 8,
-    paddingBottom: 16,
-  },
-  vintageChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#2a2a2a',
-    borderWidth: 1,
-    borderColor: '#444',
-  },
-  vintageChipSelected: {
-    backgroundColor: '#8e44ad',
-    borderColor: '#8e44ad',
-  },
-  vintageChipText: {
-    color: '#888',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  vintageChipTextSelected: {
-    color: '#fff',
   },
   vintageInfoContainer: {
     marginTop: 8,
@@ -888,5 +1001,90 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontStyle: 'italic',
+  },
+  // 빈티지 선택 버튼 스타일
+  vintageSelectContainer: {
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    backgroundColor: '#1a1a1a',
+  },
+  vintageSelectButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  vintageSelectLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  vintageSelectValueContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  vintageSelectValue: {
+    fontSize: 16,
+    color: '#8e44ad',
+    fontWeight: '600',
+  },
+  // 모달 스타일
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  vintageModalList: {
+    paddingBottom: 40,
+  },
+  vintageModalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2a2a2a',
+  },
+  vintageModalItemSelected: {
+    backgroundColor: '#333',
+    borderBottomColor: '#333',
+  },
+  vintageModalItemText: {
+    fontSize: 16,
+    color: '#ccc',
+  },
+  vintageModalItemTextSelected: {
+    color: '#8e44ad',
+    fontWeight: 'bold',
   },
 });

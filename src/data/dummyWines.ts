@@ -36,7 +36,10 @@ export interface WineDBItem {
     body: number; // 1-5
     tannin: number; // 1-5
   };
-  aromas?: string[];
+  // aromas?: string[]; // Deprecated
+  nose?: string[];
+  palate?: string[];
+  finish?: string[];
   vintages?: VintageData[]; // 빈티지별 데이터
 }
 
@@ -87,7 +90,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '카베르네 소비뇽, 메를로',
     description: '보르도 5대 샤토 중 하나로, 우아함과 섬세함의 극치를 보여주는 와인입니다. 붉은 과실의 풍미와 부드러운 타닌, 긴 여운이 특징입니다.',
     features: { sweetness: 1, acidity: 4, body: 5, tannin: 4 },
-    aromas: ['블랙커런트', '제비꽃', '가죽', '담배'],
+    nose: ['블랙커런트', '제비꽃', '말린 자두'],
+    palate: ['체리', '가죽', '흙내음'],
+    finish: ['담배', '바닐라', '오크'],
     vintages: generateVintages(['2015', '2016', '2017', '2018'], 1200000),
   },
   {
@@ -99,7 +104,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '소비뇽 블랑',
     description: '뉴질랜드 말보로 지역을 대표하는 소비뇽 블랑으로, 생동감 넘치는 산도와 풍부한 열대 과일 향이 매력적입니다.',
     features: { sweetness: 1, acidity: 5, body: 3, tannin: 1 },
-    aromas: ['패션후르츠', '라임', '풀', '구스베리'],
+    nose: ['패션후르츠', '라임', '자몽'],
+    palate: ['구스베리', '풀', '미네랄'],
+    finish: ['레몬', '허브', '복숭아'],
     vintages: generateVintages(['2021', '2022', '2023'], 45000),
   },
   {
@@ -111,7 +118,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '샤르도네, 피노 누아',
     description: '샴페인의 대명사로 불리는 돔 페리뇽은 완벽한 균형미와 복합미를 자랑합니다. 섬세한 기포와 토스트 향이 일품입니다.',
     features: { sweetness: 2, acidity: 5, body: 4, tannin: 1 },
-    aromas: ['토스트', '아몬드', '살구', '브리오슈'],
+    nose: ['토스트', '아몬드', '흰 꽃'],
+    palate: ['살구', '브리오슈', '배'],
+    finish: ['미네랄', '스모키', '감귤'],
     vintages: generateVintages(['2010', '2012', '2013'], 350000),
   },
   {
@@ -123,7 +132,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '카베르네 소비뇽',
     description: '미국 나파 밸리의 컬트 와인으로, 보르도 스타일의 블렌딩을 통해 깊이 있고 구조감 있는 맛을 선사합니다.',
     features: { sweetness: 1, acidity: 3, body: 5, tannin: 5 },
-    aromas: ['블랙베리', '초콜릿', '바닐라', '오크'],
+    nose: ['블랙베리', '카시스', '바이올렛'],
+    palate: ['초콜릿', '블랙체리', '향신료'],
+    finish: ['바닐라', '오크', '에스프레소'],
     vintages: generateVintages(['2016', '2017', '2018', '2019'], 600000),
   },
   {
@@ -135,7 +146,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '모스카토',
     description: '달콤하고 향긋한 약발포성 화이트 와인으로, 디저트와 함께 즐기거나 가볍게 마시기에 좋습니다.',
     features: { sweetness: 5, acidity: 3, body: 2, tannin: 1 },
-    aromas: ['복숭아', '꿀', '아카시아', '오렌지'],
+    nose: ['복숭아', '오렌지 꽃', '리치'],
+    palate: ['꿀', '살구', '청포도'],
+    finish: ['아카시아', '레몬', '허브'],
     vintages: generateVintages(['2022', '2023'], 25000),
   },
   {
@@ -147,7 +160,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '카베르네 소비뇽',
     description: '한국에서 가장 사랑받는 칠레 와인 중 하나로, 진한 과실향과 적절한 오크 터치가 조화를 이룹니다.',
     features: { sweetness: 1, acidity: 3, body: 4, tannin: 4 },
-    aromas: ['체리', '자두', '바닐라', '스파이스'],
+    nose: ['체리', '자두', '유칼립투스'],
+    palate: ['바닐라', '블랙베리', '후추'],
+    finish: ['스파이스', '오크', '다크초콜릿'],
     vintages: generateVintages(['2019', '2020', '2021'], 32000),
   },
   {
@@ -159,7 +174,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '카베르네 소비뇽',
     description: '칠레 프리미엄 와인의 선구자로, 농축된 과일 향과 부드러운 타닌이 특징입니다.',
     features: { sweetness: 1, acidity: 3, body: 4, tannin: 4 },
-    aromas: ['블랙커런트', '초콜릿', '시가', '민트'],
+    nose: ['블랙커런트', '민트', '시가 박스'],
+    palate: ['초콜릿', '체리', '바닐라'],
+    finish: ['커피', '오크', '스파이스'],
     vintages: generateVintages(['2018', '2019', '2020', '2021'], 35000),
   },
   {
@@ -171,7 +188,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '산지오베제',
     description: '슈퍼 투스칸의 효시로 불리는 와인으로, 산지오베제 특유의 산미와 탄탄한 구조감이 돋보입니다.',
     features: { sweetness: 1, acidity: 4, body: 4, tannin: 4 },
-    aromas: ['체리', '허브', '가죽', '감초'],
+    nose: ['체리', '야생 베리', '허브'],
+    palate: ['가죽', '감초', '자두'],
+    finish: ['담배', '발사믹', '초콜릿'],
     vintages: generateVintages(['2017', '2018', '2019', '2020'], 220000),
   },
   {
@@ -183,7 +202,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '피노 누아, 샤르도네',
     description: '피노 누아 베이스의 샴페인으로, 힘차고 풍부한 맛과 상쾌한 과일 향이 조화를 이룹니다.',
     features: { sweetness: 2, acidity: 5, body: 3, tannin: 1 },
-    aromas: ['사과', '배', '바닐라', '브리오슈'],
+    nose: ['사과', '배', '복숭아'],
+    palate: ['바닐라', '브리오슈', '아몬드'],
+    finish: ['미네랄', '토스트', '꿀'],
     vintages: generateVintages(['NV'], 85000),
   },
   {
@@ -195,7 +216,9 @@ export const DUMMY_WINE_DB: WineDBItem[] = [
     grape: '말벡, 카베르네 프랑',
     description: '잉카어로 "둘"이라는 뜻을 가진 이스까이는 두 가지 품종의 완벽한 블렌딩을 보여줍니다.',
     features: { sweetness: 1, acidity: 3, body: 5, tannin: 4 },
-    aromas: ['자두', '제비꽃', '초콜릿', '허브'],
+    nose: ['자두', '제비꽃', '블루베리'],
+    palate: ['초콜릿', '허브', '블랙체리'],
+    finish: ['바닐라', '스파이스', '가죽'],
     vintages: generateVintages(['2017', '2019'], 80000),
   },
 ];
