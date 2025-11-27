@@ -44,7 +44,10 @@ export default function SearchScreen() {
   };
 
   const renderSearchResult = ({ item }: { item: WineDBItem }) => (
-    <TouchableOpacity style={styles.resultItem}>
+    <TouchableOpacity 
+      style={styles.resultItem}
+      onPress={() => navigation.navigate('WineDetail', { wine: item })}
+    >
       <View style={styles.resultIconContainer}>
         <Icon name="wine" size={20} color="#8e44ad" />
       </View>

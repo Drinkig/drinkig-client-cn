@@ -13,6 +13,8 @@ import ProfileEditScreen from './src/screens/ProfileEditScreen';
 import SettingScreen from './src/screens/SettingScreen';
 import WineAddScreen from './src/screens/WineAddScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
+import WineDetailScreen from './src/screens/WineDetailScreen';
+import MyWineDetailScreen from './src/screens/MyWineDetailScreen';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { RootStackParamList } from './src/types';
@@ -87,6 +89,8 @@ function App(): React.JSX.Element {
               />
               <Stack.Screen name="Notification" component={NotificationScreen} />
               <Stack.Screen name="Search" component={SearchScreen} />
+              <Stack.Screen name="WineDetail" component={WineDetailScreen} />
+              <Stack.Screen name="MyWineDetail" component={MyWineDetailScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </WineProvider>

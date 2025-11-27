@@ -24,7 +24,11 @@ const MyWineScreen = () => {
   };
 
   const renderWineItem = ({ item }: { item: MyWine }) => (
-    <View style={styles.wineItem}>
+    <TouchableOpacity 
+      style={styles.wineItem}
+      onPress={() => navigation.navigate('MyWineDetail', { wine: item })}
+      activeOpacity={0.8}
+    >
       <View style={styles.wineImageContainer}>
         {item.imageUri ? (
           <Image source={{ uri: item.imageUri }} style={styles.wineImage} />
@@ -54,7 +58,7 @@ const MyWineScreen = () => {
           </Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

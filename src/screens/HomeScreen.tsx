@@ -67,7 +67,7 @@ export default function HomeScreen() {
             console.log('More recommended wines');
           }}
           onPressWine={(wine) => {
-            console.log('Selected wine:', wine.nameKor);
+            navigation.navigate('WineDetail', { wine });
           }}
         />
 
