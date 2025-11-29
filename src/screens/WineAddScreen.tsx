@@ -21,6 +21,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
 import { useWine } from '../context/WineContext';
+import { registerWine, WineRegisterRequest } from '../api/wine';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -164,31 +165,54 @@ const WineAddScreen = () => {
   };
 
   // 저장
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('알림', '와인 이름을 입력해주세요.');
       return;
     }
     
-    // 데이터 저장
-    addWine({
-      name,
-      type,
-      country,
-      grape,
-      vintage,
-      purchasePrice,
-      marketPrice,
-      purchaseLocation,
-      purchaseDate,
-      importer,
-      condition,
-      imageUri,
-    });
-    
-    console.log('Saved:', { name, type, country, grape, vintage, purchasePrice, marketPrice });
-    
-    navigation.goBack();
+    try {
+      const requestData: WineRegisterRequest = {
+        wineRegisterRequest: {
+          name: name,
+          nameEng: '', // 현재 입력 필드가 없어 빈 값 처리 (필요시 추가)
+          price: purchasePrice ? parseInt(purchasePrice.replace(/[^0-9]/g, ''), 10) : 0,
+          sort: type,
+          country: country,
+          region: '', // 지역 정보가 국가 필드에 혼합되어 있을 수 있음 (필요시 분리)
+          variety: grape,
+          vivinoRating: 0 // 기본값
+        },
+        wineImage: imageUri || undefined // 이미지 선택 시 Base64 변환 로직 필요 (현재는 URI 전달)
+      };
+
+      const response = await registerWine(requestData);
+
+      if (response.isSuccess) {
+        Alert.alert('성공', '와인이 성공적으로 등록되었습니다.');
+        // 로컬 컨텍스트에도 추가 (선택 사항)
+        addWine({
+          name,
+          type,
+          country,
+          grape,
+          vintage,
+          purchasePrice,
+          marketPrice,
+          purchaseLocation,
+          purchaseDate,
+          importer,
+          condition,
+          imageUri,
+        });
+        navigation.goBack();
+      } else {
+        Alert.alert('오류', response.message || '와인 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Wine register failed:', error);
+      Alert.alert('오류', '서버 통신 중 문제가 발생했습니다.');
+    }
   };
 
   // 다음 단계로 이동 (Step 2 -> Step 3) - 현재는 수동 호출 없음
