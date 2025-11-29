@@ -22,7 +22,33 @@ export interface WineDTO {
   createdAt: string;
 }
 
-// 상세 정보 응답 (추정 DTO)
+// 사용자용 와인 검색 응답 타입 (GET /wine)
+export interface WineUserSearchResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    content: WineUserDTO[];
+    pageNumber: number;
+    totalPages: number;
+  };
+}
+
+export interface WineUserDTO {
+  wineId: number;
+  name: string;
+  nameEng: string;
+  vintageYear: number;
+  imageUrl: string;
+  sort: string;
+  country: string;
+  region: string;
+  variety: string;
+  vivinoRating: number;
+  price: number;
+}
+
+// 상세 정보 응답 (관리자용)
 export interface WineDetailResponse {
   isSuccess: boolean;
   code: string;
@@ -53,6 +79,48 @@ export interface WineDetailDTO {
   finish?: string[];
 }
 
+// 사용자용 상세 정보 응답 (GET /wine/{wineId})
+export interface WineDetailUserResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    wineInfoResponse: WineInfoDTO;
+    recentReviews: RecentReviewDTO[];
+  };
+}
+
+export interface WineInfoDTO {
+  wineId: number;
+  name: string;
+  nameEng: string;
+  vintageYear: number;
+  imageUrl: string;
+  price: number;
+  sort: string;
+  country: string;
+  region: string;
+  variety: string;
+  vivinoRating: number;
+  avgSweetness: number;
+  avgAcidity: number;
+  avgTannin: number;
+  avgBody: number;
+  avgAlcohol: number;
+  nose1: string | null;
+  nose2: string | null;
+  nose3: string | null;
+  avgMemberRating: number;
+  liked: boolean;
+}
+
+export interface RecentReviewDTO {
+  name: string;
+  review: string;
+  rating: number;
+  createdAt: string;
+}
+
 interface SearchParams {
   searchName?: string;
   wineSort?: string;
@@ -61,6 +129,31 @@ interface SearchParams {
   page?: number;
   size?: number;
   sort?: string[];
+}
+
+interface PublicSearchParams {
+  searchName?: string;
+  page?: number;
+  size?: number;
+  sort?: string[];
+}
+
+// 추천 와인 응답 타입
+export interface RecommendedWineResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: RecommendedWineDTO[];
+}
+
+export interface RecommendedWineDTO {
+  wineId: number;
+  imageUrl: string;
+  wineName: string;
+  wineNameEng: string;
+  sort: string;
+  price: number;
+  vivinoRating: number;
 }
 
 // 와인 등록/수정 요청 공통 타입
@@ -127,7 +220,35 @@ export interface WishlistItemDTO {
   price: number;
 }
 
-// 와인 검색 API
+// 리뷰 목록 응답 타입
+export interface ReviewListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    content: ReviewDTO[];
+    pageNumber: number;
+    totalPages: number;
+  };
+}
+
+export interface ReviewDTO {
+  name: string;
+  review: string;
+  rating: number;
+  createdAt: string;
+}
+
+// 리뷰 조회 파라미터
+interface ReviewParams {
+  vintageYear: number;
+  sortType: string; // "최신순", "오래된 순", "별점 높은 순", "별점 낮은 순"
+  page?: number;
+  size?: number;
+  sort?: string[];
+}
+
+// 와인 검색 API (관리자용)
 export const searchWines = async (params: SearchParams) => {
   const response = await client.get<WineSearchResponse>('/admin/wine', {
     params,
@@ -135,9 +256,39 @@ export const searchWines = async (params: SearchParams) => {
   return response.data;
 };
 
-// 와인 상세 조회 API
+// 와인 검색 API (사용자용)
+export const searchWinesPublic = async (params: PublicSearchParams) => {
+  const response = await client.get<WineUserSearchResponse>('/wine', {
+    params,
+  });
+  return response.data;
+};
+
+// 와인 상세 조회 API (관리자용)
 export const getWineDetail = async (wineId: number) => {
   const response = await client.get<WineDetailResponse>(`/admin/wine/${wineId}`);
+  return response.data;
+};
+
+// 와인 상세 조회 API (사용자용)
+export const getWineDetailPublic = async (wineId: number, vintageYear?: number) => {
+  const response = await client.get<WineDetailUserResponse>(`/wine/${wineId}`, {
+    params: { vintageYear },
+  });
+  return response.data;
+};
+
+// 추천 와인 조회 API
+export const getRecommendedWines = async () => {
+  const response = await client.get<RecommendedWineResponse>('/wine/recommend');
+  return response.data;
+};
+
+// 와인 리뷰 전체 조회 API
+export const getWineReviews = async (wineId: number, params: ReviewParams) => {
+  const response = await client.get<ReviewListResponse>(`/wine/review/${wineId}`, {
+    params,
+  });
   return response.data;
 };
 
