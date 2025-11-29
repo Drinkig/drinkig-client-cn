@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
+import { searchWines } from '../api/wine';
 
 export default function SearchScreen() {
   const navigation = useNavigation();
@@ -21,20 +22,36 @@ export default function SearchScreen() {
 
   // 검색 로직
   useEffect(() => {
-    if (searchText.trim().length > 0) {
-      const searchKey = searchText.replace(/\s/g, '').toLowerCase();
-      
-      const filtered = DUMMY_WINE_DB.filter(wine => {
-        const nameKorKey = wine.nameKor.replace(/\s/g, '');
-        const nameEngKey = wine.nameEng.replace(/\s/g, '').toLowerCase();
-        
-        return nameKorKey.includes(searchKey) || nameEngKey.includes(searchKey);
-      });
-      
-      setSearchResults(filtered);
-    } else {
-      setSearchResults([]);
-    }
+    const timer = setTimeout(async () => {
+      if (searchText.trim().length > 0) {
+        try {
+          const response = await searchWines({ 
+            searchName: searchText,
+            page: 0,
+            size: 20
+          });
+          
+          if (response.isSuccess) {
+            const mappedResults: WineDBItem[] = response.result.content.map(item => ({
+              id: item.wineId,
+              nameKor: item.name,
+              nameEng: item.nameEng,
+              type: item.sort,
+              country: item.country,
+              grape: item.variety,
+              // 상세 정보는 없으므로 undefined 처리 (상세 화면에서 기본값 사용됨)
+            }));
+            setSearchResults(mappedResults);
+          }
+        } catch (error) {
+          console.error('Wine search failed:', error);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 500); // 500ms 디바운스
+
+    return () => clearTimeout(timer);
   }, [searchText]);
 
   const handleSearchSubmit = () => {
