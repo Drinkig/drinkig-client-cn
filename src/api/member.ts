@@ -22,6 +22,13 @@ export interface AppleLoginResponse {
   };
 }
 
+export interface LogoutResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string;
+}
+
 // --------------------
 // Member API Types
 // --------------------
@@ -106,6 +113,12 @@ export const loginWithApple = async (identityToken: string) => {
   const response = await client.post<AppleLoginResponse>('/login/apple', {
     identityToken,
   });
+  return response.data;
+};
+
+// 로그아웃 API
+export const logout = async () => {
+  const response = await client.post<LogoutResponse>('/logout');
   return response.data;
 };
 

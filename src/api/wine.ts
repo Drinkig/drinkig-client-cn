@@ -156,6 +156,73 @@ export interface RecommendedWineDTO {
   vivinoRating: number;
 }
 
+// 보유 와인 응답 타입 (목록 조회 및 단건 조회 공용)
+export interface MyWineListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: MyWineDTO[];
+}
+
+export interface MyWineDetailResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: MyWineDTO;
+}
+
+export interface MyWineDTO {
+  myWineId: number;
+  wineId: number;
+  wineName: string;
+  vintageYear: number;
+  wineSort: string;
+  wineCountry: string;
+  wineRegion: string;
+  wineVariety: string;
+  wineImageUrl: string;
+  purchaseDate: string;
+  purchasePrice: number;
+  period: number;
+}
+
+// 보유 와인 추가 요청 타입
+export interface MyWineAddRequest {
+  wineId: number;
+  vintageYear: number;
+  purchaseDate: string; // YYYY-MM-DD
+  purchasePrice: number;
+}
+
+export interface MyWineAddResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string;
+}
+
+// 보유 와인 수정 요청 타입
+export interface MyWineUpdateRequest {
+  vintageYear: number;
+  purchaseDate: string; // YYYY-MM-DD
+  purchasePrice: number;
+}
+
+export interface MyWineUpdateResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string;
+}
+
+// 보유 와인 삭제 응답 타입
+export interface MyWineDeleteResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string;
+}
+
 // 와인 등록/수정 요청 공통 타입
 interface WineRequestData {
   name: string;
@@ -281,6 +348,36 @@ export const getWineDetailPublic = async (wineId: number, vintageYear?: number) 
 // 추천 와인 조회 API
 export const getRecommendedWines = async () => {
   const response = await client.get<RecommendedWineResponse>('/wine/recommend');
+  return response.data;
+};
+
+// 보유 와인 목록 조회 API
+export const getMyWines = async () => {
+  const response = await client.get<MyWineListResponse>('/my-wine');
+  return response.data;
+};
+
+// 보유 와인 단건 조회 API
+export const getMyWineDetail = async (myWineId: number) => {
+  const response = await client.get<MyWineDetailResponse>(`/my-wine/${myWineId}`);
+  return response.data;
+};
+
+// 보유 와인 추가 API
+export const addMyWine = async (data: MyWineAddRequest) => {
+  const response = await client.post<MyWineAddResponse>('/my-wine', data);
+  return response.data;
+};
+
+// 보유 와인 수정 API
+export const updateMyWine = async (myWineId: number, data: MyWineUpdateRequest) => {
+  const response = await client.patch<MyWineUpdateResponse>(`/my-wine/${myWineId}`, data);
+  return response.data;
+};
+
+// 보유 와인 삭제 API
+export const deleteMyWine = async (myWineId: number) => {
+  const response = await client.delete<MyWineDeleteResponse>(`/my-wine/${myWineId}`);
   return response.data;
 };
 
