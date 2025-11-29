@@ -97,6 +97,36 @@ export interface WineResponse {
 export type WineRegisterResponse = WineResponse;
 export type WineUpdateResponse = WineResponse;
 
+// 위시리스트 응답 타입 (추가/삭제 공용)
+export interface WishlistResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string;
+}
+
+// 위시리스트 조회 응답 타입
+export interface WishlistListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: WishlistItemDTO[];
+}
+
+export interface WishlistItemDTO {
+  wineId: number;
+  name: string;
+  nameEng: string;
+  vintageYear: number;
+  imageUrl: string;
+  sort: string;
+  country: string;
+  region: string;
+  variety: string;
+  vivinoRating: number;
+  price: number;
+}
+
 // 와인 검색 API
 export const searchWines = async (params: SearchParams) => {
   const response = await client.get<WineSearchResponse>('/admin/wine', {
@@ -120,5 +150,27 @@ export const registerWine = async (data: WineRegisterRequest) => {
 // 와인 수정 API
 export const updateWine = async (wineId: number, data: WineUpdateRequest) => {
   const response = await client.patch<WineUpdateResponse>(`/admin/wine/${wineId}`, data);
+  return response.data;
+};
+
+// 위시리스트 추가 API
+export const addToWishlist = async (wineId: number, vintageYear?: number) => {
+  const response = await client.post<WishlistResponse>(`/wine-wishlist/${wineId}`, null, {
+    params: { vintageYear },
+  });
+  return response.data;
+};
+
+// 위시리스트 삭제 API
+export const removeFromWishlist = async (wineId: number, vintageYear?: number) => {
+  const response = await client.delete<WishlistResponse>(`/wine-wishlist/${wineId}`, {
+    params: { vintageYear },
+  });
+  return response.data;
+};
+
+// 위시리스트 전체 조회 API
+export const getWishlist = async () => {
+  const response = await client.get<WishlistListResponse>('/wine-wishlist');
   return response.data;
 };
