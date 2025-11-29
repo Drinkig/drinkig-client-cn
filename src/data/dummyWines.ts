@@ -29,6 +29,7 @@ export interface WineDBItem {
   country: string;
   grape: string; // 품종
   image?: string; // 실제 이미지 URL이 있다면 사용
+  imageUri?: string; // 로컬 이미지 URI (업로드 시 사용)
   description?: string;
   features?: {
     sweetness: number; // 1-5

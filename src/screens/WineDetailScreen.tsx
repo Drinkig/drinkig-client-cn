@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
+  ActivityIndicator, // 로딩 표시 추가
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -15,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../data/dummyWines';
 import { MyWine } from '../context/WineContext';
+import { getWineDetail, WineDetailDTO } from '../api/wine'; // API 추가
 
 // Components
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
@@ -49,6 +51,31 @@ export default function WineDetailScreen() {
   const { wine } = route.params;
   const isMyWineItem = isMyWine(wine);
 
+  // API 데이터 상태
+  const [apiWineDetail, setApiWineDetail] = useState<WineDetailDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // API 상세 조회
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!isMyWineItem && wine.id) {
+        try {
+          setIsLoading(true);
+          const response = await getWineDetail(wine.id as number);
+          if (response.isSuccess) {
+            setApiWineDetail(response.result);
+          }
+        } catch (error) {
+          console.error('Failed to fetch wine detail:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchDetail();
+  }, [isMyWineItem, wine.id]);
+
   // 탭 상태: 
   // DB 모드: info, review, price
   // My 모드: my_record, info, others (다른 사람들 리뷰/정보)
@@ -57,19 +84,20 @@ export default function WineDetailScreen() {
   const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
   const [isVintageModalVisible, setVintageModalVisible] = useState(false);
 
-  // 공통 필드 추출
-  const nameKor = isMyWineItem ? wine.name : wine.nameKor;
-  const nameEng = isMyWineItem ? '' : wine.nameEng;
-  const type = wine.type;
-  const country = wine.country;
-  const grape = wine.grape;
+  // 공통 필드 추출 (API 데이터 우선 사용)
+  const nameKor = isMyWineItem ? wine.name : (apiWineDetail?.name || wine.nameKor);
+  const nameEng = isMyWineItem ? '' : (apiWineDetail?.nameEng || wine.nameEng);
+  const type = apiWineDetail?.sort || wine.type;
+  const country = apiWineDetail?.country || wine.country;
+  const grape = apiWineDetail?.variety || wine.grape;
+  const imageUri = !isMyWineItem && apiWineDetail?.wineImage ? apiWineDetail.wineImage : wine.imageUri;
   
   // 상세 데이터 준비
-  const features = !isMyWineItem && wine.features ? wine.features : getRandomFeatures();
-  const description = !isMyWineItem && wine.description ? wine.description : DEFAULT_DESCRIPTION;
-  const nose = !isMyWineItem && wine.nose ? wine.nose : DEFAULT_NOSE;
-  const palate = !isMyWineItem && wine.palate ? wine.palate : DEFAULT_PALATE;
-  const finish = !isMyWineItem && wine.finish ? wine.finish : DEFAULT_FINISH;
+  const features = !isMyWineItem && apiWineDetail?.features ? apiWineDetail.features : (!isMyWineItem && wine.features ? wine.features : getRandomFeatures());
+  const description = !isMyWineItem && wine.description ? wine.description : DEFAULT_DESCRIPTION; // API에 설명 필드가 없으면 기존 로직 유지
+  const nose = !isMyWineItem && apiWineDetail?.nose ? apiWineDetail.nose : (!isMyWineItem && wine.nose ? wine.nose : DEFAULT_NOSE);
+  const palate = !isMyWineItem && apiWineDetail?.palate ? apiWineDetail.palate : (!isMyWineItem && wine.palate ? wine.palate : DEFAULT_PALATE);
+  const finish = !isMyWineItem && apiWineDetail?.finish ? apiWineDetail.finish : (!isMyWineItem && wine.finish ? wine.finish : DEFAULT_FINISH);
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
   // 빈티지 리스트 생성: NV + 2025 ~ 1950
@@ -181,13 +209,15 @@ export default function WineDetailScreen() {
         {/* 1. 이미지 및 기본 정보 */}
         <View>
           <View style={styles.imageContainer}>
-            {isMyWineItem && wine.imageUri ? (
-              <Image source={{ uri: wine.imageUri }} style={styles.wineImage} resizeMode="contain" />
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#8e44ad" />
+            ) : (imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
             ) : (
               <View style={styles.imagePlaceholder}>
                 <MaterialCommunityIcons name="bottle-wine" size={80} color="#ccc" />
               </View>
-            )}
+            ))}
           </View>
           <View style={styles.infoContainer}>
             <Text style={styles.wineNameKor}>{nameKor}</Text>
