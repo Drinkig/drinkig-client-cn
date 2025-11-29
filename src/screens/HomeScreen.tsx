@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,17 +10,44 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { useNotification } from '../context/NotificationContext';
-import { DUMMY_WINE_DB } from '../data/dummyWines';
+import { WineDBItem } from '../data/dummyWines';
 import { HeroSection } from '../components/home/HeroSection';
 import { BannerSection } from '../components/home/BannerSection';
 import { RecommendedSection } from '../components/home/RecommendedSection';
+import { getRecommendedWines } from '../api/wine';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { unreadCount } = useNotification();
   
-  // '비슷한 스타일' 추천용 더미 데이터 (처음 3개)
-  const recommendedWines = DUMMY_WINE_DB.slice(0, 3);
+  // 추천 와인 상태
+  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[]>([]);
+
+  useEffect(() => {
+    fetchRecommendedWines();
+  }, []);
+
+  const fetchRecommendedWines = async () => {
+    try {
+      const response = await getRecommendedWines();
+      if (response.isSuccess) {
+        const mappedWines: WineDBItem[] = response.result.map(item => ({
+          id: item.wineId,
+          nameKor: item.wineName,
+          nameEng: item.wineNameEng,
+          type: item.sort,
+          country: '', // API에서 국가 정보 제공 안함
+          grape: '',   // API에서 품종 정보 제공 안함
+          imageUri: item.imageUrl,
+          // 기타 필수 필드는 나중에 상세 조회 시 채워짐
+        }));
+        setRecommendedWines(mappedWines);
+      }
+    } catch (error) {
+      console.error('Failed to fetch recommended wines:', error);
+      // 에러 시 빈 배열 또는 기존 더미 데이터 사용 등 처리 가능
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,6 +92,7 @@ export default function HomeScreen() {
           data={recommendedWines}
           onPressMore={() => {
             console.log('More recommended wines');
+            // 추천 더보기 화면 등으로 이동 가능
           }}
           onPressWine={(wine) => {
             navigation.navigate('WineDetail', { wine });

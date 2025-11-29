@@ -7,23 +7,27 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import CustomAlert from '../components/CustomAlert';
+import { updateMemberInfo, uploadProfileImage } from '../api/member';
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
-  const { user, updateUser } = useUser();
+  const { user, refreshUserInfo } = useUser();
   
   // 상태 관리
-  const [nickname, setNickname] = useState(user.nickname);
-  const [profileImage, setProfileImage] = useState<string | null>(user.profileImage);
+  const [nickname, setNickname] = useState(user?.nickname || '');
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
+  const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(null); // 실제 업로드용 에셋
+  const [isLoading, setIsLoading] = useState(false);
   
   // 변경사항 여부 확인
-  const hasChanges = nickname !== user.nickname || profileImage !== user.profileImage;
+  const hasChanges = nickname !== user?.nickname || selectedImageAsset !== null;
   
   // 알림 상태 관리
   const [alertVisible, setAlertVisible] = useState(false);
@@ -45,12 +49,14 @@ const ProfileEditScreen = () => {
     if (result.didCancel) return;
     
     if (result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri || null);
+      const asset = result.assets[0];
+      setProfileImage(asset.uri || null);
+      setSelectedImageAsset(asset);
     }
   };
 
   // 저장 핸들러
-  const handleSave = () => {
+  const handleSave = async () => {
     if (nickname.trim().length === 0) {
       setAlertConfig({
         title: '알림',
@@ -62,21 +68,55 @@ const ProfileEditScreen = () => {
       return;
     }
 
-    // TODO: 실제 서버에 프로필 정보 업데이트 요청
-    
-    // Context 업데이트
-    updateUser({ nickname, profileImage });
+    try {
+      setIsLoading(true);
 
-    setAlertConfig({
-      title: '성공',
-      message: '프로필이 수정되었습니다.',
-      onConfirm: () => {
-        setAlertVisible(false);
-        navigation.goBack();
-      },
-      singleButton: true,
-    });
-    setAlertVisible(true);
+      // 1. 프로필 이미지 업로드 (변경된 경우)
+      if (selectedImageAsset && selectedImageAsset.uri) {
+        const uploadResponse = await uploadProfileImage(
+          selectedImageAsset.uri,
+          selectedImageAsset.type,
+          selectedImageAsset.fileName
+        );
+        if (!uploadResponse.isSuccess) {
+          throw new Error('Image upload failed');
+        }
+      }
+
+      // 2. 닉네임 변경 (변경된 경우)
+      if (nickname !== user?.nickname) {
+        const updateResponse = await updateMemberInfo(nickname);
+        if (!updateResponse.isSuccess) {
+          throw new Error('Nickname update failed');
+        }
+      }
+
+      // 3. 유저 정보 갱신
+      await refreshUserInfo();
+
+      setAlertConfig({
+        title: '성공',
+        message: '프로필이 수정되었습니다.',
+        onConfirm: () => {
+          setAlertVisible(false);
+          navigation.goBack();
+        },
+        singleButton: true,
+      });
+      setAlertVisible(true);
+
+    } catch (error) {
+      console.error('Profile update failed:', error);
+      setAlertConfig({
+        title: '오류',
+        message: '프로필 수정 중 문제가 발생했습니다.',
+        onConfirm: () => setAlertVisible(false),
+        singleButton: true,
+      });
+      setAlertVisible(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -123,13 +163,17 @@ const ProfileEditScreen = () => {
 
         {/* 저장 버튼 */}
         <TouchableOpacity 
-          style={[styles.saveButton, !hasChanges && styles.saveButtonDisabled]} 
+          style={[styles.saveButton, (!hasChanges || isLoading) && styles.saveButtonDisabled]} 
           onPress={handleSave}
-          disabled={!hasChanges}
+          disabled={!hasChanges || isLoading}
         >
-          <Text style={[styles.saveButtonText, !hasChanges && styles.saveButtonTextDisabled]}>
-            저장하기
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={[styles.saveButtonText, !hasChanges && styles.saveButtonTextDisabled]}>
+              저장하기
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -257,4 +301,3 @@ const styles = StyleSheet.create({
 });
 
 export default ProfileEditScreen;
-

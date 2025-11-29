@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,61 +9,63 @@ import {
   Image,
   Dimensions,
   ActionSheetIOS,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
-
-// 더미 데이터 타입 정의
-interface Wine {
-  id: number;
-  name: string;
-  type: string; // 화이트, 레드, 스파클링, 디저트, 기타
-  rating: number;
-  date: string; // 마신 날짜 (YYYY-MM-DD)
-  image?: string; // 실제 이미지가 없으므로 플레이스홀더 색상으로 대체
-  color: string; // 와인 색상 (UI용)
-}
+import { getMyWines, MyWineDTO } from '../api/wine';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const { user: userInfo } = useUser();
+  const { user: userInfo, refreshUserInfo } = useUser();
+  const isFocused = useIsFocused();
   
-  // 더미 와인 데이터 (5개) - 날짜 추가
-  const myWines: Wine[] = [
-    { id: 1, name: '샤토 마고 2015', type: '레드', rating: 4.8, date: '2023-10-15', color: '#C0392B' },
-    { id: 2, name: '클라우디 베이 쇼비뇽 블랑', type: '화이트', rating: 4.5, date: '2023-11-02', color: '#F1C40F' },
-    { id: 3, name: '돔 페리뇽 2012', type: '스파클링', rating: 4.9, date: '2023-12-25', color: '#3498DB' },
-    { id: 4, name: '샤토 디켐 2005', type: '디저트', rating: 5.0, date: '2024-01-01', color: '#E67E22' },
-    { id: 5, name: '포트 와인 샘플', type: '기타', rating: 4.2, date: '2023-09-10', color: '#8E44AD' },
-    { id: 6, name: '카베르네 소비뇽 샘플', type: '레드', rating: 3.5, date: '2023-08-10', color: '#C0392B' }, // 레드 추가 (평균 깎아먹기 테스트용)
-  ];
+  const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // 나의 취향 계산 로직 (평균 별점이 가장 높은 카테고리 찾기)
+  // 화면 포커스 시 유저 정보 및 와인 목록 갱신
+  useEffect(() => {
+    if (isFocused) {
+      refreshUserInfo();
+      fetchMyWines();
+    }
+  }, [isFocused]);
+
+  const fetchMyWines = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getMyWines();
+      if (response.isSuccess) {
+        setMyWines(response.result || []);
+      } else {
+        setMyWines([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch my wines for profile:', error);
+      setMyWines([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 나의 취향 계산 로직 (가장 많이 마신 종류)
   const favoriteCategory = useMemo(() => {
     if (myWines.length === 0) return '없음';
 
-    const categoryStats: Record<string, { totalRating: number; count: number }> = {};
-
-    // 1. 종류별 합계 및 개수 집계
+    const categoryCounts: Record<string, number> = {};
     myWines.forEach(wine => {
-      if (!categoryStats[wine.type]) {
-        categoryStats[wine.type] = { totalRating: 0, count: 0 };
-      }
-      categoryStats[wine.type].totalRating += wine.rating;
-      categoryStats[wine.type].count += 1;
+      const type = wine.wineSort || '기타';
+      categoryCounts[type] = (categoryCounts[type] || 0) + 1;
     });
 
-    // 2. 평균 별점 계산 및 최대값 찾기
-    let maxAvgRating = -1;
     let bestCategory = '없음';
+    let maxCount = 0;
 
-    Object.keys(categoryStats).forEach(type => {
-      const { totalRating, count } = categoryStats[type];
-      const avgRating = totalRating / count;
-
-      if (avgRating > maxAvgRating) {
-        maxAvgRating = avgRating;
+    Object.entries(categoryCounts).forEach(([type, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
         bestCategory = type;
       }
     });
@@ -71,15 +73,8 @@ const ProfileScreen = () => {
     return bestCategory;
   }, [myWines]);
 
-  // 사용자 정보 (동적 데이터 반영)
-  const user = {
-    ...userInfo,
-    wineCount: myWines.length, 
-    favoriteCategory: favoriteCategory, // 계산된 취향 반영
-  };
-
   // 필터 카테고리 리스트
-  const categories = ['모두', '화이트', '레드', '스파클링', '디저트', '기타'];
+  const categories = ['모두', 'Red', 'White', 'Sparkling', 'Rose', 'Dessert', 'Fortified'];
   
   // 선택된 카테고리 상태 관리
   const [selectedCategory, setSelectedCategory] = useState('모두');
@@ -89,18 +84,27 @@ const ProfileScreen = () => {
 
   // 정렬 버튼 핸들러
   const handleSortPress = () => {
-    ActionSheetIOS.showActionSheetWithOptions(
-      {
-        options: ['취소', '최신순', '별점 높은 순', '별점 낮은 순'],
-        cancelButtonIndex: 0,
-        userInterfaceStyle: 'dark', // 다크 모드 스타일
-      },
-      (buttonIndex) => {
-        if (buttonIndex === 1) setSortOption('최신순');
-        else if (buttonIndex === 2) setSortOption('별점 높은 순');
-        else if (buttonIndex === 3) setSortOption('별점 낮은 순');
-      }
-    );
+    const options = ['취소', '최신순', '가격 높은 순', '가격 낮은 순'];
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: options,
+          cancelButtonIndex: 0,
+          userInterfaceStyle: 'dark',
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) setSortOption('최신순');
+          else if (buttonIndex === 2) setSortOption('가격 높은 순');
+          else if (buttonIndex === 3) setSortOption('가격 낮은 순');
+        }
+      );
+    } else {
+      // Android용 구현 필요 (모달 등) - 현재는 간단히 토글 등으로 대체하거나 라이브러리 사용
+      // 임시: 누를 때마다 순환
+      if (sortOption === '최신순') setSortOption('가격 높은 순');
+      else if (sortOption === '가격 높은 순') setSortOption('가격 낮은 순');
+      else setSortOption('최신순');
+    }
   };
 
   // 필터링 및 정렬된 와인 목록
@@ -108,16 +112,17 @@ const ProfileScreen = () => {
     // 1. 필터링
     let result = selectedCategory === '모두'
       ? [...myWines]
-      : myWines.filter(wine => wine.type === selectedCategory);
+      : myWines.filter(wine => wine.wineSort === selectedCategory);
 
     // 2. 정렬
     result.sort((a, b) => {
       if (sortOption === '최신순') {
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-      } else if (sortOption === '별점 높은 순') {
-        return b.rating - a.rating;
-      } else if (sortOption === '별점 낮은 순') {
-        return a.rating - b.rating;
+        // purchaseDate 기준 내림차순
+        return new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime();
+      } else if (sortOption === '가격 높은 순') {
+        return b.purchasePrice - a.purchasePrice;
+      } else if (sortOption === '가격 낮은 순') {
+        return a.purchasePrice - b.purchasePrice;
       }
       return 0;
     });
@@ -134,7 +139,7 @@ const ProfileScreen = () => {
         <Text style={styles.headerTitle}>프로필</Text>
         <TouchableOpacity 
           style={styles.settingsButton}
-          onPress={() => navigation.navigate('Setting')}
+          onPress={() => navigation.navigate('Setting' as never)}
         >
           <Icon name="settings-outline" size={24} color="#fff" />
         </TouchableOpacity>
@@ -144,18 +149,19 @@ const ProfileScreen = () => {
         {/* 1. 프로필 정보 섹션 */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            {user.profileImage ? (
-              <Image source={{ uri: user.profileImage }} style={styles.profileImage} />
+            {userInfo?.profileImage ? (
+              <Image source={{ uri: userInfo.profileImage }} style={styles.profileImage} />
             ) : (
               <Icon name="person" size={40} color="#ccc" />
             )}
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.nickname}>{user.nickname}</Text>
+            <Text style={styles.nickname}>{userInfo?.nickname || '게스트'}</Text>
+            <Text style={styles.email}>{userInfo?.email || ''}</Text>
           </View>
           <TouchableOpacity 
             style={styles.editButton}
-            onPress={() => navigation.navigate('ProfileEdit')}
+            onPress={() => navigation.navigate('ProfileEdit' as never)}
           >
             <Text style={styles.editButtonText}>수정</Text>
           </TouchableOpacity>
@@ -165,22 +171,22 @@ const ProfileScreen = () => {
         <View style={styles.summarySection}>
           <View style={styles.summaryCard}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>마신 와인</Text>
-              <Text style={styles.summaryValue}>{user.wineCount}병</Text>
+              <Text style={styles.summaryLabel}>보유 와인</Text>
+              <Text style={styles.summaryValue}>{myWines.length}병</Text>
             </View>
             <View style={styles.divider} />
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>나의 취향</Text>
-              <Text style={styles.summaryValue}>{user.favoriteCategory}</Text>
+              <Text style={styles.summaryValue}>{favoriteCategory}</Text>
             </View>
           </View>
         </View>
 
-        {/* 3. 내가 마신 와인 섹션 */}
+        {/* 3. 내가 보유한 와인 섹션 */}
         <View style={styles.myWineSection}>
           {/* 섹션 헤더 (타이틀 + 정렬 버튼) */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>내가 마신 와인</Text>
+            <Text style={styles.sectionTitle}>내 와인 컬렉션</Text>
             <TouchableOpacity style={styles.sortButton} onPress={handleSortPress}>
               <Text style={styles.sortButtonText}>{sortOption}</Text>
               <Icon name="chevron-down" size={12} color="#888" />
@@ -215,29 +221,43 @@ const ProfileScreen = () => {
           </ScrollView>
 
           {/* 와인 리스트 (그리드) */}
-          <View style={styles.wineListContainer}>
-            {displayWines.map((wine) => (
-              <View key={wine.id} style={styles.wineCard}>
-                {/* 와인 이미지 플레이스홀더 */}
-                <View style={[styles.wineImagePlaceholder, { backgroundColor: wine.color + '40' }]}>
-                  <Icon name="wine" size={30} color={wine.color} />
-                </View>
-                <View style={styles.wineInfo}>
-                  <Text style={styles.wineType}>{wine.type}</Text>
-                  <Text style={styles.wineName} numberOfLines={1}>{wine.name}</Text>
-                  <View style={styles.ratingContainer}>
-                    <Icon name="star" size={12} color="#F1C40F" />
-                    <Text style={styles.ratingText}>{wine.rating}</Text>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#8e44ad" />
+            </View>
+          ) : (
+            <View style={styles.wineListContainer}>
+              {displayWines.map((wine) => (
+                <TouchableOpacity 
+                  key={wine.myWineId} 
+                  style={styles.wineCard}
+                  onPress={() => navigation.navigate('MyWineDetail', { wineId: wine.myWineId })}
+                >
+                  {/* 와인 이미지 */}
+                  {wine.wineImageUrl ? (
+                    <Image source={{ uri: wine.wineImageUrl }} style={styles.wineImage} resizeMode="cover" />
+                  ) : (
+                    <View style={styles.wineImagePlaceholder}>
+                      <Icon name="wine" size={30} color="#ccc" />
+                    </View>
+                  )}
+                  <View style={styles.wineInfo}>
+                    <Text style={styles.wineType}>{wine.wineSort}</Text>
+                    <Text style={styles.wineName} numberOfLines={1}>{wine.wineName}</Text>
+                    <View style={styles.ratingContainer}>
+                      {/* 빈티지 표시 */}
+                      <Text style={styles.vintageText}>{wine.vintageYear || 'NV'}</Text>
+                    </View>
                   </View>
+                </TouchableOpacity>
+              ))}
+              {displayWines.length === 0 && (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>와인이 없습니다.</Text>
                 </View>
-              </View>
-            ))}
-            {displayWines.length === 0 && (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>마신 와인이 없습니다.</Text>
-              </View>
-            )}
-          </View>
+              )}
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -251,6 +271,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a1a',
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -289,7 +313,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#444',
     marginRight: 16,
-    overflow: 'hidden', // 이미지가 둥근 테두리를 넘지 않도록
+    overflow: 'hidden',
   },
   profileImage: {
     width: '100%',
@@ -303,7 +327,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
-    fontFamily: 'Georgia',
+    marginBottom: 4,
+  },
+  email: {
+    fontSize: 14,
+    color: '#888',
   },
   editButton: {
     paddingVertical: 6,
@@ -413,19 +441,25 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 12,
   },
+  wineImage: {
+    width: '100%',
+    height: 120,
+  },
   wineImagePlaceholder: {
     width: '100%',
     height: 120,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#333',
   },
   wineInfo: {
     padding: 12,
   },
   wineType: {
     fontSize: 12,
-    color: '#888',
+    color: '#8e44ad',
     marginBottom: 4,
+    fontWeight: '600',
   },
   wineName: {
     fontSize: 14,
@@ -438,10 +472,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  ratingText: {
-    color: '#F1C40F',
+  vintageText: {
+    color: '#888',
     fontSize: 12,
-    fontWeight: 'bold',
   },
   emptyContainer: {
     width: '100%',

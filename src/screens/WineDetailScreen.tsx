@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
-  ActivityIndicator, // 로딩 표시 추가
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -16,7 +17,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../data/dummyWines';
 import { MyWine } from '../context/WineContext';
-import { getWineDetail, WineDetailDTO } from '../api/wine'; // API 추가
+import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist } from '../api/wine';
 
 // Components
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
@@ -52,8 +53,15 @@ export default function WineDetailScreen() {
   const isMyWineItem = isMyWine(wine);
 
   // API 데이터 상태
-  const [apiWineDetail, setApiWineDetail] = useState<WineDetailDTO | null>(null);
+  const [apiWineDetail, setApiWineDetail] = useState<any | null>(null); // any로 임시 처리 (상세 스펙 확인 필요)
   const [isLoading, setIsLoading] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+
+  // 탭 상태: 
+  const activeTabState = useState<string>(isMyWineItem ? 'my_record' : 'info');
+  const [activeTab, setActiveTab] = activeTabState;
+  const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
+  const [isVintageModalVisible, setVintageModalVisible] = useState(false);
 
   // API 상세 조회
   useEffect(() => {
@@ -61,9 +69,14 @@ export default function WineDetailScreen() {
       if (!isMyWineItem && wine.id) {
         try {
           setIsLoading(true);
-          const response = await getWineDetail(wine.id as number);
+          // 사용자용 API는 vintageYear를 받을 수 있음. 현재는 선택된 빈티지 또는 기본값(NV 등)
+          const vintageYear = selectedVintage && selectedVintage.year !== 'NV' ? parseInt(selectedVintage.year) : undefined;
+          
+          const response = await getWineDetailPublic(wine.id as number, vintageYear);
           if (response.isSuccess) {
-            setApiWineDetail(response.result);
+            setApiWineDetail(response.result.wineInfoResponse);
+            setIsLiked(response.result.wineInfoResponse.liked);
+            // 최근 리뷰 등은 별도 탭에서 사용하거나 여기서 저장
           }
         } catch (error) {
           console.error('Failed to fetch wine detail:', error);
@@ -74,15 +87,32 @@ export default function WineDetailScreen() {
     };
 
     fetchDetail();
-  }, [isMyWineItem, wine.id]);
+  }, [isMyWineItem, wine.id, selectedVintage]); // selectedVintage 변경 시 재조회 가능하도록
 
-  // 탭 상태: 
-  // DB 모드: info, review, price
-  // My 모드: my_record, info, others (다른 사람들 리뷰/정보)
-  const activeTabState = useState<string>(isMyWineItem ? 'my_record' : 'info');
-  const [activeTab, setActiveTab] = activeTabState;
-  const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
-  const [isVintageModalVisible, setVintageModalVisible] = useState(false);
+  // 위시리스트 토글 핸들러
+  const handleToggleWishlist = async () => {
+    if (isMyWineItem) return; // 내 와인은 위시리스트 대상 아님 (이미 보유)
+    
+    // 낙관적 업데이트
+    const previousState = isLiked;
+    setIsLiked(!previousState);
+
+    try {
+      const vintageYear = selectedVintage && selectedVintage.year !== 'NV' ? parseInt(selectedVintage.year) : undefined;
+      
+      if (previousState) {
+        // 이미 좋아요 상태였으면 삭제
+        await removeFromWishlist(wine.id as number, vintageYear);
+      } else {
+        // 아니었으면 추가
+        await addToWishlist(wine.id as number, vintageYear);
+      }
+    } catch (error) {
+      console.error('Wishlist toggle failed:', error);
+      setIsLiked(previousState); // 실패 시 롤백
+      Alert.alert('오류', '위시리스트 변경에 실패했습니다.');
+    }
+  };
 
   // 공통 필드 추출 (API 데이터 우선 사용)
   const nameKor = isMyWineItem ? wine.name : (apiWineDetail?.name || wine.nameKor);
@@ -90,14 +120,26 @@ export default function WineDetailScreen() {
   const type = apiWineDetail?.sort || wine.type;
   const country = apiWineDetail?.country || wine.country;
   const grape = apiWineDetail?.variety || wine.grape;
-  const imageUri = !isMyWineItem && apiWineDetail?.wineImage ? apiWineDetail.wineImage : wine.imageUri;
+  const imageUri = !isMyWineItem && apiWineDetail?.imageUrl ? apiWineDetail.imageUrl : wine.imageUri;
   
   // 상세 데이터 준비
-  const features = !isMyWineItem && apiWineDetail?.features ? apiWineDetail.features : (!isMyWineItem && wine.features ? wine.features : getRandomFeatures());
-  const description = !isMyWineItem && wine.description ? wine.description : DEFAULT_DESCRIPTION; // API에 설명 필드가 없으면 기존 로직 유지
-  const nose = !isMyWineItem && apiWineDetail?.nose ? apiWineDetail.nose : (!isMyWineItem && wine.nose ? wine.nose : DEFAULT_NOSE);
-  const palate = !isMyWineItem && apiWineDetail?.palate ? apiWineDetail.palate : (!isMyWineItem && wine.palate ? wine.palate : DEFAULT_PALATE);
-  const finish = !isMyWineItem && apiWineDetail?.finish ? apiWineDetail.finish : (!isMyWineItem && wine.finish ? wine.finish : DEFAULT_FINISH);
+  // API에서 features(맛 그래프)를 제공한다면 그것을 사용, 없으면 랜덤
+  const features = !isMyWineItem && apiWineDetail ? {
+    sweetness: apiWineDetail.avgSweetness || 3,
+    acidity: apiWineDetail.avgAcidity || 3,
+    body: apiWineDetail.avgBody || 3,
+    tannin: apiWineDetail.avgTannin || 3,
+  } : (!isMyWineItem && wine.features ? wine.features : getRandomFeatures());
+
+  const description = !isMyWineItem && wine.description ? wine.description : DEFAULT_DESCRIPTION; 
+  
+  // Nose/Palate 등은 API 응답 구조(WineInfoDTO)에 nose1, nose2... 로 들어옴
+  const nose = !isMyWineItem && apiWineDetail ? [apiWineDetail.nose1, apiWineDetail.nose2, apiWineDetail.nose3].filter(Boolean) : (!isMyWineItem && wine.nose ? wine.nose : DEFAULT_NOSE);
+  
+  // Palate/Finish는 API에 없으면 기본값
+  const palate = !isMyWineItem && wine.palate ? wine.palate : DEFAULT_PALATE;
+  const finish = !isMyWineItem && wine.finish ? wine.finish : DEFAULT_FINISH;
+  
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
   // 빈티지 리스트 생성: NV + 2025 ~ 1950
@@ -136,20 +178,17 @@ export default function WineDetailScreen() {
     if (!vintages) return [];
     
     if (selectedVintage) {
-      // 선택된 빈티지의 리뷰만 가져옴
       return selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
     } else {
-      // 선택된 빈티지가 없으면 전체 리뷰 보여주기
       return vintages.flatMap(v => 
         v.reviews.map(r => ({ ...r, vintageYear: v.year }))
       );
     }
   }, [vintages, selectedVintage]);
 
-  // 초기 빈티지 설정 (NV가 있으면 NV를, 아니면 가장 최신 빈티지를 기본 선택)
+  // 초기 빈티지 설정
   useEffect(() => {
     if (vintages && vintages.length > 0 && !selectedVintage) {
-      // 정렬된 vintages의 첫 번째 요소가 NV 혹은 최신 연도이므로 [0]을 선택
       setSelectedVintage(vintages[0]);
     }
   }, [vintages, selectedVintage]);
@@ -187,6 +226,12 @@ export default function WineDetailScreen() {
     }
   };
 
+  // 와인 등록 화면으로 이동 (시음 기록 남기기)
+  const handleAddRecord = () => {
+    // 현재 보고 있는 와인 정보를 넘겨주어 WineAddScreen에서 활용
+    navigation.navigate('WineAdd', { wine: { ...wine, nameKor, nameEng, type, country, grape, id: wine.id } });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
@@ -202,14 +247,29 @@ export default function WineDetailScreen() {
         <Text style={styles.headerTitle}>
           {isMyWineItem ? '내 와인 상세' : '와인 정보'}
         </Text>
-        <View style={styles.placeholder} />
+        
+        {/* 위시리스트 버튼 (내 와인이 아닐 때만 표시) */}
+        {!isMyWineItem ? (
+          <TouchableOpacity 
+            style={styles.wishlistButton}
+            onPress={handleToggleWishlist}
+          >
+            <Ionicons 
+              name={isLiked ? "heart" : "heart-outline"} 
+              size={24} 
+              color={isLiked ? "#e74c3c" : "#fff"} 
+            />
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.placeholder} />
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.content} stickyHeaderIndices={[2]}>
         {/* 1. 이미지 및 기본 정보 */}
         <View>
           <View style={styles.imageContainer}>
-            {isLoading ? (
+            {isLoading && !apiWineDetail ? (
               <ActivityIndicator size="large" color="#8e44ad" />
             ) : (imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
@@ -302,12 +362,15 @@ export default function WineDetailScreen() {
 
       </ScrollView>
 
-      {/* 하단 버튼: 내 와인일 땐 '수정', 아닐 땐 '시음 기록 남기기' */}
+      {/* 하단 버튼: 내 와인일 땐 '수정', 아닐 땐 '보유 와인 추가' */}
       <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity style={styles.recordButton}>
-          <MaterialCommunityIcons name="pencil" size={20} color="#fff" style={{ marginRight: 8 }} />
+        <TouchableOpacity 
+          style={styles.recordButton}
+          onPress={handleAddRecord}
+        >
+          <MaterialCommunityIcons name="plus" size={20} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.recordButtonText}>
-            {isMyWineItem ? '기록 수정하기' : '시음 기록 남기기'}
+            {isMyWineItem ? '기록 수정하기' : '내 와인 창고에 추가'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -346,6 +409,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
+  },
+  wishlistButton: {
+    padding: 4,
   },
   placeholder: {
     width: 32,

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { WineDBItem } from '../../data/dummyWines';
@@ -40,12 +41,18 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
             activeOpacity={0.8}
             onPress={() => onPressWine?.(wine)}
           >
-            <View style={styles.wineImagePlaceholder}>
-              <MaterialCommunityIcons name="bottle-wine" size={40} color="#ccc" />
-            </View>
+            {wine.imageUri ? (
+              <Image source={{ uri: wine.imageUri }} style={styles.wineImage} resizeMode="cover" />
+            ) : (
+              <View style={styles.wineImagePlaceholder}>
+                <MaterialCommunityIcons name="bottle-wine" size={40} color="#ccc" />
+              </View>
+            )}
             <View style={styles.wineInfo}>
               <Text style={styles.wineName} numberOfLines={1}>{wine.nameKor}</Text>
-              <Text style={styles.wineType}>{wine.type} · {wine.country}</Text>
+              <Text style={styles.wineType}>
+                {wine.type}{wine.country ? ` · ${wine.country}` : ''}
+              </Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -90,6 +97,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  wineImage: {
+    width: '100%',
+    height: 140,
+    backgroundColor: '#333',
+  },
   wineInfo: {
     padding: 12,
   },
@@ -104,4 +116,3 @@ const styles = StyleSheet.create({
     color: '#888',
   },
 });
-

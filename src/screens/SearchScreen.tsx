@@ -12,7 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
-import { searchWines } from '../api/wine';
+import { searchWinesPublic, WineUserDTO } from '../api/wine'; // 사용자용 검색 API 사용
 
 export default function SearchScreen() {
   const navigation = useNavigation();
@@ -25,20 +25,22 @@ export default function SearchScreen() {
     const timer = setTimeout(async () => {
       if (searchText.trim().length > 0) {
         try {
-          const response = await searchWines({ 
+          // 사용자용 검색 API 호출
+          const response = await searchWinesPublic({ 
             searchName: searchText,
             page: 0,
             size: 20
           });
           
           if (response.isSuccess) {
-            const mappedResults: WineDBItem[] = response.result.content.map(item => ({
+            const mappedResults: WineDBItem[] = response.result.content.map((item: WineUserDTO) => ({
               id: item.wineId,
               nameKor: item.name,
               nameEng: item.nameEng,
               type: item.sort,
               country: item.country,
               grape: item.variety,
+              imageUri: item.imageUrl,
               // 상세 정보는 없으므로 undefined 처리 (상세 화면에서 기본값 사용됨)
             }));
             setSearchResults(mappedResults);

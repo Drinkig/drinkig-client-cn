@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,20 +9,46 @@ import {
   StatusBar,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
-import { useWine } from '../context/WineContext';
+import { getMyWineDetail, deleteMyWine, MyWineDTO } from '../api/wine';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
 
 export default function MyWineDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<MyWineDetailRouteProp>();
-  const { wine } = route.params;
-  const { removeWine } = useWine();
+  const { wineId } = route.params;
+
+  const [wine, setWine] = useState<MyWineDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchWineDetail();
+  }, [wineId]);
+
+  const fetchWineDetail = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getMyWineDetail(wineId);
+      if (response.isSuccess) {
+        setWine(response.result);
+      } else {
+        Alert.alert('오류', '와인 정보를 불러오는데 실패했습니다.');
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error('Failed to fetch my wine detail:', error);
+      Alert.alert('오류', '서버 통신 중 문제가 발생했습니다.');
+      navigation.goBack();
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDelete = () => {
     Alert.alert(
@@ -33,9 +59,19 @@ export default function MyWineDetailScreen() {
         { 
           text: '삭제', 
           style: 'destructive',
-          onPress: () => {
-            removeWine(wine.id);
-            navigation.goBack();
+          onPress: async () => {
+            try {
+              const response = await deleteMyWine(wineId);
+              if (response.isSuccess) {
+                Alert.alert('성공', '와인이 삭제되었습니다.');
+                navigation.goBack();
+              } else {
+                Alert.alert('오류', response.message || '와인 삭제에 실패했습니다.');
+              }
+            } catch (error) {
+              console.error('Failed to delete wine:', error);
+              Alert.alert('오류', '서버 통신 중 문제가 발생했습니다.');
+            }
           }
         },
       ]
@@ -48,11 +84,23 @@ export default function MyWineDetailScreen() {
     Alert.alert('알림', '수정 기능은 준비 중입니다.');
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#8e44ad" />
+      </View>
+    );
+  }
+
+  if (!wine) {
+    return null;
+  }
+
   // 이미지 렌더링
   const renderImage = () => {
-    if (wine.imageUri) {
+    if (wine.wineImageUrl) {
       return (
-        <Image source={{ uri: wine.imageUri }} style={styles.wineImage} resizeMode="cover" />
+        <Image source={{ uri: wine.wineImageUrl }} style={styles.wineImage} resizeMode="cover" />
       );
     }
     return (
@@ -63,7 +111,7 @@ export default function MyWineDetailScreen() {
   };
 
   // 정보 행 렌더링
-  const renderInfoRow = (icon: string, label: string, value?: string | null) => (
+  const renderInfoRow = (icon: string, label: string, value?: string | number | null) => (
     <View style={styles.infoRow}>
       <View style={styles.labelContainer}>
         <MaterialCommunityIcons name={icon} size={20} color="#8e44ad" style={styles.icon} />
@@ -98,16 +146,16 @@ export default function MyWineDetailScreen() {
             {renderImage()}
           </View>
           <View style={styles.headerInfo}>
-            <Text style={styles.wineName}>{wine.name}</Text>
+            <Text style={styles.wineName}>{wine.wineName}</Text>
             <View style={styles.badges}>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{wine.type}</Text>
+                <Text style={styles.badgeText}>{wine.wineSort}</Text>
               </View>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{wine.country}</Text>
+                <Text style={styles.badgeText}>{wine.wineCountry}</Text>
               </View>
             </View>
-            <Text style={styles.grapeText}>{wine.grape}</Text>
+            <Text style={styles.grapeText}>{wine.wineVariety}</Text>
           </View>
         </View>
 
@@ -115,13 +163,13 @@ export default function MyWineDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>구매 정보</Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('calendar', '빈티지', wine.vintage)}
+            {renderInfoRow('calendar', '빈티지', wine.vintageYear)}
             <View style={styles.divider} />
-            {renderInfoRow('cash', '구매가', wine.purchasePrice ? `₩${parseInt(wine.purchasePrice).toLocaleString()}` : null)}
-            <View style={styles.divider} />
-            {renderInfoRow('store', '구매처', wine.purchaseLocation)}
+            {renderInfoRow('cash', '구매가', wine.purchasePrice ? `₩${wine.purchasePrice.toLocaleString()}` : null)}
             <View style={styles.divider} />
             {renderInfoRow('calendar-check', '구매일', wine.purchaseDate)}
+            <View style={styles.divider} />
+            {renderInfoRow('clock-outline', '보관 기간', `${wine.period}일`)}
           </View>
         </View>
 
@@ -129,16 +177,11 @@ export default function MyWineDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>상세 정보</Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('truck-delivery', '수입사', wine.importer)}
-            <View style={styles.divider} />
-            {renderInfoRow('thermometer', '보관 상태', wine.condition)}
+            {renderInfoRow('map-marker', '지역', wine.wineRegion)}
+            {/* 수입사, 보관 상태 등은 API 응답에 없으므로 제외하거나 추가 요청 필요 */}
           </View>
         </View>
         
-        <View style={styles.footer}>
-           <Text style={styles.dateText}>등록일: {new Date(wine.createdAt).toLocaleDateString()}</Text>
-        </View>
-
       </ScrollView>
 
       {/* 하단 버튼 */}
@@ -156,6 +199,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a1a',
+  },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -276,14 +325,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#333',
   },
-  footer: {
-    alignItems: 'flex-end',
-    marginTop: 8,
-  },
-  dateText: {
-    color: '#666',
-    fontSize: 12,
-  },
   bottomButtonContainer: {
     position: 'absolute',
     bottom: 0,
@@ -309,4 +350,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-

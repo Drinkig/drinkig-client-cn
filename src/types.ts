@@ -6,11 +6,11 @@ export type RootStackParamList = {
   Main: undefined;
   ProfileEdit: undefined; // 프로필 수정 화면
   Setting: undefined; // 설정 화면
-  WineAdd: undefined; // 와인 등록 화면
+  WineAdd: { wine?: any } | undefined; // 와인 등록 화면 (초기 데이터 전달 가능)
   Notification: undefined; // 알림 화면
   Search: undefined; // 검색 화면
   WineDetail: { wine: WineDBItem | MyWine }; // 와인 상세 화면 (DB 정보)
-  MyWineDetail: { wine: MyWine }; // 내 와인 상세 화면 (내 기록)
+  MyWineDetail: { wineId: number }; // 내 와인 상세 화면 (API 연동)
 };
 
 declare global {

@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Android 에뮬레이터에서는 localhost 대신 10.0.2.2를 사용해야 할 수 있습니다.
 // iOS 시뮬레이터에서는 localhost(127.0.0.1)가 잘 작동합니다.
-const baseURL = 'http://127.0.0.1:8080';
+const baseURL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://127.0.0.1:8080';
 
 const client = axios.create({
   baseURL,
@@ -25,31 +26,64 @@ client.interceptors.response.use(
 
       try {
         // Refresh Token으로 Access Token 재발급 요청
-        // 주의: refreshToken은 보통 AsyncStorage나 SecureStore에 저장되어 있다고 가정
-        // 여기서는 API 호출만 구현하고 실제 토큰 가져오는 로직은 상황에 맞게 추가 필요
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
         
-        // const refreshToken = await getRefreshToken(); // 저장된 리프레시 토큰 가져오기
-        
-        const response = await client.post('/reissue', {
-          // headers: { Authorization: `Bearer ${refreshToken}` } // 필요 시 헤더 추가
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
+
+        // Refresh Token을 헤더에 담아 재발급 요청
+        // (서버 스펙에 따라 Body에 담거나 쿠키를 사용할 수 있음)
+        const response = await axios.post(`${baseURL}/reissue`, {}, {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`
+          }
         });
 
         if (response.data.isSuccess) {
-          // 재발급 받은 Access Token 저장 및 헤더 갱신 로직 필요
-          // const newAccessToken = response.data.result.accessToken;
-          // client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-          // originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-          
+          const newAccessToken = response.data.result.accessToken;
+          const newRefreshToken = response.data.result.refreshToken;
+
+          // 새로운 토큰 저장
+          await AsyncStorage.setItem('accessToken', newAccessToken);
+          if (newRefreshToken) {
+            await AsyncStorage.setItem('refreshToken', newRefreshToken);
+          }
+
+          // 헤더 갱신
+          client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+
           return client(originalRequest); // 원래 요청 재시도
         }
       } catch (reissueError) {
         // 재발급 실패 시 (Refresh Token도 만료됨) -> 로그아웃 처리 필요
         console.error('Token reissue failed:', reissueError);
-        // logout();
+        
+        // 토큰 삭제
+        await AsyncStorage.removeItem('accessToken');
+        await AsyncStorage.removeItem('refreshToken');
+        
+        // 여기서 바로 네비게이션을 할 수는 없으므로 (React 컴포넌트가 아님),
+        // 에러를 throw하여 UI 단에서 로그인 화면으로 이동하도록 처리해야 함
         return Promise.reject(reissueError);
       }
     }
 
+    return Promise.reject(error);
+  }
+);
+
+// 요청 인터셉터: 저장된 Access Token이 있으면 헤더에 추가
+client.interceptors.request.use(
+  async (config) => {
+    const token = await AsyncStorage.getItem('accessToken');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );
@@ -60,7 +94,7 @@ export const reissueToken = async () => {
     isSuccess: boolean;
     code: string;
     message: string;
-    result: any; // 구체적인 토큰 응답 타입에 맞춰 수정 필요
+    result: any;
   }>('/reissue');
   return response.data;
 };

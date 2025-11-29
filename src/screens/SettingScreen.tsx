@@ -10,9 +10,12 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import CustomAlert from '../components/CustomAlert';
+import { useUser } from '../context/UserContext';
+import { deleteMember, logout as apiLogout } from '../api/member';
 
 const SettingScreen = () => {
   const navigation = useNavigation();
+  const { logout } = useUser();
 
   // 알림 상태 관리
   const [alertVisible, setAlertVisible] = useState(false);
@@ -31,14 +34,10 @@ const SettingScreen = () => {
       message: '정말 로그아웃 하시겠습니까?',
       confirmText: '로그아웃',
       singleButton: false,
-      onConfirm: () => {
-        // TODO: 로그아웃 로직 (토큰 삭제 등)
+      onConfirm: async () => {
         setAlertVisible(false);
-        // 로그인 화면으로 리셋
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
+        // Context의 logout 함수 호출 (내부적으로 API 호출 및 토큰 삭제, 상태 초기화)
+        await logout();
       },
     });
     setAlertVisible(true);
@@ -51,13 +50,23 @@ const SettingScreen = () => {
       message: '정말로 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.',
       confirmText: '탈퇴하기',
       singleButton: false,
-      onConfirm: () => {
-        // TODO: 회원 탈퇴 API 호출
-        setAlertVisible(false);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
+      onConfirm: async () => {
+        try {
+          // 회원 탈퇴 API 호출
+          const response = await deleteMember();
+          if (response.isSuccess) {
+            // 성공 시 로그아웃 처리와 동일하게 클라이언트 정리
+            await logout();
+          } else {
+            // 실패 시 알림 (이미 모달이 닫힌 상태이므로 다시 열거나 Alert 사용)
+            // 여기서는 간단히 넘어가거나 에러 처리를 추가할 수 있음
+            console.error('Delete member failed:', response.message);
+          }
+        } catch (error) {
+          console.error('Delete member error:', error);
+        } finally {
+          setAlertVisible(false);
+        }
       },
     });
     setAlertVisible(true);
@@ -178,4 +187,3 @@ const styles = StyleSheet.create({
 });
 
 export default SettingScreen;
-

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,30 +8,60 @@ import {
   StatusBar,
   FlatList,
   Image,
-  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
-import { useWine, MyWine } from '../context/WineContext';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { getMyWines, MyWineDTO } from '../api/wine';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
-  const { wines } = useWine();
+  const isFocused = useIsFocused(); // 화면이 포커스될 때마다 데이터를 다시 불러오기 위해 사용
+
+  // API 데이터 상태
+  const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchMyWines();
+    }
+  }, [isFocused]);
+
+  const fetchMyWines = async () => {
+    try {
+      setIsLoading(true);
+      const response = await getMyWines();
+      if (response.isSuccess) {
+        // result가 null일 경우 빈 배열로 처리
+        setMyWines(response.result || []);
+      } else {
+        // 실패 시 (예: 데이터 없음 등) 빈 배열 처리
+        setMyWines([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch my wines:', error);
+      // 에러 발생 시에도 빈 목록을 보여주어 로딩 상태 탈출
+      setMyWines([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 와인 추가 핸들러
   const handleAddWine = () => {
-    navigation.navigate('WineAdd' as never); // 타입 단언 추가 (임시)
+    navigation.navigate('Search' as never); // 와인 추가는 검색 화면에서 시작
   };
 
-  const renderWineItem = ({ item }: { item: MyWine }) => (
+  const renderWineItem = ({ item }: { item: MyWineDTO }) => (
     <TouchableOpacity 
       style={styles.wineItem}
-      onPress={() => navigation.navigate('MyWineDetail', { wine: item })}
+      onPress={() => navigation.navigate('MyWineDetail', { wineId: item.myWineId })} // myWineId를 넘겨줌
       activeOpacity={0.8}
     >
       <View style={styles.wineImageContainer}>
-        {item.imageUri ? (
-          <Image source={{ uri: item.imageUri }} style={styles.wineImage} />
+        {item.wineImageUrl ? (
+          <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
         ) : (
           <View style={styles.placeholderImage}>
             <Icon name="wine" size={30} color="#555" />
@@ -39,22 +69,22 @@ const MyWineScreen = () => {
         )}
       </View>
       <View style={styles.wineInfo}>
-        <Text style={styles.wineName}>{item.name}</Text>
+        <Text style={styles.wineName}>{item.wineName}</Text>
         <View style={styles.wineDetails}>
-          <Text style={styles.wineType}>{item.type}</Text>
+          <Text style={styles.wineType}>{item.wineSort}</Text>
           <Text style={styles.separator}>|</Text>
-          <Text style={styles.wineCountry}>{item.country}</Text>
-          {item.vintage ? (
+          <Text style={styles.wineCountry}>{item.wineCountry}</Text>
+          {item.vintageYear ? (
             <>
               <Text style={styles.separator}>|</Text>
-              <Text style={styles.wineVintage}>{item.vintage}</Text>
+              <Text style={styles.wineVintage}>{item.vintageYear}</Text>
             </>
           ) : null}
         </View>
         <View style={styles.priceRow}>
           <Text style={styles.priceLabel}>구매가 </Text>
           <Text style={styles.priceValue}>
-            {item.purchasePrice ? `₩${parseInt(item.purchasePrice).toLocaleString()}` : '-'}
+            {item.purchasePrice ? `₩${item.purchasePrice.toLocaleString()}` : '-'}
           </Text>
         </View>
       </View>
@@ -74,11 +104,15 @@ const MyWineScreen = () => {
       </View>
 
       {/* 컨텐츠 */}
-      {wines.length > 0 ? (
+      {isLoading ? (
+        <View style={styles.centerContent}>
+          <ActivityIndicator size="large" color="#8e44ad" />
+        </View>
+      ) : myWines.length > 0 ? (
         <FlatList
-          data={wines}
+          data={myWines}
           renderItem={renderWineItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.myWineId.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
@@ -121,6 +155,11 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyContent: {
     flex: 1,
