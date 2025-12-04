@@ -16,11 +16,13 @@ interface UserContextType {
   user: User | null;
   isLoggedIn: boolean;
   isLoading: boolean;
-  login: (accessToken: string, refreshToken?: string) => Promise<void>;
+  isNewUser: boolean;
+  login: (accessToken: string, refreshToken?: string, isFirst?: boolean) => Promise<void>;
   loginGuest: () => void;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   refreshUserInfo: () => Promise<void>;
+  completeOnboarding: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -30,19 +32,30 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // 앱 시작 시 토큰 확인 및 유저 정보 로드
   useEffect(() => {
     const initAuth = async () => {
       try {
         const accessToken = await AsyncStorage.getItem('accessToken');
+        const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
+
         if (accessToken) {
           // 토큰이 있으면 Axios 헤더 설정
           client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+          
+          // 저장된 신규 유저 상태 복원
+          if (persistedIsNewUser === 'true') {
+            setIsNewUser(true);
+          }
+          
           setIsLoggedIn(true);
           
-          // 유저 정보 가져오기
-          await refreshUserInfo();
+          // 유저 정보 가져오기 (신규 유저가 아닐 때만)
+          if (persistedIsNewUser !== 'true') {
+            await refreshUserInfo();
+          }
         }
       } catch (error) {
         console.error('Auth initialization failed:', error);
@@ -71,7 +84,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const login = async (accessToken: string, refreshToken?: string) => {
+  const login = async (accessToken: string, refreshToken?: string, isFirst: boolean = false) => {
     try {
       await AsyncStorage.setItem('accessToken', accessToken);
       if (refreshToken) {
@@ -79,8 +92,28 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       }
       
       client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+      
+      // 신규 유저 여부 설정 (순서 중요: 로그인 상태 변경 전에 설정)
+      // 서버에서 isFirst가 오면 그 값을 최우선으로 사용
+      if (isFirst) {
+        setIsNewUser(true);
+        await AsyncStorage.setItem('isNewUser', 'true');
+      } else {
+        // 서버에서 기존 유저라고 하면 로컬 상태도 해제 (중요: 재로그인 시 온보딩 안 뜨게)
+        setIsNewUser(false); 
+        await AsyncStorage.removeItem('isNewUser');
+      }
+      
       setIsLoggedIn(true);
-      await refreshUserInfo();
+      
+      // 신규 유저가 아닐 때만 유저 정보 가져오기
+      if (!isFirst) {
+        try {
+          await refreshUserInfo();
+        } catch (e) {
+          console.warn('Initial user info fetch failed, but login continues:', e);
+        }
+      }
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -115,12 +148,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const completeOnboarding = async () => {
+    setIsNewUser(false);
+    await AsyncStorage.removeItem('isNewUser');
+    // 온보딩 완료 후 유저 정보 갱신 (선택사항)
+    refreshUserInfo();
+  };
+
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
   return (
-    <UserContext.Provider value={{ user, isLoggedIn, isLoading, login, loginGuest, logout, updateUser, refreshUserInfo }}>
+    <UserContext.Provider value={{ user, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, refreshUserInfo, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   );

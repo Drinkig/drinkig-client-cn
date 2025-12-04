@@ -8,7 +8,7 @@ const baseURL = Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://127
 
 const client = axios.create({
   baseURL,
-  timeout: 1000,
+  timeout: 10000, // 10초로 증가 (애플 로그인 등 외부 API 통신 고려)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -21,7 +21,8 @@ client.interceptors.response.use(
     const originalRequest = error.config;
 
     // 401 Unauthorized 에러 발생 시 (토큰 만료)
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 단, 로그인 요청(/login/apple) 자체에서 401이 난 경우는 재발급 시도하면 안 됨 (무한 루프 방지)
+    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/login/apple')) {
       originalRequest._retry = true;
 
       try {
