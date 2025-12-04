@@ -113,6 +113,31 @@ export const loginWithApple = async (identityToken: string) => {
   const response = await client.post<AppleLoginResponse>('/login/apple', {
     identityToken,
   });
+  
+  // 서버가 토큰을 Body가 아닌 'Set-Cookie' 헤더로 주는 경우 처리
+  const cookies = response.headers['set-cookie'];
+  if (cookies && Array.isArray(cookies)) {
+    const getCookieValue = (name: string) => {
+      const cookie = cookies.find((c) => c.trim().startsWith(`${name}=`));
+      if (cookie) {
+        // "name=value; Path=..." 형식에서 value만 추출
+        return cookie.split('=')[1].split(';')[0];
+      }
+      return undefined;
+    };
+
+    const accessToken = getCookieValue('accessToken');
+    const refreshToken = getCookieValue('refreshToken');
+
+    // 응답 데이터에 토큰 주입 (프론트엔드 로직 호환성 유지)
+    if (accessToken && response.data.result) {
+      response.data.result.accessToken = accessToken;
+    }
+    if (refreshToken && response.data.result) {
+      response.data.result.refreshToken = refreshToken;
+    }
+  }
+
   return response.data;
 };
 
