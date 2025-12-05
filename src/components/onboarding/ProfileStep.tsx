@@ -13,8 +13,8 @@ interface ProfileStepProps {
 const ProfileStep = ({ name, profileImageUri, onNameChange, onPickImage, onCheckNickname }: ProfileStepProps) => {
   return (
     <View style={styles.content}>
-      <Text style={styles.stepTitle}>프로필 설정</Text>
-      <Text style={styles.stepDesc}>다른 분들에게 보여질 모습이에요.</Text>
+      <Text style={styles.stepTitle}>어떻게 불러드리면 좋을까요?</Text>
+      <Text style={styles.stepDesc}>드링키가 당신을 기억할 수 있게 이름을 알려주세요.</Text>
 
       <TouchableOpacity style={styles.profileImageBtn} onPress={onPickImage}>
         {profileImageUri ? (

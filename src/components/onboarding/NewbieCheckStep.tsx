@@ -4,14 +4,16 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 interface NewbieCheckStepProps {
   isNewbie: boolean;
   onSelect: (isNewbie: boolean) => void;
+  name: string;
 }
 
-const NewbieCheckStep = ({ isNewbie, onSelect }: NewbieCheckStepProps) => {
+const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => {
   return (
     <View style={styles.content}>
-      <Text style={styles.stepTitle}>와인 경험을 알려주세요</Text>
-      <Text style={styles.stepDesc}>와인에 대해 얼마나 알고 계신가요?</Text>
-
+      <Text style={styles.stepTitle}>
+        {name}님은{'\n'}와인에 대해 얼마나 알고 계신가요?
+      </Text>
+      
       <TouchableOpacity 
         style={[styles.selectionCard, isNewbie === true && styles.selectedCard]}
         onPress={() => onSelect(true)}
@@ -40,12 +42,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 8,
-  },
-  stepDesc: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 24,
+    marginBottom: 24, // 간격을 조금 넓힘 (서브타이틀 제거로 인한 여백 확보)
+    lineHeight: 32, // 줄간격 추가
   },
   selectionCard: {
     width: '100%',
@@ -73,4 +71,3 @@ const styles = StyleSheet.create({
 });
 
 export default NewbieCheckStep;
-

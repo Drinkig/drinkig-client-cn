@@ -1,13 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
 const IntroStep = () => {
   return (
     <View style={styles.centerContent}>
-      <Text style={styles.emoji}>🍷</Text>
-      <Text style={styles.title}>환영합니다!</Text>
+      <Image 
+        source={require('../../assets/Drinky_1.png')} 
+        style={styles.image} 
+        resizeMode="contain"
+      />
+      <Text style={styles.title}>안녕하세요!{'\n'}저는 소믈리에 드링키에요.</Text>
       <Text style={styles.desc}>
-        몇 가지 질문을 통해{'\n'}당신의 와인 취향을 분석해드릴게요.
+        몇 가지 질문을 통해{'\n'}당신의 와인 취향을 분석하고 추천해드릴게요.
       </Text>
     </View>
   );
@@ -19,8 +23,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emoji: {
-    fontSize: 60,
+  image: {
+    width: 200,
+    height: 200,
     marginBottom: 20,
   },
   title: {
@@ -28,7 +33,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 16, // 간격 조정
+    lineHeight: 32, // 줄간격 추가
   },
   desc: {
     fontSize: 16,
@@ -39,4 +45,3 @@ const styles = StyleSheet.create({
 });
 
 export default IntroStep;
-

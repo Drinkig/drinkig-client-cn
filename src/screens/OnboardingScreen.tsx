@@ -404,6 +404,7 @@ const OnboardingScreen = () => {
           <NewbieCheckStep 
             isNewbie={formData.isNewbie}
             onSelect={(val) => updateData('isNewbie', val)}
+            name={formData.name}
           />
         );
       case 'NEWBIE_TRANSITION': 
@@ -483,9 +484,24 @@ const OnboardingScreen = () => {
   };
 
   const getButtonText = () => {
-    if (step === 'INTRO') return '시작하기';
-    if (step === 'SUMMARY') return loading ? '저장 중...' : '완료';
-    return '다음';
+    if (loading) return '저장 중...';
+
+    switch (step) {
+      case 'INTRO':
+        return '좋아요';
+      case 'PROFILE':
+        return '다음';
+      case 'NEWBIE_CHECK':
+        return '선택 완료';
+      case 'NEWBIE_TRANSITION':
+        return '취향 찾으러 가기';
+      case 'EXPERT_TRANSITION':
+        return '취향 등록하러 가기';
+      case 'SUMMARY':
+        return '드링키 시작하기';
+      default:
+        return '다음';
+    }
   };
 
   return (
