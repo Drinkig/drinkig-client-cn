@@ -53,11 +53,11 @@ export interface MemberInitRequest {
   monthPrice: number;
   wineSort: string[];
   // Expert only
-  wineArea?: string[];
-  wineVariety?: string[];
+  wineArea?: string[] | null;
+  wineVariety?: string[] | null;
   // Newbie only
-  preferredAlcohols?: string[];
-  preferredFoods?: string[];
+  preferredAlcohols?: string[] | null;
+  preferredFoods?: string[] | null;
   acidity?: number | null;
   sweetness?: number | null;
   tannin?: number | null;
@@ -164,7 +164,7 @@ export const logout = async () => {
 
 // 닉네임 중복 확인 API
 export const checkNickname = async (nickname: string) => {
-  const response = await client.post<CheckNicknameResponse>(`/member/${nickname}`);
+  const response = await client.post<CheckNicknameResponse>(`/member/check/${nickname}`);
   return response.data;
 };
 

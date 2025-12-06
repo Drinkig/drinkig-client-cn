@@ -56,13 +56,13 @@ const FlavorProfileStep = ({ data, onChange }: FlavorProfileStepProps) => {
           <TouchableOpacity
             style={[
               styles.unknownButton,
-              currentValue === null && styles.unknownButtonSelected
+              currentValue === 2.5 && styles.unknownButtonSelected
             ]}
-            onPress={() => onChange(item.key, null)}
+            onPress={() => onChange(item.key, 2.5)}
           >
             <Text style={[
               styles.unknownText,
-              currentValue === null && styles.unknownTextSelected
+              currentValue === 2.5 && styles.unknownTextSelected
             ]}>
               모르겠어요
             </Text>

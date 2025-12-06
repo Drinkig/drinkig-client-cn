@@ -4,6 +4,7 @@ import { MyWine } from './context/WineContext';
 export type RootStackParamList = {
   Login: undefined;
   Onboarding: undefined; // 온보딩 화면
+  RecommendationResult: undefined; // 온보딩 결과 추천 화면
   Main: undefined;
   ProfileEdit: undefined; // 프로필 수정 화면
   Setting: undefined; // 설정 화면

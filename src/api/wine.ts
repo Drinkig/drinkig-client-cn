@@ -351,6 +351,27 @@ export const getRecommendedWines = async () => {
   return response.data;
 };
 
+// 온보딩 결과 추천 와인 조회 API
+export const getOnboardingRecommendation = async () => {
+  const response = await client.get<OnboardingRecommendationResponse>('/wine/recommend');
+  return response.data;
+};
+
+// 온보딩 추천 응답 타입
+export interface OnboardingRecommendationResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: OnboardingRecommendationDTO[];
+}
+
+export interface OnboardingRecommendationDTO {
+  sort: string;
+  country: string;
+  region: string;
+  variety: string;
+}
+
 // 보유 와인 목록 조회 API
 export const getMyWines = async () => {
   const response = await client.get<MyWineListResponse>('/my-wine');

@@ -9,6 +9,7 @@ import {
   Dimensions,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -27,7 +28,6 @@ import NewbieCheckStep from '../components/onboarding/NewbieCheckStep';
 import TransitionStep from '../components/onboarding/TransitionStep';
 import { MultiSelectionStep } from '../components/onboarding/SelectionSteps';
 import BudgetStep from '../components/onboarding/BudgetStep';
-import SummaryStep from '../components/onboarding/SummaryStep';
 
 // ----------------------
 // Constants & Types
@@ -51,8 +51,7 @@ type Step =
   | 'WINE_AREA'
   | 'WINE_VARIETY'
   // Shared
-  | 'BUDGET'
-  | 'SUMMARY';
+  | 'BUDGET';
 
 interface OnboardingData {
   name: string;
@@ -107,6 +106,7 @@ const BUDGET_OPTIONS = [
 // ----------------------
 
 const OnboardingScreen = () => {
+  const navigation = useNavigation();
   const { completeOnboarding } = useUser();
   
   const [step, setStep] = useState<Step>('INTRO');
@@ -155,8 +155,6 @@ const OnboardingScreen = () => {
         return formData.wineArea.length > 0;
       case 'WINE_VARIETY':
         return formData.wineVariety.length > 0;
-      case 'SUMMARY':
-        return true;
       default:
         return false;
     }
@@ -238,15 +236,30 @@ const OnboardingScreen = () => {
         requestData.tannin = formData.flavorProfile.tannin ?? null;
         requestData.body = formData.flavorProfile.body ?? null;
         requestData.alcohol = formData.flavorProfile.alcohol ?? null;
+
+        // Expert fields -> null
+        requestData.wineArea = null;
+        requestData.wineVariety = null;
       } else {
         requestData.wineArea = formData.wineArea;
         requestData.wineVariety = formData.wineVariety;
+
+        // Newbie fields -> null
+        requestData.preferredAlcohols = null;
+        requestData.preferredFoods = null;
+        requestData.acidity = null;
+        requestData.sweetness = null;
+        requestData.tannin = null;
+        requestData.body = null;
+        requestData.alcohol = null;
       }
+
+      console.log('🔍 Onboarding Request Payload:', JSON.stringify(requestData, null, 2));
 
       await updateMemberInitInfo(requestData);
 
-      // 3. Complete locally
-      completeOnboarding();
+      // 3. Move to Recommendation Result (Do NOT complete onboarding yet)
+      navigation.navigate('RecommendationResult' as never);
     } catch (error) {
       console.error('Onboarding Error:', error);
       Alert.alert('오류', '정보 저장 중 문제가 발생했습니다.');
@@ -328,7 +341,12 @@ const OnboardingScreen = () => {
         next = 'BUDGET';
         break;
       case 'BUDGET':
-        next = formData.isNewbie ? 'SUMMARY' : 'WINE_SORT';
+        // 뉴비는 BUDGET이 마지막 단계
+        if (formData.isNewbie) {
+          handleFinalSubmit();
+          return;
+        }
+        next = 'WINE_SORT';
         break;
       case 'WINE_SORT':
         next = 'WINE_AREA';
@@ -337,12 +355,9 @@ const OnboardingScreen = () => {
         next = 'WINE_VARIETY';
         break;
       case 'WINE_VARIETY':
-        next = 'SUMMARY';
-        break;
-      
-      case 'SUMMARY':
+        // 전문가는 WINE_VARIETY가 마지막 단계
         handleFinalSubmit();
-        return; // No animation for submit
+        return;
     }
 
     if (next) {
@@ -372,11 +387,6 @@ const OnboardingScreen = () => {
     if (step === 'WINE_AREA') prev = 'WINE_SORT';
     if (step === 'WINE_VARIETY') prev = 'WINE_AREA';
 
-    if (step === 'SUMMARY') {
-        if (formData.isNewbie) prev = 'BUDGET';
-        else prev = 'WINE_VARIETY';
-    }
-
     if (prev) {
       animateTransition(prev, 'prev');
     }
@@ -387,8 +397,8 @@ const OnboardingScreen = () => {
   const getProgress = () => {
     if (step === 'INTRO') return 0;
     
-    // 총 8단계 (PROFILE ~ SUMMARY)
-    const totalSteps = 8;
+    // 총 7단계 (PROFILE ~ BUDGET or WINE_VARIETY)
+    const totalSteps = 7;
     let currentStep = 0;
 
     switch (step) {
@@ -405,15 +415,15 @@ const OnboardingScreen = () => {
       case 'WINE_INTEREST': currentStep = 7; break;
       
       case 'BUDGET':
-         // Expert일 때 BUDGET은 4번째, Newbie일 때 BUDGET은 8번째
-         currentStep = formData.isNewbie ? 8 : 4;
+         // Expert일 때 BUDGET은 4번째, Newbie일 때 BUDGET은 7번째 (마지막)
+         // 하지만 여기서 7/7 = 100%를 표현하기 위해 로직을 조금 수정해야 할 수도 있음.
+         // 현재 로직상 뉴비: BUDGET(8번째지만 화면상 마지막) -> 1.0
+         currentStep = formData.isNewbie ? 7 : 4;
          break;
       
       case 'WINE_SORT': currentStep = 5; break;
       case 'WINE_AREA': currentStep = 6; break;
       case 'WINE_VARIETY': currentStep = 7; break;
-
-      case 'SUMMARY': currentStep = 8; break;
     }
     
     return currentStep / totalSteps;
@@ -560,8 +570,6 @@ const OnboardingScreen = () => {
             multi
           />
         );
-      case 'SUMMARY': 
-        return <SummaryStep data={formData} />;
       default: return null;
     }
   };
@@ -580,8 +588,10 @@ const OnboardingScreen = () => {
         return '취향 찾으러 가기';
       case 'EXPERT_TRANSITION':
         return '취향 등록하러 가기';
-      case 'SUMMARY':
-        return '드링키 시작하기';
+      case 'BUDGET':
+        return formData.isNewbie ? '결과 보기' : '다음';
+      case 'WINE_VARIETY':
+        return '결과 보기';
       default:
         return '다음';
     }

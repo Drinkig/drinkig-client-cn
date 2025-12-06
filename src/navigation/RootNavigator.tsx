@@ -11,6 +11,7 @@ import WineAddScreen from '../screens/WineAddScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
 import SettingScreen from '../screens/SettingScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import RecommendationResultScreen from '../screens/RecommendationResultScreen';
 import { ActivityIndicator, View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
@@ -34,8 +35,11 @@ export default function RootNavigator() {
       {isLoggedIn ? (
         // 로그인 상태일 때
         isNewUser ? (
-          // 신규 유저: 온보딩만 노출 (완료 시 isNewUser=false 되어 아래 분기로 이동)
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          // 신규 유저: 온보딩 및 결과 화면
+          <>
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="RecommendationResult" component={RecommendationResultScreen} />
+          </>
         ) : (
           // 기존 유저: 메인 및 전체 앱 기능 노출
           <>
