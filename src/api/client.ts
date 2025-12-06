@@ -33,17 +33,35 @@ client.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
+        // [EDIT] 서버 요구사항: refreshToken을 쿠키 헤더로 전송
+        // 기존: Authorization: `Bearer ${refreshToken}`
+        // 변경: Cookie: `refreshToken=${refreshToken}`
         // Refresh Token을 헤더에 담아 재발급 요청
         // (서버 스펙에 따라 Body에 담거나 쿠키를 사용할 수 있음)
         const response = await axios.post(`${baseURL}/reissue`, {}, {
           headers: {
-            Authorization: `Bearer ${refreshToken}`
+            Cookie: `refreshToken=${refreshToken}`
           }
         });
 
         if (response.data.isSuccess) {
-          const newAccessToken = response.data.result.accessToken;
-          const newRefreshToken = response.data.result.refreshToken;
+          
+          // Access Token 추출 로직 강화 (Body 또는 Header 확인)
+          let newAccessToken = response.data.result?.accessToken;
+          const newRefreshToken = response.data.result?.refreshToken;
+
+          // Body에 없으면 헤더(Authorization)에서 확인
+          if (!newAccessToken) {
+             const authHeader = response.headers['authorization'];
+             if (authHeader && authHeader.startsWith('Bearer ')) {
+                newAccessToken = authHeader.substring(7);
+             }
+          }
+          
+          // Access Token이 여전히 없으면 에러 처리
+          if (!newAccessToken) {
+             throw new Error('No access token in reissue response');
+          }
 
           // 새로운 토큰 저장
           await AsyncStorage.setItem('accessToken', newAccessToken);
