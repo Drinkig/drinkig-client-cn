@@ -397,8 +397,9 @@ const OnboardingScreen = () => {
   const getProgress = () => {
     if (step === 'INTRO') return 0;
     
-    // 총 7단계 (PROFILE ~ BUDGET or WINE_VARIETY)
-    const totalSteps = 7;
+    // Newbie: 8 steps, Expert: 7 steps
+    // 아직 isNewbie가 결정되지 않았거나(null) true이면 8단계로 가정
+    const totalSteps = formData.isNewbie === false ? 7 : 8;
     let currentStep = 0;
 
     switch (step) {
@@ -415,10 +416,9 @@ const OnboardingScreen = () => {
       case 'WINE_INTEREST': currentStep = 7; break;
       
       case 'BUDGET':
-         // Expert일 때 BUDGET은 4번째, Newbie일 때 BUDGET은 7번째 (마지막)
-         // 하지만 여기서 7/7 = 100%를 표현하기 위해 로직을 조금 수정해야 할 수도 있음.
-         // 현재 로직상 뉴비: BUDGET(8번째지만 화면상 마지막) -> 1.0
-         currentStep = formData.isNewbie ? 7 : 4;
+         // Newbie: 8th step (Last)
+         // Expert: 4th step
+         currentStep = formData.isNewbie ? 8 : 4;
          break;
       
       case 'WINE_SORT': currentStep = 5; break;
