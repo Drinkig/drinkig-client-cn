@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
 interface NewbieCheckStepProps {
-  isNewbie: boolean;
+  isNewbie: boolean | null;
   onSelect: (isNewbie: boolean) => void;
   name: string;
 }

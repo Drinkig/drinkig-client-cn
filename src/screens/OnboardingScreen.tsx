@@ -20,12 +20,12 @@ import {
   MemberInitRequest,
 } from '../api/member';
 
-// Import Step Components
+import FlavorProfileStep, { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 import IntroStep from '../components/onboarding/IntroStep';
 import ProfileStep from '../components/onboarding/ProfileStep';
 import NewbieCheckStep from '../components/onboarding/NewbieCheckStep';
 import TransitionStep from '../components/onboarding/TransitionStep';
-import { SingleSelectionStep, MultiSelectionStep } from '../components/onboarding/SelectionSteps';
+import { MultiSelectionStep } from '../components/onboarding/SelectionSteps';
 import BudgetStep from '../components/onboarding/BudgetStep';
 import SummaryStep from '../components/onboarding/SummaryStep';
 
@@ -43,7 +43,8 @@ type Step =
   | 'NEWBIE_TRANSITION'
   | 'ALCOHOL_PREF'
   | 'FOOD_PREF'
-  | 'WINE_INTEREST' // Red vs White
+  | 'FLAVOR_PROFILE' // [NEW]
+  | 'WINE_INTEREST' // Red vs White (유지: 뉴비도 wineSort 필요)
   // Expert Flow
   | 'EXPERT_TRANSITION'
   | 'WINE_SORT'
@@ -56,37 +57,49 @@ type Step =
 interface OnboardingData {
   name: string;
   profileImageUri: string | null;
-  isNewbie: boolean;
+  isNewbie: boolean | null;
   monthPrice: number;
   wineSort: string[];
+  // Expert Only
   wineArea: string[];
   wineVariety: string[];
-  // Local only
-  preferredAlcohol?: string;
-  preferredFood?: string;
+  // Newbie Only
+  preferredAlcohols: string[];
+  preferredFoods: string[];
+  flavorProfile: FlavorProfile;
 }
 
 const INITIAL_DATA: OnboardingData = {
   name: '',
   profileImageUri: null,
-  isNewbie: false,
+  isNewbie: null,
   monthPrice: 0,
   wineSort: [],
   wineArea: [],
   wineVariety: [],
+  preferredAlcohols: [],
+  preferredFoods: [],
+  flavorProfile: {
+    acidity: undefined,
+    sweetness: undefined,
+    tannin: undefined,
+    body: undefined,
+    alcohol: undefined,
+  },
 };
 
 // Options for selections
-const ALCOHOL_OPTIONS = ['소주', '맥주', '위스키', '칵테일', '막걸리', '기타'];
-const FOOD_OPTIONS = ['육류', '해산물', '치즈', '디저트', '한식', '양식'];
-const WINE_SORTS = ['RED', 'WHITE', 'SPARKLING', 'ROSE', 'FORTIFIED'];
+const ALCOHOL_OPTIONS = ['소주', '맥주', '위스키', '칵테일', '막걸리', '사케', '럼', '진', '보드카', '기타'];
+const FOOD_OPTIONS = ['육류', '해산물', '치즈', '디저트', '한식', '중식', '양식', '일식', '닭고기', '파스타', '피자', '바비큐', '매운 음식', '과자'];
+const WINE_SORTS = ['레드', '화이트', '스파클링', '로제', '주정강화', '디저트'];
 const WINE_AREAS = ['FRANCE', 'ITALY', 'USA', 'CHILE', 'SPAIN', 'AUSTRALIA', 'NEW_ZEALAND', 'ARGENTINA'];
 const WINE_VARIETIES = ['CABERNET_SAUVIGNON', 'MERLOT', 'PINOT_NOIR', 'CHARDONNAY', 'SAUVIGNON_BLANC', 'SYRAH', 'RIESLING'];
 const BUDGET_OPTIONS = [
-  { label: '3만원 미만', value: 30000 },
+  { label: '3만원 이하', value: 30000 },
   { label: '3~5만원', value: 50000 },
-  { label: '5~10만원', value: 100000 },
-  { label: '10만원 이상', value: 150000 },
+  { label: '5~9만원', value: 90000 },
+  { label: '9~15만원', value: 150000 },
+  { label: '15만원 이상', value: 200000 },
 ];
 
 // ----------------------
@@ -108,19 +121,70 @@ const OnboardingScreen = () => {
 
   // --- Helpers ---
 
+  const isStepValid = () => {
+    switch (step) {
+      case 'INTRO':
+        return true;
+      case 'PROFILE':
+        return !!formData.name && nicknameAvailable === true;
+      case 'NEWBIE_CHECK':
+        return formData.isNewbie !== null;
+      case 'NEWBIE_TRANSITION':
+      case 'EXPERT_TRANSITION':
+        return true;
+      case 'ALCOHOL_PREF':
+        return formData.preferredAlcohols.length > 0;
+      case 'FOOD_PREF':
+        return formData.preferredFoods.length > 0;
+      case 'FLAVOR_PROFILE':
+        const { acidity, sweetness, tannin, body, alcohol } = formData.flavorProfile;
+        return (
+          acidity !== undefined &&
+          sweetness !== undefined &&
+          tannin !== undefined &&
+          body !== undefined &&
+          alcohol !== undefined
+        );
+      case 'WINE_INTEREST':
+        return formData.wineSort.length > 0;
+      case 'BUDGET':
+        return formData.monthPrice !== 0;
+      case 'WINE_SORT':
+        return formData.wineSort.length > 0;
+      case 'WINE_AREA':
+        return formData.wineArea.length > 0;
+      case 'WINE_VARIETY':
+        return formData.wineVariety.length > 0;
+      case 'SUMMARY':
+        return true;
+      default:
+        return false;
+    }
+  };
+
   const updateData = (key: keyof OnboardingData, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const toggleSelection = (key: 'wineSort' | 'wineArea' | 'wineVariety', value: string) => {
+  const toggleSelection = (key: 'wineSort' | 'wineArea' | 'wineVariety' | 'preferredAlcohols' | 'preferredFoods', value: string) => {
     setFormData((prev) => {
-      const current = prev[key];
+      const current = prev[key] as string[]; // Type assertion since we know these keys are string[]
       if (current.includes(value)) {
         return { ...prev, [key]: current.filter((item) => item !== value) };
       } else {
         return { ...prev, [key]: [...current, value] };
       }
     });
+  };
+
+  const updateFlavorProfile = (key: keyof FlavorProfile, value: number | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      flavorProfile: {
+        ...prev.flavorProfile,
+        [key]: value,
+      },
+    }));
   };
 
   const handlePickImage = async () => {
@@ -161,12 +225,23 @@ const OnboardingScreen = () => {
       // 2. Send Init Info
       const requestData: MemberInitRequest = {
         name: formData.name,
-        isNewbie: formData.isNewbie,
+        isNewbie: formData.isNewbie as boolean, // 유효성 검사 통과했으므로 null 아님
         monthPrice: formData.monthPrice,
         wineSort: formData.wineSort,
-        wineArea: formData.wineArea,
-        wineVariety: formData.wineVariety,
       };
+
+      if (formData.isNewbie) {
+        requestData.preferredAlcohols = formData.preferredAlcohols;
+        requestData.preferredFoods = formData.preferredFoods;
+        requestData.acidity = formData.flavorProfile.acidity ?? null;
+        requestData.sweetness = formData.flavorProfile.sweetness ?? null;
+        requestData.tannin = formData.flavorProfile.tannin ?? null;
+        requestData.body = formData.flavorProfile.body ?? null;
+        requestData.alcohol = formData.flavorProfile.alcohol ?? null;
+      } else {
+        requestData.wineArea = formData.wineArea;
+        requestData.wineVariety = formData.wineVariety;
+      }
 
       await updateMemberInitInfo(requestData);
 
@@ -224,13 +299,7 @@ const OnboardingScreen = () => {
         next = 'PROFILE';
         break;
       case 'PROFILE':
-        if (!formData.name) {
-          Alert.alert('알림', '닉네임을 입력해주세요.');
-          return;
-        }
-        if (nicknameAvailable === false) {
-           Alert.alert('알림', '닉네임 중복 확인을 해주세요.');
-        }
+        // 버튼이 비활성화되므로 별도 Alert 필요 없음
         next = 'NEWBIE_CHECK';
         break;
       case 'NEWBIE_CHECK':
@@ -245,6 +314,9 @@ const OnboardingScreen = () => {
         next = 'FOOD_PREF';
         break;
       case 'FOOD_PREF':
+        next = 'FLAVOR_PROFILE';
+        break;
+      case 'FLAVOR_PROFILE':
         next = 'WINE_INTEREST';
         break;
       case 'WINE_INTEREST':
@@ -287,7 +359,8 @@ const OnboardingScreen = () => {
     if (step === 'NEWBIE_TRANSITION') prev = 'NEWBIE_CHECK';
     if (step === 'ALCOHOL_PREF') prev = 'NEWBIE_TRANSITION';
     if (step === 'FOOD_PREF') prev = 'ALCOHOL_PREF';
-    if (step === 'WINE_INTEREST') prev = 'FOOD_PREF';
+    if (step === 'FLAVOR_PROFILE') prev = 'FOOD_PREF';
+    if (step === 'WINE_INTEREST') prev = 'FLAVOR_PROFILE';
     
     if (step === 'EXPERT_TRANSITION') prev = 'NEWBIE_CHECK';
     if (step === 'BUDGET') {
@@ -327,17 +400,17 @@ const OnboardingScreen = () => {
         currentStep = 3; break;
 
       case 'ALCOHOL_PREF': currentStep = 4; break;
+      case 'FOOD_PREF': currentStep = 5; break;
+      case 'FLAVOR_PROFILE': currentStep = 6; break;
+      case 'WINE_INTEREST': currentStep = 7; break;
+      
       case 'BUDGET':
-         // Expert일 때 BUDGET은 4번째, Newbie일 때 BUDGET은 7번째
-         currentStep = formData.isNewbie ? 7 : 4;
+         // Expert일 때 BUDGET은 4번째, Newbie일 때 BUDGET은 8번째
+         currentStep = formData.isNewbie ? 8 : 4;
          break;
       
-      case 'FOOD_PREF': currentStep = 5; break;
       case 'WINE_SORT': currentStep = 5; break;
-      
-      case 'WINE_INTEREST': currentStep = 6; break;
       case 'WINE_AREA': currentStep = 6; break;
-      
       case 'WINE_VARIETY': currentStep = 7; break;
 
       case 'SUMMARY': currentStep = 8; break;
@@ -394,7 +467,7 @@ const OnboardingScreen = () => {
           <ProfileStep 
             name={formData.name}
             profileImageUri={formData.profileImageUri}
-            onNameChange={(t) => updateData('name', t)}
+            onNameChange={(t: string) => updateData('name', t)}
             onPickImage={handlePickImage}
             onCheckNickname={handleCheckNickname}
           />
@@ -403,7 +476,7 @@ const OnboardingScreen = () => {
         return (
           <NewbieCheckStep 
             isNewbie={formData.isNewbie}
-            onSelect={(val) => updateData('isNewbie', val)}
+            onSelect={(val: boolean) => updateData('isNewbie', val)}
             name={formData.name}
           />
         );
@@ -413,29 +486,39 @@ const OnboardingScreen = () => {
         return <TransitionStep isNewbie={false} />;
       case 'ALCOHOL_PREF': 
         return (
-          <SingleSelectionStep
+          <MultiSelectionStep
             title="평소에 어떤 술을 즐기시나요?"
             options={ALCOHOL_OPTIONS}
-            selected={formData.preferredAlcohol}
-            onSelect={(v) => updateData('preferredAlcohol', v)}
+            selected={formData.preferredAlcohols}
+            onSelect={(v: string) => toggleSelection('preferredAlcohols', v)}
+            multi
+            allowCustomInput
           />
         );
       case 'FOOD_PREF': 
         return (
-          <SingleSelectionStep
+          <MultiSelectionStep
             title="어떤 음식과 함께 즐기고 싶나요?"
             options={FOOD_OPTIONS}
-            selected={formData.preferredFood}
-            onSelect={(v) => updateData('preferredFood', v)}
+            selected={formData.preferredFoods}
+            onSelect={(v: string) => toggleSelection('preferredFoods', v)}
+            multi
+          />
+        );
+      case 'FLAVOR_PROFILE':
+        return (
+          <FlavorProfileStep
+            data={formData.flavorProfile}
+            onChange={updateFlavorProfile}
           />
         );
       case 'WINE_INTEREST':
         return (
           <MultiSelectionStep
             title="관심 있는 와인 종류는?"
-            options={['RED', 'WHITE']}
+            options={WINE_SORTS} // 6개 항목 모두 포함된 상수 사용
             selected={formData.wineSort}
-            onSelect={(v) => toggleSelection('wineSort', v)}
+            onSelect={(v: string) => toggleSelection('wineSort', v)}
             multi
           />
         );
@@ -443,17 +526,17 @@ const OnboardingScreen = () => {
         return (
           <BudgetStep 
             selectedPrice={formData.monthPrice}
-            onSelect={(v) => updateData('monthPrice', v)}
+            onSelect={(v: number) => updateData('monthPrice', v)}
             options={BUDGET_OPTIONS}
           />
         );
       case 'WINE_SORT': 
         return (
-           <MultiSelectionStep
+          <MultiSelectionStep
             title="선호하는 와인 종류"
             options={WINE_SORTS}
             selected={formData.wineSort}
-            onSelect={(v) => toggleSelection('wineSort', v)}
+            onSelect={(v: string) => toggleSelection('wineSort', v)}
             multi
           />
         );
@@ -463,7 +546,7 @@ const OnboardingScreen = () => {
             title="선호하는 와인 생산지"
             options={WINE_AREAS}
             selected={formData.wineArea}
-            onSelect={(v) => toggleSelection('wineArea', v)}
+            onSelect={(v: string) => toggleSelection('wineArea', v)}
             multi
           />
         );
@@ -473,7 +556,7 @@ const OnboardingScreen = () => {
             title="선호하는 포도 품종"
             options={WINE_VARIETIES}
             selected={formData.wineVariety}
-            onSelect={(v) => toggleSelection('wineVariety', v)}
+            onSelect={(v: string) => toggleSelection('wineVariety', v)}
             multi
           />
         );
@@ -530,9 +613,12 @@ const OnboardingScreen = () => {
 
         <View style={styles.footer}>
             <TouchableOpacity 
-                style={[styles.nextButton, loading && styles.disabledButton]} 
+                style={[
+                  styles.nextButton, 
+                  (loading || !isStepValid()) && styles.disabledButton
+                ]} 
                 onPress={nextStep}
-                disabled={loading}
+                disabled={loading || !isStepValid()}
             >
                 {loading ? (
                     <ActivityIndicator color="#fff" />

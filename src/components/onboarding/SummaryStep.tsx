@@ -4,11 +4,13 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 interface SummaryStepProps {
   data: {
     name: string;
-    isNewbie: boolean;
+    isNewbie: boolean | null;
     monthPrice: number;
     wineSort: string[];
     wineArea: string[];
     wineVariety: string[];
+    preferredAlcohols: string[];
+    preferredFoods: string[];
   };
 }
 
@@ -23,19 +25,42 @@ const SummaryStep = ({ data }: SummaryStepProps) => {
             </View>
             <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>유형</Text>
-                <Text style={styles.summaryValue}>{data.isNewbie ? '초보' : '매니아'}</Text>
+                <Text style={styles.summaryValue}>
+                  {data.isNewbie === true ? '초보' : data.isNewbie === false ? '매니아' : '미선택'}
+                </Text>
             </View>
             <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>월 예산</Text>
                 <Text style={styles.summaryValue}>{data.monthPrice.toLocaleString()}원</Text>
             </View>
+            
+            {/* Newbie Info */}
+            {data.isNewbie && (
+              <>
+                <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>즐기는 술</Text>
+                    <Text style={styles.summaryValue} numberOfLines={1} ellipsizeMode="tail">
+                        {data.preferredAlcohols.length > 0 ? data.preferredAlcohols.join(', ') : '미선택'}
+                    </Text>
+                </View>
+                <View style={styles.summaryRow}>
+                    <Text style={styles.summaryLabel}>선호 안주</Text>
+                    <Text style={styles.summaryValue} numberOfLines={1} ellipsizeMode="tail">
+                        {data.preferredFoods.length > 0 ? data.preferredFoods.join(', ') : '미선택'}
+                    </Text>
+                </View>
+              </>
+            )}
+
             <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>선호 종류</Text>
+                <Text style={styles.summaryLabel}>관심 와인</Text>
                 <Text style={styles.summaryValue}>
                     {data.wineSort.length > 0 ? data.wineSort.join(', ') : '미선택'}
                 </Text>
             </View>
-            {!data.isNewbie && (
+
+            {/* Expert Info */}
+            {data.isNewbie === false && (
                 <>
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>선호 국가</Text>
@@ -85,6 +110,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    maxWidth: '70%', // 긴 텍스트 줄바꿈/말줄임 처리
+    textAlign: 'right',
   },
 });
 

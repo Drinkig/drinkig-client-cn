@@ -52,8 +52,17 @@ export interface MemberInitRequest {
   isNewbie: boolean;
   monthPrice: number;
   wineSort: string[];
-  wineArea: string[];
-  wineVariety: string[];
+  // Expert only
+  wineArea?: string[];
+  wineVariety?: string[];
+  // Newbie only
+  preferredAlcohols?: string[];
+  preferredFoods?: string[];
+  acidity?: number | null;
+  sweetness?: number | null;
+  tannin?: number | null;
+  body?: number | null;
+  alcohol?: number | null;
 }
 
 export interface MemberInitResponse {
@@ -118,10 +127,12 @@ export const loginWithApple = async (identityToken: string) => {
   const cookies = response.headers['set-cookie'];
   if (cookies && Array.isArray(cookies)) {
     const getCookieValue = (name: string) => {
-      const cookie = cookies.find((c) => c.trim().startsWith(`${name}=`));
-      if (cookie) {
-        // "name=value; Path=..." 형식에서 value만 추출
-        return cookie.split('=')[1].split(';')[0];
+      const regex = new RegExp(`${name}=([^;]+)`);
+      for (const cookieString of cookies) {
+        const match = cookieString.match(regex);
+        if (match && match[1]) {
+          return match[1];
+        }
       }
       return undefined;
     };
