@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import MyWineScreen from '../screens/MyWineScreen';
@@ -17,8 +18,8 @@ export default function MainTabNavigator() {
         tabBarStyle: {
           backgroundColor: '#1a1a1a',
           borderTopColor: '#333',
-          height: 60,
-          paddingBottom: 8,
+          height: Platform.OS === 'ios' ? 90 : 70,
+          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
           paddingTop: 8,
         },
         tabBarActiveTintColor: '#8e44ad',

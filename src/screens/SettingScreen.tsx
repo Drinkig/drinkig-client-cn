@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,19 @@ import {
   SafeAreaView,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import appleAuth from '@invertase/react-native-apple-authentication';
 import CustomAlert from '../components/CustomAlert';
 import { useUser } from '../context/UserContext';
-import { deleteMember, logout as apiLogout } from '../api/member';
+import { 
+  deleteMember, 
+  deleteAppleMember, 
+  getMemberInfo, 
+  MemberInfoResponse 
+} from '../api/member';
 
 const SettingScreen = () => {
   const navigation = useNavigation();
@@ -26,6 +33,23 @@ const SettingScreen = () => {
     singleButton: false,
     confirmText: '확인',
   });
+
+  // 사용자 정보 상태 (authType 확인용)
+  const [authType, setAuthType] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMemberInfo = async () => {
+      try {
+        const response: MemberInfoResponse = await getMemberInfo();
+        if (response.isSuccess) {
+          setAuthType(response.result.authType);
+        }
+      } catch (error) {
+        console.error('Failed to fetch member info:', error);
+      }
+    };
+    fetchMemberInfo();
+  }, []);
 
   // 로그아웃 핸들러
   const handleLogout = () => {
@@ -51,25 +75,62 @@ const SettingScreen = () => {
       confirmText: '탈퇴하기',
       singleButton: false,
       onConfirm: async () => {
+        setAlertVisible(false); // 모달 닫기
+
         try {
-          // 회원 탈퇴 API 호출
-          const response = await deleteMember();
-          if (response.isSuccess) {
-            // 성공 시 로그아웃 처리와 동일하게 클라이언트 정리
-            await logout();
+          if (authType === 'APPLE') {
+            // 애플 로그인 유저는 애플 인증 다시 받고 탈퇴 진행
+            handleAppleDelete();
           } else {
-            // 실패 시 알림 (이미 모달이 닫힌 상태이므로 다시 열거나 Alert 사용)
-            // 여기서는 간단히 넘어가거나 에러 처리를 추가할 수 있음
-            console.error('Delete member failed:', response.message);
+            // 일반 유저는 바로 탈퇴 API 호출
+            const response = await deleteMember();
+            if (response.isSuccess) {
+              await logout();
+            } else {
+              console.error('Delete member failed:', response.message);
+              Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
+            }
           }
         } catch (error) {
           console.error('Delete member error:', error);
-        } finally {
-          setAlertVisible(false);
+          Alert.alert('오류', '회원 탈퇴 중 오류가 발생했습니다.');
         }
       },
     });
     setAlertVisible(true);
+  };
+
+  // 애플 회원 탈퇴 프로세스
+  const handleAppleDelete = async () => {
+    try {
+      // 1. 애플 재인증 요청 (Authorization Code 받기 위함)
+      const appleAuthRequestResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.REFRESH, // 민감한 작업 전 재인증
+      });
+
+      const authCode = appleAuthRequestResponse.authorizationCode;
+
+      if (!authCode) {
+        throw new Error('Failed to get authorization code');
+      }
+
+      // 2. 애플 탈퇴 API 호출
+      const response = await deleteAppleMember(authCode);
+
+      if (response.isSuccess) {
+        await logout();
+      } else {
+        console.error('Apple delete member failed:', response.message);
+        Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
+      }
+    } catch (error: any) {
+      if (error.code === appleAuth.Error.CANCELED) {
+        // 유저가 취소함 -> 아무것도 안 함
+        return;
+      }
+      console.error('Apple delete member error:', error);
+      Alert.alert('오류', 'Apple 인증 또는 탈퇴 처리에 실패했습니다.');
+    }
   };
 
   return (
