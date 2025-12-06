@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   StatusBar,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -62,17 +63,53 @@ export default function SearchScreen() {
     }
   };
 
+  const getWineTypeColor = (type: string) => {
+    switch (type) {
+      case '레드':
+      case 'Red':
+        return '#C0392B'; // Darker Red
+      case '화이트':
+      case 'White':
+        return '#D4AC0D'; // Darker Gold/Yellow
+      case '스파클링':
+      case 'Sparkling':
+        return '#2980B9'; // Darker Blue
+      case '로제':
+      case 'Rose':
+        return '#C2185B'; // Darker Pink
+      case '디저트':
+      case 'Dessert':
+        return '#D35400'; // Darker Orange
+      default:
+        return '#7F8C8D'; // Darker Gray
+    }
+  };
+
   const renderSearchResult = ({ item }: { item: WineDBItem }) => (
     <TouchableOpacity 
       style={styles.resultItem}
       onPress={() => navigation.navigate('WineDetail', { wine: item })}
     >
       <View style={styles.resultIconContainer}>
-        <Icon name="wine" size={20} color="#8e44ad" />
+        {item.imageUri ? (
+          <Image 
+            source={{ uri: item.imageUri }} 
+            style={styles.resultImage}
+            resizeMode="contain"
+          />
+        ) : (
+          <Icon name="wine" size={20} color="#8e44ad" />
+        )}
       </View>
       <View style={styles.resultTextContainer}>
         <Text style={styles.resultNameKor}>{item.nameKor}</Text>
         <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+        <View style={styles.resultInfoContainer}>
+          <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.type) }]}>
+            <Text style={styles.typeChipText}>{item.type}</Text>
+          </View>
+          <Text style={styles.resultCountryText}>{item.country}</Text>
+        </View>
       </View>
       <Icon name="chevron-forward" size={16} color="#666" />
     </TouchableOpacity>
@@ -205,18 +242,23 @@ const styles = StyleSheet.create({
   resultItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
   resultIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 8,
     backgroundColor: '#2a2a2a',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
+    overflow: 'hidden',
+  },
+  resultImage: {
+    width: '80%',
+    height: '80%',
   },
   resultTextContainer: {
     flex: 1,
@@ -224,11 +266,31 @@ const styles = StyleSheet.create({
   resultNameKor: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     marginBottom: 2,
   },
   resultNameEng: {
     color: '#888',
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  resultInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  typeChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  typeChipText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  resultCountryText: {
+    color: '#666',
     fontSize: 12,
   },
   emptyContainer: {
