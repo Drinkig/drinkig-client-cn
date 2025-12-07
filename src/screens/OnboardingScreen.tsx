@@ -529,9 +529,9 @@ const OnboardingScreen = () => {
           />
         );
       case 'NEWBIE_TRANSITION': 
-        return <TransitionStep isNewbie={true} />;
+        return <TransitionStep isNewbie={true} name={formData.name} />;
       case 'EXPERT_TRANSITION': 
-        return <TransitionStep isNewbie={false} />;
+        return <TransitionStep isNewbie={false} name={formData.name} />;
       case 'ALCOHOL_PREF': 
         return (
           <MultiSelectionStep

@@ -1,21 +1,22 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 
 interface TransitionStepProps {
   isNewbie: boolean;
+  name: string;
 }
 
-const TransitionStep = ({ isNewbie }: TransitionStepProps) => {
+const TransitionStep = ({ isNewbie, name }: TransitionStepProps) => {
   return (
     <View style={styles.centerContent}>
-      <Text style={styles.emoji}>{isNewbie ? '🔍' : '📝'}</Text>
+      <Image
+        source={require('../../assets/onboarding/Drinky_onboarding_3.png')}
+        style={styles.image}
+        resizeMode="contain"
+      />
       <Text style={styles.title}>
-        {isNewbie ? '취향을 찾아드릴게요!' : '취향을 등록해주세요!'}
-      </Text>
-      <Text style={styles.desc}>
-        {isNewbie 
-          ? '평소 식성을 바탕으로 추천해드립니다.' 
-          : '선호하는 와인을 알려주시면 더 정확한 추천이 가능해요.'}
+        좋아요 {name}님{'\n'}
+        {isNewbie ? '제가 취향을 찾아드릴게요!' : '취향을 등록해주세요!'}
       </Text>
     </View>
   );
@@ -27,8 +28,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emoji: {
-    fontSize: 60,
+  image: {
+    width: 280,
+    height: 280,
     marginBottom: 20,
   },
   title: {
@@ -37,14 +39,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     marginBottom: 10,
-  },
-  desc: {
-    fontSize: 16,
-    color: '#aaa',
-    textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 32, // 줄바꿈 시 간격 확보
   },
 });
 
 export default TransitionStep;
-
