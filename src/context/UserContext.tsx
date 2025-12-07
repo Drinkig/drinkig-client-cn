@@ -11,9 +11,17 @@ export interface User {
   authType?: string;
 }
 
+export interface RecommendedWine {
+  sort: string;
+  country: string;
+  region: string;
+  variety: string;
+}
+
 // Context 타입
 interface UserContextType {
   user: User | null;
+  recommendations: RecommendedWine[];
   isLoggedIn: boolean;
   isLoading: boolean;
   isNewUser: boolean;
@@ -21,6 +29,7 @@ interface UserContextType {
   loginGuest: () => void;
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
+  setRecommendations: (recs: RecommendedWine[]) => void;
   refreshUserInfo: () => Promise<void>;
   completeOnboarding: () => void;
 }
@@ -30,6 +39,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Provider 컴포넌트
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [recommendations, setRecommendationsState] = useState<RecommendedWine[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
@@ -40,6 +50,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       try {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
+        const savedRecs = await AsyncStorage.getItem('recommendations');
+
+        if (savedRecs) {
+          setRecommendationsState(JSON.parse(savedRecs));
+        }
 
         if (accessToken) {
           // 토큰이 있으면 Axios 헤더 설정
@@ -139,9 +154,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
       await AsyncStorage.removeItem('accessToken');
       await AsyncStorage.removeItem('refreshToken');
+      await AsyncStorage.removeItem('recommendations');
       delete client.defaults.headers.common['Authorization'];
       
       setUser(null);
+      setRecommendationsState([]);
       setIsLoggedIn(false);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -159,8 +176,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : null));
   };
 
+  const setRecommendations = async (recs: RecommendedWine[]) => {
+    setRecommendationsState(recs);
+    await AsyncStorage.setItem('recommendations', JSON.stringify(recs));
+  };
+
   return (
-    <UserContext.Provider value={{ user, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, refreshUserInfo, completeOnboarding }}>
+    <UserContext.Provider value={{ user, recommendations, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, setRecommendations, refreshUserInfo, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   );

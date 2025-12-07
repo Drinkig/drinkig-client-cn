@@ -13,7 +13,7 @@ const RANK_TITLES = [
 ];
 
 const RecommendationResultScreen = () => {
-  const { completeOnboarding } = useUser();
+  const { completeOnboarding, setRecommendations: saveRecommendations } = useUser();
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<OnboardingRecommendationDTO[]>([]);
 
@@ -26,6 +26,7 @@ const RecommendationResultScreen = () => {
       const response = await getOnboardingRecommendation();
       if (response.isSuccess) {
         setRecommendations(response.result);
+        saveRecommendations(response.result);
       }
     } catch (error) {
       console.error(error);
