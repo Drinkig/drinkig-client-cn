@@ -73,7 +73,7 @@ const RecommendationResultScreen = () => {
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.styleText}>
-                  {item.country} {item.region}산
+                  {item.country} {item.region}
                 </Text>
                 <Text style={styles.varietyText}>
                   {item.variety}
@@ -95,7 +95,7 @@ const RecommendationResultScreen = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleComplete}>
-          <Text style={styles.buttonText}>드링키 시작하기</Text>
+          <Text style={styles.buttonText}>드링키지 시작하기</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
