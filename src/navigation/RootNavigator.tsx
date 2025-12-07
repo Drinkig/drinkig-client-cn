@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useUser } from '../context/UserContext';
 import MainTabNavigator from './MainTabNavigator';
 import LoginScreen from '../screens/LoginScreen';
+import SplashScreen from '../screens/SplashScreen';
 import WineDetailScreen from '../screens/WineDetailScreen';
 import MyWineDetailScreen from '../screens/MyWineDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
@@ -12,20 +13,25 @@ import ProfileEditScreen from '../screens/ProfileEditScreen';
 import SettingScreen from '../screens/SettingScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import RecommendationResultScreen from '../screens/RecommendationResultScreen';
-import { ActivityIndicator, View } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
 // 모든 스크린을 등록하고 navigation.navigate로 이동하는 방식으로 변경
 export default function RootNavigator() {
   const { isLoggedIn, isLoading, isNewUser } = useUser();
+  const [showSplash, setShowSplash] = useState(true);
 
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a1a1a' }}>
-        <ActivityIndicator size="large" color="#8e44ad" />
-      </View>
-    );
+  useEffect(() => {
+    // 최소 2초간 스플래시 화면 유지
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading || showSplash) {
+    return <SplashScreen />;
   }
 
   return (
