@@ -5,7 +5,7 @@ const IntroStep = () => {
   return (
     <View style={styles.centerContent}>
       <Image 
-        source={require('../../assets/Drinky_1.png')} 
+        source={require('../../assets/user_image/Drinky_1.png')} 
         style={styles.image} 
         resizeMode="contain"
       />
