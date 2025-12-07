@@ -17,6 +17,28 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const { user: userInfo, recommendations } = useUser();
 
+  const getWineTypeColor = (type: string) => {
+    switch (type) {
+      case '레드':
+      case 'Red':
+        return '#C0392B';
+      case '화이트':
+      case 'White':
+        return '#D4AC0D';
+      case '스파클링':
+      case 'Sparkling':
+        return '#2980B9';
+      case '로제':
+      case 'Rose':
+        return '#C2185B';
+      case '디저트':
+      case 'Dessert':
+        return '#D35400';
+      default:
+        return '#7F8C8D';
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 헤더 */}
@@ -54,39 +76,35 @@ const ProfileScreen = () => {
 
         {/* 2. 추천받은 품종 섹션 */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>추천 스타일</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>추천 스타일</Text>
+          </View>
           
           {recommendations && recommendations.length > 0 ? (
-            <View style={styles.recommendationList}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.carouselContent}
+            >
               {recommendations.map((item, index) => (
                 <View key={index} style={styles.recommendationCard}>
-                  <View style={styles.cardHeader}>
-                    <View style={styles.iconContainer}>
-                       <MaterialCommunityIcons 
-                        name={item.sort === '레드' ? 'glass-wine' : 'glass-tulip'} 
-                        size={28} 
-                        color={item.sort === '레드' ? '#e74c3c' : '#f1c40f'} 
-                      />
-                    </View>
-                    <View style={styles.rankBadge}>
-                        <Text style={styles.rankText}>{index + 1}위</Text>
-                    </View>
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.wineVariety} numberOfLines={1}>{item.variety}</Text>
+                    <Text style={styles.wineRegion} numberOfLines={1}>{item.country} {item.region}</Text>
                   </View>
                   
-                  <View style={styles.cardContent}>
-                    <Text style={styles.wineVariety}>{item.variety}</Text>
-                    <Text style={styles.wineRegion}>{item.country} {item.region}</Text>
-                    <View style={styles.tagWrapper}>
-                        <Text style={styles.tagText}>#{item.sort}</Text>
-                    </View>
+                  <View style={[styles.tagWrapper, { backgroundColor: getWineTypeColor(item.sort), opacity: 1 }]}>
+                      <Text style={styles.tagText}>{item.sort}</Text>
                   </View>
                 </View>
               ))}
-            </View>
+            </ScrollView>
           ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>아직 분석된 취향 정보가 없습니다.</Text>
-              <Text style={styles.emptySubText}>온보딩을 완료하거나 와인을 더 많이 즐겨보세요!</Text>
+            <View style={styles.emptyWrapper}>
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>아직 분석된 취향 정보가 없습니다.</Text>
+                <Text style={styles.emptySubText}>온보딩을 완료하거나 와인을 더 많이 즐겨보세요!</Text>
+              </View>
             </View>
           )}
         </View>
@@ -171,75 +189,60 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sectionContainer: {
-    paddingHorizontal: 24,
     marginBottom: 40,
+  },
+  sectionHeader: {
+    paddingHorizontal: 24,
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 16,
   },
-  recommendationList: {
-    gap: 16,
+  carouselContent: {
+    paddingHorizontal: 24,
+    gap: 12,
   },
   recommendationCard: {
+    width: 200,
     backgroundColor: '#2a2a2a',
-    borderRadius: 16,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#333',
-  },
-  cardHeader: {
-    alignItems: 'center',
-    marginRight: 20,
-    gap: 8,
-  },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#333',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  rankBadge: {
-    backgroundColor: '#8e44ad',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  rankText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  cardContent: {
+  infoContainer: {
     flex: 1,
+    marginRight: 8,
   },
   wineVariety: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   wineRegion: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#aaa',
-    marginBottom: 8,
   },
   tagWrapper: {
-    backgroundColor: '#333',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    flexShrink: 0,
   },
   tagText: {
-    color: '#ccc',
-    fontSize: 12,
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+    includeFontPadding: false,
+  },
+  emptyWrapper: {
+    paddingHorizontal: 24,
   },
   emptyContainer: {
     backgroundColor: '#2a2a2a',
