@@ -11,13 +11,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
+import * as KakaoLogin from '@react-native-seoul/kakao-login';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { loginWithApple } from '../api/member';
+import { loginWithApple, loginWithKakao } from '../api/member';
 import { useUser } from '../context/UserContext';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
-  const { login, loginGuest } = useUser();
+  const { login } = useUser();
   const [loading, setLoading] = useState(false);
 
   // JWT 디코딩 함수 (Payload 확인용 - 순수 JS 구현)
@@ -99,14 +101,56 @@ const LoginScreen = () => {
     }
   };
 
-  const handleGuestLogin = () => {
-    loginGuest();
-    // 강제 이동 처리
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Main' }],
-    });
+  const onKakaoButtonPress = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      // 1. 카카오 로그인 시도
+      const token = await KakaoLogin.login();
+      
+      // 2. 프로필 정보 가져오기
+      const profile = await KakaoLogin.getProfile();
+      
+      console.log('Kakao Profile:', profile);
+
+      // 3. 서버로 전송
+      const response = await loginWithKakao(
+        profile.nickname, 
+        profile.email
+      );
+
+      // 4. 로그인 성공 처리
+      if (response.isSuccess) {
+        const { accessToken, refreshToken, isFirst } = response.result;
+        
+        if (accessToken) {
+          await login(accessToken, refreshToken, isFirst);
+        } else {
+          Alert.alert('로그인 실패', '서버로부터 토큰을 받지 못했습니다.');
+        }
+      } else {
+        Alert.alert('로그인 실패', response.message);
+      }
+    } catch (error: any) {
+      if (error.code === 'E_CANCELLED_OPERATION') {
+        console.log('Login Cancelled');
+      } else {
+        console.error('Kakao Login Error:', error);
+        Alert.alert('오류', '카카오 로그인에 실패했습니다.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // const handleGuestLogin = () => {
+  //   loginGuest();
+  //   // 강제 이동 처리
+  //   navigation.reset({
+  //     index: 0,
+  //     routes: [{ name: 'Main' }],
+  //   });
+  // };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -132,14 +176,26 @@ const LoginScreen = () => {
               />
             )
           )}
+
+          {!loading && (
+            <TouchableOpacity 
+              style={styles.kakaoButton}
+              onPress={onKakaoButtonPress}
+            >
+              <View style={styles.kakaoContent}>
+                  <Icon name="chatbubble-sharp" size={18} color="#000" />
+                  <Text style={styles.kakaoButtonText}>카카오 로그인</Text>
+              </View>
+            </TouchableOpacity>
+          )}
           
-          <TouchableOpacity 
-            style={styles.guestButton} 
+          {/* <TouchableOpacity 
+            style={styles.guestButton}  
             onPress={handleGuestLogin}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Text style={styles.guestButtonText}>로그인 없이 둘러보기</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </SafeAreaView>
@@ -174,6 +230,24 @@ const styles = StyleSheet.create({
   appleButton: {
     width: '100%',
     height: 50,
+  },
+  kakaoButton: {
+    width: '100%',
+    height: 50,
+    backgroundColor: '#FEE500', // 카카오 노란색
+    borderRadius: 6, // AppleButton 기본 스타일과 유사하게
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  kakaoContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  kakaoButtonText: {
+    color: '#000000',
+    fontSize: 19, // AppleButton 폰트 사이즈와 비슷하게
+    fontWeight: '600',
   },
   guestButton: {
     width: '100%',

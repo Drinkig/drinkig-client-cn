@@ -152,6 +152,42 @@ export const loginWithApple = async (identityToken: string) => {
   return response.data;
 };
 
+// 카카오 로그인 API
+export const loginWithKakao = async (kakaoName: string, kakaoEmail: string) => {
+  const response = await client.post<AppleLoginResponse>('/login/kakao', {
+    kakaoName,
+    kakaoEmail,
+  });
+  
+  // 서버가 토큰을 Body가 아닌 'Set-Cookie' 헤더로 주는 경우 처리
+  const cookies = response.headers['set-cookie'];
+  if (cookies && Array.isArray(cookies)) {
+    const getCookieValue = (name: string) => {
+      const regex = new RegExp(`${name}=([^;]+)`);
+      for (const cookieString of cookies) {
+        const match = cookieString.match(regex);
+        if (match && match[1]) {
+          return match[1];
+        }
+      }
+      return undefined;
+    };
+
+    const accessToken = getCookieValue('accessToken');
+    const refreshToken = getCookieValue('refreshToken');
+
+    // 응답 데이터에 토큰 주입 (프론트엔드 로직 호환성 유지)
+    if (accessToken && response.data.result) {
+      response.data.result.accessToken = accessToken;
+    }
+    if (refreshToken && response.data.result) {
+      response.data.result.refreshToken = refreshToken;
+    }
+  }
+
+  return response.data;
+};
+
 // 로그아웃 API
 export const logout = async () => {
   const response = await client.post<LogoutResponse>('/logout');
