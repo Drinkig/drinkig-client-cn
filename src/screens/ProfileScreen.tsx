@@ -10,12 +10,35 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
+import { getMyWines } from '../api/wine';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const { user: userInfo, recommendations } = useUser();
+  const [selectedType, setSelectedType] = React.useState('전체');
+  const [wineCount, setWineCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (isFocused) {
+      fetchMyWinesCount();
+    }
+  }, [isFocused]);
+
+  const fetchMyWinesCount = async () => {
+    try {
+      const response = await getMyWines();
+      if (response.isSuccess) {
+        setWineCount(response.result ? response.result.length : 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch wine count:', error);
+    }
+  };
+
+  const wineTypes = ['전체', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화', '기타'];
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
@@ -64,7 +87,8 @@ const ProfileScreen = () => {
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.nickname}>{userInfo?.nickname || '게스트'}</Text>
-            <Text style={styles.email}>{userInfo?.email || ''}</Text>
+            <Text style={styles.wineCountText}>마신 와인 {wineCount}병</Text>
+            {userInfo?.email ? <Text style={styles.email}>{userInfo.email}</Text> : null}
           </View>
           <TouchableOpacity 
             style={styles.editButton}
@@ -107,6 +131,44 @@ const ProfileScreen = () => {
               </View>
             </View>
           )}
+        </View>
+
+        {/* 3. 내가 마신 와인 섹션 */}
+        <View style={styles.sectionContainer}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>내가 마신 와인</Text>
+          </View>
+          
+          {/* 필터 칩 */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.filterChipsContainer}
+          >
+            {wineTypes.map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.filterChip,
+                  selectedType === type && styles.filterChipSelected
+                ]}
+                onPress={() => setSelectedType(type)}
+                activeOpacity={0.7}
+              >
+                <Text style={[
+                  styles.filterChipText,
+                  selectedType === type && styles.filterChipTextSelected
+                ]}>
+                  {type}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <View style={styles.emptyWrapper}>
+            <Text style={styles.emptyText}>아직 기록된 와인이 없습니다.</Text>
+            <Text style={styles.emptySubText}>마신 와인을 기록해보세요!</Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -171,9 +233,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 4,
   },
+  wineCountText: {
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '600',
+  },
   email: {
     fontSize: 14,
     color: '#888',
+    marginTop: 4,
   },
   editButton: {
     paddingVertical: 6,
@@ -215,6 +283,32 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  filterChipsContainer: {
+    paddingHorizontal: 24,
+    gap: 8,
+    marginBottom: 16,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#2a2a2a',
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  filterChipSelected: {
+    backgroundColor: '#8e44ad',
+    borderColor: '#8e44ad',
+  },
+  filterChipText: {
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '500',
+  },
+  filterChipTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   infoContainer: {
     flex: 1,
     marginRight: 8,
@@ -243,6 +337,8 @@ const styles = StyleSheet.create({
   },
   emptyWrapper: {
     paddingHorizontal: 24,
+    paddingVertical: 60,
+    alignItems: 'center',
   },
   emptyContainer: {
     backgroundColor: '#2a2a2a',
@@ -252,6 +348,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#333',
     borderStyle: 'dashed',
+    width: '100%',
   },
   emptyText: {
     fontSize: 16,
