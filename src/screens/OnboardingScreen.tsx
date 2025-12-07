@@ -296,7 +296,10 @@ const OnboardingScreen = () => {
       await updateMemberInitInfo(requestData);
 
       // 3. Move to Recommendation Result (Do NOT complete onboarding yet)
-      navigation.navigate('RecommendationResult' as never);
+      (navigation as any).navigate('RecommendationResult', { 
+        flavorProfile: formData.flavorProfile,
+        nickname: formData.name
+      });
     } catch (error) {
       console.error('Onboarding Error:', error);
       Alert.alert('오류', '정보 저장 중 문제가 발생했습니다.');
