@@ -7,36 +7,26 @@ import {
   TouchableOpacity,
   TextInput,
   Image,
-  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
-import CustomAlert from '../components/CustomAlert';
+import { useGlobalUI } from '../context/GlobalUIContext';
 import { updateMemberInfo, uploadProfileImage } from '../api/member';
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const { user, refreshUserInfo } = useUser();
+  const { showAlert, showLoading, hideLoading } = useGlobalUI();
   
   // 상태 관리
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(null); // 실제 업로드용 에셋
-  const [isLoading, setIsLoading] = useState(false);
   
   // 변경사항 여부 확인
   const hasChanges = nickname !== user?.nickname || selectedImageAsset !== null;
-  
-  // 알림 상태 관리
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertConfig, setAlertConfig] = useState({
-    title: '',
-    message: '',
-    onConfirm: () => {},
-    singleButton: true,
-  });
 
   // 이미지 선택 핸들러
   const handleSelectImage = async () => {
@@ -58,18 +48,16 @@ const ProfileEditScreen = () => {
   // 저장 핸들러
   const handleSave = async () => {
     if (nickname.trim().length === 0) {
-      setAlertConfig({
+      showAlert({
         title: '알림',
         message: '닉네임을 입력해주세요.',
-        onConfirm: () => setAlertVisible(false),
         singleButton: true,
       });
-      setAlertVisible(true);
       return;
     }
 
     try {
-      setIsLoading(true);
+      showLoading();
 
       // 1. 프로필 이미지 업로드 (변경된 경우)
       if (selectedImageAsset && selectedImageAsset.uri) {
@@ -94,28 +82,24 @@ const ProfileEditScreen = () => {
       // 3. 유저 정보 갱신
       await refreshUserInfo();
 
-      setAlertConfig({
+      showAlert({
         title: '성공',
         message: '프로필이 수정되었습니다.',
+        singleButton: true,
         onConfirm: () => {
-          setAlertVisible(false);
           navigation.goBack();
         },
-        singleButton: true,
       });
-      setAlertVisible(true);
 
     } catch (error) {
       console.error('Profile update failed:', error);
-      setAlertConfig({
+      showAlert({
         title: '오류',
         message: '프로필 수정 중 문제가 발생했습니다.',
-        onConfirm: () => setAlertVisible(false),
         singleButton: true,
       });
-      setAlertVisible(true);
     } finally {
-      setIsLoading(false);
+      hideLoading();
     }
   };
 
@@ -163,29 +147,15 @@ const ProfileEditScreen = () => {
 
         {/* 저장 버튼 */}
         <TouchableOpacity 
-          style={[styles.saveButton, (!hasChanges || isLoading) && styles.saveButtonDisabled]} 
+          style={[styles.saveButton, (!hasChanges) && styles.saveButtonDisabled]} 
           onPress={handleSave}
-          disabled={!hasChanges || isLoading}
+          disabled={!hasChanges}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={[styles.saveButtonText, !hasChanges && styles.saveButtonTextDisabled]}>
-              저장하기
-            </Text>
-          )}
+          <Text style={[styles.saveButtonText, !hasChanges && styles.saveButtonTextDisabled]}>
+            저장하기
+          </Text>
         </TouchableOpacity>
       </View>
-
-      {/* 커스텀 알림 */}
-      <CustomAlert
-        visible={alertVisible}
-        title={alertConfig.title}
-        message={alertConfig.message}
-        onClose={() => setAlertVisible(false)}
-        onConfirm={alertConfig.onConfirm}
-        singleButton={alertConfig.singleButton}
-      />
     </SafeAreaView>
   );
 };

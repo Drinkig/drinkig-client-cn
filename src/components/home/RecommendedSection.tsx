@@ -34,9 +34,9 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.horizontalList}
       >
-        {data.map((wine) => (
+        {data.map((wine, index) => (
           <TouchableOpacity 
-            key={wine.id} 
+            key={`${wine.id}-${index}`} 
             style={styles.wineCard}
             activeOpacity={0.8}
             onPress={() => onPressWine?.(wine)}
