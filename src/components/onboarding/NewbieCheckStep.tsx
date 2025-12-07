@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
 interface NewbieCheckStepProps {
   isNewbie: boolean | null;
@@ -18,16 +18,30 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
         style={[styles.selectionCard, isNewbie === true && styles.selectedCard]}
         onPress={() => onSelect(true)}
       >
-        <Text style={styles.cardTitle}>🌱 와인 초보에요</Text>
-        <Text style={styles.cardDesc}>아직 잘 모르지만 배우고 싶어요.</Text>
+        <View style={styles.cardTextContainer}>
+          <Text style={styles.cardTitle}>와인 초보에요</Text>
+          <Text style={styles.cardDesc}>아직 잘 모르지만 배우고 싶어요.</Text>
+        </View>
+        <Image 
+          source={require('../../assets/user_image/Drinky_5.png')}
+          style={styles.cardImage}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={[styles.selectionCard, isNewbie === false && styles.selectedCard]}
         onPress={() => onSelect(false)}
       >
-        <Text style={styles.cardTitle}>🍷 즐겨 마시는 편이에요</Text>
-        <Text style={styles.cardDesc}>선호하는 스타일이 확고해요.</Text>
+        <View style={styles.cardTextContainer}>
+          <Text style={styles.cardTitle}>즐겨 마시는 편이에요</Text>
+          <Text style={styles.cardDesc}>선호하는 스타일이 확고해요.</Text>
+        </View>
+        <Image 
+          source={require('../../assets/onboarding/Drinky_onboarding_2.png')}
+          style={styles.cardImage}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
     </View>
   );
@@ -47,26 +61,46 @@ const styles = StyleSheet.create({
   },
   selectionCard: {
     width: '100%',
+    height: 110, // 높이 축소 (140 -> 110)
     padding: 20,
     backgroundColor: '#1e1e1e',
-    borderRadius: 12,
+    borderRadius: 16, // 라운드도 살짝 조정
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#333',
+    flexDirection: 'row',
+    alignItems: 'center', // 텍스트 수직 중앙 정렬로 변경
+    position: 'relative',
+    overflow: 'hidden',
   },
   selectedCard: {
     borderColor: '#8e44ad',
     backgroundColor: '#2a1a2a',
   },
+  cardTextContainer: {
+    flex: 1,
+    marginRight: 80, // 이미지 공간 확보
+    zIndex: 2,
+  },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 18, // 폰트 크기 살짝 조정
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
   },
   cardDesc: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#aaa',
+    lineHeight: 18,
+  },
+  cardImage: {
+    position: 'absolute',
+    right: -10,
+    bottom: -15, // 위치 미세 조정
+    width: 100,
+    height: 100,
+    opacity: 0.9,
+    zIndex: 1,
   },
 });
 
