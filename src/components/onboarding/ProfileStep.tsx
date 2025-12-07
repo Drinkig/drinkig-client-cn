@@ -7,10 +7,18 @@ interface ProfileStepProps {
   profileImageUri: string | null;
   onNameChange: (text: string) => void;
   onPickImage: () => void;
-  onCheckNickname: () => void;
+  errorMessage?: string | null;
+  isValid?: boolean | null;
 }
 
-const ProfileStep = ({ name, profileImageUri, onNameChange, onPickImage, onCheckNickname }: ProfileStepProps) => {
+const ProfileStep = ({ 
+  name, 
+  profileImageUri, 
+  onNameChange, 
+  onPickImage,
+  errorMessage,
+  isValid 
+}: ProfileStepProps) => {
   return (
     <View style={styles.content}>
       <Text style={styles.stepTitle}>어떻게 불러드리면 좋을까요?</Text>
@@ -29,18 +37,24 @@ const ProfileStep = ({ name, profileImageUri, onNameChange, onPickImage, onCheck
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>닉네임</Text>
-        <View style={styles.row}>
-            <TextInput 
-                style={styles.input} 
-                value={name}
-                onChangeText={onNameChange}
-                placeholder="닉네임을 입력하세요"
-                placeholderTextColor="#666"
-            />
-            <TouchableOpacity style={styles.checkBtn} onPress={onCheckNickname}>
-                <Text style={styles.checkBtnText}>중복확인</Text>
-            </TouchableOpacity>
-        </View>
+        <TextInput 
+            style={[
+              styles.input,
+              errorMessage ? styles.inputError : (isValid ? styles.inputSuccess : null)
+            ]} 
+            value={name}
+            onChangeText={onNameChange}
+            placeholder="닉네임을 입력하세요"
+            placeholderTextColor="#666"
+            autoCapitalize="none"
+        />
+        {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : isValid ? (
+            <Text style={styles.successText}>사용 가능한 닉네임입니다.</Text>
+        ) : (
+            <Text style={styles.helperText}>2글자 이상 입력해주세요.</Text>
+        )}
       </View>
     </View>
   );
@@ -94,11 +108,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 14,
   },
-  row: {
-    flexDirection: 'row',
-  },
   input: {
-    flex: 1,
     height: 50,
     backgroundColor: '#1e1e1e',
     borderRadius: 8,
@@ -106,21 +116,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     borderWidth: 1,
     borderColor: '#333',
-    marginRight: 10,
   },
-  checkBtn: {
-    backgroundColor: '#333',
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#444',
+  inputError: {
+    borderColor: '#e74c3c', // Red
   },
-  checkBtnText: {
-    color: '#fff',
-    fontSize: 14,
+  inputSuccess: {
+    borderColor: '#2ecc71', // Green
+  },
+  errorText: {
+    color: '#e74c3c',
+    fontSize: 12,
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  successText: {
+    color: '#2ecc71',
+    fontSize: 12,
+    marginTop: 6,
+    marginLeft: 4,
+  },
+  helperText: {
+    color: '#666',
+    fontSize: 12,
+    marginTop: 6,
+    marginLeft: 4,
   },
 });
 
 export default ProfileStep;
-

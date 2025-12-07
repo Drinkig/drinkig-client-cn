@@ -113,6 +113,8 @@ const OnboardingScreen = () => {
   const [formData, setFormData] = useState<OnboardingData>(INITIAL_DATA);
   const [loading, setLoading] = useState(false);
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
+  const [nicknameError, setNicknameError] = useState<string | null>(null);
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false);
 
   // Animation State
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -196,21 +198,56 @@ const OnboardingScreen = () => {
     }
   };
 
-  const handleCheckNickname = async () => {
-    if (!formData.name) return;
-    try {
-      const res = await checkNickname(formData.name);
-      setNicknameAvailable(res.result);
-      if (res.result) {
-        Alert.alert('확인', '사용 가능한 닉네임입니다.');
-      } else {
-        Alert.alert('중복', '이미 사용 중인 닉네임입니다.');
-      }
-    } catch (e) {
-      console.error(e);
-      Alert.alert('오류', '닉네임 확인 중 오류가 발생했습니다.');
+  // Debounce check for nickname
+  useEffect(() => {
+    if (!formData.name) {
+      setNicknameError(null);
+      setNicknameAvailable(null);
+      return;
     }
-  };
+
+    // 초기화 및 로딩 상태
+    setNicknameAvailable(null);
+    setNicknameError(null);
+    setIsCheckingNickname(true);
+
+    const timer = setTimeout(async () => {
+      // 1. Validation (2글자 이상, 자음/모음 단독 사용 금지)
+      if (formData.name.length < 2) {
+        setNicknameError('닉네임은 2글자 이상이어야 해요.');
+        setNicknameAvailable(false);
+        setIsCheckingNickname(false);
+        return;
+      }
+      
+      // 한글 자음/모음만 있는 경우 체크 (ㄱ-ㅎ, ㅏ-ㅣ)
+      // 완성형 한글(가-힣), 영문, 숫자 등은 허용
+      if (/[ㄱ-ㅎㅏ-ㅣ]/.test(formData.name)) {
+        setNicknameError('올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).');
+        setNicknameAvailable(false);
+        setIsCheckingNickname(false);
+        return;
+      }
+
+      try {
+        const res = await checkNickname(formData.name);
+        if (res.result) {
+          setNicknameAvailable(true);
+          setNicknameError(null);
+        } else {
+          setNicknameAvailable(false);
+          setNicknameError('이미 사용 중인 닉네임이에요');
+        }
+      } catch (e) {
+        setNicknameError('닉네임 확인 중 오류가 발생했습니다.');
+        setNicknameAvailable(false);
+      } finally {
+        setIsCheckingNickname(false);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [formData.name]);
 
   const handleFinalSubmit = async () => {
     setLoading(true);
@@ -479,7 +516,8 @@ const OnboardingScreen = () => {
             profileImageUri={formData.profileImageUri}
             onNameChange={(t: string) => updateData('name', t)}
             onPickImage={handlePickImage}
-            onCheckNickname={handleCheckNickname}
+            errorMessage={nicknameError}
+            isValid={nicknameAvailable}
           />
         );
       case 'NEWBIE_CHECK': 
