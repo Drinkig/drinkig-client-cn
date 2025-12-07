@@ -56,11 +56,11 @@ const ProfileScreen = () => {
         {/* 1. 프로필 정보 섹션 */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            {userInfo?.profileImage ? (
-              <Image source={{ uri: userInfo.profileImage }} style={styles.profileImage} />
-            ) : (
-              <Icon name="person" size={40} color="#ccc" />
-            )}
+            <Image 
+              source={userInfo?.profileImage ? { uri: userInfo.profileImage } : require('../assets/user_image/Drinky_3.png')} 
+              style={styles.profileImage} 
+              resizeMode="cover"
+            />
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.nickname}>{userInfo?.nickname || '게스트'}</Text>

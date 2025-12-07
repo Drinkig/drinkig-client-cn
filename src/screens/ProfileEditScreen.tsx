@@ -118,13 +118,10 @@ const ProfileEditScreen = () => {
         {/* 프로필 사진 변경 */}
         <View style={styles.imageSection}>
           <TouchableOpacity onPress={handleSelectImage} style={styles.imageContainer}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.placeholderImage}>
-                <Icon name="person" size={60} color="#ccc" />
-              </View>
-            )}
+            <Image 
+              source={profileImage ? { uri: profileImage } : require('../assets/user_image/Drinky_3.png')} 
+              style={styles.profileImage} 
+            />
             <View style={styles.cameraIconContainer}>
               <Icon name="camera" size={20} color="#fff" />
             </View>
