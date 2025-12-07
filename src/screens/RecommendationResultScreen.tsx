@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native'; // useRoute 추가
@@ -43,6 +43,28 @@ const RecommendationResultScreen = () => {
   const flavorProfile = (route.params as any)?.flavorProfile;
   const nickname = (route.params as any)?.nickname;
 
+  const [animations, setAnimations] = useState<Animated.Value[]>([]);
+
+  useEffect(() => {
+    if (!loading && recommendations.length > 0) {
+      const totalItems = (flavorProfile ? 1 : 0) + recommendations.length;
+      const anims = Array.from({ length: totalItems }, () => new Animated.Value(0));
+      setAnimations(anims);
+    }
+  }, [loading, recommendations.length, flavorProfile]);
+
+  useEffect(() => {
+    if (animations.length > 0) {
+      Animated.stagger(200, animations.map(anim => 
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        })
+      )).start();
+    }
+  }, [animations]);
+
   useEffect(() => {
     fetchRecommendations();
   }, []);
@@ -84,38 +106,70 @@ const RecommendationResultScreen = () => {
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
         {/* 펜타곤 그래프 (데이터가 있을 때만 표시) */}
         {flavorProfile && (
-          <View style={styles.chartContainer}>
+          <Animated.View 
+            style={[
+              styles.chartContainer,
+              animations[0] && {
+                opacity: animations[0],
+                transform: [{
+                  translateY: animations[0].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0]
+                  })
+                }]
+              }
+            ]}
+          >
             <Text style={styles.chartTitle}>{nickname || user?.nickname}님의 입맛 취향</Text>
             <PentagonRadarChart data={flavorProfile} size={220} />
-          </View>
+          </Animated.View>
         )}
 
-        {recommendations.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.headerTitleContainer}>
-                <Text style={styles.rankBadge}>{RANK_BADGES[index]}</Text>
-                <Text style={styles.cardTitle}>{RANK_TITLES[index]}</Text>
+        {recommendations.map((item, index) => {
+          const animIndex = (flavorProfile ? 1 : 0) + index;
+          const anim = animations[animIndex];
+          
+          return (
+            <Animated.View 
+              key={index} 
+              style={[
+                styles.card,
+                anim && {
+                  opacity: anim,
+                  transform: [{
+                    translateY: anim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [20, 0]
+                    })
+                  }]
+                }
+              ]}
+            >
+              <View style={styles.cardHeader}>
+                <View style={styles.headerTitleContainer}>
+                  <Text style={styles.rankBadge}>{RANK_BADGES[index]}</Text>
+                  <Text style={styles.cardTitle}>{RANK_TITLES[index]}</Text>
+                </View>
               </View>
-            </View>
-            
-            <View style={styles.cardBody}>
-              <View style={styles.textContainer}>
-                <Text style={styles.styleText}>
-                  {item.country} {item.region}
-                </Text>
-                <Text style={styles.varietyText}>
-                  {item.variety}
-                </Text>
+              
+              <View style={styles.cardBody}>
+                <View style={styles.textContainer}>
+                  <Text style={styles.styleText}>
+                    {item.country} {item.region}
+                  </Text>
+                  <Text style={styles.varietyText}>
+                    {item.variety}
+                  </Text>
+                </View>
+                <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
+                  <Text style={styles.typeChipText}>{item.sort}</Text>
+                </View>
               </View>
-              <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
-                <Text style={styles.typeChipText}>{item.sort}</Text>
-              </View>
-            </View>
 
-            {/* 해시태그 영역 제거 */}
-          </View>
-        ))}
+              {/* 해시태그 영역 제거 */}
+            </Animated.View>
+          );
+        })}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -163,7 +217,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 24,
     paddingTop: 0,
-    gap: 20,
+    gap: 12, // 20 -> 12 축소
   },
   chartContainer: {
     alignItems: 'center',
