@@ -57,6 +57,7 @@ export default function HomeScreen() {
             country: item.country,
             grape: item.variety,
             imageUri: item.imageUrl,
+            vivinoRating: item.vivinoRating,
             // WineDBItem 필수 필드 채우기 (API 응답에 없는 경우 기본값)
             description: '',
             features: { sweetness: 0, acidity: 0, body: 0, tannin: 0 }
@@ -78,6 +79,7 @@ export default function HomeScreen() {
           country: '', // API에서 국가 정보 제공 안함
           grape: '',   // API에서 품종 정보 제공 안함
           imageUri: item.imageUrl,
+          vivinoRating: item.vivinoRating,
         }));
         setRecommendedWines(mappedWines);
       }

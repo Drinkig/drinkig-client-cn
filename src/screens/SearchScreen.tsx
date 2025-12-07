@@ -42,6 +42,7 @@ export default function SearchScreen() {
               country: item.country,
               grape: item.variety,
               imageUri: item.imageUrl,
+              vivinoRating: item.vivinoRating,
               // 상세 정보는 없으므로 undefined 처리 (상세 화면에서 기본값 사용됨)
             }));
             setSearchResults(mappedResults);
@@ -108,11 +109,16 @@ export default function SearchScreen() {
           <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.type) }]}>
             <Text style={styles.typeChipText}>{item.type}</Text>
           </View>
-          <Text style={styles.resultCountryText}>{item.country}</Text>
+            <Text style={styles.resultCountryText}>{item.country}</Text>
+          </View>
         </View>
-      </View>
-      <Icon name="chevron-forward" size={16} color="#666" />
-    </TouchableOpacity>
+        {item.vivinoRating && (
+          <View style={styles.rightRatingContainer}>
+            <Icon name="star" size={14} color="#e74c3c" />
+            <Text style={styles.rightRatingText}>{item.vivinoRating.toFixed(1)}</Text>
+          </View>
+        )}
+      </TouchableOpacity>
   );
 
   return (
@@ -292,6 +298,17 @@ const styles = StyleSheet.create({
   resultCountryText: {
     color: '#666',
     fontSize: 12,
+  },
+  rightRatingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingLeft: 8,
+  },
+  rightRatingText: {
+    fontSize: 14,
+    color: '#e74c3c',
+    fontWeight: 'bold',
   },
   emptyContainer: {
     padding: 32,

@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { WineDBItem } from '../../data/dummyWines';
 
 interface RecommendedSectionProps {
@@ -52,9 +53,17 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
             </View>
             <View style={styles.wineInfo}>
               <Text style={styles.wineName} numberOfLines={1}>{wine.nameKor}</Text>
-              <Text style={styles.wineType}>
-                {wine.type}{wine.country ? ` · ${wine.country}` : ''}
-              </Text>
+              <View style={styles.wineDetailsRow}>
+                <Text style={styles.wineType}>
+                  {wine.type}{wine.country ? ` · ${wine.country}` : ''}
+                </Text>
+                {wine.vivinoRating && (
+                  <View style={styles.ratingContainer}>
+                    <Icon name="star" size={10} color="#e74c3c" />
+                    <Text style={styles.ratingText}>{wine.vivinoRating.toFixed(1)}</Text>
+                  </View>
+                )}
+              </View>
             </View>
           </TouchableOpacity>
         ))}
@@ -113,8 +122,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 4,
   },
+  wineDetailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   wineType: {
     fontSize: 12,
     color: '#888',
+    flex: 1, // 텍스트가 길어지면 줄어들게 하고 평점 공간 확보
+    marginRight: 4,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    // backgroundColor: 'rgba(255, 255, 255, 0.1)', // 배경 제거하거나 더 은은하게
+    // paddingHorizontal: 6,
+    // paddingVertical: 2,
+    // borderRadius: 8,
+  },
+  ratingText: {
+    fontSize: 11, // 12 -> 11
+    color: '#e74c3c', // 텍스트 색상도 붉은 계열로 통일
+    fontWeight: 'bold',
   },
 });

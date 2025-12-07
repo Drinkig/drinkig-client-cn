@@ -42,6 +42,7 @@ export interface WineDBItem {
   palate?: string[];
   finish?: string[];
   vintages?: VintageData[]; // 빈티지별 데이터
+  vivinoRating?: number;
 }
 
 // 더미 리뷰/가격 데이터 생성 헬퍼
