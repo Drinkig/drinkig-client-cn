@@ -153,59 +153,103 @@ const LoginScreen = () => {
   // };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.contentContainer}>
-        <View style={styles.logoContainer}>
-          <Image 
-            source={require('../assets/Logo Icon.png')} 
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-        
-          <View style={styles.bottomContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#fff" style={{ marginBottom: 20 }} />
-          ) : (
-            Platform.OS === 'ios' && (
-              <AppleButton
-                buttonStyle={AppleButton.Style.WHITE}
-                buttonType={AppleButton.Type.SIGN_IN}
-                style={styles.appleButton}
-                onPress={onAppleButtonPress}
-              />
-            )
-          )}
+    <View style={styles.container}>
+      {/* 배경 장식 요소 */}
+      <View style={styles.backgroundCircle1} />
+      <View style={styles.backgroundCircle2} />
+      <View style={styles.backgroundCircle3} />
 
-          {!loading && (
-            <TouchableOpacity 
-              style={styles.kakaoButton}
-              onPress={onKakaoButtonPress}
-            >
-              <View style={styles.kakaoContent}>
-                  <Icon name="chatbubble-sharp" size={18} color="#000" />
-                  <Text style={styles.kakaoButtonText}>카카오 로그인</Text>
-              </View>
-            </TouchableOpacity>
-          )}
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.contentContainer}>
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require('../assets/user_image/Drinky_3.png')} 
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.sloganText}>와인이 쉬워진다, 드링키지</Text>
+          </View>
           
-          {/* <TouchableOpacity 
-            style={styles.guestButton}  
-            onPress={handleGuestLogin}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text style={styles.guestButtonText}>로그인 없이 둘러보기</Text>
-          </TouchableOpacity> */}
+            <View style={styles.bottomContainer}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#fff" style={{ marginBottom: 20 }} />
+            ) : (
+              Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  style={styles.appleCustomButton}
+                  onPress={onAppleButtonPress}
+                >
+                  <View style={styles.buttonContent}>
+                    <Icon name="logo-apple" size={20} color="#000" />
+                    <Text style={styles.appleButtonText}>Apple로 시작하기</Text>
+                  </View>
+                </TouchableOpacity>
+              )
+            )}
+
+            {!loading && (
+              <TouchableOpacity 
+                style={styles.kakaoButton}
+                onPress={onKakaoButtonPress}
+              >
+                <View style={styles.buttonContent}>
+                    <Icon name="chatbubble-sharp" size={20} color="#000" />
+                    <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            
+            {/* <TouchableOpacity 
+              style={styles.guestButton}  
+              onPress={handleGuestLogin}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.guestButtonText}>로그인 없이 둘러보기</Text>
+            </TouchableOpacity> */}
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#1a1a1a',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  backgroundCircle1: {
+    position: 'absolute',
+    top: -100,
+    left: -100,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
     backgroundColor: '#7E13B1',
+    opacity: 0.15,
+  },
+  backgroundCircle2: {
+    position: 'absolute',
+    bottom: -50,
+    right: -50,
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: '#7E13B1',
+    opacity: 0.15,
+  },
+  backgroundCircle3: {
+    position: 'absolute',
+    top: '40%',
+    left: -50,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: '#9b59b6',
+    opacity: 0.1,
   },
   contentContainer: {
     flex: 1,
@@ -219,34 +263,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 250,
+    height: 250,
+  },
+  sloganText: {
+    color: '#FFFFFF',
+    fontSize: 22,
+    marginTop: 20,
+    fontWeight: '600',
+    opacity: 0.9,
   },
   bottomContainer: {
     width: '100%',
-    gap: 16,
+    gap: 10,
     paddingBottom: 40, // 하단 여백 추가
   },
-  appleButton: {
+  appleCustomButton: {
     width: '100%',
     height: 50,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  appleButtonText: {
+    color: '#000000',
+    fontSize: 16,
+    fontWeight: '600',
   },
   kakaoButton: {
     width: '100%',
     height: 50,
     backgroundColor: '#FEE500', // 카카오 노란색
-    borderRadius: 6, // AppleButton 기본 스타일과 유사하게
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  kakaoContent: {
+  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   kakaoButtonText: {
     color: '#000000',
-    fontSize: 19, // AppleButton 폰트 사이즈와 비슷하게
+    fontSize: 16,
     fontWeight: '600',
   },
   guestButton: {
