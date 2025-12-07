@@ -133,6 +133,9 @@ interface SearchParams {
 
 interface PublicSearchParams {
   searchName?: string;
+  wineSort?: string;
+  wineVariety?: string;
+  wineCountry?: string;
   page?: number;
   size?: number;
   sort?: string[];

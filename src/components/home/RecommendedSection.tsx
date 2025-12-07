@@ -12,19 +12,21 @@ import { WineDBItem } from '../../data/dummyWines';
 
 interface RecommendedSectionProps {
   data: WineDBItem[];
+  title?: string;
   onPressMore?: () => void;
   onPressWine?: (wine: WineDBItem) => void;
 }
 
 export const RecommendedSection: React.FC<RecommendedSectionProps> = ({ 
   data, 
+  title,
   onPressMore,
   onPressWine 
 }) => {
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>최근 마신 와인과 비슷한 스타일</Text>
+        <Text style={styles.sectionTitle}>{title || '최근 마신 와인과 비슷한 스타일'}</Text>
         <TouchableOpacity onPress={onPressMore}>
           <Text style={styles.moreText}>더보기</Text>
         </TouchableOpacity>
@@ -41,13 +43,13 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
             activeOpacity={0.8}
             onPress={() => onPressWine?.(wine)}
           >
-            {wine.imageUri ? (
-              <Image source={{ uri: wine.imageUri }} style={styles.wineImage} resizeMode="cover" />
-            ) : (
-              <View style={styles.wineImagePlaceholder}>
+            <View style={styles.wineImageContainer}>
+              {wine.imageUri ? (
+                <Image source={{ uri: wine.imageUri }} style={styles.wineImage} resizeMode="contain" />
+              ) : (
                 <MaterialCommunityIcons name="bottle-wine" size={40} color="#ccc" />
-              </View>
-            )}
+              )}
+            </View>
             <View style={styles.wineInfo}>
               <Text style={styles.wineName} numberOfLines={1}>{wine.nameKor}</Text>
               <Text style={styles.wineType}>
@@ -91,16 +93,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
   },
-  wineImagePlaceholder: {
+  wineImageContainer: {
     height: 140,
     backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
   },
   wineImage: {
-    width: '100%',
-    height: 140,
-    backgroundColor: '#333',
+    width: '65%',
+    height: '85%',
   },
   wineInfo: {
     padding: 12,
