@@ -268,22 +268,25 @@ const styles = StyleSheet.create({
   },
   resultTextContainer: {
     flex: 1,
+    gap: 4, // 요소 간 간격 추가
+    paddingVertical: 2, // 상하 여백 살짝 추가
   },
   resultNameKor: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 2,
+    // marginBottom 제거하고 gap으로 제어
   },
   resultNameEng: {
     color: '#888',
     fontSize: 13,
-    marginBottom: 2,
+    // marginBottom 제거하고 gap으로 제어
   },
   resultInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginTop: 2, // 상단 여백 추가
   },
   typeChip: {
     paddingHorizontal: 8,
