@@ -6,7 +6,6 @@ import LoginScreen from '../screens/LoginScreen';
 import SplashScreen from '../screens/SplashScreen';
 import WineDetailScreen from '../screens/WineDetailScreen';
 import MyWineDetailScreen from '../screens/MyWineDetailScreen';
-import SearchScreen from '../screens/SearchScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import WineAddScreen from '../screens/WineAddScreen';
 import ProfileEditScreen from '../screens/ProfileEditScreen';
@@ -52,7 +51,6 @@ export default function RootNavigator() {
             <Stack.Screen name="Main" component={MainTabNavigator} />
             <Stack.Screen name="WineDetail" component={WineDetailScreen} />
             <Stack.Screen name="MyWineDetail" component={MyWineDetailScreen} />
-            <Stack.Screen name="Search" component={SearchScreen} />
             <Stack.Screen name="Notification" component={NotificationScreen} />
             <Stack.Screen 
               name="WineAdd" 
