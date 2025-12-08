@@ -61,6 +61,29 @@ const WineAddScreen = () => {
     setActiveStep(prev => prev === step ? 0 : step);
   };
 
+  // 와인 종류별 색상 반환 함수
+  const getWineTypeColor = (type: string) => {
+    switch (type) {
+      case '레드':
+      case 'Red':
+        return '#C0392B'; // Darker Red
+      case '화이트':
+      case 'White':
+        return '#D4AC0D'; // Darker Gold/Yellow
+      case '스파클링':
+      case 'Sparkling':
+        return '#2980B9'; // Darker Blue
+      case '로제':
+      case 'Rose':
+        return '#C2185B'; // Darker Pink
+      case '디저트':
+      case 'Dessert':
+        return '#D35400'; // Darker Orange
+      default:
+        return '#7F8C8D'; // Darker Gray
+    }
+  };
+
   // 검색 로직
   const handleSearch = async (text: string) => {
     setName(text);
@@ -69,7 +92,7 @@ const WineAddScreen = () => {
         const response = await searchWinesPublic({
           searchName: text,
           page: 0,
-          size: 10
+          size: 5
         });
         
         if (response.isSuccess) {
@@ -210,25 +233,23 @@ const WineAddScreen = () => {
                   {/* 검색 결과 리스트 */}
                   {showSearchResults && searchResults.length > 0 && (
                     <View style={styles.searchResultsContainer}>
-                      <ScrollView
-                        style={{ maxHeight: 200 }}
-                        nestedScrollEnabled
-                        keyboardShouldPersistTaps="handled"
-                      >
+                      <View>
                         {searchResults.map((item) => (
                           <TouchableOpacity 
                             key={item.wineId}
                             style={styles.searchResultItem}
                             onPress={() => handleSelectWine(item)}
                           >
-                            <View>
+                            <View style={styles.resultTextContainer}>
                               <Text style={styles.resultNameKor}>{item.name}</Text>
                               <Text style={styles.resultNameEng}>{item.nameEng}</Text>
                             </View>
-                            <Text style={styles.resultType}>{item.sort}</Text>
+                            <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
+                              <Text style={styles.typeChipText}>{item.sort}</Text>
+                            </View>
                           </TouchableOpacity>
                         ))}
-                      </ScrollView>
+                      </View>
                     </View>
                   )}
                 </View>
@@ -452,7 +473,6 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#444',
@@ -460,12 +480,12 @@ const styles = StyleSheet.create({
   },
   searchResultsContainer: {
     position: 'absolute',
-    top: 45,
+    top: '100%',
     left: 0,
     right: 0,
+    marginTop: 4,
     backgroundColor: '#2a2a2a',
     borderRadius: 8,
-    maxHeight: 200,
     zIndex: 999,
     elevation: 10,
     shadowColor: '#000',
@@ -482,20 +502,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
+  },
+  resultTextContainer: {
+    flex: 1,
+    marginRight: 24,
   },
   resultNameKor: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
+    lineHeight: 20,
   },
   resultNameEng: {
     color: '#888',
     fontSize: 12,
     marginTop: 2,
   },
-  resultType: {
-    color: '#8e44ad',
-    fontSize: 12,
+  typeChip: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+    flexShrink: 0,
+    marginLeft: 8, // 이름과 간격
+  },
+  typeChipText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   inputGroup: {
     marginBottom: 16,

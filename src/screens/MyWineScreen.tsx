@@ -50,7 +50,9 @@ const MyWineScreen = () => {
 
   // 와인 추가 핸들러
   const handleAddWine = () => {
-    navigation.navigate('Search' as never); // 와인 추가는 검색 화면에서 시작
+    // 기존: navigation.navigate('Search' as never);
+    // 수정: 와인 등록 화면으로 바로 이동
+    navigation.navigate('WineAdd' as never); 
   };
 
   const renderWineItem = ({ item }: { item: MyWineDTO }) => (
