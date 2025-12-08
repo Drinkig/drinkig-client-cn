@@ -362,18 +362,20 @@ export default function WineDetailScreen() {
 
       </ScrollView>
 
-      {/* 하단 버튼: 내 와인일 땐 '수정', 아닐 땐 '보유 와인 추가' */}
-      <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity 
-          style={styles.recordButton}
-          onPress={handleAddRecord}
-        >
-          <MaterialCommunityIcons name="plus" size={20} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.recordButtonText}>
-            {isMyWineItem ? '기록 수정하기' : '내 와인 창고에 추가'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* 하단 버튼: 내 와인일 때만 '기록 수정하기' 표시 */}
+      {isMyWineItem && (
+        <View style={styles.bottomButtonContainer}>
+          <TouchableOpacity 
+            style={styles.recordButton}
+            onPress={handleAddRecord}
+          >
+            <MaterialCommunityIcons name="pencil" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.recordButtonText}>
+              기록 수정하기
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* 빈티지 선택 모달 */}
       <VintageSelectionModal
@@ -423,12 +425,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 32,
     backgroundColor: '#222',
-    height: 250,
+    height: 320, // 400 -> 320으로 축소 (너무 크지 않게)
     justifyContent: 'center',
   },
   wineImage: {
-    width: 200,
-    height: 200,
+    width: '60%', // 80% -> 60% (가로폭을 줄여서 좀 더 슬림하게)
+    height: 300,  // 이미지 높이를 컨테이너보다 약간 작게 설정
   },
   imagePlaceholder: {
     width: 120,

@@ -253,8 +253,8 @@ const styles = StyleSheet.create({
     borderBottomColor: '#333',
   },
   resultIconContainer: {
-    width: 50,
-    height: 50,
+    width: 64,  // 적당히 큰 정사각형
+    height: 64,
     borderRadius: 8,
     backgroundColor: '#2a2a2a',
     justifyContent: 'center',
@@ -263,8 +263,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   resultImage: {
-    width: '80%',
-    height: '80%',
+    width: '85%', // 여백을 약간 두어 깔끔하게
+    height: '85%',
   },
   resultTextContainer: {
     flex: 1,
