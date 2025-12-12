@@ -187,6 +187,8 @@ export interface MyWineDTO {
   purchaseDate: string;
   purchasePrice: number;
   period: number;
+  purchaseType?: 'OFFLINE' | 'DIRECT'; // 추가됨
+  purchaseShop?: string; // 추가됨
 }
 
 // 보유 와인 추가 요청 타입
@@ -195,6 +197,8 @@ export interface MyWineAddRequest {
   vintageYear: number;
   purchaseDate: string; // YYYY-MM-DD
   purchasePrice: number;
+  purchaseType: 'OFFLINE' | 'DIRECT';
+  purchaseShop: string;
 }
 
 export interface MyWineAddResponse {
@@ -209,6 +213,8 @@ export interface MyWineUpdateRequest {
   vintageYear: number;
   purchaseDate: string; // YYYY-MM-DD
   purchasePrice: number;
+  purchaseType?: 'OFFLINE' | 'DIRECT';
+  purchaseShop?: string;
 }
 
 export interface MyWineUpdateResponse {

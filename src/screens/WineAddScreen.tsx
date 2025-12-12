@@ -36,6 +36,8 @@ const WineAddScreen = () => {
   const [vintage, setVintage] = useState('');
   const [purchasePrice, setPurchasePrice] = useState('');
   const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
+  const [purchaseType, setPurchaseType] = useState<'offline' | 'direct'>('offline'); // 'offline' | 'direct'
+  const [purchaseShop, setPurchaseShop] = useState('');
   
   // 검색 상태 관리
   const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
@@ -146,6 +148,8 @@ const WineAddScreen = () => {
         vintageYear: vintage === 'NV' ? 0 : parseInt(vintage, 10),
         purchaseDate: purchaseDate,
         purchasePrice: purchasePrice ? parseInt(purchasePrice.replace(/[^0-9]/g, ''), 10) : 0,
+        purchaseType: purchaseType === 'offline' ? 'OFFLINE' : 'DIRECT',
+        purchaseShop: purchaseShop,
       };
 
       const response = await addMyWine(requestData);
@@ -339,6 +343,34 @@ const WineAddScreen = () => {
                     keyboardType="numeric"
                     value={purchasePrice}
                     onChangeText={setPurchasePrice}
+                  />
+                </View>
+              </View>
+
+              {/* 구매처 입력 (추가된 UI) */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>구매처</Text>
+                <View style={styles.purchaseTypeContainer}>
+                  <TouchableOpacity 
+                    style={[styles.typeButton, purchaseType === 'offline' && styles.typeButtonActive]}
+                    onPress={() => setPurchaseType('offline')}
+                  >
+                    <Text style={[styles.typeButtonText, purchaseType === 'offline' && styles.typeButtonTextActive]}>매장</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.typeButton, purchaseType === 'direct' && styles.typeButtonActive]}
+                    onPress={() => setPurchaseType('direct')}
+                  >
+                    <Text style={[styles.typeButtonText, purchaseType === 'direct' && styles.typeButtonTextActive]}>직구</Text>
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder={purchaseType === 'offline' ? "매장 이름을 입력하세요" : "직구 사이트 주소를 입력하세요"}
+                    placeholderTextColor="#666"
+                    value={purchaseShop}
+                    onChangeText={setPurchaseShop}
                   />
                 </View>
               </View>
@@ -605,6 +637,32 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: '#fff',
     fontSize: 16,
+  },
+  purchaseTypeContainer: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    gap: 8,
+  },
+  typeButton: {
+    flex: 1,
+    paddingVertical: 10,
+    backgroundColor: '#333',
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#444',
+  },
+  typeButtonActive: {
+    backgroundColor: '#8e44ad',
+    borderColor: '#8e44ad',
+  },
+  typeButtonText: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  typeButtonTextActive: {
+    color: '#fff',
   },
 });
 
