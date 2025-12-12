@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
-import { useNotification } from '../context/NotificationContext';
 import { useUser } from '../context/UserContext';
 import { WineDBItem } from '../data/dummyWines';
 import { HeroSection } from '../components/home/HeroSection';
@@ -19,7 +18,6 @@ import { getRecommendedWines, searchWinesPublic } from '../api/wine';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const { unreadCount } = useNotification();
   const { user, recommendations } = useUser();
   
   // 추천 와인 상태
@@ -109,7 +107,6 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate('Notification' as never)}
         >
           <Icon name="notifications-outline" size={24} color="#fff" />
-          {unreadCount > 0 && <View style={styles.notificationBadge} />}
         </TouchableOpacity>
       </View>
 
