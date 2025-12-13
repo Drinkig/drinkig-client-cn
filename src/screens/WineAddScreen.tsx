@@ -9,7 +9,6 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   LayoutAnimation,
   UIManager,
 } from 'react-native';
@@ -17,6 +16,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
 import { addMyWine, MyWineAddRequest, searchWinesPublic, WineUserDTO } from '../api/wine';
+import CustomAlert from '../components/CustomAlert';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -46,6 +46,22 @@ const WineAddScreen = () => {
   // 단계별 상태 관리 (1: 검색, 2: 추가 정보)
   const [activeStep, setActiveStep] = useState(initialWine ? 2 : 1);
   const [maxStep, setMaxStep] = useState(initialWine ? 2 : 1);
+
+  // 로컬 알럿 상태 관리
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    title: string;
+    message: string;
+    onConfirm?: () => void;
+  }>({
+    title: '',
+    message: '',
+  });
+
+  const handleShowAlert = (title: string, message: string, onConfirm?: () => void) => {
+    setAlertConfig({ title, message, onConfirm });
+    setAlertVisible(true);
+  };
 
   // 초기 와인 정보가 있으면 2단계로 바로 진입
   useEffect(() => {
@@ -130,18 +146,34 @@ const WineAddScreen = () => {
     setActiveStep(2);
   };
 
+  // 모든 필드가 입력되었는지 확인하는 함수
+  const isFormValid = () => {
+    // 1. 와인이 선택되어야 함
+    if (!selectedWineId) return false;
+    
+    // 2. 빈티지가 입력되어야 함
+    if (!vintage && vintage !== 'NV') return false;
+    
+    // 3. 구매가가 입력되어야 함 (최소 4자리 이상 - 천원 단위)
+    const priceValue = purchasePrice.replace(/,/g, ''); // 콤마 제거 후 길이 확인
+    if (!purchasePrice || priceValue.length < 4) return false;
+    
+    // 4. 구매일자가 입력되어야 함
+    if (!purchaseDate) return false;
+
+    // 5. 구매처 정보가 입력되어야 함
+    if (!purchaseShop.trim()) return false;
+    
+    return true;
+  };
+
   // 저장
   const handleSave = async () => {
-    if (!selectedWineId) {
-      Alert.alert('알림', '와인을 선택해주세요.');
-      return;
-    }
-
-    if (!vintage && vintage !== 'NV') {
-      Alert.alert('알림', '빈티지를 입력해주세요.');
-      return;
-    }
+    if (!isFormValid()) return;
     
+    // selectedWineId는 isFormValid()에서 체크하므로 여기서는 null이 아님을 확신할 수 있음
+    if (!selectedWineId) return;
+
     try {
       const requestData: MyWineAddRequest = {
         wineId: selectedWineId,
@@ -155,19 +187,38 @@ const WineAddScreen = () => {
       const response = await addMyWine(requestData);
 
       if (response.isSuccess) {
-        Alert.alert('성공', '내 와인 창고에 추가되었습니다.');
-        navigation.goBack();
+        handleShowAlert(
+          '성공', 
+          '내 와인 창고에 추가되었습니다.',
+          () => {
+            navigation.goBack();
+          }
+        );
       } else {
-        Alert.alert('오류', response.message || '와인 등록에 실패했습니다.');
+        handleShowAlert(
+          '오류', 
+          response.message || '와인 등록에 실패했습니다.'
+        );
       }
     } catch (error) {
       console.error('My wine add failed:', error);
-      Alert.alert('오류', '서버 통신 중 문제가 발생했습니다.');
+      handleShowAlert('오류', '서버 통신 중 문제가 발생했습니다.');
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <CustomAlert
+        visible={alertVisible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onClose={() => setAlertVisible(false)}
+        onConfirm={() => {
+          setAlertVisible(false);
+          if (alertConfig.onConfirm) alertConfig.onConfirm();
+        }}
+        singleButton={true}
+      />
       {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
@@ -177,9 +228,9 @@ const WineAddScreen = () => {
         <TouchableOpacity 
           onPress={handleSave} 
           style={styles.saveButton}
-          disabled={maxStep < 2}
+          disabled={!isFormValid()}
         >
-          <Text style={[styles.saveText, maxStep < 2 && { color: '#555' }]}>저장</Text>
+          <Text style={[styles.saveText, !isFormValid() && { color: '#555' }]}>저장</Text>
         </TouchableOpacity>
       </View>
 
@@ -322,6 +373,10 @@ const WineAddScreen = () => {
                     }}
                     maxLength={4}
                   />
+                  {/* 빈티지가 4자리 숫자이거나, NV가 선택되었을 때만 체크 표시 */}
+                  {((vintage.length === 4 && !isNaN(Number(vintage))) || vintage === 'NV') && (
+                    <Icon name="checkmark-circle" size={20} color="#2ecc71" style={{ marginRight: 8 }} />
+                  )}
                   <TouchableOpacity 
                     style={[styles.nvButton, vintage === 'NV' && styles.nvButtonActive]}
                     onPress={() => setVintage(vintage === 'NV' ? '' : 'NV')}
@@ -342,8 +397,16 @@ const WineAddScreen = () => {
                     placeholderTextColor="#666"
                     keyboardType="numeric"
                     value={purchasePrice}
-                    onChangeText={setPurchasePrice}
+                    onChangeText={(text) => {
+                      // 숫자만 추출
+                      const numericValue = text.replace(/[^0-9]/g, '');
+                      // 천 단위 콤마 포맷팅
+                      const formattedValue = numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                      setPurchasePrice(formattedValue);
+                    }}
                   />
+                  {/* 실제 숫자 값(콤마 제거)의 길이가 4자리 이상일 때 체크 */}
+                  {purchasePrice.replace(/,/g, '').length >= 4 && <Icon name="checkmark-circle" size={20} color="#2ecc71" style={{ marginLeft: 8 }} />}
                 </View>
               </View>
 
@@ -372,6 +435,7 @@ const WineAddScreen = () => {
                     value={purchaseShop}
                     onChangeText={setPurchaseShop}
                   />
+                  {purchaseShop.length > 0 && <Icon name="checkmark-circle" size={20} color="#2ecc71" style={{ marginLeft: 8 }} />}
                 </View>
               </View>
 
@@ -386,6 +450,7 @@ const WineAddScreen = () => {
                     value={purchaseDate}
                     onChangeText={setPurchaseDate}
                   />
+                  {purchaseDate.length > 0 && <Icon name="checkmark-circle" size={20} color="#2ecc71" style={{ marginLeft: 8 }} />}
                 </View>
               </View>
             </View>

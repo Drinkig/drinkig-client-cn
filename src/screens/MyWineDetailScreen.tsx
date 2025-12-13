@@ -167,6 +167,8 @@ export default function MyWineDetailScreen() {
             <View style={styles.divider} />
             {renderInfoRow('cash', '구매가', wine.purchasePrice ? `₩${wine.purchasePrice.toLocaleString()}` : null)}
             <View style={styles.divider} />
+            {renderInfoRow('store', '구매처', wine.purchaseShop ? `${wine.purchaseShop} (${wine.purchaseType === 'DIRECT' ? '직구' : '매장'})` : '-')}
+            <View style={styles.divider} />
             {renderInfoRow('calendar-check', '구매일', wine.purchaseDate)}
             <View style={styles.divider} />
             {renderInfoRow('clock-outline', '보관 기간', `${wine.period}일`)}
