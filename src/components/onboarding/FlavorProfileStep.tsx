@@ -12,6 +12,7 @@ export interface FlavorProfile {
 interface FlavorProfileStepProps {
   data: FlavorProfile;
   onChange: (key: keyof FlavorProfile, value: number | null) => void;
+  attribute?: keyof FlavorProfile;
 }
 
 const FLAVOR_ITEMS: { key: keyof FlavorProfile; label: string; description: string }[] = [
@@ -22,8 +23,12 @@ const FLAVOR_ITEMS: { key: keyof FlavorProfile; label: string; description: stri
   { key: 'alcohol', label: '알코올', description: '알코올 도수감' },
 ];
 
-const FlavorProfileStep = ({ data, onChange }: FlavorProfileStepProps) => {
+const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps) => {
   
+  const itemsToRender = attribute 
+    ? FLAVOR_ITEMS.filter(item => item.key === attribute)
+    : FLAVOR_ITEMS;
+
   const renderItem = (item: typeof FLAVOR_ITEMS[0]) => {
     const currentValue = data[item.key];
 
@@ -97,8 +102,8 @@ const FlavorProfileStep = ({ data, onChange }: FlavorProfileStepProps) => {
       <Text style={styles.title}>내 입맛 분석</Text>
       <Text style={styles.subtitle}>선호하는 맛의 정도를 선택해주세요.</Text>
       
-      <View style={styles.content}>
-        {FLAVOR_ITEMS.map(renderItem)}
+      <View style={[styles.content, attribute && styles.centeredContent]}>
+        {itemsToRender.map(renderItem)}
       </View>
     </View>
   );
@@ -124,6 +129,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingBottom: 20,
+  },
+  centeredContent: {
+    justifyContent: 'center',
+    paddingBottom: 100, // 시각적 중심 조정을 위한 여백
   },
   itemContainer: {
     marginBottom: 0,

@@ -22,6 +22,7 @@ import {
 } from '../api/member';
 
 import FlavorProfileStep, { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
+import NewbieFlavorProfileStep from '../components/onboarding/NewbieFlavorProfileStep';
 import IntroStep from '../components/onboarding/IntroStep';
 import ProfileStep from '../components/onboarding/ProfileStep';
 import NewbieCheckStep from '../components/onboarding/NewbieCheckStep';
@@ -43,13 +44,18 @@ type Step =
   | 'NEWBIE_TRANSITION'
   | 'ALCOHOL_PREF'
   | 'FOOD_PREF'
-  | 'FLAVOR_PROFILE' // [NEW]
+  // Expert Flow: All in one page
+  | 'FLAVOR_PROFILE' 
+  // Newbie Flow: Split pages
+  | 'FLAVOR_ACIDITY'
+  | 'FLAVOR_SWEETNESS'
+  | 'FLAVOR_TANNIN'
+  | 'FLAVOR_BODY'
+  | 'FLAVOR_ALCOHOL'
+  
   | 'WINE_INTEREST' // Red vs White (유지: 뉴비도 wineSort 필요)
   // Expert Flow
   | 'EXPERT_TRANSITION'
-  | 'WINE_SORT'
-  | 'WINE_AREA'
-  | 'WINE_VARIETY'
   // Shared
   | 'BUDGET';
 
@@ -147,16 +153,20 @@ const OnboardingScreen = () => {
           body !== undefined &&
           alcohol !== undefined
         );
+      case 'FLAVOR_ACIDITY':
+        return formData.flavorProfile.acidity !== undefined;
+      case 'FLAVOR_SWEETNESS':
+        return formData.flavorProfile.sweetness !== undefined;
+      case 'FLAVOR_TANNIN':
+        return formData.flavorProfile.tannin !== undefined;
+      case 'FLAVOR_BODY':
+        return formData.flavorProfile.body !== undefined;
+      case 'FLAVOR_ALCOHOL':
+        return formData.flavorProfile.alcohol !== undefined;
       case 'WINE_INTEREST':
         return formData.wineSort.length > 0;
       case 'BUDGET':
         return formData.monthPrice !== 0;
-      case 'WINE_SORT':
-        return formData.wineSort.length > 0;
-      case 'WINE_AREA':
-        return formData.wineArea.length > 0;
-      case 'WINE_VARIETY':
-        return formData.wineVariety.length > 0;
       default:
         return false;
     }
@@ -369,9 +379,33 @@ const OnboardingScreen = () => {
         next = 'FOOD_PREF';
         break;
       case 'FOOD_PREF':
-        next = 'FLAVOR_PROFILE';
+        // Newbie -> Split Flow, Expert -> Single Page Flow
+        if (formData.isNewbie) {
+          next = 'FLAVOR_ACIDITY';
+        } else {
+          next = 'FLAVOR_PROFILE';
+        }
         break;
+      
+      // Expert Path
       case 'FLAVOR_PROFILE':
+        next = 'WINE_INTEREST';
+        break;
+
+      // Newbie Path
+      case 'FLAVOR_ACIDITY':
+        next = 'FLAVOR_SWEETNESS';
+        break;
+      case 'FLAVOR_SWEETNESS':
+        next = 'FLAVOR_TANNIN';
+        break;
+      case 'FLAVOR_TANNIN':
+        next = 'FLAVOR_BODY';
+        break;
+      case 'FLAVOR_BODY':
+        next = 'FLAVOR_ALCOHOL';
+        break;
+      case 'FLAVOR_ALCOHOL':
         next = 'WINE_INTEREST';
         break;
       case 'WINE_INTEREST':
@@ -405,8 +439,20 @@ const OnboardingScreen = () => {
         prev = formData.isNewbie ? 'NEWBIE_TRANSITION' : 'EXPERT_TRANSITION';
     }
     if (step === 'FOOD_PREF') prev = 'ALCOHOL_PREF';
+    
+    // Expert Path Back
     if (step === 'FLAVOR_PROFILE') prev = 'FOOD_PREF';
-    if (step === 'WINE_INTEREST') prev = 'FLAVOR_PROFILE';
+
+    // Newbie Path Back
+    if (step === 'FLAVOR_ACIDITY') prev = 'FOOD_PREF';
+    if (step === 'FLAVOR_SWEETNESS') prev = 'FLAVOR_ACIDITY';
+    if (step === 'FLAVOR_TANNIN') prev = 'FLAVOR_SWEETNESS';
+    if (step === 'FLAVOR_BODY') prev = 'FLAVOR_TANNIN';
+    if (step === 'FLAVOR_ALCOHOL') prev = 'FLAVOR_BODY';
+    
+    if (step === 'WINE_INTEREST') {
+      prev = formData.isNewbie ? 'FLAVOR_ALCOHOL' : 'FLAVOR_PROFILE';
+    }
     
     if (step === 'EXPERT_TRANSITION') prev = 'NEWBIE_CHECK';
     if (step === 'BUDGET') prev = 'WINE_INTEREST';
@@ -427,8 +473,8 @@ const OnboardingScreen = () => {
   const getProgress = () => {
     if (step === 'INTRO') return 0;
     
-    // Newbie & Expert: 8 steps (Unified Flow)
-    const totalSteps = 8;
+    // Newbie: 12 steps, Expert: 8 steps
+    const totalSteps = formData.isNewbie ? 12 : 8;
     let currentStep = 0;
 
     switch (step) {
@@ -441,11 +487,23 @@ const OnboardingScreen = () => {
 
       case 'ALCOHOL_PREF': currentStep = 4; break;
       case 'FOOD_PREF': currentStep = 5; break;
+      
+      // Expert Flow
       case 'FLAVOR_PROFILE': currentStep = 6; break;
-      case 'WINE_INTEREST': currentStep = 7; break;
+
+      // Newbie Flow
+      case 'FLAVOR_ACIDITY': currentStep = 6; break;
+      case 'FLAVOR_SWEETNESS': currentStep = 7; break;
+      case 'FLAVOR_TANNIN': currentStep = 8; break;
+      case 'FLAVOR_BODY': currentStep = 9; break;
+      case 'FLAVOR_ALCOHOL': currentStep = 10; break;
+      
+      case 'WINE_INTEREST': 
+        currentStep = formData.isNewbie ? 11 : 7; 
+        break;
       
       case 'BUDGET':
-         currentStep = 8;
+         currentStep = formData.isNewbie ? 12 : 8;
          break;
     }
     
@@ -544,6 +602,47 @@ const OnboardingScreen = () => {
           <FlavorProfileStep
             data={formData.flavorProfile}
             onChange={updateFlavorProfile}
+            // No attribute -> Show all
+          />
+        );
+      case 'FLAVOR_ACIDITY':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="acidity"
+            value={formData.flavorProfile.acidity}
+            onChange={(val) => updateFlavorProfile('acidity', val)}
+          />
+        );
+      case 'FLAVOR_SWEETNESS':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="sweetness"
+            value={formData.flavorProfile.sweetness}
+            onChange={(val) => updateFlavorProfile('sweetness', val)}
+          />
+        );
+      case 'FLAVOR_TANNIN':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="tannin"
+            value={formData.flavorProfile.tannin}
+            onChange={(val) => updateFlavorProfile('tannin', val)}
+          />
+        );
+      case 'FLAVOR_BODY':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="body"
+            value={formData.flavorProfile.body}
+            onChange={(val) => updateFlavorProfile('body', val)}
+          />
+        );
+      case 'FLAVOR_ALCOHOL':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="alcohol"
+            value={formData.flavorProfile.alcohol}
+            onChange={(val) => updateFlavorProfile('alcohol', val)}
           />
         );
       case 'WINE_INTEREST':
@@ -562,36 +661,6 @@ const OnboardingScreen = () => {
             selectedPrice={formData.monthPrice}
             onSelect={(v: number) => updateData('monthPrice', v)}
             options={BUDGET_OPTIONS}
-          />
-        );
-      case 'WINE_SORT': 
-        return (
-          <MultiSelectionStep
-            title="선호하는 와인 종류"
-            options={WINE_SORTS}
-            selected={formData.wineSort}
-            onSelect={(v: string) => toggleSelection('wineSort', v)}
-            multi
-          />
-        );
-      case 'WINE_AREA': 
-        return (
-          <MultiSelectionStep
-            title="선호하는 와인 생산지"
-            options={WINE_AREAS}
-            selected={formData.wineArea}
-            onSelect={(v: string) => toggleSelection('wineArea', v)}
-            multi
-          />
-        );
-      case 'WINE_VARIETY': 
-        return (
-          <MultiSelectionStep
-            title="선호하는 포도 품종"
-            options={WINE_VARIETIES}
-            selected={formData.wineVariety}
-            onSelect={(v: string) => toggleSelection('wineVariety', v)}
-            multi
           />
         );
       default: return null;
@@ -614,8 +683,6 @@ const OnboardingScreen = () => {
         return '취향 등록하러 가기';
       case 'BUDGET':
         return '결과 보기'; // Always last step now
-      case 'WINE_VARIETY':
-        return '결과 보기';
       default:
         return '다음';
     }
