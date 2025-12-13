@@ -265,31 +265,27 @@ const OnboardingScreen = () => {
         wineSort: formData.wineSort,
       };
 
+      // 3. Unified Data Submission (Both Newbie and Expert use the same preference fields now)
+      requestData.preferredAlcohols = formData.preferredAlcohols;
+      requestData.preferredFoods = formData.preferredFoods;
+      requestData.acidity = formData.flavorProfile.acidity ?? null;
+      requestData.sweetness = formData.flavorProfile.sweetness ?? null;
+      requestData.tannin = formData.flavorProfile.tannin ?? null;
+      requestData.body = formData.flavorProfile.body ?? null;
+      requestData.alcohol = formData.flavorProfile.alcohol ?? null;
+
+      // Expert specific fields are no longer collected, so send null
+      requestData.wineArea = null;
+      requestData.wineVariety = null;
+
+      /* Original Logic (Disabled for unified flow)
       if (formData.isNewbie) {
         requestData.preferredAlcohols = formData.preferredAlcohols;
-        requestData.preferredFoods = formData.preferredFoods;
-        requestData.acidity = formData.flavorProfile.acidity ?? null;
-        requestData.sweetness = formData.flavorProfile.sweetness ?? null;
-        requestData.tannin = formData.flavorProfile.tannin ?? null;
-        requestData.body = formData.flavorProfile.body ?? null;
-        requestData.alcohol = formData.flavorProfile.alcohol ?? null;
-
-        // Expert fields -> null
-        requestData.wineArea = null;
-        requestData.wineVariety = null;
+        // ...
       } else {
-        requestData.wineArea = formData.wineArea;
-        requestData.wineVariety = formData.wineVariety;
-
-        // Newbie fields -> null
-        requestData.preferredAlcohols = null;
-        requestData.preferredFoods = null;
-        requestData.acidity = null;
-        requestData.sweetness = null;
-        requestData.tannin = null;
-        requestData.body = null;
-        requestData.alcohol = null;
+        // ...
       }
+      */
 
       console.log('🔍 Onboarding Request Payload:', JSON.stringify(requestData, null, 2));
 
@@ -363,6 +359,12 @@ const OnboardingScreen = () => {
       case 'NEWBIE_TRANSITION':
         next = 'ALCOHOL_PREF';
         break;
+      
+      // Expert Path (Now follows Newbie flow steps)
+      case 'EXPERT_TRANSITION':
+        next = 'ALCOHOL_PREF';
+        break;
+
       case 'ALCOHOL_PREF':
         next = 'FOOD_PREF';
         break;
@@ -375,29 +377,16 @@ const OnboardingScreen = () => {
       case 'WINE_INTEREST':
         next = 'BUDGET';
         break;
-
-      // Expert Path
-      case 'EXPERT_TRANSITION':
-        next = 'BUDGET';
-        break;
       case 'BUDGET':
-        // 뉴비는 BUDGET이 마지막 단계
-        if (formData.isNewbie) {
-          handleFinalSubmit();
-          return;
-        }
-        next = 'WINE_SORT';
-        break;
-      case 'WINE_SORT':
-        next = 'WINE_AREA';
-        break;
-      case 'WINE_AREA':
-        next = 'WINE_VARIETY';
-        break;
-      case 'WINE_VARIETY':
-        // 전문가는 WINE_VARIETY가 마지막 단계
         handleFinalSubmit();
         return;
+      
+      /* 
+       * Removed Old Expert Flow Steps
+       * case 'WINE_SORT': ...
+       * case 'WINE_AREA': ...
+       * case 'WINE_VARIETY': ...
+       */
     }
 
     if (next) {
@@ -412,20 +401,21 @@ const OnboardingScreen = () => {
     if (step === 'NEWBIE_CHECK') prev = 'PROFILE';
     
     if (step === 'NEWBIE_TRANSITION') prev = 'NEWBIE_CHECK';
-    if (step === 'ALCOHOL_PREF') prev = 'NEWBIE_TRANSITION';
+    if (step === 'ALCOHOL_PREF') {
+        prev = formData.isNewbie ? 'NEWBIE_TRANSITION' : 'EXPERT_TRANSITION';
+    }
     if (step === 'FOOD_PREF') prev = 'ALCOHOL_PREF';
     if (step === 'FLAVOR_PROFILE') prev = 'FOOD_PREF';
     if (step === 'WINE_INTEREST') prev = 'FLAVOR_PROFILE';
     
     if (step === 'EXPERT_TRANSITION') prev = 'NEWBIE_CHECK';
-    if (step === 'BUDGET') {
-        if (formData.isNewbie) prev = 'WINE_INTEREST';
-        else prev = 'EXPERT_TRANSITION';
-    }
+    if (step === 'BUDGET') prev = 'WINE_INTEREST';
 
+    /* Removed Old Expert Back Steps
     if (step === 'WINE_SORT') prev = 'BUDGET';
     if (step === 'WINE_AREA') prev = 'WINE_SORT';
     if (step === 'WINE_VARIETY') prev = 'WINE_AREA';
+    */
 
     if (prev) {
       animateTransition(prev, 'prev');
@@ -437,9 +427,8 @@ const OnboardingScreen = () => {
   const getProgress = () => {
     if (step === 'INTRO') return 0;
     
-    // Newbie: 8 steps, Expert: 7 steps
-    // 아직 isNewbie가 결정되지 않았거나(null) true이면 8단계로 가정
-    const totalSteps = formData.isNewbie === false ? 7 : 8;
+    // Newbie & Expert: 8 steps (Unified Flow)
+    const totalSteps = 8;
     let currentStep = 0;
 
     switch (step) {
@@ -456,14 +445,8 @@ const OnboardingScreen = () => {
       case 'WINE_INTEREST': currentStep = 7; break;
       
       case 'BUDGET':
-         // Newbie: 8th step (Last)
-         // Expert: 4th step
-         currentStep = formData.isNewbie ? 8 : 4;
+         currentStep = 8;
          break;
-      
-      case 'WINE_SORT': currentStep = 5; break;
-      case 'WINE_AREA': currentStep = 6; break;
-      case 'WINE_VARIETY': currentStep = 7; break;
     }
     
     return currentStep / totalSteps;
@@ -630,7 +613,7 @@ const OnboardingScreen = () => {
       case 'EXPERT_TRANSITION':
         return '취향 등록하러 가기';
       case 'BUDGET':
-        return formData.isNewbie ? '결과 보기' : '다음';
+        return '결과 보기'; // Always last step now
       case 'WINE_VARIETY':
         return '결과 보기';
       default:
