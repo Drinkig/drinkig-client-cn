@@ -33,19 +33,6 @@ function isMyWine(wine: WineDBItem | MyWine): wine is MyWine {
   return 'purchasePrice' in wine;
 }
 
-// 랜덤 특징 생성기 (데이터가 없을 경우 사용)
-const getRandomFeatures = () => ({
-  sweetness: Math.floor(Math.random() * 3) + 1,
-  acidity: Math.floor(Math.random() * 3) + 2,
-  body: Math.floor(Math.random() * 3) + 2,
-  tannin: Math.floor(Math.random() * 3) + 1,
-});
-
-const DEFAULT_DESCRIPTION = "이 와인은 균형 잡힌 구조감과 풍부한 과실향이 특징입니다. 다양한 음식과 잘 어울리며, 특별한 날 즐기기에도 손색이 없습니다.";
-const DEFAULT_NOSE = ['과일', '꽃'];
-const DEFAULT_PALATE = ['오크', '향신료'];
-const DEFAULT_FINISH = ['허브', '흙'];
-
 export default function WineDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<WineDetailRouteProp>();
@@ -70,7 +57,10 @@ export default function WineDetailScreen() {
         try {
           setIsLoading(true);
           // 사용자용 API는 vintageYear를 받을 수 있음. 현재는 선택된 빈티지 또는 기본값(NV 등)
-          const vintageYear = selectedVintage && selectedVintage.year !== 'NV' ? parseInt(selectedVintage.year) : undefined;
+          // ALL일 때는 vintageYear를 보내지 않음 (전체 조회)
+          const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL' 
+            ? parseInt(selectedVintage.year) 
+            : undefined;
           
           const response = await getWineDetailPublic(wine.id as number, vintageYear);
           if (response.isSuccess) {
@@ -98,7 +88,10 @@ export default function WineDetailScreen() {
     setIsLiked(!previousState);
 
     try {
-      const vintageYear = selectedVintage && selectedVintage.year !== 'NV' ? parseInt(selectedVintage.year) : undefined;
+      // ALL일 때는 vintageYear를 undefined로 보냄
+      const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL' 
+        ? parseInt(selectedVintage.year) 
+        : undefined;
       
       if (previousState) {
         // 이미 좋아요 상태였으면 삭제
@@ -123,36 +116,47 @@ export default function WineDetailScreen() {
   const imageUri = !isMyWineItem && apiWineDetail?.imageUrl ? apiWineDetail.imageUrl : wine.imageUri;
   
   // 상세 데이터 준비
-  // API에서 features(맛 그래프)를 제공한다면 그것을 사용, 없으면 랜덤
+  // API에서 features(맛 그래프)를 제공하면 사용, 없으면 null (랜덤 제거)
   const features = !isMyWineItem && apiWineDetail ? {
-    sweetness: apiWineDetail.avgSweetness || 3,
-    acidity: apiWineDetail.avgAcidity || 3,
-    body: apiWineDetail.avgBody || 3,
-    tannin: apiWineDetail.avgTannin || 3,
-  } : (!isMyWineItem && wine.features ? wine.features : getRandomFeatures());
+    sweetness: apiWineDetail.avgSweetness,
+    acidity: apiWineDetail.avgAcidity,
+    body: apiWineDetail.avgBody,
+    tannin: apiWineDetail.avgTannin,
+  } : (!isMyWineItem && wine.features ? wine.features : null); // null로 설정
 
-  const description = !isMyWineItem && wine.description ? wine.description : DEFAULT_DESCRIPTION; 
+  // 설명: 없으면 null (기본 문구 제거)
+  const description = !isMyWineItem && wine.description ? wine.description : null; 
   
-  // Nose/Palate 등은 API 응답 구조(WineInfoDTO)에 nose1, nose2... 로 들어옴
-  const nose = !isMyWineItem && apiWineDetail ? [apiWineDetail.nose1, apiWineDetail.nose2, apiWineDetail.nose3].filter(Boolean) : (!isMyWineItem && wine.nose ? wine.nose : DEFAULT_NOSE);
+  // Nose/Palate: API 데이터 없으면 null
+  const nose = !isMyWineItem && apiWineDetail ? 
+    [apiWineDetail.nose1, apiWineDetail.nose2, apiWineDetail.nose3].filter(Boolean) : 
+    (!isMyWineItem && wine.nose ? wine.nose : null);
   
-  // Palate/Finish는 API에 없으면 기본값
-  const palate = !isMyWineItem && wine.palate ? wine.palate : DEFAULT_PALATE;
-  const finish = !isMyWineItem && wine.finish ? wine.finish : DEFAULT_FINISH;
+  // Palate/Finish: 없으면 null
+  const palate = !isMyWineItem && wine.palate ? wine.palate : null;
+  const finish = !isMyWineItem && wine.finish ? wine.finish : null;
   
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
-  // 빈티지 리스트 생성: NV + 2025 ~ 1950
+  // 빈티지 리스트 생성: ALL + NV + 2025 ~ 1950
   const vintages = useMemo(() => {
-    // 1. NV (Non-Vintage)
+    // 1. ALL (전체)
     const list: VintageData[] = [{
-      year: 'NV',
+      year: 'ALL',
       rating: 0,
       reviews: [],
       prices: []
     }];
 
-    // 2. 2025 ~ 1950
+    // 2. NV (Non-Vintage)
+    list.push({
+      year: 'NV',
+      rating: 0,
+      reviews: [],
+      prices: []
+    });
+
+    // 3. 2025 ~ 1950
     for (let year = 2025; year >= 1950; year--) {
       list.push({
         year: year.toString(),
@@ -162,9 +166,10 @@ export default function WineDetailScreen() {
       });
     }
 
-    // 3. 실제 데이터가 있으면 매핑
+    // 4. 실제 데이터가 있으면 매핑 (ALL은 그대로 둠)
     if (rawVintages) {
       return list.map(vItem => {
+        if (vItem.year === 'ALL') return vItem; // ALL은 매핑 제외
         const realData = rawVintages.find(rv => rv.year === vItem.year);
         return realData ? realData : vItem;
       });
@@ -177,14 +182,26 @@ export default function WineDetailScreen() {
   const filteredReviews = useMemo(() => {
     if (!vintages) return [];
     
-    if (selectedVintage) {
-      return selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
+    // selectedVintage가 없거나 'ALL'인 경우 전체 리뷰 표시
+    if (!selectedVintage || selectedVintage.year === 'ALL') {
+      // API나 더미 데이터 구조상 vintages 배열에 전체 리뷰가 모여있지 않을 수 있음.
+      // 따라서 모든 빈티지의 리뷰를 합쳐서 보여줘야 함.
+      // 단, API 연동 시 '전체 조회' API가 따로 있다면 그것을 사용해야 함.
+      // 현재 구조에서는 각 빈티지별 리뷰를 합치는 방식으로 구현
+      
+      // 만약 apiWineDetail에 전체 리뷰 목록이 있다면 그것을 우선 사용 (API 구조에 따라 다름)
+      // 현재는 더미 데이터 구조(vintages 배열 안에 reviews)를 따름
+      if (rawVintages) {
+        return rawVintages.flatMap(v => 
+          v.reviews.map(r => ({ ...r, vintageYear: v.year }))
+        );
+      }
+      return []; 
     } else {
-      return vintages.flatMap(v => 
-        v.reviews.map(r => ({ ...r, vintageYear: v.year }))
-      );
+      // 특정 빈티지 선택 시
+      return selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
     }
-  }, [vintages, selectedVintage]);
+  }, [vintages, selectedVintage, rawVintages]);
 
   // 초기 빈티지 설정
   useEffect(() => {

@@ -11,7 +11,7 @@ interface MyRecordTabProps {
     acidity: number;
     body: number;
     tannin: number;
-  };
+  } | null;
 }
 
 export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
@@ -65,12 +65,16 @@ export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
 
       <View style={styles.sectionContainer}>
         <Text style={styles.sectionTitle}>나의 테이스팅 노트</Text>
-        <View style={styles.featuresContainer}>
-          <FeatureGauge label="당도" value={features.sweetness} />
-          <FeatureGauge label="산도" value={features.acidity} />
-          <FeatureGauge label="바디" value={features.body} />
-          <FeatureGauge label="타닌" value={features.tannin} />
-        </View>
+        {features ? (
+          <View style={styles.featuresContainer}>
+            <FeatureGauge label="당도" value={features.sweetness} />
+            <FeatureGauge label="산도" value={features.acidity} />
+            <FeatureGauge label="바디" value={features.body} />
+            <FeatureGauge label="타닌" value={features.tannin} />
+          </View>
+        ) : (
+          <Text style={{ color: '#888', fontStyle: 'italic' }}>테이스팅 노트가 기록되지 않았습니다.</Text>
+        )}
       </View>
     </View>
   );
