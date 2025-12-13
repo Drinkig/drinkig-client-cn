@@ -13,11 +13,12 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { getMyWines } from '../api/wine';
+import PentagonRadarChart from '../components/common/PentagonRadarChart';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const { user: userInfo, recommendations } = useUser();
+  const { user: userInfo, flavorProfile } = useUser();
   const [selectedType, setSelectedType] = React.useState('전체');
   const [wineCount, setWineCount] = React.useState(0);
 
@@ -98,32 +99,29 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 2. 추천받은 품종 섹션 */}
+        {/* 2. 내 와인 취향 섹션 */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>추천 스타일</Text>
+            <Text style={styles.sectionTitle}>내 와인 취향</Text>
           </View>
           
-          {recommendations && recommendations.length > 0 ? (
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.carouselContent}
+          {/* 펜타곤 그래프 (Flavor Profile이 있을 경우 표시) */}
+          {flavorProfile ? (
+            <TouchableOpacity 
+              style={styles.chartContainer} 
+              onPress={() => navigation.navigate('RecommendationList' as never)}
+              activeOpacity={0.8}
             >
-              {recommendations.map((item, index) => (
-                <View key={index} style={styles.recommendationCard}>
-                  <View style={styles.infoContainer}>
-                    <Text style={styles.wineVariety} numberOfLines={1}>{item.variety}</Text>
-                    <Text style={styles.wineRegion} numberOfLines={1}>{item.country} {item.region}</Text>
-                  </View>
-                  
-                  <View style={[styles.tagWrapper, { backgroundColor: getWineTypeColor(item.sort), opacity: 1 }]}>
-                      <Text style={styles.tagText}>{item.sort}</Text>
-                  </View>
+              <View style={styles.chartContentWrapper}>
+                <PentagonRadarChart data={flavorProfile} size={150} />
+                <View style={styles.chartRightContent}>
+                  <Text style={styles.chartLinkTitle}>추천 와인 스타일</Text>
+                  <Text style={styles.chartLinkSubtitle}>보러가기</Text>
                 </View>
-              ))}
-            </ScrollView>
+              </View>
+            </TouchableOpacity>
           ) : (
+            // 데이터가 없을 경우
             <View style={styles.emptyWrapper}>
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>아직 분석된 취향 정보가 없습니다.</Text>
@@ -257,7 +255,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sectionContainer: {
-    marginBottom: 40,
+    marginBottom: 10,
   },
   sectionHeader: {
     paddingHorizontal: 24,
@@ -267,6 +265,38 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  chartContainer: {
+    marginBottom: 24,
+    backgroundColor: '#1a1a1a',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginHorizontal: 24,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  chartContentWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  chartRightContent: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingLeft: 16,
+  },
+  chartLinkTitle: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  chartLinkSubtitle: {
+    color: '#8e44ad',
+    fontSize: 14,
+    fontWeight: '600',
   },
   carouselContent: {
     paddingHorizontal: 24,

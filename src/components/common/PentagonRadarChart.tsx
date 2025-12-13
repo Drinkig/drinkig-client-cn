@@ -18,7 +18,7 @@ const LABELS = [
 
 const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
   const center = size / 2;
-  const radius = (size / 2) * 0.65; // 라벨 공간 확보를 위해 반지름 축소
+  const radius = (size / 2) * 0.6; // 라벨 공간 확보를 위해 반지름 축소 (0.65 -> 0.6)
   const angleStep = (Math.PI * 2) / 5;
 
   // 점수 매핑 (null/undefined는 0 또는 최소값 처리, 여기선 0으로 처리하여 중앙에 찍히게 하거나 1로 처리)

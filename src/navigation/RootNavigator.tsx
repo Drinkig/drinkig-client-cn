@@ -12,6 +12,7 @@ import ProfileEditScreen from '../screens/ProfileEditScreen';
 import SettingScreen from '../screens/SettingScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import RecommendationResultScreen from '../screens/RecommendationResultScreen';
+import RecommendationListScreen from '../screens/RecommendationListScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +64,7 @@ export default function RootNavigator() {
               options={{ presentation: 'modal' }}
             />
             <Stack.Screen name="Setting" component={SettingScreen} />
+            <Stack.Screen name="RecommendationList" component={RecommendationListScreen} />
           </>
         )
       ) : (

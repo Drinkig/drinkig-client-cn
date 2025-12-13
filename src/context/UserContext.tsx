@@ -3,6 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMemberInfo, logout as apiLogout } from '../api/member';
 import client from '../api/client';
 
+import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
+
 // 사용자 정보 타입
 export interface User {
   nickname: string;
@@ -22,6 +24,7 @@ export interface RecommendedWine {
 interface UserContextType {
   user: User | null;
   recommendations: RecommendedWine[];
+  flavorProfile: FlavorProfile | null; // 추가
   isLoggedIn: boolean;
   isLoading: boolean;
   isNewUser: boolean;
@@ -30,6 +33,7 @@ interface UserContextType {
   logout: () => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   setRecommendations: (recs: RecommendedWine[]) => void;
+  setFlavorProfile: (profile: FlavorProfile) => void; // 추가
   refreshUserInfo: () => Promise<void>;
   completeOnboarding: () => void;
 }
@@ -40,6 +44,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [recommendations, setRecommendationsState] = useState<RecommendedWine[]>([]);
+  const [flavorProfile, setFlavorProfileState] = useState<FlavorProfile | null>(null); // 추가
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
@@ -51,9 +56,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
         const savedRecs = await AsyncStorage.getItem('recommendations');
+        const savedFlavor = await AsyncStorage.getItem('flavorProfile'); // 추가
 
         if (savedRecs) {
           setRecommendationsState(JSON.parse(savedRecs));
+        }
+
+        if (savedFlavor) {
+          setFlavorProfileState(JSON.parse(savedFlavor));
         }
 
         if (accessToken) {
@@ -155,10 +165,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.removeItem('accessToken');
       await AsyncStorage.removeItem('refreshToken');
       await AsyncStorage.removeItem('recommendations');
+      await AsyncStorage.removeItem('flavorProfile'); // 추가
       delete client.defaults.headers.common['Authorization'];
       
       setUser(null);
       setRecommendationsState([]);
+      setFlavorProfileState(null); // 추가
       setIsLoggedIn(false);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -181,8 +193,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     await AsyncStorage.setItem('recommendations', JSON.stringify(recs));
   };
 
+  const setFlavorProfile = async (profile: FlavorProfile) => {
+    setFlavorProfileState(profile);
+    await AsyncStorage.setItem('flavorProfile', JSON.stringify(profile));
+  };
+
   return (
-    <UserContext.Provider value={{ user, recommendations, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, setRecommendations, refreshUserInfo, completeOnboarding }}>
+    <UserContext.Provider value={{ user, recommendations, flavorProfile, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, setRecommendations, setFlavorProfile, refreshUserInfo, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   );

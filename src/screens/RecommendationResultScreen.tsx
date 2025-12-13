@@ -35,7 +35,7 @@ const getWineTypeColor = (type: string) => {
 const RecommendationResultScreen = () => {
   const navigation = useNavigation();
   const route = useRoute(); // route 훅 사용
-  const { user, completeOnboarding, setRecommendations: saveRecommendations } = useUser(); // user 추가
+  const { user, completeOnboarding, setRecommendations: saveRecommendations, setFlavorProfile: saveFlavorProfile } = useUser(); // user 추가
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<OnboardingRecommendationDTO[]>([]);
 
@@ -44,6 +44,13 @@ const RecommendationResultScreen = () => {
   const nickname = (route.params as any)?.nickname;
 
   const [animations, setAnimations] = useState<Animated.Value[]>([]);
+
+  useEffect(() => {
+    // Save flavor profile to context/storage if available
+    if (flavorProfile) {
+      saveFlavorProfile(flavorProfile);
+    }
+  }, [flavorProfile]);
 
   useEffect(() => {
     if (!loading && recommendations.length > 0) {
