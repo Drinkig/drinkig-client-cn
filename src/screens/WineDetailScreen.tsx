@@ -116,25 +116,46 @@ export default function WineDetailScreen() {
   const imageUri = !isMyWineItem && apiWineDetail?.imageUrl ? apiWineDetail.imageUrl : wine.imageUri;
   
   // 상세 데이터 준비
-  // API에서 features(맛 그래프)를 제공하면 사용, 없으면 null (랜덤 제거)
+  // [수정] API에서 features(맛 그래프)를 제공하면 사용, 없으면 null
+  // 우선순위: official > avg > null
   const features = !isMyWineItem && apiWineDetail ? {
-    sweetness: apiWineDetail.avgSweetness,
-    acidity: apiWineDetail.avgAcidity,
-    body: apiWineDetail.avgBody,
-    tannin: apiWineDetail.avgTannin,
-  } : (!isMyWineItem && wine.features ? wine.features : null); // null로 설정
+    sweetness: apiWineDetail.officialSweetness ?? apiWineDetail.avgSweetness,
+    acidity: apiWineDetail.officialAcidity ?? apiWineDetail.avgAcidity,
+    body: apiWineDetail.officialBody ?? apiWineDetail.avgBody,
+    tannin: apiWineDetail.officialTannin ?? apiWineDetail.avgTannin,
+  } : (!isMyWineItem && wine.features ? wine.features : null);
 
-  // 설명: 없으면 null (기본 문구 제거)
-  const description = !isMyWineItem && wine.description ? wine.description : null; 
+  // [수정] 설명: API officialDescription 우선, 없으면 wine.description, 없으면 null
+  const description = !isMyWineItem && apiWineDetail?.officialDescription 
+    ? apiWineDetail.officialDescription 
+    : (!isMyWineItem && wine.description ? wine.description : null);
   
-  // Nose/Palate: API 데이터 없으면 null
+  // [수정] Nose: official 우선, 없으면 nose, 없으면 wine.nose
   const nose = !isMyWineItem && apiWineDetail ? 
-    [apiWineDetail.nose1, apiWineDetail.nose2, apiWineDetail.nose3].filter(Boolean) : 
+    [
+      apiWineDetail.officialNose1 || apiWineDetail.nose1,
+      apiWineDetail.officialNose2 || apiWineDetail.nose2,
+      apiWineDetail.officialNose3 || apiWineDetail.nose3
+    ].filter(Boolean) : 
     (!isMyWineItem && wine.nose ? wine.nose : null);
   
-  // Palate/Finish: 없으면 null
-  const palate = !isMyWineItem && wine.palate ? wine.palate : null;
-  const finish = !isMyWineItem && wine.finish ? wine.finish : null;
+  // [수정] Palate: officialPalate 사용
+  const palate = !isMyWineItem && apiWineDetail ? 
+    [
+      apiWineDetail.officialPalate1,
+      apiWineDetail.officialPalate2,
+      apiWineDetail.officialPalate3
+    ].filter(Boolean) :
+    (!isMyWineItem && wine.palate ? wine.palate : null);
+
+  // [수정] Finish: officialFinish 사용
+  const finish = !isMyWineItem && apiWineDetail ? 
+    [
+      apiWineDetail.officialFinish1,
+      apiWineDetail.officialFinish2,
+      apiWineDetail.officialFinish3
+    ].filter(Boolean) :
+    (!isMyWineItem && wine.finish ? wine.finish : null);
   
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
