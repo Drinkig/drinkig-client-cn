@@ -8,11 +8,13 @@ import {
   Animated,
   Dimensions,
   Alert,
+  Easing, // Easing 추가
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Svg, { Circle } from 'react-native-svg'; // SVG import 추가
 import { useUser } from '../context/UserContext';
 import {
   uploadProfileImage,
@@ -107,9 +109,20 @@ const BUDGET_OPTIONS = [
   { label: '15만원 이상', value: 200000 },
 ];
 
+const LOADING_MESSAGES = [
+  "작성해주신 취향을 분석하고 있어요...",
+  "좋아하는 맛과 향을 꼼꼼히 확인 중이에요...",
+  "입맛에 딱 맞는 품종을 찾는 중이에요...",
+  "전 세계 와인 품종 데이터를 매칭하고 있어요...",
+  "{nickname}님에게 가장 잘 어울리는 품종을 찾았어요!",
+];
+
 // ----------------------
 // Component
 // ----------------------
+
+// 원형 프로그레스 컴포넌트
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const OnboardingScreen = () => {
   const navigation = useNavigation();
@@ -121,11 +134,14 @@ const OnboardingScreen = () => {
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzingIndex, setAnalyzingIndex] = useState(0);
 
   // Animation State
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
+  const loadingBarAnim = useRef(new Animated.Value(0)).current;
 
   // --- Helpers ---
 
@@ -259,6 +275,73 @@ const OnboardingScreen = () => {
     return () => clearTimeout(timer);
   }, [formData.name]);
 
+  // 로딩 애니메이션 및 텍스트 변경 로직
+  useEffect(() => {
+    if (analyzing) {
+      setAnalyzingIndex(0);
+      loadingBarAnim.setValue(0);
+
+      const times = [2000, 3000, 5000, 8000]; // 메시지 전환 타이밍 (ms)
+      
+      const timeout1 = setTimeout(() => setAnalyzingIndex(1), times[0]);
+      const timeout2 = setTimeout(() => setAnalyzingIndex(2), times[1]);
+      const timeout3 = setTimeout(() => setAnalyzingIndex(3), times[2]);
+      const timeout4 = setTimeout(() => setAnalyzingIndex(4), times[3]);
+
+      // 2. 프로그레스 바 애니메이션 (Sequence로 다이나믹한 속도 조절)
+      Animated.sequence([
+        // 0~2초: 빠르게 30%까지 (초기 진입)
+        Animated.timing(loadingBarAnim, {
+          toValue: 0.3,
+          duration: 2000,
+          easing: Easing.out(Easing.quad), // 시작은 빠르고 끝은 부드럽게
+          useNativeDriver: true, 
+        }),
+        // 2~6초: 60%까지 천천히 (분석 중인 느낌)
+        Animated.timing(loadingBarAnim, {
+          toValue: 0.6,
+          duration: 4000,
+          easing: Easing.linear, 
+          useNativeDriver: true,
+        }),
+        // 6~8초: 85%까지 다시 속도 냄
+        Animated.timing(loadingBarAnim, {
+          toValue: 0.85,
+          duration: 2000,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        // 8~10초: 100% 마무리
+        Animated.timing(loadingBarAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      return () => {
+        clearTimeout(timeout1);
+        clearTimeout(timeout2);
+        clearTimeout(timeout3);
+        clearTimeout(timeout4);
+        loadingBarAnim.stopAnimation();
+      };
+    }
+  }, [analyzing]);
+
+  // 원형 프로그레스 관련 상수
+  const CIRCLE_SIZE = 120;
+  const STROKE_WIDTH = 8;
+  const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+  // strokeDashoffset 보간
+  const strokeDashoffset = loadingBarAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [CIRCUMFERENCE, 0], // 꽉 찬 상태에서 0으로 (시계 방향)
+  });
+
   const handleFinalSubmit = async () => {
     setLoading(true);
     try {
@@ -302,14 +385,20 @@ const OnboardingScreen = () => {
       await updateMemberInitInfo(requestData);
 
       // 3. Move to Recommendation Result (Do NOT complete onboarding yet)
-      (navigation as any).navigate('RecommendationResult', { 
-        flavorProfile: formData.flavorProfile,
-        nickname: formData.name
-      });
+      setLoading(false);
+      setAnalyzing(true);
+
+      // 10초 대기 (영상 7.62초 재생 + 약 2.4초 멈춤 상태 유지)
+      setTimeout(() => {
+        setAnalyzing(false);
+        (navigation as any).navigate('RecommendationResult', {
+          flavorProfile: formData.flavorProfile,
+          nickname: formData.name
+        });
+      }, 10000);
     } catch (error) {
       console.error('Onboarding Error:', error);
       Alert.alert('오류', '정보 저장 중 문제가 발생했습니다.');
-    } finally {
       setLoading(false);
     }
   };
@@ -728,6 +817,46 @@ const OnboardingScreen = () => {
                 )}
             </TouchableOpacity>
         </View>
+
+        {analyzing && (
+            <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
+                
+                {/* 원형 프로그레스 바 */}
+                <View style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+                    <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
+                        {/* 배경 원 (회색) */}
+                        <Circle
+                            cx={CIRCLE_SIZE / 2}
+                            cy={CIRCLE_SIZE / 2}
+                            r={RADIUS}
+                            stroke="#333"
+                            strokeWidth={STROKE_WIDTH}
+                            fill="transparent"
+                        />
+                        {/* 진행 원 (보라색) */}
+                        <AnimatedCircle
+                            cx={CIRCLE_SIZE / 2}
+                            cy={CIRCLE_SIZE / 2}
+                            r={RADIUS}
+                            stroke="#8e44ad"
+                            strokeWidth={STROKE_WIDTH}
+                            fill="transparent"
+                            strokeDasharray={CIRCUMFERENCE}
+                            strokeDashoffset={strokeDashoffset}
+                            strokeLinecap="round"
+                            rotation="-90" // 12시 방향부터 시작
+                            origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
+                        />
+                    </Svg>
+                </View>
+                
+                <Text style={styles.analyzingText}>
+                    {LOADING_MESSAGES[analyzingIndex].replace('{nickname}', formData.name)}
+                </Text>
+
+                {/* 기존 직선 바 삭제됨 */}
+            </View>
+        )}
     </SafeAreaView>
   );
 };
@@ -785,6 +914,24 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  analyzingContainer: {
+    backgroundColor: '#121212', 
+    zIndex: 9999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  analyzingText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginTop: 20,
+    marginBottom: 0,
+    textAlign: 'center',
+    lineHeight: 24,
+    opacity: 0.9,
+  },
+  // loadingBarBackground, loadingBarFill 스타일 삭제 (더 이상 사용 안 함)
 });
 
 export default OnboardingScreen;
