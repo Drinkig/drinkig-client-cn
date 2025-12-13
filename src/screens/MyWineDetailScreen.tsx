@@ -79,9 +79,11 @@ export default function MyWineDetailScreen() {
   };
 
   const handleEdit = () => {
-    // TODO: 수정 화면으로 이동 (현재는 WineAddScreen을 재사용하거나 별도 EditScreen 필요)
-    // 일단 알림만 표시
-    Alert.alert('알림', '수정 기능은 준비 중입니다.');
+    if (wine) {
+      // WineAddScreen으로 이동하면서 현재 와인 정보를 'myWine' 파라미터로 전달
+      // @ts-ignore
+      navigation.navigate('WineAdd', { myWine: wine });
+    }
   };
 
   if (isLoading) {

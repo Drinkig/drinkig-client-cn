@@ -15,7 +15,15 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
-import { addMyWine, MyWineAddRequest, searchWinesPublic, WineUserDTO } from '../api/wine';
+import { 
+  addMyWine, 
+  MyWineAddRequest, 
+  searchWinesPublic, 
+  WineUserDTO,
+  updateMyWine,        // 추가
+  MyWineUpdateRequest, // 추가
+  MyWineDTO            // 추가
+} from '../api/wine';
 import CustomAlert from '../components/CustomAlert';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -28,24 +36,50 @@ const WineAddScreen = () => {
   // 예: SearchScreen에서 와인을 선택하고 등록하러 온 경우
   const route = useRoute<any>(); 
   const initialWine = route.params?.wine;
+  const myWine = route.params?.myWine as MyWineDTO; // 전달받은 내 와인 정보
+
+  // myWine이 있으면 수정 모드입니다.
+  const isEditMode = !!myWine;
 
   // 입력 상태 관리
-  const [selectedWineId, setSelectedWineId] = useState<number | null>(initialWine?.id || null);
-  const [name, setName] = useState(initialWine?.nameKor || '');
-  const [type, setType] = useState(initialWine?.type || '');
-  const [vintage, setVintage] = useState('');
-  const [purchasePrice, setPurchasePrice] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
-  const [purchaseType, setPurchaseType] = useState<'offline' | 'direct'>('offline'); // 'offline' | 'direct'
-  const [purchaseShop, setPurchaseShop] = useState('');
+  const [selectedWineId, setSelectedWineId] = useState<number | null>(
+    myWine?.wineId || initialWine?.id || null
+  );
+  const [name, setName] = useState(
+    myWine?.wineName || initialWine?.nameKor || ''
+  );
+  const [type, setType] = useState(
+    myWine?.wineSort || initialWine?.type || ''
+  );
+  
+  // 빈티지 (0이면 NV로 변환)
+  const [vintage, setVintage] = useState(
+    myWine ? (myWine.vintageYear === 0 ? 'NV' : String(myWine.vintageYear)) : ''
+  );
+  
+  // 가격 (콤마 넣기)
+  const [purchasePrice, setPurchasePrice] = useState(
+    myWine ? myWine.purchasePrice.toLocaleString() : ''
+  );
+  
+  // 날짜
+  const [purchaseDate, setPurchaseDate] = useState(
+    myWine?.purchaseDate || new Date().toISOString().split('T')[0]
+  );
+  
+  // 구매처 (직구/매장)
+  const [purchaseType, setPurchaseType] = useState<'offline' | 'direct'>(
+    myWine?.purchaseType === 'DIRECT' ? 'direct' : 'offline'
+  );
+  const [purchaseShop, setPurchaseShop] = useState(myWine?.purchaseShop || '');
   
   // 검색 상태 관리
   const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   
   // 단계별 상태 관리 (1: 검색, 2: 추가 정보)
-  const [activeStep, setActiveStep] = useState(initialWine ? 2 : 1);
-  const [maxStep, setMaxStep] = useState(initialWine ? 2 : 1);
+  const [activeStep, setActiveStep] = useState((initialWine || myWine) ? 2 : 1);
+  const [maxStep, setMaxStep] = useState((initialWine || myWine) ? 2 : 1);
 
   // 로컬 알럿 상태 관리
   const [alertVisible, setAlertVisible] = useState(false);
@@ -175,30 +209,52 @@ const WineAddScreen = () => {
     if (!selectedWineId) return;
 
     try {
-      const requestData: MyWineAddRequest = {
-        wineId: selectedWineId,
-        vintageYear: vintage === 'NV' ? 0 : parseInt(vintage, 10),
-        purchaseDate: purchaseDate,
-        purchasePrice: purchasePrice ? parseInt(purchasePrice.replace(/[^0-9]/g, ''), 10) : 0,
-        purchaseType: purchaseType === 'offline' ? 'OFFLINE' : 'DIRECT',
-        purchaseShop: purchaseShop,
-      };
+      if (isEditMode) {
+        // [수정 모드]
+        const requestData: MyWineUpdateRequest = {
+          vintageYear: vintage === 'NV' ? 0 : parseInt(vintage, 10),
+          purchaseDate: purchaseDate,
+          purchasePrice: purchasePrice ? parseInt(purchasePrice.replace(/[^0-9]/g, ''), 10) : 0,
+          purchaseType: purchaseType === 'offline' ? 'OFFLINE' : 'DIRECT',
+          purchaseShop: purchaseShop,
+        };
 
-      const response = await addMyWine(requestData);
+        const response = await updateMyWine(myWine.myWineId, requestData);
 
-      if (response.isSuccess) {
-        handleShowAlert(
-          '성공', 
-          '내 와인 창고에 추가되었습니다.',
-          () => {
+        if (response.isSuccess) {
+          handleShowAlert('성공', '와인 정보가 수정되었습니다.', () => {
             navigation.goBack();
-          }
-        );
+          });
+        } else {
+          handleShowAlert('오류', response.message || '수정에 실패했습니다.');
+        }
       } else {
-        handleShowAlert(
-          '오류', 
-          response.message || '와인 등록에 실패했습니다.'
-        );
+        // [등록 모드] (기존 코드)
+        const requestData: MyWineAddRequest = {
+          wineId: selectedWineId,
+          vintageYear: vintage === 'NV' ? 0 : parseInt(vintage, 10),
+          purchaseDate: purchaseDate,
+          purchasePrice: purchasePrice ? parseInt(purchasePrice.replace(/[^0-9]/g, ''), 10) : 0,
+          purchaseType: purchaseType === 'offline' ? 'OFFLINE' : 'DIRECT',
+          purchaseShop: purchaseShop,
+        };
+
+        const response = await addMyWine(requestData);
+
+        if (response.isSuccess) {
+          handleShowAlert(
+            '성공', 
+            '내 와인 창고에 추가되었습니다.',
+            () => {
+              navigation.goBack();
+            }
+          );
+        } else {
+          handleShowAlert(
+            '오류', 
+            response.message || '와인 등록에 실패했습니다.'
+          );
+        }
       }
     } catch (error) {
       console.error('My wine add failed:', error);
@@ -224,7 +280,9 @@ const WineAddScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
           <Text style={styles.closeText}>취소</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>보유 와인 추가</Text>
+        <Text style={styles.headerTitle}>
+          {isEditMode ? '와인 정보 수정' : '보유 와인 추가'}
+        </Text>
         <TouchableOpacity 
           onPress={handleSave} 
           style={styles.saveButton}
@@ -241,35 +299,37 @@ const WineAddScreen = () => {
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           
           {/* Step 1: 와인 검색 */}
-          <TouchableOpacity 
-            activeOpacity={0.8}
-            onPress={() => handleStepChange(1)}
-            style={styles.stepHeader}
-          >
-            <View style={[
-              styles.stepCircle, 
-              activeStep >= 1 && styles.stepCircleActive,
-              maxStep > 1 && styles.stepCircleCompleted
-            ]}>
-              {maxStep > 1 ? (
-                <Icon name="checkmark" size={16} color="#fff" />
-              ) : (
-                <Text style={[styles.stepNumber, activeStep >= 1 && styles.stepNumberActive]}>1</Text>
-              )}
-            </View>
-            <Text style={[
-              styles.stepTitle, 
-              activeStep === 1 && styles.stepTitleActive,
-              (maxStep > 1 && activeStep !== 1) && { color: '#ccc' }
-            ]}>
-              와인 검색
-            </Text>
-            <Icon 
-              name={activeStep === 1 ? "chevron-up" : "chevron-down"} 
-              size={20} 
-              color={activeStep === 1 ? "#fff" : (maxStep > 1 ? "#ccc" : "#888")} 
-            />
-          </TouchableOpacity>
+          {!isEditMode && (
+            <TouchableOpacity 
+              activeOpacity={0.8}
+              onPress={() => handleStepChange(1)}
+              style={styles.stepHeader}
+            >
+              <View style={[
+                styles.stepCircle, 
+                activeStep >= 1 && styles.stepCircleActive,
+                maxStep > 1 && styles.stepCircleCompleted
+              ]}>
+                {maxStep > 1 ? (
+                  <Icon name="checkmark" size={16} color="#fff" />
+                ) : (
+                  <Text style={[styles.stepNumber, activeStep >= 1 && styles.stepNumberActive]}>1</Text>
+                )}
+              </View>
+              <Text style={[
+                styles.stepTitle, 
+                activeStep === 1 && styles.stepTitleActive,
+                (maxStep > 1 && activeStep !== 1) && { color: '#ccc' }
+              ]}>
+                와인 검색
+              </Text>
+              <Icon 
+                name={activeStep === 1 ? "chevron-up" : "chevron-down"} 
+                size={20} 
+                color={activeStep === 1 ? "#fff" : (maxStep > 1 ? "#ccc" : "#888")} 
+              />
+            </TouchableOpacity>
+          )}
 
           {activeStep === 1 && (
             <View style={styles.stepContent}>
