@@ -100,7 +100,7 @@ export default function HomeScreen() {
           {/* 1. 테이스팅 노트 쓰기 */}
           <TouchableOpacity 
             style={[styles.quickMenuItem, styles.tastingNoteButton]}
-            onPress={() => navigation.navigate('WineAdd' as never)}
+            onPress={() => navigation.navigate('TastingNoteWrite' as never)}
             activeOpacity={0.8}
           >
             <ImageBackground

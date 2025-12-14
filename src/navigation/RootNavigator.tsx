@@ -15,6 +15,8 @@ import RecommendationResultScreen from '../screens/RecommendationResultScreen';
 import RecommendationListScreen from '../screens/RecommendationListScreen';
 import SearchResultScreen from '../screens/SearchResultScreen';
 import WishlistScreen from '../screens/WishlistScreen';
+import TastingNoteWriteScreen from '../screens/TastingNoteWriteScreen';
+import SearchScreen from '../screens/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -68,7 +70,9 @@ export default function RootNavigator() {
             <Stack.Screen name="Setting" component={SettingScreen} />
             <Stack.Screen name="RecommendationList" component={RecommendationListScreen} />
             <Stack.Screen name="SearchResult" component={SearchResultScreen} />
+            <Stack.Screen name="WineSearch" component={SearchScreen} />
             <Stack.Screen name="Wishlist" component={WishlistScreen} />
+            <Stack.Screen name="TastingNoteWrite" component={TastingNoteWriteScreen} />
           </>
         )
       ) : (

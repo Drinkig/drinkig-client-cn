@@ -14,15 +14,14 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { WineDBItem } from '../data/dummyWines';
+import { RootStackParamList } from '../types';
 
-type SearchResultScreenRouteProp = RouteProp<{
-  SearchResult: { searchKeyword: string };
-}, 'SearchResult'>;
+type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;
 
 export default function SearchResultScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchResultScreenRouteProp>();
-  const { searchKeyword } = route.params;
+  const { searchKeyword, returnScreen } = route.params;
 
   const [isLoading, setIsLoading] = useState(true);
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
@@ -81,10 +80,23 @@ export default function SearchResultScreen() {
     }
   };
 
+  const handleWinePress = (item: WineDBItem) => {
+    if (returnScreen === 'TastingNoteWrite') {
+      navigation.navigate('TastingNoteWrite', {
+        wineId: item.id,
+        wineName: item.nameKor,
+        wineImage: item.imageUri,
+        wineType: item.type,
+      });
+    } else {
+      navigation.navigate('WineDetail', { wine: item });
+    }
+  };
+
   const renderSearchResult = ({ item }: { item: WineDBItem }) => (
     <TouchableOpacity 
       style={styles.resultItem}
-      onPress={() => navigation.navigate('WineDetail', { wine: item })}
+      onPress={() => handleWinePress(item)}
     >
       <View style={styles.resultIconContainer}>
         {item.imageUri ? (

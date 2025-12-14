@@ -12,14 +12,37 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
 import { searchWinesPublic, WineUserDTO } from '../api/wine'; // 사용자용 검색 API 사용
+import { RootStackParamList } from '../types';
+
+// Search(탭)와 WineSearch(스택) 모두 지원하도록 타입 수정
+type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp<RootStackParamList, 'WineSearch'>;
 
 export default function SearchScreen() {
   const navigation = useNavigation();
+  const route = useRoute<SearchScreenRouteProp>();
+  const [returnScreen, setReturnScreen] = useState<keyof RootStackParamList | undefined>(undefined);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.returnScreen) {
+        setReturnScreen(route.params.returnScreen);
+      } else {
+        // 탭 이동 시 파라미터가 없을 수도 있으므로 초기화하거나 유지 여부 결정
+        // 여기서는 명시적으로 들어왔을 때만 설정하고, 나갈 때 초기화하는게 좋지만
+        // 탭 간 이동이라 복잡함. 일단 params가 있으면 세팅.
+        // 다만 홈 -> 기록하기 -> 검색 -> 다른 탭 -> 다시 검색 탭 오면?
+        // 기록하기 모드가 유지되는게 좋을 수도 있고 아닐 수도 있음.
+        // 일단 params가 없으면 undefined로 리셋 (기본 검색 모드로 복귀)
+        setReturnScreen(undefined);
+      }
+    }, [route.params])
+  );
+
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]); // 최근 검색어 (임시 로컬 상태)
@@ -88,7 +111,7 @@ export default function SearchScreen() {
         setRecentSearches(prev => [trimmedText, ...prev].slice(0, 10));
       }
       // 검색 결과 페이지로 이동
-      navigation.navigate('SearchResult', { searchKeyword: trimmedText });
+      navigation.navigate('SearchResult', { searchKeyword: trimmedText, returnScreen });
     }
   };
 

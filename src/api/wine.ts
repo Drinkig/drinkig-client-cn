@@ -477,3 +477,33 @@ export const getWishlist = async () => {
   const response = await client.get<WishlistListResponse>('/wine-wishlist');
   return response.data;
 };
+
+// 테이스팅 노트 작성 요청 타입
+export interface TastingNoteRequest {
+  wineId: number;
+  vintageYear?: number;
+  color: string;
+  tasteDate: string; // YYYY-MM-DD
+  sweetness: number; // 0-100
+  acidity: number; // 0-100
+  tannin: number; // 0-100
+  body: number; // 0-100
+  alcohol: number; // 0-100
+  nose?: string[];
+  rating: number; // 0.0-5.0
+  review?: string;
+}
+
+// 테이스팅 노트 작성 응답 타입
+export interface TastingNoteResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string; // "테이스팅 노트 작성이 완료되었습니다." 등
+}
+
+// 테이스팅 노트 작성 API
+export const createTastingNote = async (data: TastingNoteRequest) => {
+  const response = await client.post<TastingNoteResponse>('/tasting-note/new-note', data);
+  return response.data;
+};
