@@ -102,7 +102,7 @@ export default function TastingNoteDetailScreen() {
         <View style={styles.topSection}>
           <View style={styles.wineImageContainer}>
             {note.imageUrl ? (
-              <Image source={{ uri: note.imageUrl }} style={styles.wineImage} resizeMode="cover" />
+              <Image source={{ uri: note.imageUrl }} style={styles.wineImage} resizeMode="contain" />
             ) : (
               <View style={styles.wineImagePlaceholder}>
                 <Ionicons name="wine" size={40} color="#666" />
@@ -281,6 +281,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: '#252525',
     marginRight: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
   },
   wineImage: {
     width: '100%',

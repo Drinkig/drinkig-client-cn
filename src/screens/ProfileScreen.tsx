@@ -154,7 +154,7 @@ const ProfileScreen = () => {
           <Image 
             source={{ uri: item.imageUrl }} 
             style={styles.noteImage} 
-            resizeMode="cover"
+            resizeMode="contain"
           />
         ) : (
           <View style={[styles.noteImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#333' }]}>
@@ -555,13 +555,16 @@ const styles = StyleSheet.create({
   imageWrapper: {
     width: '100%',
     aspectRatio: 1, // 정사각형
-    backgroundColor: '#333', // 이미지 로딩 전 배경색
+    backgroundColor: '#2a2a2a', // 여백이 자연스럽게 보이도록 배경색 변경
     position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10, // 이미지가 너무 꽉 차지 않도록 여백 추가
   },
   noteImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'contain',
   },
   ratingBadge: {
     position: 'absolute',

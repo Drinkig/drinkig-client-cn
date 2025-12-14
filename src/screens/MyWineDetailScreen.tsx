@@ -116,7 +116,7 @@ export default function MyWineDetailScreen() {
   const renderImage = () => {
     if (wine.wineImageUrl) {
       return (
-        <Image source={{ uri: wine.wineImageUrl }} style={styles.wineImage} resizeMode="cover" />
+        <Image source={{ uri: wine.wineImageUrl }} style={styles.wineImage} resizeMode="contain" />
       );
     }
     return (
@@ -258,12 +258,19 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginRight: 16,
-  },
-  wineImage: {
     width: 80,
     height: 120,
     borderRadius: 8,
-    backgroundColor: '#333',
+    overflow: 'hidden',
+    backgroundColor: '#1a1a1a', // 카드 배경(#2a2a2a)보다 조금 더 어둡게 처리하여 구분
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
+  },
+  wineImage: {
+    width: '100%',
+    height: '100%',
+    // resizeMode는 컴포넌트 prop에서 제어
   },
   imagePlaceholder: {
     width: 80,

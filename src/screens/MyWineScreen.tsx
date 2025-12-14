@@ -476,13 +476,16 @@ const styles = StyleSheet.create({
   wineImageContainer: {
     width: '100%',
     aspectRatio: 1, // 정사각형
-    backgroundColor: '#333',
+    backgroundColor: '#2a2a2a', // 카드 배경색과 통일
     position: 'relative', // 배지 위치 잡기 위해 추가
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
   },
   wineImage: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
+    resizeMode: 'contain',
   },
   placeholderImage: {
     flex: 1,
