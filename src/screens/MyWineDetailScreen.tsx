@@ -165,7 +165,7 @@ export default function MyWineDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>구매 정보</Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('calendar', '빈티지', wine.vintageYear)}
+            {renderInfoRow('calendar', '빈티지', wine.vintageYear === 0 ? 'NV' : wine.vintageYear)}
             <View style={styles.divider} />
             {renderInfoRow('cash', '구매가', wine.purchasePrice ? `₩${wine.purchasePrice.toLocaleString()}` : null)}
             <View style={styles.divider} />
