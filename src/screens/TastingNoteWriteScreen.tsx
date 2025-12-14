@@ -21,6 +21,7 @@ import { RootStackParamList } from '../types';
 import { createTastingNote, TastingNoteRequest, searchWinesPublic, WineUserDTO } from '../api/wine';
 import TasteLevelSelector from '../components/tasting_note/TasteLevelSelector';
 import ColorSelector from '../components/tasting_note/ColorSelector';
+import StarRating from '../components/tasting_note/StarRating';
 import HelpModal from '../components/tasting_note/HelpModal';
 import { TASTE_TIPS } from '../components/tasting_note/constants';
 
@@ -417,29 +418,8 @@ export default function TastingNoteWriteScreen() {
                   onChange={setAlcohol}
                   onHelpPress={() => showTip('alcohol')}
                 />
-              </View>
 
-              {/* Rating & Review */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>리뷰</Text>
-                
-                <View style={styles.ratingContainer}>
-                  <Text style={styles.label}>별점</Text>
-                  <View style={styles.stars}>
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <TouchableOpacity key={star} onPress={() => handleRating(star)}>
-                        <Icon 
-                          name={star <= rating ? "star" : "star-outline"} 
-                          size={32} 
-                          color="#8e44ad" 
-                        />
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                  <Text style={styles.ratingValue}>{rating}점</Text>
-                </View>
-
-                <View style={styles.inputGroup}>
+                <View style={[styles.inputGroup, { marginTop: 24 }]}>
                   <Text style={styles.label}>향 (Nose) - 쉼표(,)로 구분</Text>
                   <TextInput
                     style={styles.input}
@@ -449,9 +429,16 @@ export default function TastingNoteWriteScreen() {
                     onChangeText={setNose}
                   />
                 </View>
+              </View>
+
+              {/* Rating & Review */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>총평</Text>
+                
+                <StarRating rating={rating} onRatingChange={handleRating} />
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>한줄 평</Text>
+                  <Text style={styles.label}>상세 리뷰</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     placeholder="와인에 대한 감상을 자유롭게 적어주세요."
