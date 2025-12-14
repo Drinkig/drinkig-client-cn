@@ -78,14 +78,33 @@ const SettingScreen = () => {
             // 일반 유저는 바로 탈퇴 API 호출
             const response = await deleteMember();
             if (response.isSuccess) {
-              await logout();
+              await logout(true);
             } else {
               console.error('Delete member failed:', response.message);
               Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
             }
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Delete member error:', error);
+          
+          // 401 에러 체크 (status 확인 또는 메시지 확인)
+          const isAuthError = 
+            error.response?.status === 401 || 
+            (error.message && error.message.includes('401')) ||
+            (error.response?.data?.code && error.response.data.code.includes('ACCESS_TOKEN'));
+
+          if (isAuthError) {
+            Alert.alert(
+              '인증 만료',
+              '안전한 탈퇴 처리를 위해 다시 로그인이 필요합니다.\n로그인 후 다시 시도해주세요.',
+              [{ 
+                text: '확인', 
+                onPress: () => logout(true) // 로컬 데이터 비우고 로그인 화면으로
+              }]
+            );
+            return;
+          }
+
           Alert.alert('오류', '회원 탈퇴 중 오류가 발생했습니다.');
         } finally {
           hideLoading();

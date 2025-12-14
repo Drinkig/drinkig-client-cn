@@ -30,7 +30,7 @@ interface UserContextType {
   isNewUser: boolean;
   login: (accessToken: string, refreshToken?: string, isFirst?: boolean) => Promise<void>;
   loginGuest: () => void;
-  logout: () => Promise<void>;
+  logout: (skipServerLogout?: boolean) => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   setRecommendations: (recs: RecommendedWine[]) => void;
   setFlavorProfile: (profile: FlavorProfile) => void; // 추가
@@ -170,13 +170,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const logout = async () => {
+  const logout = async (skipServerLogout: boolean = false) => {
     try {
       // 서버 로그아웃 요청 (실패해도 로컬 로그아웃 진행)
-      try {
-        await apiLogout();
-      } catch (e) {
-        console.warn('Server logout failed:', e);
+      if (!skipServerLogout) {
+        try {
+          await apiLogout();
+        } catch (e) {
+          console.warn('Server logout failed:', e);
+        }
       }
 
       await AsyncStorage.removeItem('accessToken');

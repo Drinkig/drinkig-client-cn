@@ -34,13 +34,13 @@ client.interceptors.response.use(
         }
 
         // [EDIT] 서버 요구사항: refreshToken을 쿠키 헤더로 전송
-        // 기존: Authorization: `Bearer ${refreshToken}`
-        // 변경: Cookie: `refreshToken=${refreshToken}`
-        // Refresh Token을 헤더에 담아 재발급 요청
-        // (서버 스펙에 따라 Body에 담거나 쿠키를 사용할 수 있음)
-        const response = await axios.post(`${baseURL}/reissue`, {}, {
+        // 일부 환경에서 Cookie 헤더가 제대로 동작하지 않을 수 있으므로 Body에도 추가
+        const response = await axios.post(`${baseURL}/reissue`, {
+            refreshToken: refreshToken // Body에도 추가
+          }, {
           headers: {
-            Cookie: `refreshToken=${refreshToken}`
+            Cookie: `refreshToken=${refreshToken}`,
+            'Authorization-Refresh': `Bearer ${refreshToken}` // 혹시 몰라 커스텀 헤더도 추가
           }
         });
 
