@@ -6,84 +6,51 @@ import {
   SafeAreaView,
   TouchableOpacity,
   StatusBar,
+  ScrollView,
+  Image,
+  ImageBackground,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
-import { useUser } from '../context/UserContext';
-import { WineDBItem } from '../data/dummyWines';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { HeroSection } from '../components/home/HeroSection';
 import { BannerSection } from '../components/home/BannerSection';
-import { RecommendedSection } from '../components/home/RecommendedSection';
-import { getRecommendedWines, searchWinesPublic } from '../api/wine';
+import { getMyWines, MyWineDTO } from '../api/wine';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const { user, recommendations } = useUser();
+  const isFocused = useIsFocused();
   
-  // 추천 와인 상태
-  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[]>([]);
-  const [recommendationTitle, setRecommendationTitle] = useState('최근 마신 와인과 비슷한 스타일');
+  const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
+  const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
 
   useEffect(() => {
-    fetchRecommendedWines();
-  }, [recommendations]); // 추천 정보가 변경되면 다시 조회
+    if (isFocused) {
+      fetchMyWines();
+    }
+  }, [isFocused]);
 
-  const fetchRecommendedWines = async () => {
+  const fetchMyWines = async () => {
     try {
-      // 1. 유저 추천 정보(국가/품종)가 있는 경우 우선적으로 해당 정보로 검색
-      if (recommendations && recommendations.length > 0) {
-        // 첫 번째 추천 정보를 기준으로 검색 (또는 랜덤 선택 등 로직 적용 가능)
-        const targetRec = recommendations[0];
-        
-        // 타이틀 설정
-        const title = `${user?.nickname || '회원'}님이 좋아할만한 와인`;
-        setRecommendationTitle(title);
-
-        // 국가와 품종으로 와인 검색
-        const response = await searchWinesPublic({
-          wineCountry: targetRec.country,
-          wineVariety: targetRec.variety,
-          size: 10 // 적절한 수량 설정
-        });
-
-        if (response.isSuccess && response.result.content.length > 0) {
-          const mappedWines: WineDBItem[] = response.result.content.map(item => ({
-            id: item.wineId,
-            nameKor: item.name,
-            nameEng: item.nameEng,
-            type: item.sort,
-            country: item.country,
-            grape: item.variety,
-            imageUri: item.imageUrl,
-            vivinoRating: item.vivinoRating,
-            // WineDBItem 필수 필드 채우기 (API 응답에 없는 경우 기본값)
-            description: '',
-            features: { sweetness: 0, acidity: 0, body: 0, tannin: 0 }
-          }));
-          setRecommendedWines(mappedWines);
-          return; // 성공적으로 로드했으면 종료
+      const response = await getMyWines();
+      if (response.isSuccess && response.result) {
+        setMyWines(response.result);
+        // 가장 최근에 추가한 와인 (ID 역순 또는 purchaseDate 기준)
+        // API가 최신순 정렬을 보장하지 않는다면 정렬 필요하지만, 
+        // 보통 DB ID 역순이 최신이라 가정하거나 배열의 마지막/첫번째 확인 필요.
+        // 여기서는 단순히 배열의 첫 번째가 최신이라고 가정하거나(서버 구현에 따라 다름),
+        // 안전하게 리스트가 있다면 첫번째를 씀.
+        if (response.result.length > 0) {
+           setRecentWine(response.result[0]); 
+        } else {
+           setRecentWine(null);
         }
-      }
-
-      // 2. 추천 정보가 없거나 검색 결과가 없는 경우 기존 추천 API 사용 (Fallback)
-      setRecommendationTitle('최근 마신 와인과 비슷한 스타일');
-      const response = await getRecommendedWines();
-      if (response.isSuccess) {
-        const mappedWines: WineDBItem[] = response.result.map(item => ({
-          id: item.wineId,
-          nameKor: item.wineName,
-          nameEng: item.wineNameEng,
-          type: item.sort,
-          country: '', // API에서 국가 정보 제공 안함
-          grape: '',   // API에서 품종 정보 제공 안함
-          imageUri: item.imageUrl,
-          vivinoRating: item.vivinoRating,
-        }));
-        setRecommendedWines(mappedWines);
+      } else {
+        setMyWines([]);
+        setRecentWine(null);
       }
     } catch (error) {
-      console.error('Failed to fetch recommended wines:', error);
-      // 에러 시 빈 배열 또는 기존 더미 데이터 사용 등 처리 가능
+      console.error('Failed to fetch my wines summary:', error);
     }
   };
 
@@ -111,7 +78,11 @@ export default function HomeScreen() {
       </View>
 
       {/* 메인 컨텐츠 */}
-      <View style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         
         {/* 메인: 와인 추천받기 */}
         <HeroSection 
@@ -124,20 +95,61 @@ export default function HomeScreen() {
         {/* 광고 배너 영역 */}
         <BannerSection />
 
-        {/* 보조: 추천 와인 섹션 (동적 타이틀 적용) */}
-        <RecommendedSection 
-          title={recommendationTitle}
-          data={recommendedWines}
-          onPressMore={() => {
-            console.log('More recommended wines');
-            // 추천 더보기 화면 등으로 이동 가능
-          }}
-          onPressWine={(wine) => {
-            navigation.navigate('WineDetail', { wine });
-          }}
-        />
+        {/* 퀵 메뉴: 테이스팅 노트 & 내 와인 */}
+        <View style={styles.quickMenuContainer}>
+          {/* 1. 테이스팅 노트 쓰기 */}
+          <TouchableOpacity 
+            style={[styles.quickMenuItem, styles.tastingNoteButton]}
+            onPress={() => navigation.navigate('WineAdd' as never)}
+            activeOpacity={0.8}
+          >
+            <ImageBackground
+              source={require('../assets/taste_note.png')}
+              style={styles.tastingNoteBackground}
+              imageStyle={{ borderRadius: 20 }}
+              resizeMode="cover"
+            >
+              <View style={styles.tastingNoteContent}>
+                <View>
+                  <Text style={[styles.menuLabel, { color: '#ddd' }]}>테이스팅 노트</Text>
+                  <Text style={styles.menuSubLabel}>기록하기</Text>
+                </View>
+                <View style={styles.arrowIconContainer}>
+                   <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+                </View>
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
 
-      </View>
+          {/* 2. 내 와인 현황 */}
+          <TouchableOpacity 
+            style={[styles.quickMenuItem, styles.tastingNoteButton]}
+            onPress={() => navigation.navigate('MyWine' as never)}
+            activeOpacity={0.8}
+          >
+            <ImageBackground
+              source={require('../assets/wine_cellar.png')}
+              style={styles.tastingNoteBackground}
+              imageStyle={{ borderRadius: 20 }}
+              resizeMode="cover"
+            >
+              <View style={styles.tastingNoteContent}>
+                <View>
+                  <Text style={[styles.menuLabel, { color: '#ddd' }]}>내 와인 창고</Text>
+                  <View style={styles.statRow}>
+                    <Text style={styles.statNumber}>{myWines.length}</Text>
+                    <Text style={[styles.statUnit, { color: '#ddd' }]}>병</Text>
+                  </View>
+                </View>
+                <View style={styles.arrowIconContainer}>
+                   <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+                </View>
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
+        </View>
+
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -191,6 +203,77 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
     paddingBottom: 40,
+  },
+  quickMenuContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 24,
+  },
+  quickMenuItem: {
+    flex: 1,
+    backgroundColor: '#252525',
+    borderRadius: 20,
+    padding: 20,
+    height: 140,
+    justifyContent: 'space-between',
+  },
+  tastingNoteButton: {
+    padding: 0,
+    backgroundColor: 'transparent',
+  },
+  tastingNoteBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  tastingNoteContent: {
+    flex: 1,
+    padding: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(0,0,0,0.3)', // 가독성을 위한 오버레이
+    borderRadius: 20,
+  },
+  arrowIconContainer: {
+    marginTop: 2,
+  },
+  menuIconCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuLabel: {
+    color: '#888',
+    fontSize: 13,
+    marginBottom: 4,
+    fontWeight: '500',
+  },
+  menuSubLabel: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  statRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  statNumber: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 4,
+  },
+  statUnit: {
+    color: '#888',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

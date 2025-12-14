@@ -31,7 +31,7 @@ const BANNERS: BannerData[] = [
     tag: 'EVENT',
     title: '이달의 와인 구독\n첫 달 무료 체험',
     subtitle: '프리미엄 와인잔 증정 혜택을 놓치지 마세요!',
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#34495e',
     iconName: 'gift',
   },
   {
@@ -39,7 +39,7 @@ const BANNERS: BannerData[] = [
     tag: 'TREND',
     title: '편의점 신상 와인\n솔직 리뷰 모음',
     subtitle: '가성비 최고, 실패 없는 선택!',
-    backgroundColor: '#d35400',
+    backgroundColor: '#4a4a4a',
     iconName: 'fire',
   },
   {
@@ -47,7 +47,7 @@ const BANNERS: BannerData[] = [
     tag: 'NEW',
     title: '이번 주 입고된\n한정판 와인',
     subtitle: '소믈리에가 엄선한 희귀템',
-    backgroundColor: '#27ae60',
+    backgroundColor: '#3d3d3d',
     iconName: 'bottle-wine-outline',
   },
   {
@@ -55,7 +55,7 @@ const BANNERS: BannerData[] = [
     tag: 'TIP',
     title: '와인 초보자를 위한\n테이스팅 가이드',
     subtitle: '색, 향, 맛을 제대로 즐기는 방법',
-    backgroundColor: '#8e44ad',
+    backgroundColor: '#5d4037',
     iconName: 'glass-wine',
   },
   {
@@ -63,7 +63,7 @@ const BANNERS: BannerData[] = [
     tag: 'SALE',
     title: '마감 임박 특가\n최대 50% 할인',
     subtitle: '창고 대방출! 지금 바로 득템하세요',
-    backgroundColor: '#c0392b',
+    backgroundColor: '#8c3b3b',
     iconName: 'tag-multiple',
   },
 ];
