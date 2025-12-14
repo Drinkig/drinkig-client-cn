@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { PriceInfo } from '../../data/dummyWines';
 
 interface PriceStatsProps {
-  prices: PriceInfo[];
+  prices: { price: number }[];
 }
 
 export default function PriceStats({ prices }: PriceStatsProps) {
@@ -20,16 +19,24 @@ export default function PriceStats({ prices }: PriceStatsProps) {
 
   return (
     <View style={styles.priceStatsContainer}>
-      <View style={styles.priceStatItem}>
-        <Text style={styles.priceStatLabel}>평균 구매가</Text>
-        <Text style={styles.priceStatValue}>₩{avgPrice.toLocaleString()}</Text>
+      {/* 상단: 평균 구매가 */}
+      <View style={styles.avgPriceContainer}>
+        <Text style={styles.avgPriceLabel}>평균 구매가</Text>
+        <Text style={styles.avgPriceValue}>₩{avgPrice.toLocaleString()}</Text>
       </View>
-      <View style={styles.priceStatDivider} />
-      <View style={styles.priceStatItem}>
-        <Text style={styles.priceStatLabel}>최저 ~ 최고</Text>
-        <Text style={styles.priceStatRange}>
-          ₩{minPrice.toLocaleString()} ~ ₩{maxPrice.toLocaleString()}
-        </Text>
+      
+      <View style={styles.divider} />
+
+      {/* 하단: 최저 ~ 최고 */}
+      <View style={styles.rangeContainer}>
+        <View style={styles.rangeItem}>
+          <Text style={styles.rangeLabel}>최저</Text>
+          <Text style={styles.rangeValue}>₩{minPrice.toLocaleString()}</Text>
+        </View>
+        <View style={styles.rangeItem}>
+          <Text style={styles.rangeLabel}>최고</Text>
+          <Text style={styles.rangeValue}>₩{maxPrice.toLocaleString()}</Text>
+        </View>
       </View>
     </View>
   );
@@ -45,36 +52,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   priceStatsContainer: {
-    flexDirection: 'row',
     backgroundColor: '#2a2a2a',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 12,
+    padding: 20,
     marginBottom: 12,
-    alignItems: 'center',
   },
-  priceStatItem: {
-    flex: 1,
+  avgPriceContainer: {
     alignItems: 'center',
+    marginBottom: 16,
   },
-  priceStatDivider: {
-    width: 1,
-    height: '80%',
+  avgPriceLabel: {
+    fontSize: 14,
+    color: '#888',
+    marginBottom: 6,
+  },
+  avgPriceValue: {
+    fontSize: 24, // 28 -> 24로 축소
+    fontWeight: 'bold',
+    color: '#8e44ad', 
+  },
+  divider: {
+    height: 1,
     backgroundColor: '#444',
-    marginHorizontal: 12,
+    marginBottom: 16,
   },
-  priceStatLabel: {
+  rangeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  rangeItem: {
+    alignItems: 'center',
+  },
+  rangeLabel: {
     fontSize: 12,
     color: '#888',
     marginBottom: 4,
   },
-  priceStatValue: {
+  rangeValue: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  priceStatRange: {
-    fontSize: 14,
-    color: '#fff',
+    color: '#ddd',
+    fontWeight: '600',
   },
 });
 

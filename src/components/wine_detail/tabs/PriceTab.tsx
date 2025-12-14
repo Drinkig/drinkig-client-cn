@@ -69,9 +69,16 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
         <Text style={styles.itemText}>{item.purchaseDate}</Text>
       </View>
       <View style={styles.colShop}>
-        <Text style={styles.itemText} numberOfLines={1}>
-          {item.shopName || '-'}
-        </Text>
+        <View style={styles.shopContainer}>
+          {item.purchaseType === 'DIRECT' && (
+            <View style={styles.directBadge}>
+              <Text style={styles.directBadgeText}>직구</Text>
+            </View>
+          )}
+          <Text style={styles.itemText} numberOfLines={1} ellipsizeMode="tail">
+            {item.shopName || '-'}
+          </Text>
+        </View>
       </View>
       <View style={styles.colPrice}>
         <Text style={styles.priceText}>₩{item.price.toLocaleString()}</Text>
@@ -194,17 +201,36 @@ const styles = StyleSheet.create({
   },
   // 컬럼 너비 조정
   colVintage: {
-    flex: 1.2,
+    flex: 1,
+    alignItems: 'center',
   },
   colDate: {
     flex: 2,
+    alignItems: 'center',
   },
   colShop: {
-    flex: 2,
+    flex: 3, // 너비 증가
+    paddingHorizontal: 4,
   },
   colPrice: {
     flex: 2,
     alignItems: 'flex-end',
+  },
+  shopContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  directBadge: {
+    backgroundColor: '#3498db', // 파란색 계열
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  directBadgeText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   loadingContainer: {
     flex: 1,
