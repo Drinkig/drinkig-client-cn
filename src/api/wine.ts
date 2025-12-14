@@ -411,6 +411,30 @@ export const deleteMyWine = async (myWineId: number) => {
   return response.data;
 };
 
+// [NEW] 가격 이력 조회 API
+export const getPriceHistory = async (wineId: number, vintageYear?: number) => {
+  const response = await client.get<WinePriceHistoryResponse>(`/wine/${wineId}/price-history`, {
+    params: { vintageYear }, // 빈티지 필터링 (선택)
+  });
+  return response.data;
+};
+
+// 가격 이력 응답 타입
+export interface WinePriceHistoryResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: PriceHistoryDTO[];
+}
+
+export interface PriceHistoryDTO {
+  vintage: number;
+  purchaseDate: string;
+  price: number;
+  shopName: string;
+  purchaseType?: string; // 'OFFLINE' | 'DIRECT' 등
+}
+
 // 와인 리뷰 전체 조회 API
 export const getWineReviews = async (wineId: number, params: ReviewParams) => {
   const response = await client.get<ReviewListResponse>(`/wine/review/${wineId}`, {

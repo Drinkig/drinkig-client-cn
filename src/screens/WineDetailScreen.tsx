@@ -258,7 +258,12 @@ export default function WineDetailScreen() {
           />
         );
       case 'price':
-        return <PriceTab selectedVintage={selectedVintage} />;
+        return (
+          <PriceTab 
+            wineId={wine.id as number} 
+            selectedVintageYear={selectedVintage?.year} 
+          />
+        );
       default:
         return null;
     }
