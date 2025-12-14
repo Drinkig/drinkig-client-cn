@@ -145,7 +145,11 @@ export default function WishlistScreen() {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Icon name="heart-outline" size={48} color="#666" style={{ marginBottom: 16 }} />
+                <Image 
+                  source={require('../assets/wish_list.png')}
+                  style={styles.emptyImage}
+                  resizeMode="contain"
+                />
                 <Text style={styles.emptyText}>위시리스트가 비어있습니다.</Text>
                 <Text style={styles.emptySubText}>마음에 드는 와인을 찜해보세요!</Text>
               </View>
@@ -271,6 +275,11 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: 'center',
     marginTop: 60,
+  },
+  emptyImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 20,
   },
   emptyText: {
     color: '#fff',
