@@ -15,7 +15,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
-import { getMyWineDetail, deleteMyWine, MyWineDTO } from '../api/wine';
+import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic } from '../api/wine';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
 
@@ -36,7 +36,21 @@ export default function MyWineDetailScreen() {
       setIsLoading(true);
       const response = await getMyWineDetail(wineId);
       if (response.isSuccess) {
-        setWine(response.result);
+        let wineData = response.result;
+
+        // [임시 해결] wineImageUrl이 없으면 상세 조회 API를 찔러서 이미지를 가져옴
+        if (!wineData.wineImageUrl) {
+          try {
+            const detailRes = await getWineDetailPublic(wineData.wineId);
+            if (detailRes.isSuccess && detailRes.result.wineInfoResponse.imageUrl) {
+              wineData = { ...wineData, wineImageUrl: detailRes.result.wineInfoResponse.imageUrl };
+            }
+          } catch (err) {
+            // 실패 시 원본 데이터 사용
+          }
+        }
+
+        setWine(wineData);
       } else {
         Alert.alert('오류', '와인 정보를 불러오는데 실패했습니다.');
         navigation.goBack();

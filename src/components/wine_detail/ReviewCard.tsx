@@ -9,25 +9,50 @@ interface ReviewCardProps {
 
 export default function ReviewCard({ review }: ReviewCardProps) {
   // 날짜 포맷팅 (YYYY-MM-DD)
-  const displayDate = review.tasteDate || review.createdAt.split('T')[0];
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    return dateString.split('T')[0];
+  };
+
+  const displayDate = formatDate(review.tasteDate || review.createdAt);
+
+  // 리뷰 텍스트에서 [Finish] 부분 제거
+  const getCleanReview = (text: string) => {
+    if (!text) return '';
+    // [Finish] ... \n\n 패턴 제거 (뒤에 리뷰가 있는 경우)
+    let processed = text.replace(/^\[Finish\].*?\n\n/s, '');
+    
+    // [Finish] ... (뒤에 리뷰가 없는 경우)
+    if (processed.startsWith('[Finish]')) {
+      return '';
+    }
+    
+    return processed;
+  };
+
+  const cleanReview = getCleanReview(review.review);
 
   return (
     <View style={styles.reviewItem}>
       <View style={styles.reviewHeader}>
         <View style={styles.reviewUserContainer}>
           <Text style={styles.reviewUser}>{review.name}</Text>
-          {review.vintageYear && review.vintageYear > 0 && (
+          {review.vintageYear ? (
+            review.vintageYear > 0 ? (
             <View style={styles.vintageBadge}>
               <Text style={styles.vintageBadgeText}>{review.vintageYear}</Text>
             </View>
-          )}
+            ) : null
+          ) : null}
         </View>
         <View style={styles.ratingContainer}>
           <Ionicons name="star" size={14} color="#f1c40f" />
           <Text style={styles.ratingText}>{review.rating.toFixed(1)}</Text>
         </View>
       </View>
-      <Text style={styles.reviewComment}>{review.review}</Text>
+      {cleanReview !== '' && (
+        <Text style={styles.reviewComment}>{cleanReview}</Text>
+      )}
       <Text style={styles.reviewDate}>시음일: {displayDate}</Text>
     </View>
   );

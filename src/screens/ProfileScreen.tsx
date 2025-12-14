@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Modal,
+  TouchableWithoutFeedback,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -19,23 +22,36 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { user: userInfo, flavorProfile } = useUser();
+  
+  // 상태 관리
   const [selectedType, setSelectedType] = React.useState('전체');
   const [wineCount, setWineCount] = React.useState(0);
   const [tastingNotes, setTastingNotes] = React.useState<TastingNotePreviewDTO[]>([]);
+  
+  // 정렬 상태 추가
+  const [sortType, setSortType] = React.useState('latest'); // latest, rating_high, rating_low
+  const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
 
-  React.useEffect(() => {
-    if (isFocused) {
-      fetchMyData();
-    }
-  }, [isFocused]);
+  const sortOptions = [
+    { label: '최근 등록 순', value: 'latest' },
+    { label: '별점 높은 순', value: 'rating_high' },
+    { label: '별점 낮은 순', value: 'rating_low' },
+  ];
 
   const fetchMyData = async () => {
     try {
       // 테이스팅 노트 목록 조회
       const response = await getMyTastingNotes();
+
       if (response.isSuccess) {
-        // 결과가 배열인지 확인 후 설정, 아니면 빈 배열
-        const notes = Array.isArray(response.result) ? response.result : [];
+        // [수정] 서버 응답이 { content: [...] } 형태인 경우 처리
+        let notes = [];
+        if (Array.isArray(response.result)) {
+          notes = response.result;
+        } else if (response.result && Array.isArray((response.result as any).content)) {
+          notes = (response.result as any).content;
+        }
+        
         setTastingNotes(notes);
         setWineCount(notes.length);
       }
@@ -45,83 +61,114 @@ const ProfileScreen = () => {
     }
   };
 
+  // 포커스 될 때마다 데이터 갱신
+  React.useEffect(() => {
+    if (isFocused) {
+      fetchMyData();
+    }
+  }, [isFocused]);
+
   const wineTypes = ['전체', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화', '기타'];
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
-      case '레드':
-      case 'Red':
-        return '#C0392B';
-      case '화이트':
-      case 'White':
-        return '#D4AC0D';
-      case '스파클링':
-      case 'Sparkling':
-        return '#2980B9';
-      case '로제':
-      case 'Rose':
-        return '#C2185B';
-      case '디저트':
-      case 'Dessert':
-        return '#D35400';
-      default:
-        return '#7F8C8D';
+      case '레드': case 'Red': return '#C0392B';
+      case '화이트': case 'White': return '#D4AC0D';
+      case '스파클링': case 'Sparkling': return '#2980B9';
+      case '로제': case 'Rose': return '#C2185B';
+      case '디저트': case 'Dessert': return '#D35400';
+      default: return '#7F8C8D';
     }
   };
 
-  // 필터링
-  const filteredNotes = React.useMemo(() => {
+  // 필터링 및 정렬
+  const processedNotes = React.useMemo(() => {
     // tastingNotes가 배열이 아니면 빈 배열 반환 (방어 코드)
     if (!Array.isArray(tastingNotes)) return [];
 
-    if (selectedType === '전체') return tastingNotes;
-    
-    const typeMap: { [key: string]: string } = {
-      '레드': 'Red',
-      '화이트': 'White',
-      '스파클링': 'Sparkling',
-      '로제': 'Rose',
-      '디저트': 'Dessert',
-      '주정강화': 'Fortified'
-    };
-    
-    if (selectedType === '기타') {
-      return tastingNotes.filter(note => {
-        const sort = note.sort || '';
-        return !['Red', 'White', 'Sparkling', 'Rose', 'Dessert', 'Fortified', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화'].includes(sort);
-      });
+    let filtered = [];
+
+    // 1. 필터링
+    if (selectedType === '전체') {
+      filtered = [...tastingNotes];
+    } else {
+      const typeMap: { [key: string]: string } = {
+        '레드': 'Red',
+        '화이트': 'White',
+        '스파클링': 'Sparkling',
+        '로제': 'Rose',
+        '디저트': 'Dessert',
+        '주정강화': 'Fortified'
+      };
+      
+      if (selectedType === '기타') {
+        filtered = tastingNotes.filter(note => {
+          const sort = note.sort || '';
+          return !['Red', 'White', 'Sparkling', 'Rose', 'Dessert', 'Fortified', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화'].includes(sort);
+        });
+      } else {
+        const targetType = typeMap[selectedType] || selectedType;
+        filtered = tastingNotes.filter(note => {
+          const sort = note.sort || '';
+          return sort === targetType || sort === selectedType || sort.toUpperCase() === targetType.toUpperCase();
+        });
+      }
     }
 
-    const targetType = typeMap[selectedType] || selectedType;
-    return tastingNotes.filter(note => {
-      const sort = note.sort || '';
-      return sort === targetType || sort === selectedType || sort.toUpperCase() === targetType.toUpperCase();
+    // 2. 정렬
+    return filtered.sort((a, b) => {
+      switch (sortType) {
+        case 'rating_high':
+          return b.rating - a.rating;
+        case 'rating_low':
+          return a.rating - b.rating;
+        case 'latest':
+        default:
+          // createdAt이나 tasteDate 기준 정렬 (문자열 비교)
+          return (b.createdAt || '').localeCompare(a.createdAt || '');
+      }
     });
-  }, [tastingNotes, selectedType]);
+  }, [tastingNotes, selectedType, sortType]);
 
-  const renderNoteItem = (item: TastingNotePreviewDTO) => (
+  // 그리드 아이템 렌더링 설정
+  const { width } = Dimensions.get('window');
+  const numColumns = 3;
+  const gap = 12;
+  const padding = 24; // ProfileScreen의 좌우 패딩
+  // (전체 너비 - 좌우 패딩 - (아이템 간 간격 * (컬럼수 - 1))) / 컬럼수
+  const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
+
+  const renderNoteItem = ({ item }: { item: TastingNotePreviewDTO }) => (
     <TouchableOpacity 
-      key={item.tastingNoteId}
-      style={styles.noteItem}
+      // 서버에서 noteId로 내려올 수 있으므로 tastingNoteId 또는 noteId 사용 (any 타입 캐스팅 활용하여 유연하게 처리)
+      key={item.tastingNoteId || (item as any).noteId}
+      style={[styles.noteItem, { width: itemWidth }]}
       // 테이스팅 노트 상세 화면으로 이동 (TastingNoteDetailScreen)
       onPress={() => navigation.navigate('TastingNoteDetail', { 
-        tastingNoteId: item.tastingNoteId 
+        tastingNoteId: item.tastingNoteId || (item as any).noteId
       })}
+      activeOpacity={0.8}
     >
-      <Image 
-        source={item.wineImageUrl ? { uri: item.wineImageUrl } : require('../assets/user_image/Drinky_1.png')} 
-        style={styles.noteImage} 
-        resizeMode="cover"
-      />
-      <View style={styles.noteInfo}>
-        <Text style={styles.noteName} numberOfLines={1}>{item.wineName}</Text>
-        <View style={styles.noteMetaRow}>
-          <Text style={styles.noteVintage}>{item.vintageYear === 0 ? 'NV' : item.vintageYear}</Text>
-          <View style={styles.noteRating}>
-            <Icon name="star" size={12} color="#f1c40f" />
-            <Text style={styles.noteRatingText}>{item.rating.toFixed(1)}</Text>
+      <View style={styles.imageWrapper}>
+        {item.imageUrl ? (
+          <Image 
+            source={{ uri: item.imageUrl }} 
+            style={styles.noteImage} 
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={[styles.noteImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#333' }]}>
+            <Icon name="wine" size={30} color="#666" />
           </View>
+        )}
+        <View style={styles.ratingBadge}>
+          <Icon name="star" size={10} color="#f1c40f" />
+          <Text style={styles.ratingBadgeText}>{item.rating.toFixed(1)}</Text>
         </View>
+      </View>
+      
+      <View style={styles.noteInfo}>
+        <Text style={styles.noteName} numberOfLines={1} ellipsizeMode="tail">{item.wineName}</Text>
         <Text style={styles.noteDate}>{item.tasteDate}</Text>
       </View>
     </TouchableOpacity>
@@ -197,8 +244,26 @@ const ProfileScreen = () => {
 
         {/* 3. 내가 마신 와인 섹션 (테이스팅 노트 리스트) */}
         <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
+          <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>내가 마신 와인</Text>
+            {/* 정렬 버튼 */}
+            {!Array.isArray(tastingNotes) || tastingNotes.length === 0 ? null : (
+              <TouchableOpacity 
+                style={styles.sortButton}
+                onPress={() => setIsSortModalVisible(true)}
+              >
+                <Text style={styles.sortButtonText}>
+                  {sortOptions.find(opt => opt.value === sortType)?.label}
+                </Text>
+                <Icon name="chevron-down" size={14} color="#888" style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          <View style={styles.countContainer}>
+            <Text style={styles.countText}>
+              총 <Text style={styles.countValue}>{processedNotes.length}</Text>병
+            </Text>
           </View>
           
           {/* 필터 칩 */}
@@ -227,9 +292,18 @@ const ProfileScreen = () => {
             ))}
           </ScrollView>
 
-          {filteredNotes.length > 0 ? (
-            <View style={styles.notesList}>
-              {filteredNotes.map(item => renderNoteItem(item))}
+          {/* 그리드 리스트 */}
+          {processedNotes.length > 0 ? (
+            <View style={styles.gridContainer}>
+              {processedNotes.map((item) => (
+                <View key={item.tastingNoteId || (item as any).noteId} style={{ marginBottom: 16 }}>
+                  {renderNoteItem({ item })}
+                </View>
+              ))}
+              {/* 그리드 정렬을 위한 빈 아이템 (필요 시) */}
+              {[...Array(numColumns - (processedNotes.length % numColumns || numColumns))].map((_, i) => (
+                <View key={`empty-${i}`} style={{ width: itemWidth }} />
+              ))}
             </View>
           ) : (
             <View style={styles.emptyWrapper}>
@@ -239,6 +313,49 @@ const ProfileScreen = () => {
           )}
         </View>
       </ScrollView>
+
+      {/* 정렬 모달 */}
+      <Modal
+        visible={isSortModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsSortModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsSortModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>정렬</Text>
+                  <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
+                    <Icon name="close" size={24} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+                {sortOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={styles.sortOptionItem}
+                    onPress={() => {
+                      setSortType(option.value);
+                      setIsSortModalVisible(false);
+                    }}
+                  >
+                    <Text style={[
+                      styles.sortOptionText,
+                      sortType === option.value && styles.sortOptionTextSelected
+                    ]}>
+                      {option.label}
+                    </Text>
+                    {sortType === option.value && (
+                      <Icon name="checkmark" size={20} color="#8e44ad" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -325,16 +442,44 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sectionContainer: {
-    marginBottom: 10,
+    marginBottom: 20,
   },
   sectionHeader: {
     paddingHorizontal: 24,
     marginBottom: 12,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginBottom: 8,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  countContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 12,
+  },
+  countText: {
+    color: '#888',
+    fontSize: 14,
+  },
+  countValue: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  sortButtonText: {
+    color: '#888',
+    fontSize: 13,
   },
   chartContainer: {
     marginBottom: 24,
@@ -368,21 +513,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  carouselContent: {
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  recommendationCard: {
-    width: 200,
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#333',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   filterChipsContainer: {
     paddingHorizontal: 24,
     gap: 8,
@@ -409,31 +539,65 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  infoContainer: {
-    flex: 1,
-    marginRight: 8,
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 24,
+    justifyContent: 'space-between', // gap 대신 사용 (React Native 버전에 따라 gap 지원 여부가 다를 수 있음)
   },
-  wineVariety: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  wineRegion: {
-    fontSize: 11,
-    color: '#aaa',
-  },
-  tagWrapper: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+  noteItem: {
+    flexDirection: 'column',
+    marginBottom: 16, // 간격 조정
+    backgroundColor: '#2a2a2a', // 배경색 통일
     borderRadius: 12,
-    flexShrink: 0,
+    overflow: 'hidden', // 자식 요소(이미지 등)가 둥근 모서리를 넘치지 않게
+    // padding: 12, // 제거 (MyWineScreen 스타일 따름)
+    // alignItems: 'center', // 제거
   },
-  tagText: {
-    color: '#FFFFFF',
+  imageWrapper: {
+    width: '100%',
+    aspectRatio: 1, // 정사각형
+    backgroundColor: '#333', // 이미지 로딩 전 배경색
+    position: 'relative',
+  },
+  noteImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  ratingBadge: {
+    position: 'absolute',
+    top: 6,    // 상단으로 이동
+    right: 6,  // 우측으로 이동
+    backgroundColor: 'rgba(0, 0, 0, 0.6)', // 반투명 배경
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    borderWidth: 1, // 테두리 추가 (MyWineScreen 스타일 따름)
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  ratingBadgeText: {
+    color: '#fff',
     fontSize: 10,
-    fontWeight: '700',
-    includeFontPadding: false,
+    fontWeight: 'bold',
+  },
+  noteInfo: {
+    padding: 8, // 내부 패딩 추가
+    justifyContent: 'center',
+    alignItems: 'flex-start', // 왼쪽 정렬
+  },
+  noteName: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  noteDate: {
+    color: '#666',
+    fontSize: 11,
   },
   emptyWrapper: {
     paddingHorizontal: 24,
@@ -461,59 +625,47 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  notesList: {
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  noteItem: {
-    flexDirection: 'row',
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'center',
-  },
-  noteImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 16,
-    backgroundColor: '#333',
-  },
-  noteInfo: {
+  
+  // 모달 스타일
+  modalOverlay: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
-  noteName: {
+  modalContent: {
+    backgroundColor: '#1a1a1a',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '50%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
+  },
+  sortOptionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
+  },
+  sortOptionText: {
     fontSize: 16,
+    color: '#ccc',
+  },
+  sortOptionTextSelected: {
+    color: '#8e44ad',
     fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  noteMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  noteVintage: {
-    color: '#aaa',
-    fontSize: 12,
-    marginRight: 8,
-  },
-  noteRating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  noteRatingText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  noteDate: {
-    color: '#666',
-    fontSize: 11,
   },
 });
 
 export default ProfileScreen;
-

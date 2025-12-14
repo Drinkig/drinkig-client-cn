@@ -184,12 +184,12 @@ export interface MyWineDTO {
   wineCountry: string;
   wineRegion: string;
   wineVariety: string;
-  wineImageUrl: string;
+  wineImageUrl: string; // imageUrl -> wineImageUrl (서버 응답 확인 결과)
   purchaseDate: string;
   purchasePrice: number;
   period: number;
-  purchaseType?: 'OFFLINE' | 'DIRECT'; // 추가됨
-  purchaseShop?: string; // 추가됨
+  purchaseType?: 'OFFLINE' | 'DIRECT';
+  purchaseShop?: string;
 }
 
 // 보유 와인 추가 요청 타입
@@ -489,11 +489,11 @@ export interface TastingNoteListResponse {
 }
 
 export interface TastingNotePreviewDTO {
-  tastingNoteId: number;
+  tastingNoteId: number; // API 응답: noteId일 수 있음 (확인 필요)
   wineId: number;
   wineName: string;
   vintageYear: number;
-  wineImageUrl: string;
+  imageUrl?: string; // wineImageUrl -> imageUrl
   tasteDate: string;
   rating: number;
   createdAt: string;

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { getMyWines, MyWineDTO } from '../api/wine';
+import { getMyWines, MyWineDTO, getWineDetailPublic } from '../api/wine';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
@@ -50,9 +50,27 @@ const MyWineScreen = () => {
     try {
       setIsLoading(true);
       const response = await getMyWines();
+      
       if (response.isSuccess) {
-        // result가 null일 경우 빈 배열로 처리
-        setMyWines(response.result || []);
+        let wines = response.result || [];
+        
+        // [임시 해결] 서버에서 wineImageUrl이 null로 오는 경우, 상세 조회를 통해 이미지 채우기
+        const updatedWines = await Promise.all(wines.map(async (wine) => {
+          if (!wine.wineImageUrl) {
+            try {
+              // 와인 상세 정보 조회 (이미지 URL 확보 목적)
+              const detailRes = await getWineDetailPublic(wine.wineId);
+              if (detailRes.isSuccess && detailRes.result.wineInfoResponse.imageUrl) {
+                return { ...wine, wineImageUrl: detailRes.result.wineInfoResponse.imageUrl };
+              }
+            } catch (err) {
+              // 실패 시 로그 없이 원본 반환
+            }
+          }
+          return wine;
+        }));
+
+        setMyWines(updatedWines);
       } else {
         // 실패 시 (예: 데이터 없음 등) 빈 배열 처리
         setMyWines([]);

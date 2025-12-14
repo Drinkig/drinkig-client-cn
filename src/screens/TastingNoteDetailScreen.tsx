@@ -136,11 +136,11 @@ export default function TastingNoteDetailScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>맛 (Palate)</Text>
           <View style={styles.featuresContainer}>
-            <FeatureGauge label="당도" value={note.sweetness} />
-            <FeatureGauge label="산도" value={note.acidity} />
-            <FeatureGauge label="타닌" value={note.tannin} />
-            <FeatureGauge label="바디" value={note.body} />
-            <FeatureGauge label="알코올" value={note.alcohol} />
+            <FeatureGauge label="당도" value={note.sweetness / 20} />
+            <FeatureGauge label="산도" value={note.acidity / 20} />
+            <FeatureGauge label="타닌" value={note.tannin / 20} />
+            <FeatureGauge label="바디" value={note.body / 20} />
+            <FeatureGauge label="알코올" value={note.alcohol / 20} />
           </View>
         </View>
 
