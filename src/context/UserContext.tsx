@@ -103,6 +103,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           email: response.result.email,
           authType: response.result.authType,
         });
+
+        // 취향 정보가 있으면 flavorProfile 업데이트
+        if (
+          response.result.acidity !== undefined &&
+          response.result.sweetness !== undefined &&
+          response.result.tannin !== undefined &&
+          response.result.body !== undefined &&
+          response.result.alcohol !== undefined
+        ) {
+          setFlavorProfile({
+            acidity: response.result.acidity,
+            sweetness: response.result.sweetness,
+            tannin: response.result.tannin,
+            body: response.result.body,
+            alcohol: response.result.alcohol,
+          });
+        }
       }
     } catch (error) {
       console.error('Failed to fetch user info:', error);

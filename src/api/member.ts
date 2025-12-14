@@ -82,6 +82,11 @@ export interface MemberInfoResponse {
     email: string;
     authType: string;
     adult: boolean;
+    acidity?: number;
+    sweetness?: number;
+    tannin?: number;
+    body?: number;
+    alcohol?: number;
   };
 }
 
