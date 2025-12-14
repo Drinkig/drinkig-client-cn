@@ -71,9 +71,9 @@ export default function HomeScreen() {
 
         <TouchableOpacity 
           style={styles.notificationButton} 
-          onPress={() => navigation.navigate('Notification' as never)}
+          onPress={() => navigation.navigate('Wishlist' as never)}
         >
-          <Icon name="notifications-outline" size={24} color="#fff" />
+          <Icon name="heart-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 

@@ -9,9 +9,12 @@ import {
   FlatList,
   StatusBar,
   Image,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback } from 'react';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
 import { searchWinesPublic, WineUserDTO } from '../api/wine'; // 사용자용 검색 API 사용
 
@@ -20,6 +23,25 @@ export default function SearchScreen() {
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
   const [recentSearches, setRecentSearches] = useState<string[]>([]); // 최근 검색어 (임시 로컬 상태)
+  const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
+
+  // 화면 포커스 시 최근 본 와인 로드
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentWines();
+    }, [])
+  );
+
+  const loadRecentWines = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('recent_wines');
+      if (jsonValue != null) {
+        setRecentWines(JSON.parse(jsonValue));
+      }
+    } catch (e) {
+      console.error('Failed to load recent wines', e);
+    }
+  };
 
   // 검색 로직
   useEffect(() => {
@@ -59,8 +81,14 @@ export default function SearchScreen() {
   }, [searchText]);
 
   const handleSearchSubmit = () => {
-    if (searchText.trim() && !recentSearches.includes(searchText.trim())) {
-      setRecentSearches(prev => [searchText.trim(), ...prev].slice(0, 10));
+    const trimmedText = searchText.trim();
+    if (trimmedText) {
+      // 최근 검색어 추가
+      if (!recentSearches.includes(trimmedText)) {
+        setRecentSearches(prev => [trimmedText, ...prev].slice(0, 10));
+      }
+      // 검색 결과 페이지로 이동
+      navigation.navigate('SearchResult', { searchKeyword: trimmedText });
     }
   };
 
@@ -170,30 +198,67 @@ export default function SearchScreen() {
             }
           />
         ) : (
-          <View style={styles.recentSearchContainer}>
-            <Text style={styles.sectionTitle}>최근 검색어</Text>
-            {recentSearches.length > 0 ? (
-              <View style={styles.recentTags}>
-                {recentSearches.map((text, index) => (
-                  <TouchableOpacity 
-                    key={index} 
-                    style={styles.recentTag}
-                    onPress={() => setSearchText(text)}
-                  >
-                    <Text style={styles.recentTagText}>{text}</Text>
+          <ScrollView style={styles.content}>
+            <View style={styles.recentSearchContainer}>
+              <Text style={styles.sectionTitle}>최근 검색어</Text>
+              {recentSearches.length > 0 ? (
+                <View style={styles.recentTags}>
+                  {recentSearches.map((text, index) => (
                     <TouchableOpacity 
-                      style={styles.removeTagButton}
-                      onPress={() => setRecentSearches(prev => prev.filter((_, i) => i !== index))}
+                      key={index} 
+                      style={styles.recentTag}
+                      onPress={() => setSearchText(text)}
                     >
-                      <Icon name="close" size={14} color="#888" />
+                      <Text style={styles.recentTagText}>{text}</Text>
+                      <TouchableOpacity 
+                        style={styles.removeTagButton}
+                        onPress={() => setRecentSearches(prev => prev.filter((_, i) => i !== index))}
+                      >
+                        <Icon name="close" size={14} color="#888" />
+                      </TouchableOpacity>
                     </TouchableOpacity>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.emptyRecentText}>최근 검색 기록이 없습니다.</Text>
-            )}
-          </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.emptyRecentText}>최근 검색 기록이 없습니다.</Text>
+              )}
+            </View>
+
+            <View style={styles.recentWineContainer}>
+              <Text style={styles.sectionTitle}>최근 본 와인</Text>
+              {recentWines.length > 0 ? (
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  contentContainerStyle={styles.recentWineList}
+                >
+                  {recentWines.map((wine) => (
+                    <TouchableOpacity 
+                      key={wine.id} 
+                      style={styles.recentWineItem}
+                      onPress={() => navigation.navigate('WineDetail', { wine })}
+                    >
+                      <View style={styles.recentWineImageContainer}>
+                        {wine.imageUri ? (
+                          <Image 
+                            source={{ uri: wine.imageUri }} 
+                            style={styles.recentWineImage} 
+                            resizeMode="contain" 
+                          />
+                        ) : (
+                          <Icon name="wine" size={30} color="#8e44ad" />
+                        )}
+                      </View>
+                      <Text style={styles.recentWineName} numberOfLines={2}>{wine.nameKor}</Text>
+                      <Text style={styles.recentWineType}>{wine.type}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <Text style={styles.emptyRecentText}>최근 본 와인이 없습니다.</Text>
+              )}
+            </View>
+          </ScrollView>
         )}
       </View>
     </SafeAreaView>
@@ -323,6 +388,42 @@ const styles = StyleSheet.create({
   },
   recentSearchContainer: {
     padding: 24,
+    paddingBottom: 12,
+  },
+  recentWineContainer: {
+    padding: 24,
+    paddingTop: 12,
+  },
+  recentWineList: {
+    gap: 16,
+    paddingRight: 24,
+  },
+  recentWineItem: {
+    width: 100,
+  },
+  recentWineImageContainer: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  recentWineImage: {
+    width: '80%',
+    height: '80%',
+  },
+  recentWineName: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+    marginBottom: 4,
+    height: 32, // 2줄 높이 고정
+  },
+  recentWineType: {
+    color: '#888',
+    fontSize: 11,
   },
   sectionTitle: {
     color: '#fff',

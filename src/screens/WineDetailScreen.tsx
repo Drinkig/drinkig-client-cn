@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -64,20 +65,61 @@ export default function WineDetailScreen() {
           
           const response = await getWineDetailPublic(wine.id as number, vintageYear);
           if (response.isSuccess) {
-            setApiWineDetail(response.result.wineInfoResponse);
-            setIsLiked(response.result.wineInfoResponse.liked);
-            // 최근 리뷰 등은 별도 탭에서 사용하거나 여기서 저장
+            const detail = response.result.wineInfoResponse;
+            setApiWineDetail(detail);
+            setIsLiked(detail.liked);
+            
+            // 최근 본 와인 저장 (상세 정보가 로드된 후 저장)
+            const wineToSave: WineDBItem = {
+              ...wine,
+              imageUri: detail.imageUrl || wine.imageUri, // API 이미지 우선
+              nameKor: detail.name || wine.nameKor,
+              nameEng: detail.nameEng || wine.nameEng,
+              type: detail.sort || wine.type,
+              country: detail.country || wine.country,
+              grape: detail.variety || wine.grape,
+              vivinoRating: detail.vivinoRating || wine.vivinoRating,
+            };
+            saveToRecent(wineToSave);
           }
         } catch (error) {
           console.error('Failed to fetch wine detail:', error);
+          // API 실패 시에도 기본 정보로 저장 시도
+          saveToRecent(wine);
         } finally {
           setIsLoading(false);
         }
+      } else if (!isMyWineItem && wine.id) {
+        // 이미 API 상세 정보가 있는 경우 등 (혹은 재진입)
+        saveToRecent(wine);
       }
     };
 
     fetchDetail();
   }, [isMyWineItem, wine.id, selectedVintage]); // selectedVintage 변경 시 재조회 가능하도록
+
+  // 최근 본 와인 저장 함수
+  const saveToRecent = async (item: WineDBItem) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('recent_wines');
+      let recentWines: WineDBItem[] = jsonValue != null ? JSON.parse(jsonValue) : [];
+      
+      // 중복 제거 (이미 있으면 제거 후 맨 앞으로)
+      recentWines = recentWines.filter(w => w.id !== item.id);
+      
+      // 맨 앞에 추가
+      recentWines.unshift(item);
+      
+      // 10개 제한
+      if (recentWines.length > 10) {
+        recentWines = recentWines.slice(0, 10);
+      }
+      
+      await AsyncStorage.setItem('recent_wines', JSON.stringify(recentWines));
+    } catch (e) {
+      console.error('Failed to save recent wine', e);
+    }
+  };
 
   // 위시리스트 토글 핸들러
   const handleToggleWishlist = async () => {

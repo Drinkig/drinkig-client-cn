@@ -43,6 +43,7 @@ export interface WineDBItem {
   finish?: string[];
   vintages?: VintageData[]; // 빈티지별 데이터
   vivinoRating?: number;
+  price?: number; // 와인 가격 (선택적)
 }
 
 // 더미 리뷰/가격 데이터 생성 헬퍼

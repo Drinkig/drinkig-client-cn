@@ -31,6 +31,7 @@ export interface WineUserSearchResponse {
     content: WineUserDTO[];
     pageNumber: number;
     totalPages: number;
+    totalElements: number;
   };
 }
 
