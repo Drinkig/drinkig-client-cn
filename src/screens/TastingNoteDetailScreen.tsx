@@ -4,21 +4,24 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
   TouchableOpacity,
   StatusBar,
   Image,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import { getTastingNoteDetail, TastingNoteDTO } from '../api/wine';
-import FeatureGauge from '../components/wine_detail/FeatureGauge';
+import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { COLOR_PALETTES } from '../components/tasting_note/constants';
 
 type TastingNoteDetailRouteProp = RouteProp<RootStackParamList, 'TastingNoteDetail'>;
+
+const { width } = Dimensions.get('window');
 
 export default function TastingNoteDetailScreen() {
   const navigation = useNavigation();
@@ -61,6 +64,24 @@ export default function TastingNoteDetailScreen() {
 
   if (!note) return null;
 
+  // Review 파싱: [Finish] 태그 분리 및 배열 변환
+  const parseReview = (fullReview: string) => {
+    const finishMatch = fullReview.match(/\[Finish\] (.*?)(?:\n\n|$)/s);
+    const finishTextRaw = finishMatch ? finishMatch[1] : null;
+    
+    // 피니쉬 텍스트를 쉼표로 분리하여 배열로 변환
+    const finishTags = finishTextRaw 
+      ? finishTextRaw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+      : [];
+
+    // [Finish] 부분을 제거하고 남은 텍스트를 리뷰로 사용
+    let reviewText = fullReview.replace(/\[Finish\] .*?(?:\n\n|$)/s, '').trim();
+    
+    return { finishTags, reviewText };
+  };
+
+  const { finishTags, reviewText } = parseReview(note.review);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
@@ -74,115 +95,125 @@ export default function TastingNoteDetailScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Wine Info Card */}
-        <View style={styles.wineCard}>
-          <View style={styles.wineHeader}>
+      {/* Main Content - No Global Scroll */}
+      <View style={styles.contentContainer}>
+        
+        {/* Top Section: Wine Info */}
+        <View style={styles.topSection}>
+          <View style={styles.wineImageContainer}>
             {note.imageUrl ? (
-              <Image source={{ uri: note.imageUrl }} style={styles.wineImage} resizeMode="contain" />
+              <Image source={{ uri: note.imageUrl }} style={styles.wineImage} resizeMode="cover" />
             ) : (
               <View style={styles.wineImagePlaceholder}>
-                <Ionicons name="wine" size={30} color="#666" />
+                <Ionicons name="wine" size={40} color="#666" />
               </View>
             )}
-            <View style={styles.wineInfo}>
-              <Text style={styles.wineName}>{note.wineName}</Text>
-              <View style={styles.wineMeta}>
-                <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(note.sort || '') }]}>
-                  <Text style={styles.typeText}>{note.sort || 'Wine'}</Text>
-                </View>
-                <Text style={styles.vintageText}>
-                  {note.vintageYear === 0 ? 'NV' : note.vintageYear}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Basic Info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>기본 정보</Text>
-          <View style={styles.infoRow}>
-            <View style={styles.infoItem}>
-              <Text style={styles.label}>시음 날짜</Text>
-              <Text style={styles.value}>{note.tasteDate}</Text>
-            </View>
-            <View style={styles.infoItem}>
-              <Text style={styles.label}>색상</Text>
-              <View style={styles.colorWrapper}>
-                <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
-                {/* <Text style={styles.value}>{note.color}</Text> */}
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Nose */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>향 (Nose)</Text>
-          <View style={styles.tagContainer}>
-            {note.noseList && note.noseList.length > 0 ? (
-              note.noseList.map((scent, index) => (
-                <View key={index} style={styles.tag}>
-                  <Text style={styles.tagText}>{scent}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>기록된 향이 없습니다.</Text>
-            )}
-          </View>
-        </View>
-
-        {/* Palate Graph */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>맛 (Palate)</Text>
-          <View style={styles.featuresContainer}>
-            <FeatureGauge label="당도" value={note.sweetness / 20} />
-            <FeatureGauge label="산도" value={note.acidity / 20} />
-            <FeatureGauge label="타닌" value={note.tannin / 20} />
-            <FeatureGauge label="바디" value={note.body / 20} />
-            <FeatureGauge label="알코올" value={note.alcohol / 20} />
-          </View>
-        </View>
-
-        {/* Review */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>총평</Text>
-          <View style={styles.ratingContainer}>
-            <View style={styles.stars}>
-              {[1, 2, 3, 4, 5].map((star) => {
-                let iconName = 'star-outline';
-                if (note.rating >= star) iconName = 'star';
-                else if (note.rating >= star - 0.5) iconName = 'star-half';
-                
-                return (
-                  <Ionicons 
-                    key={star} 
-                    name={iconName} 
-                    size={24} 
-                    color="#f1c40f" 
-                    style={{ marginRight: 2 }} 
-                  />
-                );
-              })}
-            </View>
-            <Text style={styles.ratingText}>{note.rating.toFixed(1)}</Text>
           </View>
           
-          <View style={styles.reviewBox}>
-            <Text style={styles.reviewText}>{note.review}</Text>
+          <View style={styles.wineInfoContainer}>
+            <View style={styles.wineHeaderRow}>
+                <View style={[styles.typeBadge, { backgroundColor: getWineTypeColor(note.sort || '') }]}>
+                  <Text style={styles.typeText}>{note.sort || 'Wine'}</Text>
+                </View>
+                <Text style={styles.dateText}>{note.tasteDate}</Text>
+            </View>
+            
+            <Text style={styles.wineName} numberOfLines={2}>{note.wineName}</Text>
+            <Text style={styles.vintageText}>{note.vintageYear === 0 ? 'NV' : `Vintage ${note.vintageYear}`}</Text>
+            
+            <View style={styles.metaRow}>
+                <View style={styles.colorWrapper}>
+                    <Text style={styles.metaLabel}>Color</Text>
+                    <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
+                </View>
+                <View style={styles.ratingWrapper}>
+                    <Ionicons name="star" size={16} color="#f1c40f" />
+                    <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
+                </View>
+            </View>
           </View>
         </View>
 
-        <Text style={styles.dateText}>작성일: {new Date(note.createdAt).toLocaleDateString()}</Text>
+        <View style={styles.divider} />
 
-      </ScrollView>
+        {/* Middle Section: Palate (Left) & Nose/Finish (Right) */}
+        <View style={styles.middleSection}>
+          {/* Left: Palate Graph - Now in a Box */}
+          <View style={[styles.palateColumn, styles.infoBox]}>
+            <Text style={styles.boxTitle}>Palate</Text>
+            <View style={styles.chartContainer}>
+              <PentagonRadarChart 
+                data={{
+                  acidity: note.acidity / 20,
+                  sweetness: note.sweetness / 20,
+                  tannin: note.tannin / 20,
+                  body: note.body / 20,
+                  alcohol: note.alcohol / 20,
+                }}
+                size={140} 
+              />
+            </View>
+          </View>
+
+          {/* Right: Nose & Finish */}
+          <View style={styles.rightColumn}>
+             {/* Nose Box */}
+             <View style={styles.infoBox}>
+                <Text style={styles.boxTitle}>Nose</Text>
+                <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }}>
+                    <View style={styles.noseTagsContainer}>
+                        {note.noseList && note.noseList.length > 0 ? (
+                        note.noseList.map((scent, index) => (
+                            <View key={index} style={styles.noseTag}>
+                                <Text style={styles.noseText}>{scent}</Text>
+                            </View>
+                        ))
+                        ) : (
+                        <Text style={styles.emptyText}>-</Text>
+                        )}
+                    </View>
+                </ScrollView>
+             </View>
+
+             {/* Finish Box */}
+             <View style={[styles.infoBox, { flex: 1 }]}>
+                <Text style={styles.boxTitle}>Finish</Text>
+                <ScrollView nestedScrollEnabled>
+                    <View style={styles.noseTagsContainer}>
+                        {finishTags.length > 0 ? (
+                            finishTags.map((tag, index) => (
+                                <View key={index} style={styles.noseTag}>
+                                    <Text style={styles.noseText}>{tag}</Text>
+                                </View>
+                            ))
+                        ) : (
+                            <Text style={styles.emptyText}>-</Text>
+                        )}
+                    </View>
+                </ScrollView>
+             </View>
+          </View>
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* Bottom Section: Review Only */}
+        <View style={styles.bottomSectionWrapper}>
+          <Text style={styles.sectionHeader}>Review</Text>
+          <ScrollView style={styles.bottomScroll} contentContainerStyle={styles.bottomContent}>
+            <Text style={styles.bodyText}>
+              {reviewText || '작성된 리뷰가 없습니다.'}
+            </Text>
+          </ScrollView>
+        </View>
+
+      </View>
     </SafeAreaView>
   );
 }
 
 const getWineTypeColor = (type: string) => {
-  switch (type.toUpperCase()) {
+  switch (type?.toUpperCase()) {
     case 'RED': case '레드': return '#C0392B';
     case 'WHITE': case '화이트': return '#D4AC0D';
     case 'SPARKLING': case '스파클링': return '#2980B9';
@@ -194,15 +225,11 @@ const getWineTypeColor = (type: string) => {
 
 const getHexColorFromValue = (value: string) => {
   if (!value) return 'transparent';
-  
-  // Search in all palettes
   for (const paletteKey in COLOR_PALETTES) {
     const palette = COLOR_PALETTES[paletteKey];
     const found = palette.find(item => item.value === value);
     if (found) return found.color;
   }
-  
-  // If not found, maybe it's already a hex code (fallback)
   return value.startsWith('#') ? value : 'transparent';
 };
 
@@ -237,167 +264,185 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 32,
   },
-  scrollContent: {
-    padding: 24,
-    paddingBottom: 40,
-  },
-  wineCard: {
-    flexDirection: 'row',
-    marginBottom: 32,
-    backgroundColor: '#252525',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  wineHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  contentContainer: {
     flex: 1,
+    padding: 16,
+    gap: 16,
+  },
+  // Top Section
+  topSection: {
+    flexDirection: 'row',
+    height: 120,
+  },
+  wineImageContainer: {
+    width: 90,
+    height: 120,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#252525',
+    marginRight: 16,
   },
   wineImage: {
-    width: 60,
-    height: 80,
-    borderRadius: 4,
-    backgroundColor: '#333',
+    width: '100%',
+    height: '100%',
   },
   wineImagePlaceholder: {
-    width: 60,
-    height: 80,
-    borderRadius: 4,
-    backgroundColor: '#333',
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  wineInfo: {
-    marginLeft: 16,
+  wineInfoContainer: {
     flex: 1,
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  wineHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  typeBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  typeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  dateText: {
+    color: '#888',
+    fontSize: 12,
   },
   wineName: {
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  wineMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  typeChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  typeText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
+    lineHeight: 24,
   },
   vintageText: {
     color: '#aaa',
     fontSize: 14,
   },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    borderLeftWidth: 3,
-    borderLeftColor: '#8e44ad',
-    paddingLeft: 10,
-  },
-  infoRow: {
+  metaRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: '#2a2a2a',
-    padding: 16,
-    borderRadius: 12,
-  },
-  infoItem: {
-    flex: 1,
-  },
-  label: {
-    color: '#888',
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  value: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    alignItems: 'center',
+    gap: 16,
   },
   colorWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+  },
+  metaLabel: {
+    color: '#888',
+    fontSize: 12,
   },
   colorCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#fff',
   },
-  tagContainer: {
+  ratingWrapper: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 4,
+  },
+  ratingValue: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: '#333',
+  },
+
+  // Middle Section
+  middleSection: {
+    flexDirection: 'row',
+    height: 220, 
+    gap: 16,
+  },
+  palateColumn: {
+    flex: 1,
+  },
+  chartContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: -10, // 타이틀 공간 고려 및 시각적 중심 보정
+  },
+  
+  // Right Column (Nose & Finish)
+  rightColumn: {
+    flex: 1,
+    gap: 12,
+  },
+  infoBox: {
+    backgroundColor: '#252525',
+    borderRadius: 8,
+    padding: 12,
     gap: 8,
   },
-  tag: {
-    backgroundColor: '#2a2a2a',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+  boxTitle: {
+    color: '#8e44ad',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  // Nose Tags
+  noseTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  noseTag: {
+    backgroundColor: '#333',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#444',
   },
-  tagText: {
-    color: '#ccc',
-    fontSize: 14,
+  noseText: {
+    color: '#ddd',
+    fontSize: 11,
   },
   emptyText: {
     color: '#666',
+    fontSize: 12,
     fontStyle: 'italic',
   },
-  featuresContainer: {
-    backgroundColor: '#2a2a2a',
-    padding: 16,
+
+  // Text
+  bodyText: {
+    color: '#ccc',
+    fontSize: 13,
+    lineHeight: 20,
+  },
+
+  // Bottom SectionWrapper (Review)
+  bottomSectionWrapper: {
+    flex: 1, // Takes remaining space
+    backgroundColor: '#252525',
     borderRadius: 12,
-    gap: 12,
+    padding: 16,
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  stars: {
-    flexDirection: 'row',
-    marginRight: 12,
-  },
-  ratingText: {
-    color: '#fff',
-    fontSize: 24,
+  sectionHeader: {
+    color: '#8e44ad',
+    fontSize: 14,
     fontWeight: 'bold',
+    marginBottom: 8,
   },
-  reviewBox: {
-    backgroundColor: '#2a2a2a',
-    padding: 16,
-    borderRadius: 12,
-    minHeight: 100,
+  bottomScroll: {
+    flex: 1,
   },
-  reviewText: {
-    color: '#fff',
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  dateText: {
-    color: '#666',
-    fontSize: 12,
-    textAlign: 'right',
-    marginTop: -10,
+  bottomContent: {
+    paddingBottom: 10,
   },
 });
-
