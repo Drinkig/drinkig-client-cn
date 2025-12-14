@@ -12,7 +12,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
-import { getMyWines } from '../api/wine';
+import { getMyWines, getMyTastingNotes, TastingNotePreviewDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
 
 const ProfileScreen = () => {
@@ -21,21 +21,24 @@ const ProfileScreen = () => {
   const { user: userInfo, flavorProfile } = useUser();
   const [selectedType, setSelectedType] = React.useState('전체');
   const [wineCount, setWineCount] = React.useState(0);
+  const [tastingNotes, setTastingNotes] = React.useState<TastingNotePreviewDTO[]>([]);
 
   React.useEffect(() => {
     if (isFocused) {
-      fetchMyWinesCount();
+      fetchMyData();
     }
   }, [isFocused]);
 
-  const fetchMyWinesCount = async () => {
+  const fetchMyData = async () => {
     try {
-      const response = await getMyWines();
+      // 테이스팅 노트 목록 조회
+      const response = await getMyTastingNotes();
       if (response.isSuccess) {
+        setTastingNotes(response.result || []);
         setWineCount(response.result ? response.result.length : 0);
       }
     } catch (error) {
-      console.error('Failed to fetch wine count:', error);
+      console.error('Failed to fetch my data:', error);
     }
   };
 
@@ -63,6 +66,71 @@ const ProfileScreen = () => {
     }
   };
 
+  // 필터링
+  const filteredNotes = React.useMemo(() => {
+    if (selectedType === '전체') return tastingNotes;
+    
+    const typeMap: { [key: string]: string } = {
+      '레드': 'Red',
+      '화이트': 'White',
+      '스파클링': 'Sparkling',
+      '로제': 'Rose',
+      '디저트': 'Dessert',
+      '주정강화': 'Fortified'
+    };
+    
+    if (selectedType === '기타') {
+      return tastingNotes.filter(note => {
+        const sort = note.sort || '';
+        return !['Red', 'White', 'Sparkling', 'Rose', 'Dessert', 'Fortified', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화'].includes(sort);
+      });
+    }
+
+    const targetType = typeMap[selectedType] || selectedType;
+    return tastingNotes.filter(note => {
+      const sort = note.sort || '';
+      return sort === targetType || sort === selectedType || sort.toUpperCase() === targetType.toUpperCase();
+    });
+  }, [tastingNotes, selectedType]);
+
+  const renderNoteItem = (item: TastingNotePreviewDTO) => (
+    <TouchableOpacity 
+      key={item.tastingNoteId}
+      style={styles.noteItem}
+      // 상세 화면 이동 (추후 테이스팅 노트 상세 화면으로 연결 or 와인 상세로 연결)
+      // WineDetailScreen은 WineDBItem을 필수로 요구하므로 필요한 필드를 더미로라도 채워서 보냄
+      onPress={() => navigation.navigate('WineDetail', { 
+        wine: { 
+          id: item.wineId, 
+          nameKor: item.wineName,
+          // 필수 필드 더미 채움 (상세 화면에서 API로 다시 불러오므로 크게 상관 없음)
+          nameEng: '',
+          type: item.sort,
+          country: '',
+          grape: '',
+          imageUri: item.wineImageUrl
+        } 
+      })}
+    >
+      <Image 
+        source={item.wineImageUrl ? { uri: item.wineImageUrl } : require('../assets/user_image/Drinky_1.png')} 
+        style={styles.noteImage} 
+        resizeMode="cover"
+      />
+      <View style={styles.noteInfo}>
+        <Text style={styles.noteName} numberOfLines={1}>{item.wineName}</Text>
+        <View style={styles.noteMetaRow}>
+          <Text style={styles.noteVintage}>{item.vintageYear === 0 ? 'NV' : item.vintageYear}</Text>
+          <View style={styles.noteRating}>
+            <Icon name="star" size={12} color="#f1c40f" />
+            <Text style={styles.noteRatingText}>{item.rating.toFixed(1)}</Text>
+          </View>
+        </View>
+        <Text style={styles.noteDate}>{item.tasteDate}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       {/* 상단 헤더 */}
@@ -88,7 +156,7 @@ const ProfileScreen = () => {
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.nickname}>{userInfo?.nickname || '게스트'}</Text>
-            <Text style={styles.wineCountText}>마신 와인 {wineCount}병</Text>
+            <Text style={styles.wineCountText}>마신 와인 {wineCount || 0}병</Text>
             {userInfo?.email ? <Text style={styles.email}>{userInfo.email}</Text> : null}
           </View>
           <TouchableOpacity 
@@ -131,7 +199,7 @@ const ProfileScreen = () => {
           )}
         </View>
 
-        {/* 3. 내가 마신 와인 섹션 */}
+        {/* 3. 내가 마신 와인 섹션 (테이스팅 노트 리스트) */}
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>내가 마신 와인</Text>
@@ -163,10 +231,16 @@ const ProfileScreen = () => {
             ))}
           </ScrollView>
 
-          <View style={styles.emptyWrapper}>
-            <Text style={styles.emptyText}>아직 기록된 와인이 없습니다.</Text>
-            <Text style={styles.emptySubText}>마신 와인을 기록해보세요!</Text>
-          </View>
+          {filteredNotes.length > 0 ? (
+            <View style={styles.notesList}>
+              {filteredNotes.map(item => renderNoteItem(item))}
+            </View>
+          ) : (
+            <View style={styles.emptyWrapper}>
+              <Text style={styles.emptyText}>아직 기록된 와인이 없습니다.</Text>
+              <Text style={styles.emptySubText}>마신 와인을 기록해보세요!</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -391,6 +465,59 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
+  notesList: {
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  noteItem: {
+    flexDirection: 'row',
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  noteImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 16,
+    backgroundColor: '#333',
+  },
+  noteInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  noteName: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  noteMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  noteVintage: {
+    color: '#aaa',
+    fontSize: 12,
+    marginRight: 8,
+  },
+  noteRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  noteRatingText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  noteDate: {
+    color: '#666',
+    fontSize: 11,
+  },
 });
 
 export default ProfileScreen;
+

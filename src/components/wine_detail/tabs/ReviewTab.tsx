@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Review } from '../../../data/dummyWines';
 import ReviewCard from '../ReviewCard';
+import { ReviewDTO } from '../../../api/wine';
 
 type SortOption = 'latest' | 'rating_high' | 'rating_low';
 
 interface ReviewTabProps {
-  reviews: (Review & { vintageYear?: string })[];
+  reviews: ReviewDTO[];
   selectedVintageYear: string | undefined;
 }
 
@@ -23,7 +23,7 @@ export default function ReviewTab({ reviews, selectedVintageYear }: ReviewTabPro
           return a.rating - b.rating;
         case 'latest':
         default:
-          return b.date.localeCompare(a.date);
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       }
     });
   }, [reviews, sortOption]);
@@ -62,7 +62,7 @@ export default function ReviewTab({ reviews, selectedVintageYear }: ReviewTabPro
         </View>
         <View style={styles.reviewList}>
           {sortedReviews.map((review, index) => (
-            <ReviewCard key={`${review.id}-${index}`} review={review} />
+            <ReviewCard key={`${index}`} review={review} />
           ))}
         </View>
       </View>

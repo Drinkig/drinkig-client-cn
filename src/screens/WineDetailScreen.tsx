@@ -245,25 +245,31 @@ export default function WineDetailScreen() {
   const filteredReviews = useMemo(() => {
     if (!vintages) return [];
     
+    let sourceReviews: any[] = [];
+
     // selectedVintage가 없거나 'ALL'인 경우 전체 리뷰 표시
     if (!selectedVintage || selectedVintage.year === 'ALL') {
       // API나 더미 데이터 구조상 vintages 배열에 전체 리뷰가 모여있지 않을 수 있음.
       // 따라서 모든 빈티지의 리뷰를 합쳐서 보여줘야 함.
-      // 단, API 연동 시 '전체 조회' API가 따로 있다면 그것을 사용해야 함.
-      // 현재 구조에서는 각 빈티지별 리뷰를 합치는 방식으로 구현
-      
-      // 만약 apiWineDetail에 전체 리뷰 목록이 있다면 그것을 우선 사용 (API 구조에 따라 다름)
-      // 현재는 더미 데이터 구조(vintages 배열 안에 reviews)를 따름
       if (rawVintages) {
-        return rawVintages.flatMap(v => 
+        sourceReviews = rawVintages.flatMap(v => 
           v.reviews.map(r => ({ ...r, vintageYear: v.year }))
         );
       }
-      return []; 
     } else {
       // 특정 빈티지 선택 시
-      return selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
+      sourceReviews = selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
     }
+
+    // Dummy Review -> ReviewDTO 변환
+    return sourceReviews.map(r => ({
+      name: r.userName,
+      review: r.comment,
+      rating: r.rating,
+      createdAt: r.date,
+      vintageYear: r.vintageYear === 'NV' ? 0 : (r.vintageYear ? parseInt(r.vintageYear) : undefined),
+      tasteDate: r.date // 더미 데이터는 시음일이 없으므로 작성일로 대체
+    }));
   }, [vintages, selectedVintage, rawVintages]);
 
   // 초기 빈티지 설정

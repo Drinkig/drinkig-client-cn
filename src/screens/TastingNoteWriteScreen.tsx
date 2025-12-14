@@ -26,6 +26,81 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 type TastingNoteWriteScreenRouteProp = RouteProp<RootStackParamList, 'TastingNoteWrite'>;
 
+// 색상 팔레트 정의
+const COLOR_PALETTES: { [key: string]: { label: string; value: string; color: string }[] } = {
+  WHITE: [
+    { label: 'Water White', value: 'WATER_WHITE', color: '#FDFAF5' },
+    { label: 'Pale Green', value: 'PALE_GREEN', color: '#F2F6DE' },
+    { label: 'Straw', value: 'STRAW', color: '#F0EEC2' },
+    { label: 'Pale Yellow', value: 'PALE_YELLOW', color: '#F4ECA6' },
+    { label: 'Lemon', value: 'LEMON', color: '#F7E666' },
+    { label: 'Butter Yellow', value: 'BUTTER_YELLOW', color: '#F4D355' },
+    { label: 'Gold', value: 'GOLD', color: '#EBC046' },
+    { label: 'Deep Gold', value: 'DEEP_GOLD', color: '#D9A934' },
+    { label: 'Old Gold', value: 'OLD_GOLD', color: '#C49226' },
+    { label: 'Pale Amber', value: 'PALE_AMBER', color: '#C78529' },
+    { label: 'Amber', value: 'AMBER', color: '#B06D1F' },
+    { label: 'Brown', value: 'BROWN', color: '#8C531B' },
+  ],
+  RED: [
+    { label: 'Pinkish Purple', value: 'PINKISH_PURPLE', color: '#A63B6B' },
+    { label: 'Bright Violet', value: 'BRIGHT_VIOLET', color: '#8C184E' },
+    { label: 'Purple', value: 'PURPLE', color: '#750936' },
+    { label: 'Deep Purple', value: 'DEEP_PURPLE', color: '#590526' },
+    { label: 'Ruby', value: 'RUBY', color: '#8A0F1D' },
+    { label: 'Deep Ruby', value: 'DEEP_RUBY', color: '#660A13' },
+    { label: 'Blackish Red', value: 'BLACKISH_RED', color: '#3B040B' },
+    { label: 'Garnet', value: 'GARNET', color: '#7B2618' },
+    { label: 'Brick Red', value: 'BRICK_RED', color: '#8D361F' },
+    { label: 'Tawny', value: 'TAWNY', color: '#934626' },
+    { label: 'Mahogany', value: 'MAHOGANY', color: '#632D19' },
+  ],
+  ROSE: [
+    { label: 'Grey Pink', value: 'GREY_PINK', color: '#FBE6E3' },
+    { label: 'Pale Blush', value: 'PALE_BLUSH', color: '#FADADD' },
+    { label: 'Shell Pink', value: 'SHELL_PINK', color: '#F7BFBE' },
+    { label: 'Salmon', value: 'SALMON', color: '#F5A99B' },
+    { label: 'Peach', value: 'PEACH', color: '#F5B695' },
+    { label: 'Pink', value: 'PINK', color: '#F28E95' },
+    { label: 'Rose', value: 'ROSE', color: '#E86A76' },
+    { label: 'Deep Rose', value: 'DEEP_ROSE', color: '#D64858' },
+    { label: 'Cherry', value: 'CHERRY', color: '#C93648' },
+    { label: 'Onion Skin', value: 'ONION_SKIN', color: '#D47A60' },
+  ],
+  SPARKLING: [
+    { label: 'Silver', value: 'SILVER', color: '#FAFBE6' },
+    { label: 'Greenish Yellow', value: 'GREENISH_YELLOW', color: '#F4F6D4' },
+    { label: 'Pale Gold', value: 'PALE_GOLD', color: '#F2E9AA' },
+    { label: 'Rich Gold', value: 'RICH_GOLD', color: '#EAC65F' },
+    { label: 'Deep Gold', value: 'DEEP_GOLD', color: '#D9A934' },
+    { label: 'Old Gold', value: 'OLD_GOLD', color: '#C49226' },
+    { label: 'Amber', value: 'AMBER', color: '#B06D1F' },
+    { label: 'Rose Gold', value: 'ROSE_GOLD', color: '#D69562' },
+  ],
+  DESSERT: [
+    { label: 'Honey', value: 'HONEY', color: '#E3B836' },
+    { label: 'Topaz', value: 'TOPAZ', color: '#D69426' },
+    { label: 'Amber', value: 'AMBER', color: '#BF731F' },
+    { label: 'Caramel', value: 'CARAMEL', color: '#A65E1C' },
+    { label: 'Rust', value: 'RUST', color: '#8F4217' },
+    { label: 'Chestnut', value: 'CHESTNUT', color: '#703212' },
+    { label: 'Coffee', value: 'COFFEE', color: '#54220E' },
+    { label: 'Dark Brown', value: 'DARK_BROWN', color: '#3D1606' },
+    { label: 'Ebony', value: 'EBONY', color: '#260D04' },
+  ],
+  FORTIFIED: [
+    { label: 'Honey', value: 'HONEY', color: '#E3B836' },
+    { label: 'Topaz', value: 'TOPAZ', color: '#D69426' },
+    { label: 'Amber', value: 'AMBER', color: '#BF731F' },
+    { label: 'Caramel', value: 'CARAMEL', color: '#A65E1C' },
+    { label: 'Rust', value: 'RUST', color: '#8F4217' },
+    { label: 'Chestnut', value: 'CHESTNUT', color: '#703212' },
+    { label: 'Coffee', value: 'COFFEE', color: '#54220E' },
+    { label: 'Dark Brown', value: 'DARK_BROWN', color: '#3D1606' },
+    { label: 'Ebony', value: 'EBONY', color: '#260D04' },
+  ],
+};
+
 export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
@@ -49,6 +124,18 @@ export default function TastingNoteWriteScreen() {
   const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
+  const getPaletteType = (type?: string) => {
+    if (!type) return 'RED';
+    const upper = type.toUpperCase();
+    if (upper === 'RED' || upper === '레드') return 'RED';
+    if (upper === 'WHITE' || upper === '화이트') return 'WHITE';
+    if (upper === 'ROSE' || upper === '로제') return 'ROSE';
+    if (upper === 'SPARKLING' || upper === '스파클링') return 'SPARKLING';
+    if (upper === 'DESSERT' || upper === '디저트') return 'DESSERT';
+    if (upper === 'FORTIFIED' || upper === '주정강화') return 'FORTIFIED';
+    return 'RED'; // Default or fallback
+  };
+
   // route.params가 변경되면 상태 업데이트
   useEffect(() => {
     if (route.params?.wineId) {
@@ -58,23 +145,11 @@ export default function TastingNoteWriteScreen() {
         wineImage: route.params.wineImage,
         wineType: route.params.wineType,
       });
-      if (route.params.wineType) {
-        setColor(normalizeColor(route.params.wineType));
-      }
+      // 와인 타입에 맞는 팔레트의 첫 번째 색상을 기본값으로 설정하지 않고 비워둠 (사용자 선택 유도)
+      // 또는 첫번째 값 설정: setColor(COLOR_PALETTES[getPaletteType(route.params.wineType)][0].value);
+      setColor('');
     }
   }, [route.params]);
-
-  const normalizeColor = (type?: string) => {
-    if (!type) return 'RED';
-    const upper = type.toUpperCase();
-    if (['RED', 'WHITE', 'SPARKLING', 'ROSE', 'DESSERT'].includes(upper)) return upper;
-    if (upper === '레드') return 'RED';
-    if (upper === '화이트') return 'WHITE';
-    if (upper === '스파클링') return 'SPARKLING';
-    if (upper === '로제') return 'ROSE';
-    if (upper === '디저트') return 'DESSERT';
-    return 'RED';
-  };
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
@@ -89,7 +164,7 @@ export default function TastingNoteWriteScreen() {
 
   // Form State
   const [vintageYear, setVintageYear] = useState('');
-  const [color, setColor] = useState(normalizeColor(selectedWine.wineType)); 
+  const [color, setColor] = useState(''); 
   const [tasteDate, setTasteDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
   
   // 5 Taste Indicators (1-5 Level)
@@ -104,6 +179,17 @@ export default function TastingNoteWriteScreen() {
   const [review, setReview] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isFormValid = 
+    selectedWine.wineId &&
+    color !== '' &&
+    tasteDate !== '' &&
+    sweetness > 0 &&
+    acidity > 0 &&
+    tannin > 0 &&
+    body > 0 &&
+    alcohol > 0 &&
+    rating > 0;
 
   const handleRating = (value: number) => {
     setRating(value);
@@ -148,7 +234,7 @@ export default function TastingNoteWriteScreen() {
       wineImage: wine.imageUrl,
       wineType: wine.sort,
     });
-    setColor(normalizeColor(wine.sort));
+    setColor('');
     setSearchText('');
     setShowSearchResults(false);
   };
@@ -216,6 +302,31 @@ export default function TastingNoteWriteScreen() {
     }
   };
 
+  const renderColorSelector = () => {
+    const paletteType = getPaletteType(selectedWine.wineType);
+    const palette = COLOR_PALETTES[paletteType] || COLOR_PALETTES['WHITE'];
+
+    return (
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>와인 색상</Text>
+        <View style={styles.colorPaletteContainer}>
+          {palette.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.colorOption,
+                color === option.value && styles.colorOptionSelected
+              ]}
+              onPress={() => setColor(option.value)}
+            >
+              <View style={[styles.colorCircle, { backgroundColor: option.color }]} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const renderLevelSelector = (label: string, value: number, onChange: (val: number) => void) => (
     <View style={styles.levelContainer}>
       <Text style={styles.levelLabel}>{label}</Text>
@@ -254,8 +365,8 @@ export default function TastingNoteWriteScreen() {
           <Icon name="close" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>테이스팅 노트 작성</Text>
-        <TouchableOpacity onPress={handleSubmit} disabled={isSubmitting || !selectedWine.wineId}>
-          <Text style={[styles.saveButton, (isSubmitting || !selectedWine.wineId) && { color: '#666' }]}>저장</Text>
+        <TouchableOpacity onPress={handleSubmit} disabled={isSubmitting || !isFormValid}>
+          <Text style={[styles.saveButton, (isSubmitting || !isFormValid) && { color: '#666' }]}>저장</Text>
         </TouchableOpacity>
       </View>
 
@@ -345,7 +456,10 @@ export default function TastingNoteWriteScreen() {
                 <View style={styles.row}>
                   <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                     <Text style={styles.label}>빈티지 (연도)</Text>
-                    <View style={styles.vintageInputWrapper}>
+                    <View style={[
+                      styles.vintageInputWrapper,
+                      vintageYear.length === 4 && vintageYear !== 'NV' && styles.vintageInputWrapperValid
+                    ]}>
                       <TextInput
                         style={styles.vintageInput}
                         placeholder="예: 2020"
@@ -361,12 +475,16 @@ export default function TastingNoteWriteScreen() {
                         }}
                         maxLength={4}
                       />
-                      <TouchableOpacity 
-                        style={[styles.nvButton, vintageYear === 'NV' && styles.nvButtonActive]}
-                        onPress={() => setVintageYear(vintageYear === 'NV' ? '' : 'NV')}
-                      >
-                        <Text style={[styles.nvButtonText, vintageYear === 'NV' && styles.nvButtonTextActive]}>NV</Text>
-                      </TouchableOpacity>
+                      {vintageYear.length === 4 && vintageYear !== 'NV' ? (
+                        <Icon name="checkmark-circle" size={20} color="#8e44ad" style={{ marginRight: 4 }} />
+                      ) : (
+                        <TouchableOpacity 
+                          style={[styles.nvButton, vintageYear === 'NV' && styles.nvButtonActive]}
+                          onPress={() => setVintageYear(vintageYear === 'NV' ? '' : 'NV')}
+                        >
+                          <Text style={[styles.nvButtonText, vintageYear === 'NV' && styles.nvButtonTextActive]}>NV</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
                   
@@ -382,6 +500,9 @@ export default function TastingNoteWriteScreen() {
                   </View>
                 </View>
               </View>
+
+              {/* Color Selector */}
+              {renderColorSelector()}
 
               {/* Taste Indicators */}
               <View style={styles.section}>
@@ -716,6 +837,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#2a2a2a',
     borderRadius: 8,
     paddingRight: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  vintageInputWrapperValid: {
+    borderColor: '#8e44ad',
+    backgroundColor: 'rgba(142, 68, 173, 0.05)',
   },
   vintageInput: {
     flex: 1,
@@ -739,6 +866,33 @@ const styles = StyleSheet.create({
   },
   nvButtonTextActive: {
     color: '#fff',
+  },
+  colorPaletteContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    justifyContent: 'center',
+  },
+  colorOption: {
+    width: '14.5%', // 6 items per row approx
+    marginHorizontal: '1%',
+    marginBottom: 8,
+    alignItems: 'center',
+    padding: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  colorOptionSelected: {
+    borderColor: '#8e44ad',
+    backgroundColor: 'rgba(142, 68, 173, 0.1)',
+  },
+  colorCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: '#444',
   },
 });
 

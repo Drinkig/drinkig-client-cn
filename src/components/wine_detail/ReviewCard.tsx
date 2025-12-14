@@ -1,19 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Review } from '../../data/dummyWines';
+import { ReviewDTO } from '../../api/wine';
 
 interface ReviewCardProps {
-  review: Review & { vintageYear?: string };
+  review: ReviewDTO;
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
+  // 날짜 포맷팅 (YYYY-MM-DD)
+  const displayDate = review.tasteDate || review.createdAt.split('T')[0];
+
   return (
     <View style={styles.reviewItem}>
       <View style={styles.reviewHeader}>
         <View style={styles.reviewUserContainer}>
-          <Text style={styles.reviewUser}>{review.userName}</Text>
-          {review.vintageYear && (
+          <Text style={styles.reviewUser}>{review.name}</Text>
+          {review.vintageYear && review.vintageYear > 0 && (
             <View style={styles.vintageBadge}>
               <Text style={styles.vintageBadgeText}>{review.vintageYear}</Text>
             </View>
@@ -21,11 +24,11 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         </View>
         <View style={styles.ratingContainer}>
           <Ionicons name="star" size={14} color="#f1c40f" />
-          <Text style={styles.ratingText}>{review.rating}</Text>
+          <Text style={styles.ratingText}>{review.rating.toFixed(1)}</Text>
         </View>
       </View>
-      <Text style={styles.reviewComment}>{review.comment}</Text>
-      <Text style={styles.reviewDate}>{review.date}</Text>
+      <Text style={styles.reviewComment}>{review.review}</Text>
+      <Text style={styles.reviewDate}>시음일: {displayDate}</Text>
     </View>
   );
 }

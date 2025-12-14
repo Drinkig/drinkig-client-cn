@@ -314,6 +314,8 @@ export interface ReviewDTO {
   review: string;
   rating: number;
   createdAt: string;
+  vintageYear?: number;
+  tasteDate?: string;
 }
 
 // 리뷰 조회 파라미터
@@ -475,6 +477,32 @@ export const removeFromWishlist = async (wineId: number, vintageYear?: number) =
 // 위시리스트 전체 조회 API
 export const getWishlist = async () => {
   const response = await client.get<WishlistListResponse>('/wine-wishlist');
+  return response.data;
+};
+
+// 테이스팅 노트 목록 조회 응답 타입
+export interface TastingNoteListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: TastingNotePreviewDTO[];
+}
+
+export interface TastingNotePreviewDTO {
+  tastingNoteId: number;
+  wineId: number;
+  wineName: string;
+  vintageYear: number;
+  wineImageUrl: string;
+  tasteDate: string;
+  rating: number;
+  createdAt: string;
+  sort: string;
+}
+
+// 테이스팅 노트 목록 조회 API
+export const getMyTastingNotes = async () => {
+  const response = await client.get<TastingNoteListResponse>('/tasting-note/my');
   return response.data;
 };
 
