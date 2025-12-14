@@ -244,26 +244,8 @@ const ProfileScreen = () => {
 
         {/* 3. 내가 마신 와인 섹션 (테이스팅 노트 리스트) */}
         <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeaderRow}>
+          <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>내가 마신 와인</Text>
-            {/* 정렬 버튼 */}
-            {!Array.isArray(tastingNotes) || tastingNotes.length === 0 ? null : (
-              <TouchableOpacity 
-                style={styles.sortButton}
-                onPress={() => setIsSortModalVisible(true)}
-              >
-                <Text style={styles.sortButtonText}>
-                  {sortOptions.find(opt => opt.value === sortType)?.label}
-                </Text>
-                <Icon name="chevron-down" size={14} color="#888" style={{ marginLeft: 4 }} />
-              </TouchableOpacity>
-            )}
-          </View>
-          
-          <View style={styles.countContainer}>
-            <Text style={styles.countText}>
-              총 <Text style={styles.countValue}>{processedNotes.length}</Text>병
-            </Text>
           </View>
           
           {/* 필터 칩 */}
@@ -291,6 +273,26 @@ const ProfileScreen = () => {
               </TouchableOpacity>
             ))}
           </ScrollView>
+
+          {/* 총 개수 및 정렬 버튼 (필터 칩 밑에 같은 줄로 배치) */}
+          <View style={styles.countAndSortContainer}>
+            <Text style={styles.countText}>
+              총 <Text style={styles.countValue}>{processedNotes.length}</Text>병
+            </Text>
+            
+            {/* 정렬 버튼 */}
+            {!Array.isArray(tastingNotes) || tastingNotes.length === 0 ? null : (
+              <TouchableOpacity 
+                style={styles.sortButton}
+                onPress={() => setIsSortModalVisible(true)}
+              >
+                <Text style={styles.sortButtonText}>
+                  {sortOptions.find(opt => opt.value === sortType)?.label}
+                </Text>
+                <Icon name="chevron-down" size={14} color="#888" style={{ marginLeft: 4 }} />
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* 그리드 리스트 */}
           {processedNotes.length > 0 ? (
@@ -448,19 +450,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 12,
   },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    marginBottom: 8,
-  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
   },
-  countContainer: {
+  countAndSortContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 24,
     marginBottom: 12,
   },

@@ -203,7 +203,7 @@ export default function TastingNoteWriteScreen() {
       const requestData: TastingNoteRequest = {
         wineId: selectedWine.wineId,
         vintageYear: vintageYear === 'NV' ? 0 : (vintageYear ? parseInt(vintageYear, 10) : undefined),
-        color: color.toUpperCase(), // Ensure uppercase for server
+        color: color, // 그대로 전송 (이미 16진수 코드임)
         tasteDate,
         sweetness: mapLevelToValue(sweetness),
         acidity: mapLevelToValue(acidity),

@@ -16,6 +16,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import { getTastingNoteDetail, TastingNoteDTO } from '../api/wine';
 import FeatureGauge from '../components/wine_detail/FeatureGauge';
+import { COLOR_PALETTES } from '../components/tasting_note/constants';
 
 type TastingNoteDetailRouteProp = RouteProp<RootStackParamList, 'TastingNoteDetail'>;
 
@@ -109,7 +110,7 @@ export default function TastingNoteDetailScreen() {
             <View style={styles.infoItem}>
               <Text style={styles.label}>색상</Text>
               <View style={styles.colorWrapper}>
-                <View style={[styles.colorCircle, { backgroundColor: note.color }]} />
+                <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
                 {/* <Text style={styles.value}>{note.color}</Text> */}
               </View>
             </View>
@@ -189,6 +190,20 @@ const getWineTypeColor = (type: string) => {
     case 'DESSERT': case '디저트': return '#D35400';
     default: return '#7F8C8D';
   }
+};
+
+const getHexColorFromValue = (value: string) => {
+  if (!value) return 'transparent';
+  
+  // Search in all palettes
+  for (const paletteKey in COLOR_PALETTES) {
+    const palette = COLOR_PALETTES[paletteKey];
+    const found = palette.find(item => item.value === value);
+    if (found) return found.color;
+  }
+  
+  // If not found, maybe it's already a hex code (fallback)
+  return value.startsWith('#') ? value : 'transparent';
 };
 
 const styles = StyleSheet.create({
