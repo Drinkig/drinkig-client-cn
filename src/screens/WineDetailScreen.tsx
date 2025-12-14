@@ -12,13 +12,13 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useIsFocused, RouteProp } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../data/dummyWines';
 import { MyWine } from '../context/WineContext';
-import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist } from '../api/wine';
+import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist, RecentReviewDTO } from '../api/wine';
 
 // Components
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
@@ -39,9 +39,11 @@ export default function WineDetailScreen() {
   const route = useRoute<WineDetailRouteProp>();
   const { wine } = route.params;
   const isMyWineItem = isMyWine(wine);
+  const isFocused = useIsFocused(); // 화면 포커스 감지
 
   // API 데이터 상태
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null); // any로 임시 처리 (상세 스펙 확인 필요)
+  const [apiReviews, setApiReviews] = useState<RecentReviewDTO[]>([]); // API로 받아온 리뷰 목록
   const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
@@ -67,6 +69,7 @@ export default function WineDetailScreen() {
           if (response.isSuccess) {
             const detail = response.result.wineInfoResponse;
             setApiWineDetail(detail);
+            setApiReviews(response.result.recentReviews || []); // 리뷰 목록 저장
             setIsLiked(detail.liked);
             
             // 최근 본 와인 저장 (상세 정보가 로드된 후 저장)
@@ -95,8 +98,10 @@ export default function WineDetailScreen() {
       }
     };
 
+    if (isFocused || !apiWineDetail) {
     fetchDetail();
-  }, [isMyWineItem, wine.id, selectedVintage]); // selectedVintage 변경 시 재조회 가능하도록
+    }
+  }, [isMyWineItem, wine.id, selectedVintage, isFocused]); // isFocused 추가하여 포커스 시 재조회
 
   // 최근 본 와인 저장 함수
   const saveToRecent = async (item: WineDBItem) => {
@@ -243,6 +248,26 @@ export default function WineDetailScreen() {
 
   // 리뷰 필터링 (선택된 빈티지에 따라)
   const filteredReviews = useMemo(() => {
+    // API 리뷰가 있으면 우선 사용
+    if (apiReviews.length > 0) {
+      return apiReviews.filter(r => {
+        // 빈티지가 없거나 ALL이면 전체 표시
+        if (!selectedVintage || selectedVintage.year === 'ALL' || selectedVintage.year === 'NV') return true;
+        // 특정 빈티지 선택 시 해당 빈티지 리뷰만 (API 리뷰에 vintageYear가 있다면)
+        // 현재 API 리뷰 DTO에는 vintageYear가 없으므로 전체 표시하거나, 필요 시 API 수정 필요
+        // 일단은 클라이언트 필터링 없이 전체 표시 (API가 해당 와인 ID에 대한 리뷰를 주므로)
+        return true; 
+      }).map(r => ({
+        // API DTO -> Component ReviewDTO 변환 (필드명이 같으므로 그대로 사용 가능하지만 명시적 변환)
+        name: r.name,
+        review: r.review,
+        rating: r.rating,
+        createdAt: r.createdAt,
+        vintageYear: 0, // 정보 없음
+        tasteDate: r.createdAt // 정보 없음
+      }));
+    }
+
     if (!vintages) return [];
     
     let sourceReviews: any[] = [];

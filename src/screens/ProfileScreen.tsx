@@ -34,11 +34,14 @@ const ProfileScreen = () => {
       // 테이스팅 노트 목록 조회
       const response = await getMyTastingNotes();
       if (response.isSuccess) {
-        setTastingNotes(response.result || []);
-        setWineCount(response.result ? response.result.length : 0);
+        // 결과가 배열인지 확인 후 설정, 아니면 빈 배열
+        const notes = Array.isArray(response.result) ? response.result : [];
+        setTastingNotes(notes);
+        setWineCount(notes.length);
       }
     } catch (error) {
       console.error('Failed to fetch my data:', error);
+      setTastingNotes([]); // 에러 시 빈 배열 초기화
     }
   };
 
@@ -68,6 +71,9 @@ const ProfileScreen = () => {
 
   // 필터링
   const filteredNotes = React.useMemo(() => {
+    // tastingNotes가 배열이 아니면 빈 배열 반환 (방어 코드)
+    if (!Array.isArray(tastingNotes)) return [];
+
     if (selectedType === '전체') return tastingNotes;
     
     const typeMap: { [key: string]: string } = {
@@ -97,19 +103,9 @@ const ProfileScreen = () => {
     <TouchableOpacity 
       key={item.tastingNoteId}
       style={styles.noteItem}
-      // 상세 화면 이동 (추후 테이스팅 노트 상세 화면으로 연결 or 와인 상세로 연결)
-      // WineDetailScreen은 WineDBItem을 필수로 요구하므로 필요한 필드를 더미로라도 채워서 보냄
-      onPress={() => navigation.navigate('WineDetail', { 
-        wine: { 
-          id: item.wineId, 
-          nameKor: item.wineName,
-          // 필수 필드 더미 채움 (상세 화면에서 API로 다시 불러오므로 크게 상관 없음)
-          nameEng: '',
-          type: item.sort,
-          country: '',
-          grape: '',
-          imageUri: item.wineImageUrl
-        } 
+      // 테이스팅 노트 상세 화면으로 이동 (TastingNoteDetailScreen)
+      onPress={() => navigation.navigate('TastingNoteDetail', { 
+        tastingNoteId: item.tastingNoteId 
       })}
     >
       <Image 

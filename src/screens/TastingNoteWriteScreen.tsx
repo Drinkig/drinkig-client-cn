@@ -93,6 +93,7 @@ export default function TastingNoteWriteScreen() {
   const [alcohol, setAlcohol] = useState(0);
   
   const [nose, setNose] = useState('');
+  const [finish, setFinish] = useState(''); // 피니쉬 추가
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
 
@@ -192,6 +193,13 @@ export default function TastingNoteWriteScreen() {
     setIsSubmitting(true);
 
     try {
+      // 피니쉬 내용을 리뷰에 포함
+      const reviewParts = [];
+      if (finish) reviewParts.push(`[Finish] ${finish}`);
+      if (review) reviewParts.push(review);
+      
+      const finalReview = reviewParts.length > 0 ? reviewParts.join('\n\n') : '';
+
       const requestData: TastingNoteRequest = {
         wineId: selectedWine.wineId,
         vintageYear: vintageYear === 'NV' ? 0 : (vintageYear ? parseInt(vintageYear, 10) : undefined),
@@ -204,7 +212,7 @@ export default function TastingNoteWriteScreen() {
         alcohol: mapLevelToValue(alcohol),
         nose: nose.split(',').map(s => s.trim()).filter(s => s.length > 0),
         rating,
-        review,
+        review: finalReview,
       };
 
       const response = await createTastingNote(requestData);
@@ -385,9 +393,24 @@ export default function TastingNoteWriteScreen() {
                 onSelectColor={setColor}
               />
 
-              {/* Taste Indicators */}
+              {/* Nose (향) - 순서 변경 및 섹션 분리 */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>맛 평가</Text>
+                <Text style={styles.sectionTitle}>향 (Nose)</Text>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>느껴지는 향을 쉼표(,)로 구분하여 적어주세요</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="예: 체리, 오크, 바닐라, 가죽"
+                    placeholderTextColor="#666"
+                    value={nose}
+                    onChangeText={setNose}
+                  />
+                </View>
+              </View>
+
+              {/* Taste (맛) - Palate */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>맛 (Palate)</Text>
                 <TasteLevelSelector
                   label="당도 (Sweetness)"
                   value={sweetness}
@@ -418,30 +441,34 @@ export default function TastingNoteWriteScreen() {
                   onChange={setAlcohol}
                   onHelpPress={() => showTip('alcohol')}
                 />
+              </View>
 
-                <View style={[styles.inputGroup, { marginTop: 24 }]}>
-                  <Text style={styles.label}>향 (Nose) - 쉼표(,)로 구분</Text>
+              {/* Finish (피니쉬) - 신규 추가 */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>피니쉬 (Finish)</Text>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>와인을 삼킨 후의 느낌이나 여운을 적어주세요</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="예: 체리, 오크, 바닐라"
+                    placeholder="예: 깔끔한 산미가 오래 남음, 씁쓸한 끝맛"
                     placeholderTextColor="#666"
-                    value={nose}
-                    onChangeText={setNose}
+                    value={finish}
+                    onChangeText={setFinish}
                   />
                 </View>
               </View>
 
               {/* Rating & Review */}
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>총평</Text>
+                <Text style={styles.sectionTitle}>총평 (Conclusion)</Text>
                 
                 <StarRating rating={rating} onRatingChange={handleRating} />
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>상세 리뷰</Text>
+                  <Text style={styles.label}>상세 리뷰 (선택)</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder="와인에 대한 감상을 자유롭게 적어주세요."
+                    placeholder="와인에 대한 전체적인 감상을 자유롭게 적어주세요."
                     placeholderTextColor="#666"
                     multiline
                     numberOfLines={4}
@@ -602,7 +629,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#333',
   },
   wineThumbnailPlaceholder: {
     width: 60,

@@ -535,3 +535,37 @@ export const createTastingNote = async (data: TastingNoteRequest) => {
   const response = await client.post<TastingNoteResponse>('/tasting-note/new-note', data);
   return response.data;
 };
+
+// 테이스팅 노트 상세 조회 API
+export const getTastingNoteDetail = async (noteId: number) => {
+  const response = await client.get<TastingNoteDetailResponse>(`/tasting-note/${noteId}`);
+  return response.data;
+};
+
+// 테이스팅 노트 상세 조회 응답 타입
+export interface TastingNoteDetailResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: TastingNoteDTO;
+}
+
+export interface TastingNoteDTO {
+  noteId: number; // tastingNoteId -> noteId 변경
+  wineId: number;
+  wineName: string;
+  vintageYear: number;
+  color: string;
+  tasteDate: string;
+  sweetness: number;
+  acidity: number;
+  tannin: number;
+  body: number;
+  alcohol: number;
+  noseList: string[]; // nose -> noseList 변경
+  rating: number;
+  review: string;
+  createdAt: string;
+  imageUrl?: string; // wineImageUrl -> imageUrl 변경
+  sort?: string;
+}

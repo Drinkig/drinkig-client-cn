@@ -17,6 +17,7 @@ export type RootStackParamList = {
   WineDetail: { wine: WineDBItem | MyWine }; // 와인 상세 화면 (DB 정보)
   MyWineDetail: { wineId: number }; // 내 와인 상세 화면 (API 연동)
   TastingNoteWrite: { wineId?: number; wineName?: string; wineImage?: string; wineType?: string } | undefined; // 테이스팅 노트 작성 화면
+  TastingNoteDetail: { tastingNoteId: number }; // 테이스팅 노트 상세 조회 화면
 };
 
 declare global {
