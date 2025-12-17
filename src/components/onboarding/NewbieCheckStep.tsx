@@ -23,7 +23,7 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
           <Text style={styles.cardDesc}>아직 잘 모르지만 배우고 싶어요.</Text>
         </View>
         <Image 
-          source={require('../../assets/user_image/Drinky_5.png')}
+          source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')}
           style={styles.cardImage}
           resizeMode="contain"
         />

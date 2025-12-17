@@ -32,7 +32,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
       </TouchableOpacity>
       
       <Image 
-        source={require('../../assets/user_image/Drinky_5.png')} 
+        source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')} 
         style={styles.heroImage}
         resizeMode="contain"
       />
