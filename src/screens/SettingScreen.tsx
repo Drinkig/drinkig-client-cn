@@ -13,12 +13,13 @@ import { useNavigation } from '@react-navigation/native';
 import appleAuth from '@invertase/react-native-apple-authentication';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
-import { 
-  deleteMember, 
-  deleteAppleMember, 
-  getMemberInfo, 
-  MemberInfoResponse 
+import {
+  deleteMember,
+  deleteAppleMember,
+  getMemberInfo,
+  MemberInfoResponse
 } from '../api/member';
+import DeviceInfo from 'react-native-device-info';
 
 const SettingScreen = () => {
   const navigation = useNavigation();
@@ -86,10 +87,10 @@ const SettingScreen = () => {
           }
         } catch (error: any) {
           console.error('Delete member error:', error);
-          
+
           // 401 에러 체크 (status 확인 또는 메시지 확인)
-          const isAuthError = 
-            error.response?.status === 401 || 
+          const isAuthError =
+            error.response?.status === 401 ||
             (error.message && error.message.includes('401')) ||
             (error.response?.data?.code && error.response.data.code.includes('ACCESS_TOKEN'));
 
@@ -97,8 +98,8 @@ const SettingScreen = () => {
             Alert.alert(
               '인증 만료',
               '안전한 탈퇴 처리를 위해 다시 로그인이 필요합니다.\n로그인 후 다시 시도해주세요.',
-              [{ 
-                text: '확인', 
+              [{
+                text: '확인',
                 onPress: () => logout(true) // 로컬 데이터 비우고 로그인 화면으로
               }]
             );
@@ -164,7 +165,7 @@ const SettingScreen = () => {
           <Text style={styles.sectionTitle}>앱 정보</Text>
           <View style={styles.item}>
             <Text style={styles.itemText}>버전 정보</Text>
-            <Text style={styles.versionText}>1.0.0</Text>
+            <Text style={styles.versionText}>{DeviceInfo.getVersion()}</Text>
           </View>
           <TouchableOpacity style={styles.item}>
             <Text style={styles.itemText}>이용약관</Text>

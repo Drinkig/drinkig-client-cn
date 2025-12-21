@@ -22,12 +22,12 @@ const ProfileScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { user: userInfo, flavorProfile } = useUser();
-  
+
   // 상태 관리
   const [selectedType, setSelectedType] = React.useState('전체');
   const [wineCount, setWineCount] = React.useState(0);
   const [tastingNotes, setTastingNotes] = React.useState<TastingNotePreviewDTO[]>([]);
-  
+
   // 정렬 상태 추가
   const [sortType, setSortType] = React.useState('latest'); // latest, rating_high, rating_low
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
@@ -51,7 +51,7 @@ const ProfileScreen = () => {
         } else if (response.result && Array.isArray((response.result as any).content)) {
           notes = (response.result as any).content;
         }
-        
+
         setTastingNotes(notes);
         setWineCount(notes.length);
       }
@@ -100,7 +100,7 @@ const ProfileScreen = () => {
         '디저트': 'Dessert',
         '주정강화': 'Fortified'
       };
-      
+
       if (selectedType === '기타') {
         filtered = tastingNotes.filter(note => {
           const sort = note.sort || '';
@@ -139,21 +139,21 @@ const ProfileScreen = () => {
   const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
 
   const renderNoteItem = ({ item }: { item: TastingNotePreviewDTO }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       // 서버에서 noteId로 내려올 수 있으므로 tastingNoteId 또는 noteId 사용 (any 타입 캐스팅 활용하여 유연하게 처리)
       key={item.tastingNoteId || (item as any).noteId}
       style={[styles.noteItem, { width: itemWidth }]}
       // 테이스팅 노트 상세 화면으로 이동 (TastingNoteDetailScreen)
-      onPress={() => navigation.navigate('TastingNoteDetail', { 
+      onPress={() => navigation.navigate('TastingNoteDetail', {
         tastingNoteId: item.tastingNoteId || (item as any).noteId
       })}
       activeOpacity={0.8}
     >
       <View style={styles.imageWrapper}>
         {item.imageUrl ? (
-          <Image 
-            source={{ uri: item.imageUrl }} 
-            style={styles.noteImage} 
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.noteImage}
             resizeMode="contain"
           />
         ) : (
@@ -166,7 +166,7 @@ const ProfileScreen = () => {
           <Text style={styles.ratingBadgeText}>{item.rating.toFixed(1)}</Text>
         </View>
       </View>
-      
+
       <View style={styles.noteInfo}>
         <Text style={styles.noteName} numberOfLines={1} ellipsizeMode="tail">{item.wineName}</Text>
         <Text style={styles.noteDate}>{item.tasteDate}</Text>
@@ -179,7 +179,7 @@ const ProfileScreen = () => {
       {/* 상단 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>마이페이지</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate('Setting' as never)}
         >
@@ -191,18 +191,17 @@ const ProfileScreen = () => {
         {/* 1. 프로필 정보 섹션 */}
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
-            <Image 
-              source={userInfo?.profileImage ? { uri: userInfo.profileImage } : require('../assets/user_image/Drinky_3.png')} 
-              style={styles.profileImage} 
+            <Image
+              source={userInfo?.profileImage ? { uri: userInfo.profileImage } : require('../assets/user_image/Drinky_3.png')}
+              style={styles.profileImage}
               resizeMode="cover"
             />
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.nickname}>{userInfo?.nickname || '게스트'}</Text>
             <Text style={styles.wineCountText}>마신 와인 {wineCount || 0}병</Text>
-            {userInfo?.email ? <Text style={styles.email}>{userInfo.email}</Text> : null}
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('ProfileEdit' as never)}
           >
@@ -215,11 +214,11 @@ const ProfileScreen = () => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>내 와인 취향</Text>
           </View>
-          
+
           {/* 펜타곤 그래프 (Flavor Profile이 있을 경우 표시) */}
           {flavorProfile ? (
-            <TouchableOpacity 
-              style={styles.chartContainer} 
+            <TouchableOpacity
+              style={styles.chartContainer}
               onPress={() => navigation.navigate('RecommendationList' as never)}
               activeOpacity={0.8}
             >
@@ -247,11 +246,11 @@ const ProfileScreen = () => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>내가 마신 와인</Text>
           </View>
-          
+
           {/* 필터 칩 */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filterChipsContainer}
           >
             {wineTypes.map((type) => (
@@ -279,10 +278,10 @@ const ProfileScreen = () => {
             <Text style={styles.countText}>
               총 <Text style={styles.countValue}>{processedNotes.length}</Text>병
             </Text>
-            
+
             {/* 정렬 버튼 */}
             {!Array.isArray(tastingNotes) || tastingNotes.length === 0 ? null : (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.sortButton}
                 onPress={() => setIsSortModalVisible(true)}
               >
@@ -425,11 +424,7 @@ const styles = StyleSheet.create({
     color: '#888',
     fontWeight: '600',
   },
-  email: {
-    fontSize: 14,
-    color: '#888',
-    marginTop: 4,
-  },
+
   editButton: {
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -626,7 +621,7 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  
+
   // 모달 스타일
   modalOverlay: {
     flex: 1,
