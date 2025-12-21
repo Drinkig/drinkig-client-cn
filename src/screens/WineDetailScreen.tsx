@@ -18,7 +18,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../data/dummyWines';
 import { MyWine } from '../context/WineContext';
-import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist, RecentReviewDTO } from '../api/wine';
+import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist } from '../api/wine';
 
 // Components
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
@@ -43,7 +43,6 @@ export default function WineDetailScreen() {
 
   // API 데이터 상태
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null); // any로 임시 처리 (상세 스펙 확인 필요)
-  const [apiReviews, setApiReviews] = useState<RecentReviewDTO[]>([]); // API로 받아온 리뷰 목록
   const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
@@ -61,17 +60,16 @@ export default function WineDetailScreen() {
           setIsLoading(true);
           // 사용자용 API는 vintageYear를 받을 수 있음. 현재는 선택된 빈티지 또는 기본값(NV 등)
           // ALL일 때는 vintageYear를 보내지 않음 (전체 조회)
-          const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL' 
-            ? parseInt(selectedVintage.year) 
+          const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL'
+            ? parseInt(selectedVintage.year)
             : undefined;
-          
+
           const response = await getWineDetailPublic(wine.id as number, vintageYear);
           if (response.isSuccess) {
             const detail = response.result.wineInfoResponse;
             setApiWineDetail(detail);
-            setApiReviews(response.result.recentReviews || []); // 리뷰 목록 저장
             setIsLiked(detail.liked);
-            
+
             // 최근 본 와인 저장 (상세 정보가 로드된 후 저장)
             const wineToSave: WineDBItem = {
               ...wine,
@@ -99,7 +97,7 @@ export default function WineDetailScreen() {
     };
 
     if (isFocused || !apiWineDetail) {
-    fetchDetail();
+      fetchDetail();
     }
   }, [isMyWineItem, wine.id, selectedVintage, isFocused]); // isFocused 추가하여 포커스 시 재조회
 
@@ -108,18 +106,18 @@ export default function WineDetailScreen() {
     try {
       const jsonValue = await AsyncStorage.getItem('recent_wines');
       let recentWines: WineDBItem[] = jsonValue != null ? JSON.parse(jsonValue) : [];
-      
+
       // 중복 제거 (이미 있으면 제거 후 맨 앞으로)
       recentWines = recentWines.filter(w => w.id !== item.id);
-      
+
       // 맨 앞에 추가
       recentWines.unshift(item);
-      
+
       // 10개 제한
       if (recentWines.length > 10) {
         recentWines = recentWines.slice(0, 10);
       }
-      
+
       await AsyncStorage.setItem('recent_wines', JSON.stringify(recentWines));
     } catch (e) {
       console.error('Failed to save recent wine', e);
@@ -129,17 +127,17 @@ export default function WineDetailScreen() {
   // 위시리스트 토글 핸들러
   const handleToggleWishlist = async () => {
     if (isMyWineItem) return; // 내 와인은 위시리스트 대상 아님 (이미 보유)
-    
+
     // 낙관적 업데이트
     const previousState = isLiked;
     setIsLiked(!previousState);
 
     try {
       // ALL일 때는 vintageYear를 undefined로 보냄
-      const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL' 
-        ? parseInt(selectedVintage.year) 
+      const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL'
+        ? parseInt(selectedVintage.year)
         : undefined;
-      
+
       if (previousState) {
         // 이미 좋아요 상태였으면 삭제
         await removeFromWishlist(wine.id as number, vintageYear);
@@ -161,49 +159,53 @@ export default function WineDetailScreen() {
   const country = apiWineDetail?.country || wine.country;
   const grape = apiWineDetail?.variety || wine.grape;
   const imageUri = !isMyWineItem && apiWineDetail?.imageUrl ? apiWineDetail.imageUrl : wine.imageUri;
-  
+
   // 상세 데이터 준비
   // [수정] API에서 features(맛 그래프)를 제공하면 사용, 없으면 null
   // 우선순위: official > avg > null
   const features = !isMyWineItem && apiWineDetail ? {
-    sweetness: apiWineDetail.officialSweetness ?? apiWineDetail.avgSweetness,
-    acidity: apiWineDetail.officialAcidity ?? apiWineDetail.avgAcidity,
-    body: apiWineDetail.officialBody ?? apiWineDetail.avgBody,
-    tannin: apiWineDetail.officialTannin ?? apiWineDetail.avgTannin,
+    sweetness: apiWineDetail.officialSweetness,
+    acidity: apiWineDetail.officialAcidity,
+    body: apiWineDetail.officialBody,
+    tannin: apiWineDetail.officialTannin,
   } : (!isMyWineItem && wine.features ? wine.features : null);
 
   // [수정] 설명: API officialDescription 우선, 없으면 wine.description, 없으면 null
-  const description = !isMyWineItem && apiWineDetail?.officialDescription 
-    ? apiWineDetail.officialDescription 
-    : (!isMyWineItem && wine.description ? wine.description : null);
-  
+  // [수정] 설명: API officialDescription 우선, 없으면 null (유저 데이터 사용 안함)
+  const description = !isMyWineItem && apiWineDetail?.officialDescription
+    ? apiWineDetail.officialDescription
+    : null;
+
   // [수정] Nose: official 우선, 없으면 nose, 없으면 wine.nose
-  const nose = !isMyWineItem && apiWineDetail ? 
+  // [수정] Nose: official 우선, 없으면 null
+  const nose = !isMyWineItem && apiWineDetail ?
     [
-      apiWineDetail.officialNose1 || apiWineDetail.nose1,
-      apiWineDetail.officialNose2 || apiWineDetail.nose2,
-      apiWineDetail.officialNose3 || apiWineDetail.nose3
-    ].filter(Boolean) : 
-    (!isMyWineItem && wine.nose ? wine.nose : null);
-  
+      apiWineDetail.officialNose1,
+      apiWineDetail.officialNose2,
+      apiWineDetail.officialNose3
+    ].filter(Boolean) :
+    null;
+
   // [수정] Palate: officialPalate 사용
-  const palate = !isMyWineItem && apiWineDetail ? 
+  // [수정] Palate: officialPalate 사용
+  const palate = !isMyWineItem && apiWineDetail ?
     [
       apiWineDetail.officialPalate1,
       apiWineDetail.officialPalate2,
       apiWineDetail.officialPalate3
     ].filter(Boolean) :
-    (!isMyWineItem && wine.palate ? wine.palate : null);
+    null;
 
   // [수정] Finish: officialFinish 사용
-  const finish = !isMyWineItem && apiWineDetail ? 
+  // [수정] Finish: officialFinish 사용
+  const finish = !isMyWineItem && apiWineDetail ?
     [
       apiWineDetail.officialFinish1,
       apiWineDetail.officialFinish2,
       apiWineDetail.officialFinish3
     ].filter(Boolean) :
-    (!isMyWineItem && wine.finish ? wine.finish : null);
-  
+    null;
+
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
   // 빈티지 리스트 생성: ALL + NV + 2025 ~ 1950
@@ -246,56 +248,7 @@ export default function WineDetailScreen() {
     return list;
   }, [rawVintages]);
 
-  // 리뷰 필터링 (선택된 빈티지에 따라)
-  const filteredReviews = useMemo(() => {
-    // API 리뷰가 있으면 우선 사용
-    if (apiReviews.length > 0) {
-      return apiReviews.filter(r => {
-        // 빈티지가 없거나 ALL이면 전체 표시
-        if (!selectedVintage || selectedVintage.year === 'ALL' || selectedVintage.year === 'NV') return true;
-        // 특정 빈티지 선택 시 해당 빈티지 리뷰만 (API 리뷰에 vintageYear가 있다면)
-        // 현재 API 리뷰 DTO에는 vintageYear가 없으므로 전체 표시하거나, 필요 시 API 수정 필요
-        // 일단은 클라이언트 필터링 없이 전체 표시 (API가 해당 와인 ID에 대한 리뷰를 주므로)
-        return true; 
-      }).map(r => ({
-        // API DTO -> Component ReviewDTO 변환 (필드명이 같으므로 그대로 사용 가능하지만 명시적 변환)
-        name: r.name,
-        review: r.review,
-        rating: r.rating,
-        createdAt: r.createdAt,
-        vintageYear: 0, // 정보 없음
-        tasteDate: r.createdAt // 정보 없음
-      }));
-    }
 
-    if (!vintages) return [];
-    
-    let sourceReviews: any[] = [];
-
-    // selectedVintage가 없거나 'ALL'인 경우 전체 리뷰 표시
-    if (!selectedVintage || selectedVintage.year === 'ALL') {
-      // API나 더미 데이터 구조상 vintages 배열에 전체 리뷰가 모여있지 않을 수 있음.
-      // 따라서 모든 빈티지의 리뷰를 합쳐서 보여줘야 함.
-      if (rawVintages) {
-        sourceReviews = rawVintages.flatMap(v => 
-          v.reviews.map(r => ({ ...r, vintageYear: v.year }))
-        );
-      }
-    } else {
-      // 특정 빈티지 선택 시
-      sourceReviews = selectedVintage.reviews.map(r => ({ ...r, vintageYear: selectedVintage.year }));
-    }
-
-    // Dummy Review -> ReviewDTO 변환
-    return sourceReviews.map(r => ({
-      name: r.userName,
-      review: r.comment,
-      rating: r.rating,
-      createdAt: r.date,
-      vintageYear: r.vintageYear === 'NV' ? 0 : (r.vintageYear ? parseInt(r.vintageYear) : undefined),
-      tasteDate: r.date // 더미 데이터는 시음일이 없으므로 작성일로 대체
-    }));
-  }, [vintages, selectedVintage, rawVintages]);
 
   // 초기 빈티지 설정
   useEffect(() => {
@@ -314,7 +267,7 @@ export default function WineDetailScreen() {
         return null;
       case 'info':
         return (
-          <InfoTab 
+          <InfoTab
             description={description}
             features={features}
             nose={nose}
@@ -325,16 +278,16 @@ export default function WineDetailScreen() {
         );
       case 'review':
         return (
-          <ReviewTab 
-            reviews={filteredReviews}
+          <ReviewTab
+            wineId={wine.id as number}
             selectedVintageYear={selectedVintage?.year}
           />
         );
       case 'price':
         return (
-          <PriceTab 
-            wineId={wine.id as number} 
-            selectedVintageYear={selectedVintage?.year} 
+          <PriceTab
+            wineId={wine.id as number}
+            selectedVintageYear={selectedVintage?.year}
           />
         );
       default:
@@ -351,10 +304,10 @@ export default function WineDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
+
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
@@ -363,17 +316,17 @@ export default function WineDetailScreen() {
         <Text style={styles.headerTitle}>
           {isMyWineItem ? '내 와인 상세' : '와인 정보'}
         </Text>
-        
+
         {/* 위시리스트 버튼 (내 와인이 아닐 때만 표시) */}
         {!isMyWineItem ? (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.wishlistButton}
             onPress={handleToggleWishlist}
           >
-            <Ionicons 
-              name={isLiked ? "heart" : "heart-outline"} 
-              size={24} 
-              color={isLiked ? "#e74c3c" : "#fff"} 
+            <Ionicons
+              name={isLiked ? "heart" : "heart-outline"}
+              size={24}
+              color={isLiked ? "#e74c3c" : "#fff"}
             />
           </TouchableOpacity>
         ) : (
@@ -398,7 +351,7 @@ export default function WineDetailScreen() {
           <View style={styles.infoContainer}>
             <Text style={styles.wineNameKor}>{nameKor}</Text>
             {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
-            
+
             <View style={styles.tagContainer}>
               <View style={styles.tag}>
                 <Text style={styles.tagText}>{type}</Text>
@@ -416,7 +369,7 @@ export default function WineDetailScreen() {
         {/* 2. 빈티지 선택 버튼 - 상단 이동 */}
         {!isMyWineItem && vintages && vintages.length > 0 && (
           <View style={styles.vintageSelectContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.vintageSelectButton}
               onPress={() => setVintageModalVisible(true)}
             >
@@ -435,14 +388,14 @@ export default function WineDetailScreen() {
 
         {/* 3. 탭 헤더 (가로 스크롤) */}
         <View style={styles.tabHeaderContainer}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false} 
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabHeaderContent}
           >
             {/* 내 와인일 때만 보이는 '내 기록' 탭 */}
             {isMyWineItem && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.tabButton, activeTab === 'my_record' && styles.activeTabButton]}
                 onPress={() => setActiveTab('my_record')}
               >
@@ -450,19 +403,19 @@ export default function WineDetailScreen() {
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]}
               onPress={() => setActiveTab('info')}
             >
               <Text style={[styles.tabText, activeTab === 'info' && styles.activeTabText]}>상세 정보</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.tabButton, activeTab === 'review' && styles.activeTabButton]}
               onPress={() => setActiveTab('review')}
             >
               <Text style={[styles.tabText, activeTab === 'review' && styles.activeTabText]}>리뷰</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.tabButton, activeTab === 'price' && styles.activeTabButton]}
               onPress={() => setActiveTab('price')}
             >
@@ -481,7 +434,7 @@ export default function WineDetailScreen() {
       {/* 하단 버튼: 내 와인일 때만 '기록 수정하기' 표시 */}
       {isMyWineItem && (
         <View style={styles.bottomButtonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.recordButton}
             onPress={handleAddRecord}
           >
@@ -555,7 +508,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 12,
-    },
+  },
   infoContainer: {
     padding: 24,
     paddingBottom: 12,

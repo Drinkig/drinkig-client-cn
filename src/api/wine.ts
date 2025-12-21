@@ -320,7 +320,7 @@ export interface ReviewDTO {
 
 // 리뷰 조회 파라미터
 interface ReviewParams {
-  vintageYear: number;
+  vintageYear?: number;
   sortType: string; // "최신순", "오래된 순", "별점 높은 순", "별점 낮은 순"
   page?: number;
   size?: number;

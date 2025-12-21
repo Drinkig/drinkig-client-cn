@@ -66,14 +66,7 @@ export default function InfoTab({
               <Text style={styles.sectionTitle}>
                 노즈 <Text style={styles.subTitleText}>(Nose)</Text>
               </Text>
-              <View style={styles.aromaContainer}>
-                {nose.map((item, index) => (
-                  <View key={index} style={styles.aromaTag}>
-                    <MaterialCommunityIcons name="scent" size={14} color="#8e44ad" style={{ marginRight: 4 }} />
-                    <Text style={styles.aromaText}>{item}</Text>
-                  </View>
-                ))}
-              </View>
+              <Text style={styles.aromaListText}>{nose.join(', ')}</Text>
             </View>
           )}
 
@@ -82,14 +75,7 @@ export default function InfoTab({
               <Text style={styles.sectionTitle}>
                 팔레트 <Text style={styles.subTitleText}>(Palate)</Text>
               </Text>
-              <View style={styles.aromaContainer}>
-                {palate.map((item, index) => (
-                  <View key={index} style={styles.aromaTag}>
-                    <MaterialCommunityIcons name="water-outline" size={14} color="#8e44ad" style={{ marginRight: 4 }} />
-                    <Text style={styles.aromaText}>{item}</Text>
-                  </View>
-                ))}
-              </View>
+              <Text style={styles.aromaListText}>{palate.join(', ')}</Text>
             </View>
           )}
 
@@ -98,14 +84,7 @@ export default function InfoTab({
               <Text style={styles.sectionTitle}>
                 피니시 <Text style={styles.subTitleText}>(Finish)</Text>
               </Text>
-              <View style={styles.aromaContainer}>
-                {finish.map((item, index) => (
-                  <View key={index} style={styles.aromaTag}>
-                    <MaterialCommunityIcons name="timer-sand" size={14} color="#8e44ad" style={{ marginRight: 4 }} />
-                    <Text style={styles.aromaText}>{item}</Text>
-                  </View>
-                ))}
-              </View>
+              <Text style={styles.aromaListText}>{finish.join(', ')}</Text>
             </View>
           )}
         </>
@@ -150,25 +129,10 @@ const styles = StyleSheet.create({
     fontWeight: 'normal',
     color: '#aaa',
   },
-  aromaContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  aromaTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#2d2033',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#4a3b52',
-  },
-  aromaText: {
-    color: '#d2b4de',
-    fontSize: 14,
-    fontWeight: '500',
+  aromaListText: {
+    color: '#ccc',
+    fontSize: 15,
+    lineHeight: 24,
   },
 });
 
