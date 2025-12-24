@@ -192,7 +192,7 @@ const ProfileScreen = () => {
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <Image
-              source={userInfo?.profileImage ? { uri: userInfo.profileImage } : require('../assets/user_image/Drinky_3.png')}
+              source={userInfo?.profileImage ? { uri: userInfo.profileImage } : require('../assets/Standard_profile.png')}
               style={styles.profileImage}
               resizeMode="cover"
             />
@@ -408,6 +408,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
+    transform: [{ scale: 1.3 }], // 이미지를 확대해서 보여줌
   },
   userInfo: {
     flex: 1,

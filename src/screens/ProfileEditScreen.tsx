@@ -19,12 +19,12 @@ const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const { user, refreshUserInfo } = useUser();
   const { showAlert, showLoading, hideLoading } = useGlobalUI();
-  
+
   // 상태 관리
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(null); // 실제 업로드용 에셋
-  
+
   // 변경사항 여부 확인
   const hasChanges = nickname !== user?.nickname || selectedImageAsset !== null;
 
@@ -37,7 +37,7 @@ const ProfileEditScreen = () => {
     });
 
     if (result.didCancel) return;
-    
+
     if (result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
       setProfileImage(asset.uri || null);
@@ -111,17 +111,19 @@ const ProfileEditScreen = () => {
           <Icon name="chevron-back" size={28} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>프로필 수정</Text>
-        <View style={{ width: 28 }} /> 
+        <View style={{ width: 28 }} />
       </View>
 
       <View style={styles.content}>
         {/* 프로필 사진 변경 */}
         <View style={styles.imageSection}>
           <TouchableOpacity onPress={handleSelectImage} style={styles.imageContainer}>
-            <Image 
-              source={profileImage ? { uri: profileImage } : require('../assets/user_image/Drinky_3.png')} 
-              style={styles.profileImage} 
-            />
+            <View style={styles.imageMask}>
+              <Image
+                source={profileImage ? { uri: profileImage } : require('../assets/Standard_profile.png')}
+                style={styles.profileImage}
+              />
+            </View>
             <View style={styles.cameraIconContainer}>
               <Icon name="camera" size={20} color="#fff" />
             </View>
@@ -143,8 +145,8 @@ const ProfileEditScreen = () => {
         </View>
 
         {/* 저장 버튼 */}
-        <TouchableOpacity 
-          style={[styles.saveButton, (!hasChanges) && styles.saveButtonDisabled]} 
+        <TouchableOpacity
+          style={[styles.saveButton, (!hasChanges) && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={!hasChanges}
         >
@@ -190,13 +192,21 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     position: 'relative',
-  },
-  profileImage: {
     width: 120,
     height: 120,
+  },
+  imageMask: {
+    width: '100%',
+    height: '100%',
     borderRadius: 60,
     borderWidth: 2,
     borderColor: '#444',
+    overflow: 'hidden',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    transform: [{ scale: 1.3 }],
   },
   placeholderImage: {
     width: 120,
