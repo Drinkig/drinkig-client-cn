@@ -2,7 +2,7 @@ import UIKit
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
-import RNKakaoLogins
+import kakao_login
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
