@@ -61,6 +61,20 @@ const SettingScreen = () => {
     }
   };
 
+  // 이메일 연결 핸들러
+  const handleEmailPress = async (subject: string, body: string = '') => {
+    const email = 'drinkeasyy@gmail.com';
+    const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    try {
+      // mailto 스키마 처리
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error('An error occurred', error);
+      Alert.alert('오류', '메일 앱을 열 수 없습니다.');
+    }
+  };
+
   // 로그아웃 핸들러
   const handleLogout = () => {
     showAlert({
@@ -216,7 +230,26 @@ const SettingScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 섹션 3: 계정 관리 */}
+        {/* 섹션 3: 문의하기 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>문의하기</Text>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => handleEmailPress('[오류 제보] ')}
+          >
+            <Text style={styles.itemText}>오류 제보</Text>
+            <Icon name="bug-outline" size={20} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => handleEmailPress('[기능 제안] ')}
+          >
+            <Text style={styles.itemText}>기능 제안</Text>
+            <Icon name="bulb-outline" size={20} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* 섹션 4: 계정 관리 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>계정 관리</Text>
           <TouchableOpacity style={styles.item} onPress={handleLogout}>
