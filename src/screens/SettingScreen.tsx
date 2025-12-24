@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,6 +29,7 @@ const SettingScreen = () => {
 
   // 사용자 정보 상태 (authType 확인용)
   const [authType, setAuthType] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
 
   useEffect(() => {
     const fetchMemberInfo = async () => {
@@ -35,6 +37,7 @@ const SettingScreen = () => {
         const response: MemberInfoResponse = await getMemberInfo();
         if (response.isSuccess) {
           setAuthType(response.result.authType);
+          setUserEmail(response.result.email);
         }
       } catch (error) {
         console.error('Failed to fetch member info:', error);
@@ -42,6 +45,21 @@ const SettingScreen = () => {
     };
     fetchMemberInfo();
   }, []);
+
+  // 링크 이동 핸들러
+  const handleLinkPress = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('오류', '링크를 열 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('An error occurred', error);
+      Alert.alert('오류', '링크를 여는 중 문제가 발생했습니다.');
+    }
+  };
 
   // 로그아웃 핸들러
   const handleLogout = () => {
@@ -160,24 +178,45 @@ const SettingScreen = () => {
       </View>
 
       <ScrollView style={styles.content}>
-        {/* 섹션 1: 앱 정보 */}
+        {/* 섹션 1: 내 계정 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>내 계정</Text>
+          <View style={styles.item}>
+            <Text style={styles.itemText}>로그인 수단</Text>
+            <Text style={styles.versionText}>
+              {authType === 'KAKAO' ? '카카오' : authType === 'APPLE' ? 'Apple' : authType}
+            </Text>
+          </View>
+          <View style={styles.item}>
+            <Text style={styles.itemText}>이메일</Text>
+            <Text style={styles.versionText}>{userEmail}</Text>
+          </View>
+        </View>
+
+        {/* 섹션 2: 앱 정보 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>앱 정보</Text>
           <View style={styles.item}>
             <Text style={styles.itemText}>버전 정보</Text>
             <Text style={styles.versionText}>{DeviceInfo.getVersion()}</Text>
           </View>
-          <TouchableOpacity style={styles.item}>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => handleLinkPress('https://web.drinkig.com/terms')}
+          >
             <Text style={styles.itemText}>이용약관</Text>
             <Icon name="chevron-forward" size={20} color="#666" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => handleLinkPress('https://web.drinkig.com/privacy')}
+          >
             <Text style={styles.itemText}>개인정보 처리방침</Text>
             <Icon name="chevron-forward" size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
-        {/* 섹션 2: 계정 관리 */}
+        {/* 섹션 3: 계정 관리 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>계정 관리</Text>
           <TouchableOpacity style={styles.item} onPress={handleLogout}>
