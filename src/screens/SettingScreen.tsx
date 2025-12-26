@@ -114,7 +114,7 @@ const SettingScreen = () => {
               await logout(true);
             } else {
               console.error('Delete member failed:', response.message);
-              Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
+              Alert.alert('오류', `회원 탈퇴 실패: ${response.message}`);
             }
           }
         } catch (error: any) {
@@ -138,7 +138,7 @@ const SettingScreen = () => {
             return;
           }
 
-          Alert.alert('오류', '회원 탈퇴 중 오류가 발생했습니다.');
+          Alert.alert('오류', `회원 탈퇴 실패: ${error.message || '알 수 없는 오류'}`);
         } finally {
           hideLoading();
         }
@@ -167,7 +167,7 @@ const SettingScreen = () => {
         await logout();
       } else {
         console.error('Apple delete member failed:', response.message);
-        Alert.alert('오류', '회원 탈퇴에 실패했습니다.');
+        Alert.alert('오류', `회원 탈퇴 실패: ${response.message}`);
       }
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
@@ -175,7 +175,7 @@ const SettingScreen = () => {
         return;
       }
       console.error('Apple delete member error:', error);
-      Alert.alert('오류', 'Apple 인증 또는 탈퇴 처리에 실패했습니다.');
+      Alert.alert('오류', `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`);
       throw error; // 상위 catch로 전달
     }
   };
