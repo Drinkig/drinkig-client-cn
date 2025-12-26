@@ -11,8 +11,8 @@ const SplashScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.contentContainer}>
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('../assets/Logo Icon.png')} 
+          <Image
+            source={require('../assets/Logo_Icon_2.png')}
             style={styles.logo}
             resizeMode="contain"
           />
