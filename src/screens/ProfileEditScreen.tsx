@@ -25,8 +25,16 @@ const ProfileEditScreen = () => {
   const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(null); // 실제 업로드용 에셋
 
-  // 변경사항 여부 확인
-  const hasChanges = nickname !== user?.nickname || selectedImageAsset !== null;
+  // Sync state with user context when it loads/updates
+  React.useEffect(() => {
+    if (user) {
+      setNickname(user.nickname);
+      setProfileImage(user.profileImage);
+    }
+  }, [user]);
+
+  // 변경사항 여부 확인: 닉네임이 다르고 비어있지 않거나, 이미지가 선택됨
+  const hasChanges = (nickname !== user?.nickname && nickname.trim().length > 0) || selectedImageAsset !== null;
 
   // 이미지 선택 핸들러
   const handleSelectImage = async () => {
@@ -63,8 +71,8 @@ const ProfileEditScreen = () => {
       if (selectedImageAsset && selectedImageAsset.uri) {
         const uploadResponse = await uploadProfileImage(
           selectedImageAsset.uri,
-          selectedImageAsset.type,
-          selectedImageAsset.fileName
+          selectedImageAsset.type || 'image/jpeg',
+          selectedImageAsset.fileName || 'profile.jpg'
         );
         if (!uploadResponse.isSuccess) {
           throw new Error('Image upload failed');

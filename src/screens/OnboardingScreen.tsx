@@ -47,14 +47,14 @@ type Step =
   | 'ALCOHOL_PREF'
   | 'FOOD_PREF'
   // Expert Flow: All in one page
-  | 'FLAVOR_PROFILE' 
+  | 'FLAVOR_PROFILE'
   // Newbie Flow: Split pages
   | 'FLAVOR_ACIDITY'
   | 'FLAVOR_SWEETNESS'
   | 'FLAVOR_TANNIN'
   | 'FLAVOR_BODY'
   | 'FLAVOR_ALCOHOL'
-  
+
   | 'WINE_INTEREST' // Red vs White (유지: 뉴비도 wineSort 필요)
   // Expert Flow
   | 'EXPERT_TRANSITION'
@@ -64,6 +64,7 @@ type Step =
 interface OnboardingData {
   name: string;
   profileImageUri: string | null;
+  profileImageAsset: any | null; // Added to store full asset
   isNewbie: boolean | null;
   monthPrice: number;
   wineSort: string[];
@@ -79,6 +80,7 @@ interface OnboardingData {
 const INITIAL_DATA: OnboardingData = {
   name: '',
   profileImageUri: null,
+  profileImageAsset: null,
   isNewbie: null,
   monthPrice: 0,
   wineSort: [],
@@ -127,7 +129,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const OnboardingScreen = () => {
   const navigation = useNavigation();
   const { completeOnboarding } = useUser();
-  
+
   const [step, setStep] = useState<Step>('INTRO');
   const [formData, setFormData] = useState<OnboardingData>(INITIAL_DATA);
   const [loading, setLoading] = useState(false);
@@ -220,7 +222,9 @@ const OnboardingScreen = () => {
     });
 
     if (result.assets && result.assets.length > 0) {
-      updateData('profileImageUri', result.assets[0].uri);
+      const asset = result.assets[0];
+      updateData('profileImageUri', asset.uri);
+      updateData('profileImageAsset', asset); // Store full asset
     }
   };
 
@@ -245,7 +249,7 @@ const OnboardingScreen = () => {
         setIsCheckingNickname(false);
         return;
       }
-      
+
       // 한글 자음/모음만 있는 경우 체크 (ㄱ-ㅎ, ㅏ-ㅣ)
       // 완성형 한글(가-힣), 영문, 숫자 등은 허용
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(formData.name)) {
@@ -282,7 +286,7 @@ const OnboardingScreen = () => {
       loadingBarAnim.setValue(0);
 
       const times = [2000, 3000, 5000, 8000]; // 메시지 전환 타이밍 (ms)
-      
+
       const timeout1 = setTimeout(() => setAnalyzingIndex(1), times[0]);
       const timeout2 = setTimeout(() => setAnalyzingIndex(2), times[1]);
       const timeout3 = setTimeout(() => setAnalyzingIndex(3), times[2]);
@@ -295,13 +299,13 @@ const OnboardingScreen = () => {
           toValue: 0.3,
           duration: 2000,
           easing: Easing.out(Easing.quad), // 시작은 빠르고 끝은 부드럽게
-          useNativeDriver: true, 
+          useNativeDriver: true,
         }),
         // 2~6초: 60%까지 천천히 (분석 중인 느낌)
         Animated.timing(loadingBarAnim, {
           toValue: 0.6,
           duration: 4000,
-          easing: Easing.linear, 
+          easing: Easing.linear,
           useNativeDriver: true,
         }),
         // 6~8초: 85%까지 다시 속도 냄
@@ -346,8 +350,12 @@ const OnboardingScreen = () => {
     setLoading(true);
     try {
       // 1. Upload Image if exists
-      if (formData.profileImageUri) {
-        await uploadProfileImage(formData.profileImageUri);
+      if (formData.profileImageUri && formData.profileImageAsset) {
+        await uploadProfileImage(
+          formData.profileImageAsset.uri,
+          formData.profileImageAsset.type,
+          formData.profileImageAsset.fileName
+        );
       }
 
       // 2. Send Init Info
@@ -422,7 +430,7 @@ const OnboardingScreen = () => {
       // 2. Change Step & Reset position instantly for incoming
       setStep(nextStepValue);
       slideAnim.setValue(direction === 'next' ? SCREEN_WIDTH : -SCREEN_WIDTH);
-      
+
       // 3. Slide in new content
       Animated.parallel([
         Animated.timing(slideAnim, {
@@ -453,12 +461,12 @@ const OnboardingScreen = () => {
       case 'NEWBIE_CHECK':
         next = formData.isNewbie ? 'NEWBIE_TRANSITION' : 'EXPERT_TRANSITION';
         break;
-      
+
       // Newbie Path
       case 'NEWBIE_TRANSITION':
         next = 'ALCOHOL_PREF';
         break;
-      
+
       // Expert Path (Now follows Newbie flow steps)
       case 'EXPERT_TRANSITION':
         next = 'ALCOHOL_PREF';
@@ -475,7 +483,7 @@ const OnboardingScreen = () => {
           next = 'FLAVOR_PROFILE';
         }
         break;
-      
+
       // Expert Path
       case 'FLAVOR_PROFILE':
         next = 'WINE_INTEREST';
@@ -503,7 +511,7 @@ const OnboardingScreen = () => {
       case 'BUDGET':
         handleFinalSubmit();
         return;
-      
+
       /* 
        * Removed Old Expert Flow Steps
        * case 'WINE_SORT': ...
@@ -522,13 +530,13 @@ const OnboardingScreen = () => {
 
     if (step === 'PROFILE') prev = 'INTRO';
     if (step === 'NEWBIE_CHECK') prev = 'PROFILE';
-    
+
     if (step === 'NEWBIE_TRANSITION') prev = 'NEWBIE_CHECK';
     if (step === 'ALCOHOL_PREF') {
-        prev = formData.isNewbie ? 'NEWBIE_TRANSITION' : 'EXPERT_TRANSITION';
+      prev = formData.isNewbie ? 'NEWBIE_TRANSITION' : 'EXPERT_TRANSITION';
     }
     if (step === 'FOOD_PREF') prev = 'ALCOHOL_PREF';
-    
+
     // Expert Path Back
     if (step === 'FLAVOR_PROFILE') prev = 'FOOD_PREF';
 
@@ -538,11 +546,11 @@ const OnboardingScreen = () => {
     if (step === 'FLAVOR_TANNIN') prev = 'FLAVOR_SWEETNESS';
     if (step === 'FLAVOR_BODY') prev = 'FLAVOR_TANNIN';
     if (step === 'FLAVOR_ALCOHOL') prev = 'FLAVOR_BODY';
-    
+
     if (step === 'WINE_INTEREST') {
       prev = formData.isNewbie ? 'FLAVOR_ALCOHOL' : 'FLAVOR_PROFILE';
     }
-    
+
     if (step === 'EXPERT_TRANSITION') prev = 'NEWBIE_CHECK';
     if (step === 'BUDGET') prev = 'WINE_INTEREST';
 
@@ -561,7 +569,7 @@ const OnboardingScreen = () => {
 
   const getProgress = () => {
     if (step === 'INTRO') return 0;
-    
+
     // Newbie: 12 steps, Expert: 8 steps
     const totalSteps = formData.isNewbie ? 12 : 8;
     let currentStep = 0;
@@ -569,14 +577,14 @@ const OnboardingScreen = () => {
     switch (step) {
       case 'PROFILE': currentStep = 1; break;
       case 'NEWBIE_CHECK': currentStep = 2; break;
-      
+
       case 'NEWBIE_TRANSITION':
-      case 'EXPERT_TRANSITION': 
+      case 'EXPERT_TRANSITION':
         currentStep = 3; break;
 
       case 'ALCOHOL_PREF': currentStep = 4; break;
       case 'FOOD_PREF': currentStep = 5; break;
-      
+
       // Expert Flow
       case 'FLAVOR_PROFILE': currentStep = 6; break;
 
@@ -586,16 +594,16 @@ const OnboardingScreen = () => {
       case 'FLAVOR_TANNIN': currentStep = 8; break;
       case 'FLAVOR_BODY': currentStep = 9; break;
       case 'FLAVOR_ALCOHOL': currentStep = 10; break;
-      
-      case 'WINE_INTEREST': 
-        currentStep = formData.isNewbie ? 11 : 7; 
+
+      case 'WINE_INTEREST':
+        currentStep = formData.isNewbie ? 11 : 7;
         break;
-      
+
       case 'BUDGET':
-         currentStep = formData.isNewbie ? 12 : 8;
-         break;
+        currentStep = formData.isNewbie ? 12 : 8;
+        break;
     }
-    
+
     return currentStep / totalSteps;
   };
 
@@ -604,15 +612,15 @@ const OnboardingScreen = () => {
   // Animate progress bar whenever step changes
   useEffect(() => {
     if (step === 'INTRO') {
-       progressAnim.setValue(0);
-       return;
+      progressAnim.setValue(0);
+      return;
     }
 
     const targetProgress = getProgress();
     Animated.timing(progressAnim, {
       toValue: targetProgress,
       duration: 300,
-      useNativeDriver: false, 
+      useNativeDriver: false,
     }).start();
   }, [step, formData.isNewbie]);
 
@@ -627,11 +635,11 @@ const OnboardingScreen = () => {
     return (
       <View style={styles.progressContainer}>
         <View style={styles.progressBarBackground}>
-          <Animated.View 
+          <Animated.View
             style={[
-              styles.progressBarFill, 
+              styles.progressBarFill,
               { width: widthInterpolation }
-            ]} 
+            ]}
           />
         </View>
       </View>
@@ -640,11 +648,11 @@ const OnboardingScreen = () => {
 
   const renderContent = () => {
     switch (step) {
-      case 'INTRO': 
+      case 'INTRO':
         return <IntroStep />;
-      case 'PROFILE': 
+      case 'PROFILE':
         return (
-          <ProfileStep 
+          <ProfileStep
             name={formData.name}
             profileImageUri={formData.profileImageUri}
             onNameChange={(t: string) => updateData('name', t)}
@@ -653,19 +661,19 @@ const OnboardingScreen = () => {
             isValid={nicknameAvailable}
           />
         );
-      case 'NEWBIE_CHECK': 
+      case 'NEWBIE_CHECK':
         return (
-          <NewbieCheckStep 
+          <NewbieCheckStep
             isNewbie={formData.isNewbie}
             onSelect={(val: boolean) => updateData('isNewbie', val)}
             name={formData.name}
           />
         );
-      case 'NEWBIE_TRANSITION': 
+      case 'NEWBIE_TRANSITION':
         return <TransitionStep isNewbie={true} name={formData.name} />;
-      case 'EXPERT_TRANSITION': 
+      case 'EXPERT_TRANSITION':
         return <TransitionStep isNewbie={false} name={formData.name} />;
-      case 'ALCOHOL_PREF': 
+      case 'ALCOHOL_PREF':
         return (
           <MultiSelectionStep
             title="평소에 어떤 술을 즐기시나요?"
@@ -676,7 +684,7 @@ const OnboardingScreen = () => {
             allowCustomInput
           />
         );
-      case 'FOOD_PREF': 
+      case 'FOOD_PREF':
         return (
           <MultiSelectionStep
             title="어떤 음식과 함께 즐기고 싶나요?"
@@ -691,7 +699,7 @@ const OnboardingScreen = () => {
           <FlavorProfileStep
             data={formData.flavorProfile}
             onChange={updateFlavorProfile}
-            // No attribute -> Show all
+          // No attribute -> Show all
           />
         );
       case 'FLAVOR_ACIDITY':
@@ -744,9 +752,9 @@ const OnboardingScreen = () => {
             multi
           />
         );
-      case 'BUDGET': 
+      case 'BUDGET':
         return (
-          <BudgetStep 
+          <BudgetStep
             selectedPrice={formData.monthPrice}
             onSelect={(v: number) => updateData('monthPrice', v)}
             options={BUDGET_OPTIONS}
@@ -779,84 +787,84 @@ const OnboardingScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-            {step !== 'INTRO' && (
-                <TouchableOpacity onPress={prevStep} style={styles.backButton}>
-                    <Icon name="arrow-back" size={24} color="#fff" />
-                </TouchableOpacity>
-            )}
-        </View>
-        
-        {renderProgressBar()}
-
-        <Animated.View 
-          style={[
-            styles.body, 
-            { 
-              transform: [{ translateX: slideAnim }],
-              opacity: fadeAnim
-            }
-          ]}
-        >
-            {renderContent()}
-        </Animated.View>
-
-        <View style={styles.footer}>
-            <TouchableOpacity 
-                style={[
-                  styles.nextButton, 
-                  (loading || !isStepValid()) && styles.disabledButton
-                ]} 
-                onPress={nextStep}
-                disabled={loading || !isStepValid()}
-            >
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.nextButtonText}>{getButtonText()}</Text>
-                )}
-            </TouchableOpacity>
-        </View>
-
-        {analyzing && (
-            <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
-                
-                {/* 원형 프로그레스 바 */}
-                <View style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
-                    <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
-                        {/* 배경 원 (회색) */}
-                        <Circle
-                            cx={CIRCLE_SIZE / 2}
-                            cy={CIRCLE_SIZE / 2}
-                            r={RADIUS}
-                            stroke="#333"
-                            strokeWidth={STROKE_WIDTH}
-                            fill="transparent"
-                        />
-                        {/* 진행 원 (보라색) */}
-                        <AnimatedCircle
-                            cx={CIRCLE_SIZE / 2}
-                            cy={CIRCLE_SIZE / 2}
-                            r={RADIUS}
-                            stroke="#8e44ad"
-                            strokeWidth={STROKE_WIDTH}
-                            fill="transparent"
-                            strokeDasharray={CIRCUMFERENCE}
-                            strokeDashoffset={strokeDashoffset}
-                            strokeLinecap="round"
-                            rotation="-90" // 12시 방향부터 시작
-                            origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
-                        />
-                    </Svg>
-                </View>
-                
-                <Text style={styles.analyzingText}>
-                    {LOADING_MESSAGES[analyzingIndex].replace('{nickname}', formData.name)}
-                </Text>
-
-                {/* 기존 직선 바 삭제됨 */}
-            </View>
+      <View style={styles.header}>
+        {step !== 'INTRO' && (
+          <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+            <Icon name="arrow-back" size={24} color="#fff" />
+          </TouchableOpacity>
         )}
+      </View>
+
+      {renderProgressBar()}
+
+      <Animated.View
+        style={[
+          styles.body,
+          {
+            transform: [{ translateX: slideAnim }],
+            opacity: fadeAnim
+          }
+        ]}
+      >
+        {renderContent()}
+      </Animated.View>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            (loading || !isStepValid()) && styles.disabledButton
+          ]}
+          onPress={nextStep}
+          disabled={loading || !isStepValid()}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.nextButtonText}>{getButtonText()}</Text>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {analyzing && (
+        <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
+
+          {/* 원형 프로그레스 바 */}
+          <View style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
+            <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
+              {/* 배경 원 (회색) */}
+              <Circle
+                cx={CIRCLE_SIZE / 2}
+                cy={CIRCLE_SIZE / 2}
+                r={RADIUS}
+                stroke="#333"
+                strokeWidth={STROKE_WIDTH}
+                fill="transparent"
+              />
+              {/* 진행 원 (보라색) */}
+              <AnimatedCircle
+                cx={CIRCLE_SIZE / 2}
+                cy={CIRCLE_SIZE / 2}
+                r={RADIUS}
+                stroke="#8e44ad"
+                strokeWidth={STROKE_WIDTH}
+                fill="transparent"
+                strokeDasharray={CIRCUMFERENCE}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                rotation="-90" // 12시 방향부터 시작
+                origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
+              />
+            </Svg>
+          </View>
+
+          <Text style={styles.analyzingText}>
+            {LOADING_MESSAGES[analyzingIndex].replace('{nickname}', formData.name)}
+          </Text>
+
+          {/* 기존 직선 바 삭제됨 */}
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -915,7 +923,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   analyzingContainer: {
-    backgroundColor: '#121212', 
+    backgroundColor: '#121212',
     zIndex: 9999,
     justifyContent: 'center',
     alignItems: 'center',
