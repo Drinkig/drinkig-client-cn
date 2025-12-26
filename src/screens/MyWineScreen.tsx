@@ -25,7 +25,7 @@ const MyWineScreen = () => {
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState('전체');
-  
+
   // 정렬 상태
   const [sortType, setSortType] = useState('latest'); // latest, oldest, vintage_high, vintage_low, price_high, price_low
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
@@ -50,10 +50,10 @@ const MyWineScreen = () => {
     try {
       setIsLoading(true);
       const response = await getMyWines();
-      
+
       if (response.isSuccess) {
         let wines = response.result || [];
-        
+
         // [임시 해결] 서버에서 wineImageUrl이 null로 오는 경우, 상세 조회를 통해 이미지 채우기
         const updatedWines = await Promise.all(wines.map(async (wine) => {
           if (!wine.wineImageUrl) {
@@ -100,7 +100,7 @@ const MyWineScreen = () => {
       '디저트': 'Dessert',
       '주정강화': 'Fortified'
     };
-    
+
     const targetType = typeMap[selectedType] || selectedType;
     return wine.wineSort === targetType || wine.wineSort === selectedType;
   });
@@ -137,7 +137,7 @@ const MyWineScreen = () => {
   const handleAddWine = () => {
     // 기존: navigation.navigate('Search' as never);
     // 수정: 와인 등록 화면으로 바로 이동
-    navigation.navigate('WineAdd' as never); 
+    navigation.navigate('WineAdd' as never);
   };
 
   const { width } = Dimensions.get('window');
@@ -148,7 +148,7 @@ const MyWineScreen = () => {
   const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
 
   const renderWineItem = ({ item }: { item: MyWineDTO }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={[styles.wineItem, { width: itemWidth }]}
       onPress={() => navigation.navigate('MyWineDetail', { wineId: item.myWineId })} // myWineId를 넘겨줌
       activeOpacity={0.8}
@@ -178,7 +178,7 @@ const MyWineScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
+
       {/* 헤더 */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>내 와인 창고</Text>
@@ -221,8 +221,8 @@ const MyWineScreen = () => {
           <Text style={styles.countText}>
             총 <Text style={styles.countValue}>{sortedWines.length}</Text>병
           </Text>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.sortButton}
             onPress={() => setIsSortModalVisible(true)}
           >
@@ -294,8 +294,8 @@ const MyWineScreen = () => {
         />
       ) : (
         <View style={styles.emptyContent}>
-          <Image 
-            source={require('../assets/user_image/Drinky_1.png')} 
+          <Image
+            source={require('../assets/wine_cellar.png')}
             style={styles.emptyImage}
             resizeMode="contain"
           />
