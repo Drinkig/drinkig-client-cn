@@ -12,6 +12,8 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		DB2D1C372EFE67360079B1BE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DB2D1C352EFE67360079B1BE /* InfoPlist.strings */; };
+		DB2D1C382EFE67360079B1BE /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = DB2D1C322EFE67360079B1BE /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		5DCACB8F33CDC322A6C60F78 /* libPods-drinkigclientcn.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-drinkigclientcn.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = drinkigclientcn/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = drinkigclientcn/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		DB2D1C312EFE67360079B1BE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = InfoPlist.strings; sourceTree = "<group>"; };
+		DB2D1C342EFE67360079B1BE /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = InfoPlist.strings; sourceTree = "<group>"; };
 		DBE4F4F32ED1AFB400C26501 /* drinkigclientcn.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = drinkigclientcn.entitlements; path = drinkigclientcn/drinkigclientcn.entitlements; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -44,6 +48,8 @@
 			isa = PBXGroup;
 			children = (
 				DBE4F4F32ED1AFB400C26501 /* drinkigclientcn.entitlements */,
+				DB2D1C332EFE67360079B1BE /* en.lproj */,
+				DB2D1C362EFE67360079B1BE /* ko.lproj */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
@@ -100,6 +106,24 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		DB2D1C332EFE67360079B1BE /* en.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				DB2D1C322EFE67360079B1BE /* InfoPlist.strings */,
+			);
+			name = en.lproj;
+			path = drinkigclientcn/en.lproj;
+			sourceTree = "<group>";
+		};
+		DB2D1C362EFE67360079B1BE /* ko.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				DB2D1C352EFE67360079B1BE /* InfoPlist.strings */,
+			);
+			name = ko.lproj;
+			path = drinkigclientcn/ko.lproj;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -144,6 +168,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ko,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -162,6 +187,8 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				DB2D1C372EFE67360079B1BE /* InfoPlist.strings in Resources */,
+				DB2D1C382EFE67360079B1BE /* InfoPlist.strings in Resources */,
 				0A6AEDD85CCDED348046DBFA /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -193,9 +220,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-drinkigclientcn/Pods-drinkigclientcn-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-drinkigclientcn/Pods-drinkigclientcn-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -232,9 +263,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-drinkigclientcn/Pods-drinkigclientcn-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-drinkigclientcn/Pods-drinkigclientcn-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -253,6 +288,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		DB2D1C322EFE67360079B1BE /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DB2D1C312EFE67360079B1BE /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		DB2D1C352EFE67360079B1BE /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DB2D1C342EFE67360079B1BE /* ko */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -273,7 +327,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -305,7 +359,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
