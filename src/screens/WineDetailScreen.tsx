@@ -83,8 +83,15 @@ export default function WineDetailScreen() {
             };
             saveToRecent(wineToSave);
           }
-        } catch (error) {
-          console.error('Failed to fetch wine detail:', error);
+        } catch (error: any) {
+          // 400 에러 (WINE4001: 와인이 없습니다)는 더미 데이터나 로컬 데이터일 경우 발생할 수 있음
+          // 이 경우 에러를 띄우지 않고 로컬 데이터로만 표시
+          if (error.response && error.response.status === 400) {
+            console.log('Server detail not found (local/dummy data), using local data only.');
+          } else {
+            console.error('Failed to fetch wine detail:', error);
+          }
+
           // API 실패 시에도 기본 정보로 저장 시도
           saveToRecent(wine);
         } finally {
