@@ -29,8 +29,8 @@ const LoginScreen = () => {
       // @ts-ignore
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       // @ts-ignore
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c: string) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c: string) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
       return JSON.parse(jsonPayload);
     } catch (e) {
@@ -49,9 +49,9 @@ const LoginScreen = () => {
         requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
       });
-      
+
       console.log('2. Apple Auth Completed');
-      
+
       // 2. identityToken이 있는지 확인
       if (!appleAuthRequestResponse.identityToken) {
         throw new Error('Apple Identity Token is missing');
@@ -65,29 +65,29 @@ const LoginScreen = () => {
       console.log('--------------------------------------------------');
 
       console.log('4. Sending Token to Server...');
-        // 3. 서버로 로그인 요청
-        const response = await loginWithApple(appleAuthRequestResponse.identityToken);
-        console.log('5. Server Response:', JSON.stringify(response));
+      // 3. 서버로 로그인 요청
+      const response = await loginWithApple(appleAuthRequestResponse.identityToken);
+      console.log('5. Server Response:', JSON.stringify(response));
 
-        if (response.isSuccess) {   
-          // 4. 서버로부터 받은 토큰으로 로그인 처리 (UserContext)
-          const { accessToken, refreshToken, isFirst } = response.result;
-          console.log('6. Tokens received:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken, isFirst });
-          
-          if (accessToken) {
-            await login(accessToken, refreshToken, isFirst);
-            console.log('7. Login Context Updated');
-            
-            // RootNavigator에서 상태(isLoggedIn, isNewUser)에 따라 화면을 전환하므로
-            // 여기서 별도의 네비게이션 코드는 필요하지 않음.
-          } else {
-            console.error('Token missing in result:', response.result);
-            Alert.alert('로그인 실패', '서버로부터 토큰을 받지 못했습니다.');
-          }
+      if (response.isSuccess) {
+        // 4. 서버로부터 받은 토큰으로 로그인 처리 (UserContext)
+        const { accessToken, refreshToken, isFirst } = response.result;
+        console.log('6. Tokens received:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken, isFirst });
+
+        if (accessToken) {
+          await login(accessToken, refreshToken, isFirst);
+          console.log('7. Login Context Updated');
+
+          // RootNavigator에서 상태(isLoggedIn, isNewUser)에 따라 화면을 전환하므로
+          // 여기서 별도의 네비게이션 코드는 필요하지 않음.
         } else {
-           console.error('Server returned fail:', response);
-           Alert.alert('로그인 실패', response.message || '로그인 중 오류가 발생했습니다.');
+          console.error('Token missing in result:', response.result);
+          Alert.alert('로그인 실패', '서버로부터 토큰을 받지 못했습니다.');
         }
+      } else {
+        console.error('Server returned fail:', response);
+        Alert.alert('로그인 실패', response.message || '로그인 중 오류가 발생했습니다.');
+      }
       // }
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
@@ -107,22 +107,23 @@ const LoginScreen = () => {
     try {
       // 1. 카카오 로그인 시도
       const token = await KakaoLogin.login();
-      
+
       // 2. 프로필 정보 가져오기
       const profile = await KakaoLogin.getProfile();
-      
+
       console.log('Kakao Profile:', profile);
 
       // 3. 서버로 전송
       const response = await loginWithKakao(
-        profile.nickname, 
-        profile.email
+        profile.nickname,
+        profile.email,
+        profile.id.toString()
       );
 
       // 4. 로그인 성공 처리
       if (response.isSuccess) {
         const { accessToken, refreshToken, isFirst } = response.result;
-        
+
         if (accessToken) {
           await login(accessToken, refreshToken, isFirst);
         } else {
@@ -162,15 +163,15 @@ const LoginScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentContainer}>
           <View style={styles.logoContainer}>
-            <Image 
-              source={require('../assets/user_image/Drinky_3.png')} 
+            <Image
+              source={require('../assets/user_image/Drinky_3.png')}
               style={styles.logo}
               resizeMode="contain"
             />
             <Text style={styles.sloganText}>와인이 쉬워진다, 드링키지</Text>
           </View>
-          
-            <View style={styles.bottomContainer}>
+
+          <View style={styles.bottomContainer}>
             {loading ? (
               <ActivityIndicator size="large" color="#fff" style={{ marginBottom: 20 }} />
             ) : (
@@ -188,17 +189,17 @@ const LoginScreen = () => {
             )}
 
             {!loading && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.kakaoButton}
                 onPress={onKakaoButtonPress}
               >
                 <View style={styles.buttonContent}>
-                    <Icon name="chatbubble-sharp" size={20} color="#000" />
-                    <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
+                  <Icon name="chatbubble-sharp" size={20} color="#000" />
+                  <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
                 </View>
               </TouchableOpacity>
             )}
-            
+
             {/* <TouchableOpacity 
               style={styles.guestButton}  
               onPress={handleGuestLogin}

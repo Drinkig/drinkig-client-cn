@@ -127,7 +127,7 @@ export const loginWithApple = async (identityToken: string) => {
   const response = await client.post<AppleLoginResponse>('/login/apple', {
     identityToken,
   });
-  
+
   // 서버가 토큰을 Body가 아닌 'Set-Cookie' 헤더로 주는 경우 처리
   const cookies = response.headers['set-cookie'];
   if (cookies && Array.isArray(cookies)) {
@@ -158,12 +158,13 @@ export const loginWithApple = async (identityToken: string) => {
 };
 
 // 카카오 로그인 API
-export const loginWithKakao = async (kakaoName: string, kakaoEmail: string) => {
+export const loginWithKakao = async (kakaoName: string, kakaoEmail: string, socialId: string) => {
   const response = await client.post<AppleLoginResponse>('/login/kakao', {
     kakaoName,
     kakaoEmail,
+    socialId,
   });
-  
+
   // 서버가 토큰을 Body가 아닌 'Set-Cookie' 헤더로 주는 경우 처리
   const cookies = response.headers['set-cookie'];
   if (cookies && Array.isArray(cookies)) {
@@ -212,7 +213,7 @@ export const checkNickname = async (nickname: string) => {
 // 프로필 이미지 업로드 API
 export const uploadProfileImage = async (imageUri: string, type: string = 'image/jpeg', name: string = 'profile.jpg') => {
   const formData = new FormData();
-  
+
   // React Native에서 FormData에 파일 추가하는 방식
   formData.append('profileImg', {
     uri: imageUri,
