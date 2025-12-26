@@ -8,6 +8,8 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Image,
+  Linking,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -17,59 +19,38 @@ const BANNER_WIDTH = width - 40; // 좌우 마진 20씩 제외한 너비
 // 배너 데이터 타입 정의
 interface BannerData {
   id: number;
-  tag: string;
+  imageUrl?: any; // require() 또는 { uri }
   title: string;
   subtitle: string;
   backgroundColor: string;
+  linkUrl: string;
+  tag?: string;
   iconName: string;
 }
 
-// 배너 더미 데이터 (5개)
+// [수동 관리] 배너 리스트 (2개)
 const BANNERS: BannerData[] = [
   {
     id: 1,
-    tag: 'EVENT',
-    title: '이달의 와인 구독\n첫 달 무료 체험',
-    subtitle: '프리미엄 와인잔 증정 혜택을 놓치지 마세요!',
-    backgroundColor: '#34495e',
-    iconName: 'gift',
+    tag: 'NOTICE',
+    title: '새롭게 단장한 드링키지\n사용법 정리',
+    subtitle: '확 바뀐 기능들을 확인해보세요',
+    backgroundColor: '#252525', // 통일된 다크 그레이
+    linkUrl: 'https://web.drinkig.com/notices/2',
+    iconName: 'file-document-edit-outline',
   },
   {
     id: 2,
-    tag: 'TREND',
-    title: '편의점 신상 와인\n솔직 리뷰 모음',
-    subtitle: '가성비 최고, 실패 없는 선택!',
-    backgroundColor: '#4a4a4a',
-    iconName: 'fire',
-  },
-  {
-    id: 3,
-    tag: 'NEW',
-    title: '이번 주 입고된\n한정판 와인',
-    subtitle: '소믈리에가 엄선한 희귀템',
-    backgroundColor: '#3d3d3d',
-    iconName: 'bottle-wine-outline',
-  },
-  {
-    id: 4,
-    tag: 'TIP',
-    title: '와인 초보자를 위한\n테이스팅 가이드',
-    subtitle: '색, 향, 맛을 제대로 즐기는 방법',
-    backgroundColor: '#5d4037',
-    iconName: 'glass-wine',
-  },
-  {
-    id: 5,
-    tag: 'SALE',
-    title: '마감 임박 특가\n최대 50% 할인',
-    subtitle: '창고 대방출! 지금 바로 득템하세요',
-    backgroundColor: '#8c3b3b',
-    iconName: 'tag-multiple',
+    tag: 'EVENT',
+    title: '이벤트 안내',
+    subtitle: '진행 중인 이벤트를 확인하세요',
+    backgroundColor: '#252525', // 통일된 다크 그레이
+    linkUrl: 'https://drinkig.com/notice/2',
+    iconName: 'gift-outline',
   },
 ];
 
 export const BannerSection: React.FC = () => {
-  // 배너 관련 상태 및 ref
   const [bannerIndex, setBannerIndex] = useState(0);
   const bannerScrollRef = useRef<ScrollView>(null);
   const autoScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -87,7 +68,7 @@ export const BannerSection: React.FC = () => {
       if (nextIndex >= BANNERS.length) {
         nextIndex = 0;
       }
-      
+
       bannerScrollRef.current?.scrollTo({
         x: nextIndex * (BANNER_WIDTH + 12), // 12는 gap margin
         animated: true,
@@ -108,7 +89,7 @@ export const BannerSection: React.FC = () => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     // 대략적인 인덱스 계산 (gap 포함)
     const index = Math.round(contentOffsetX / (BANNER_WIDTH + 12));
-    
+
     if (index !== bannerIndex && index >= 0 && index < BANNERS.length) {
       setBannerIndex(index);
     }
@@ -122,12 +103,24 @@ export const BannerSection: React.FC = () => {
     startAutoScroll();
   };
 
+  const handleBannerPress = async (url: string) => {
+    if (!url) return;
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      }
+    } catch (err) {
+      console.error('Failed to open banner URL:', err);
+    }
+  };
+
   return (
     <View style={styles.bannerSection}>
-      <ScrollView 
+      <ScrollView
         ref={bannerScrollRef}
-        horizontal 
-        pagingEnabled 
+        horizontal
+        pagingEnabled
         showsHorizontalScrollIndicator={false}
         style={{ flex: 1 }}
         contentContainerStyle={styles.bannerScrollViewContent}
@@ -139,41 +132,58 @@ export const BannerSection: React.FC = () => {
         decelerationRate="fast"
       >
         {BANNERS.map((banner) => (
-          <TouchableOpacity 
-            key={banner.id} 
-            style={[styles.bannerItem, { backgroundColor: banner.backgroundColor }]} 
+          <TouchableOpacity
+            key={banner.id}
+            style={[styles.bannerItem, { backgroundColor: banner.backgroundColor }]}
             activeOpacity={0.9}
+            onPress={() => handleBannerPress(banner.linkUrl)}
           >
-            <View style={styles.bannerContent}>
-              <View style={styles.bannerHeader}>
-                <View style={styles.bannerTagContainer}>
-                  <Text style={styles.bannerTag}>{banner.tag}</Text>
+            {/* 이미지가 있으면 이미지 표시, 없으면 텍스트 표시 */}
+            {banner.imageUrl ? (
+              <Image
+                source={banner.imageUrl}
+                style={styles.bannerImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.bannerContent}>
+                <View style={{ flex: 1 }}>
+                  {banner.tag && (
+                    <View style={styles.bannerTagContainer}>
+                      <Text style={styles.bannerTag}>{banner.tag}</Text>
+                    </View>
+                  )}
+                  <View style={{ marginTop: banner.tag ? 8 : 12 }}>
+                    <Text style={styles.bannerTitle} numberOfLines={2}>{banner.title}</Text>
+                    <Text style={styles.bannerSubtitle} numberOfLines={1}>{banner.subtitle}</Text>
+                  </View>
                 </View>
+                <MaterialCommunityIcons
+                  name={banner.iconName}
+                  size={90}
+                  color="rgba(255,255,255,0.05)"
+                  style={{
+                    position: 'absolute',
+                    right: -10,
+                    bottom: -15,
+                    transform: [{ rotate: '-15deg' }]
+                  }}
+                />
               </View>
-              <View style={{ marginBottom: 4 }}> 
-                <Text style={styles.bannerTitle} numberOfLines={2}>{banner.title}</Text>
-                <Text style={styles.bannerSubtitle} numberOfLines={1}>{banner.subtitle}</Text>
-              </View>
-            </View>
-            <MaterialCommunityIcons 
-              name={banner.iconName} 
-              size={110} 
-              color="rgba(255,255,255,0.08)" 
-              style={styles.bannerIcon} 
-            />
+            )}
           </TouchableOpacity>
         ))}
       </ScrollView>
-      
+
       {/* 페이지네이션 (점) */}
       <View style={styles.paginationContainer}>
         {BANNERS.map((_, index) => (
-          <View 
-            key={index} 
+          <View
+            key={index}
             style={[
               styles.paginationDot,
               index === bannerIndex && styles.paginationDotActive
-            ]} 
+            ]}
           />
         ))}
       </View>
@@ -184,76 +194,67 @@ export const BannerSection: React.FC = () => {
 const styles = StyleSheet.create({
   // 광고 배너 스타일
   bannerSection: {
-    height: 150, // 높이 축소 (180 -> 150)
+    height: 150,
     marginBottom: 16,
-    position: 'relative', // 페이지네이션 위치 기준
+    position: 'relative',
   },
   bannerScrollViewContent: {
     paddingHorizontal: 20,
-    gap: 12, // 아이템 사이 간격
+    gap: 12,
   },
   bannerItem: {
     width: BANNER_WIDTH,
     borderRadius: 24,
-    padding: 20, // 24 -> 20
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    overflow: 'hidden',
+    padding: 20,
     height: '100%',
+    overflow: 'hidden',
+    backgroundColor: '#333',
   },
   bannerContent: {
-    zIndex: 2,
     flex: 1,
-    height: '100%',
-    justifyContent: 'space-between', // 상하 분산 배치
-    paddingVertical: 4, // 내부 상하 여백
-  },
-  bannerHeader: {
-    // marginBottom 제거 (space-between으로 간격 자동 확보)
-    flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
   },
   bannerTagContainer: {
     backgroundColor: 'rgba(255,255,255,0.25)',
-    paddingVertical: 3, // 4 -> 3
-    paddingHorizontal: 8, // 10 -> 8
-    borderRadius: 10, // 12 -> 10
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 8,
     alignSelf: 'flex-start',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
-    // marginRight 제거
+    marginBottom: 4,
   },
   bannerTag: {
     color: '#fff',
-    fontSize: 9, // 10 -> 9
+    fontSize: 8,
     fontWeight: '800',
     letterSpacing: 1,
   },
   bannerTitle: {
     color: '#fff',
-    fontSize: 18, 
+    fontSize: 18,
     fontWeight: 'bold',
     lineHeight: 24,
-    marginBottom: 6, 
+    marginBottom: 6,
     marginTop: 2,
   },
   bannerSubtitle: {
     color: 'rgba(255,255,255,0.8)',
     fontSize: 12,
     lineHeight: 16,
-    maxWidth: '85%', 
+    maxWidth: '85%',
   },
-  bannerIcon: {
+  bannerImage: {
+    width: '100%',
+    height: '100%',
     position: 'absolute',
-    right: -10,
-    bottom: -20,
-    transform: [{ rotate: '-10deg' }],
-    opacity: 0.15,
+    top: 0,
+    left: 0,
   },
   paginationContainer: {
     position: 'absolute',
-    bottom: 12, // 조금 더 아래로 (16 -> 12)
+    bottom: 12,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -268,7 +269,6 @@ const styles = StyleSheet.create({
   },
   paginationDotActive: {
     backgroundColor: '#fff',
-    width: 18, // 활성화된 점 길게
+    width: 18,
   },
 });
-
