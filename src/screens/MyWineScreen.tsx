@@ -295,7 +295,7 @@ const MyWineScreen = () => {
       ) : (
         <View style={styles.emptyContent}>
           <Image
-            source={require('../assets/wine_cellar.png')}
+            source={require('../assets/Drinky_no_wine_1.png')}
             style={styles.emptyImage}
             resizeMode="contain"
           />
