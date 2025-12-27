@@ -39,15 +39,6 @@ const BANNERS: BannerData[] = [
     linkUrl: 'https://web.drinkig.com/notices/2',
     iconName: 'file-document-edit-outline',
   },
-  {
-    id: 2,
-    tag: 'EVENT',
-    title: '이벤트 안내',
-    subtitle: '진행 중인 이벤트를 확인하세요',
-    backgroundColor: '#252525', // 통일된 다크 그레이
-    linkUrl: 'https://drinkig.com/notice/2',
-    iconName: 'gift-outline',
-  },
 ];
 
 export const BannerSection: React.FC = () => {
@@ -62,6 +53,8 @@ export const BannerSection: React.FC = () => {
   }, [bannerIndex]);
 
   const startAutoScroll = () => {
+    if (BANNERS.length <= 1) return; // 배너가 1개 이하면 자동 스크롤 안 함
+
     stopAutoScroll();
     autoScrollTimerRef.current = setTimeout(() => {
       let nextIndex = bannerIndex + 1;

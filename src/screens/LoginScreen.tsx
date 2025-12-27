@@ -264,8 +264,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 250,
-    height: 250,
+    width: 350,
+    height: 350,
   },
   sloganText: {
     color: '#FFFFFF',

@@ -681,7 +681,6 @@ const OnboardingScreen = () => {
             selected={formData.preferredAlcohols}
             onSelect={(v: string) => toggleSelection('preferredAlcohols', v)}
             multi
-            allowCustomInput
           />
         );
       case 'FOOD_PREF':
