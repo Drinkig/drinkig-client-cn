@@ -85,7 +85,13 @@ const WithdrawReasonScreen = () => {
             if (authType === 'APPLE') {
                 await handleAppleDelete();
             } else {
-                const response = await deleteMember();
+                // 선택된 사유들을 콤마로 연결하고 기타 사유가 있다면 덧붙임
+                let fullReason = selectedReasons.filter(r => r !== '기타').join(', ');
+                if (selectedReasons.includes('기타') && otherReason.trim()) {
+                    fullReason = fullReason ? `${fullReason}, ${otherReason.trim()}` : otherReason.trim();
+                }
+
+                const response = await deleteMember(fullReason);
                 if (response.isSuccess) {
                     showSuccessAlert();
                 } else {

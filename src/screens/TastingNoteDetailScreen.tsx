@@ -15,7 +15,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import { getTastingNoteDetail, TastingNoteDTO } from '../api/wine';
+import { getTastingNoteDetail, TastingNoteDTO, deleteTastingNote } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { COLOR_PALETTES } from '../components/tasting_note/constants';
@@ -64,6 +64,41 @@ export default function TastingNoteDetailScreen() {
     }
   };
 
+  const handleDelete = () => {
+    showAlert({
+      title: '테이스팅 노트 삭제',
+      message: '정말로 이 테이스팅 노트를\n삭제하시겠습니까?',
+      confirmText: '삭제',
+      singleButton: false,
+      onConfirm: async () => {
+        try {
+          const response = await deleteTastingNote(tastingNoteId);
+          if (response.isSuccess) {
+            showAlert({
+              title: '성공',
+              message: '테이스팅 노트가 삭제되었습니다.',
+              singleButton: true,
+              onConfirm: () => navigation.goBack(),
+            });
+          } else {
+            showAlert({
+              title: '오류',
+              message: response.message || '삭제에 실패했습니다.',
+              singleButton: true,
+            });
+          }
+        } catch (error) {
+          console.error('Failed to delete tasting note:', error);
+          showAlert({
+            title: '오류',
+            message: '서버 통신 중 문제가 발생했습니다.',
+            singleButton: true,
+          });
+        }
+      }
+    });
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -102,7 +137,9 @@ export default function TastingNoteDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>테이스팅 노트</Text>
-        <View style={styles.placeholder} />
+        <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
+          <Ionicons name="trash-outline" size={24} color="#e74c3c" />
+        </TouchableOpacity>
       </View>
 
       {/* Main Content - No Global Scroll */}

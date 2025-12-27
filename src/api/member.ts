@@ -262,8 +262,10 @@ export const getMemberName = async () => {
 };
 
 // 회원 탈퇴 API (일반)
-export const deleteMember = async () => {
-  const response = await client.delete<MemberDeleteResponse>('/member/delete');
+export const deleteMember = async (reason?: string) => {
+  const response = await client.delete<MemberDeleteResponse>('/member/delete', {
+    data: { reason },
+  });
   return response.data;
 };
 

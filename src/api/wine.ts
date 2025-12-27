@@ -569,3 +569,15 @@ export interface TastingNoteDTO {
   imageUrl?: string; // wineImageUrl -> imageUrl 변경
   sort?: string;
 }
+export interface TastingNoteDeleteResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: string;
+}
+
+// 테이스팅 노트 삭제 API
+export const deleteTastingNote = async (noteId: number) => {
+  const response = await client.delete<TastingNoteDeleteResponse>(`/tasting-note/${noteId}`);
+  return response.data;
+};
