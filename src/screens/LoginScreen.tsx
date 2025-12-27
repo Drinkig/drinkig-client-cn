@@ -16,10 +16,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { loginWithApple, loginWithKakao } from '../api/member';
 import { useUser } from '../context/UserContext';
+import { useGlobalUI } from '../context/GlobalUIContext';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const { login } = useUser();
+  const { showLoading, hideLoading, showAlert } = useGlobalUI();
   const [loading, setLoading] = useState(false);
 
   // JWT 디코딩 함수 (Payload 확인용 - 순수 JS 구현)
@@ -82,11 +84,19 @@ const LoginScreen = () => {
           // 여기서 별도의 네비게이션 코드는 필요하지 않음.
         } else {
           console.error('Token missing in result:', response.result);
-          Alert.alert('로그인 실패', '서버로부터 토큰을 받지 못했습니다.');
+          showAlert({
+            title: '로그인 실패',
+            message: '서버로부터 토큰을 받지 못했습니다.',
+            singleButton: true,
+          });
         }
       } else {
         console.error('Server returned fail:', response);
-        Alert.alert('로그인 실패', response.message || '로그인 중 오류가 발생했습니다.');
+        showAlert({
+          title: '로그인 실패',
+          message: response.message || '로그인 중 오류가 발생했습니다.',
+          singleButton: true,
+        });
       }
       // }
     } catch (error: any) {
@@ -94,7 +104,11 @@ const LoginScreen = () => {
         console.log('User canceled Apple Sign In');
       } else {
         console.error('Apple Login Error Full:', error);
-        Alert.alert('로그인 오류', `Apple 로그인 실패: ${error.message || error.code || '알 수 없는 오류'}`);
+        showAlert({
+          title: '로그인 오류',
+          message: `Apple 로그인 실패: ${error.message || error.code || '알 수 없는 오류'}`,
+          singleButton: true,
+        });
       }
     } finally {
       setLoading(false);
@@ -127,17 +141,29 @@ const LoginScreen = () => {
         if (accessToken) {
           await login(accessToken, refreshToken, isFirst);
         } else {
-          Alert.alert('로그인 실패', '서버로부터 토큰을 받지 못했습니다.');
+          showAlert({
+            title: '로그인 실패',
+            message: '서버로부터 토큰을 받지 못했습니다.',
+            singleButton: true,
+          });
         }
       } else {
-        Alert.alert('로그인 실패', response.message);
+        showAlert({
+          title: '로그인 실패',
+          message: response.message,
+          singleButton: true,
+        });
       }
     } catch (error: any) {
       if (error.code === 'E_CANCELLED_OPERATION') {
         console.log('Login Cancelled');
       } else {
         console.error('Kakao Login Error:', error);
-        Alert.alert('오류', '카카오 로그인에 실패했습니다.');
+        showAlert({
+          title: '오류',
+          message: '카카오 로그인에 실패했습니다.',
+          singleButton: true,
+        });
       }
     } finally {
       setLoading(false);

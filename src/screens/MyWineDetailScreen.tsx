@@ -16,6 +16,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic } from '../api/wine';
+import { useGlobalUI } from '../context/GlobalUIContext';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
 
@@ -23,6 +24,7 @@ export default function MyWineDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<MyWineDetailRouteProp>();
   const { wineId } = route.params;
+  const { showAlert } = useGlobalUI();
 
   const [wine, setWine] = useState<MyWineDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,44 +54,59 @@ export default function MyWineDetailScreen() {
 
         setWine(wineData);
       } else {
-        Alert.alert('오류', '와인 정보를 불러오는데 실패했습니다.');
-        navigation.goBack();
+        showAlert({
+          title: '오류',
+          message: '와인 정보를 불러오는데 실패했습니다.',
+          singleButton: true,
+          onConfirm: () => navigation.goBack(),
+        });
       }
     } catch (error) {
       console.error('Failed to fetch my wine detail:', error);
-      Alert.alert('오류', '서버 통신 중 문제가 발생했습니다.');
-      navigation.goBack();
+      showAlert({
+        title: '오류',
+        message: '서버 통신 중 문제가 발생했습니다.',
+        singleButton: true,
+        onConfirm: () => navigation.goBack(),
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      '와인 삭제',
-      '정말로 이 와인을 삭제하시겠습니까?',
-      [
-        { text: '취소', style: 'cancel' },
-        { 
-          text: '삭제', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const response = await deleteMyWine(wineId);
-              if (response.isSuccess) {
-                Alert.alert('성공', '와인이 삭제되었습니다.');
-                navigation.goBack();
-              } else {
-                Alert.alert('오류', response.message || '와인 삭제에 실패했습니다.');
-              }
-            } catch (error) {
-              console.error('Failed to delete wine:', error);
-              Alert.alert('오류', '서버 통신 중 문제가 발생했습니다.');
-            }
+    showAlert({
+      title: '와인 삭제',
+      message: '정말로 이 와인을 삭제하시겠습니까?',
+      confirmText: '삭제',
+      singleButton: false,
+      onConfirm: async () => {
+        try {
+          const response = await deleteMyWine(wineId);
+          if (response.isSuccess) {
+            showAlert({
+              title: '성공',
+              message: '와인이 삭제되었습니다.',
+              singleButton: true,
+              onConfirm: () => navigation.goBack(),
+            });
+          } else {
+            showAlert({
+              title: '오류',
+              message: response.message || '와인 삭제에 실패했습니다.',
+              singleButton: true,
+            });
           }
-        },
-      ]
-    );
+        } catch (error) {
+          console.error('Failed to delete wine:', error);
+          showAlert({
+            title: '오류',
+            message: '서버 통신 중 문제가 발생했습니다.',
+            singleButton: true,
+          });
+        }
+      }
+    });
   };
 
   const handleEdit = () => {
@@ -140,10 +157,10 @@ export default function MyWineDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
+
       {/* 헤더 */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
@@ -199,7 +216,7 @@ export default function MyWineDetailScreen() {
             {/* 수입사, 보관 상태 등은 API 응답에 없으므로 제외하거나 추가 요청 필요 */}
           </View>
         </View>
-        
+
       </ScrollView>
 
       {/* 하단 버튼 */}

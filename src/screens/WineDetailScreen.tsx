@@ -19,6 +19,7 @@ import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../data/dummyWines';
 import { MyWine } from '../context/WineContext';
 import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist } from '../api/wine';
+import { useGlobalUI } from '../context/GlobalUIContext';
 
 // Components
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
@@ -40,6 +41,7 @@ export default function WineDetailScreen() {
   const { wine } = route.params;
   const isMyWineItem = isMyWine(wine);
   const isFocused = useIsFocused(); // 화면 포커스 감지
+  const { showAlert } = useGlobalUI();
 
   // API 데이터 상태
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null); // any로 임시 처리 (상세 스펙 확인 필요)
@@ -155,7 +157,11 @@ export default function WineDetailScreen() {
     } catch (error) {
       console.error('Wishlist toggle failed:', error);
       setIsLiked(previousState); // 실패 시 롤백
-      Alert.alert('오류', '위시리스트 변경에 실패했습니다.');
+      showAlert({
+        title: '오류',
+        message: '위시리스트 변경에 실패했습니다.',
+        singleButton: true,
+      });
     }
   };
 

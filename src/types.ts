@@ -18,10 +18,12 @@ export type RootStackParamList = {
   MyWineDetail: { wineId: number }; // 내 와인 상세 화면 (API 연동)
   TastingNoteWrite: { wineId?: number; wineName?: string; wineImage?: string; wineType?: string } | undefined; // 테이스팅 노트 작성 화면
   TastingNoteDetail: { tastingNoteId: number }; // 테이스팅 노트 상세 조회 화면
+  WithdrawRetention: { authType: string }; // 회원 탈퇴 이탈 방지 화면
+  WithdrawReason: { authType: string }; // 회원 탈퇴 사유 선택 화면
 };
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+    interface RootParamList extends RootStackParamList { }
   }
 }

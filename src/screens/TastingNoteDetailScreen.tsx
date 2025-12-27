@@ -16,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import { getTastingNoteDetail, TastingNoteDTO } from '../api/wine';
+import { useGlobalUI } from '../context/GlobalUIContext';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { COLOR_PALETTES } from '../components/tasting_note/constants';
 
@@ -27,6 +28,7 @@ export default function TastingNoteDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteDetailRouteProp>();
   const { tastingNoteId } = route.params;
+  const { showAlert } = useGlobalUI();
 
   const [note, setNote] = useState<TastingNoteDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,13 +44,21 @@ export default function TastingNoteDetailScreen() {
       if (response.isSuccess) {
         setNote(response.result);
       } else {
-        Alert.alert('오류', response.message || '테이스팅 노트를 불러올 수 없습니다.');
-        navigation.goBack();
+        showAlert({
+          title: '오류',
+          message: response.message || '테이스팅 노트를 불러올 수 없습니다.',
+          singleButton: true,
+          onConfirm: () => navigation.goBack(),
+        });
       }
     } catch (error) {
       console.error('Failed to fetch tasting note detail:', error);
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
-      navigation.goBack();
+      showAlert({
+        title: '오류',
+        message: '네트워크 오류가 발생했습니다.',
+        singleButton: true,
+        onConfirm: () => navigation.goBack(),
+      });
     } finally {
       setIsLoading(false);
     }
@@ -68,15 +78,15 @@ export default function TastingNoteDetailScreen() {
   const parseReview = (fullReview: string) => {
     const finishMatch = fullReview.match(/\[Finish\] (.*?)(?:\n\n|$)/s);
     const finishTextRaw = finishMatch ? finishMatch[1] : null;
-    
+
     // 피니쉬 텍스트를 쉼표로 분리하여 배열로 변환
-    const finishTags = finishTextRaw 
+    const finishTags = finishTextRaw
       ? finishTextRaw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
       : [];
 
     // [Finish] 부분을 제거하고 남은 텍스트를 리뷰로 사용
     let reviewText = fullReview.replace(/\[Finish\] .*?(?:\n\n|$)/s, '').trim();
-    
+
     return { finishTags, reviewText };
   };
 
@@ -85,7 +95,7 @@ export default function TastingNoteDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -97,7 +107,7 @@ export default function TastingNoteDetailScreen() {
 
       {/* Main Content - No Global Scroll */}
       <View style={styles.contentContainer}>
-        
+
         {/* Top Section: Wine Info */}
         <View style={styles.topSection}>
           <View style={styles.wineImageContainer}>
@@ -109,27 +119,27 @@ export default function TastingNoteDetailScreen() {
               </View>
             )}
           </View>
-          
+
           <View style={styles.wineInfoContainer}>
             <View style={styles.wineHeaderRow}>
-                <View style={[styles.typeBadge, { backgroundColor: getWineTypeColor(note.sort || '') }]}>
-                  <Text style={styles.typeText}>{note.sort || 'Wine'}</Text>
-                </View>
-                <Text style={styles.dateText}>{note.tasteDate}</Text>
+              <View style={[styles.typeBadge, { backgroundColor: getWineTypeColor(note.sort || '') }]}>
+                <Text style={styles.typeText}>{note.sort || 'Wine'}</Text>
+              </View>
+              <Text style={styles.dateText}>{note.tasteDate}</Text>
             </View>
-            
+
             <Text style={styles.wineName} numberOfLines={2}>{note.wineName}</Text>
             <Text style={styles.vintageText}>{note.vintageYear === 0 ? 'NV' : `Vintage ${note.vintageYear}`}</Text>
-            
+
             <View style={styles.metaRow}>
-                <View style={styles.colorWrapper}>
-                    <Text style={styles.metaLabel}>Color</Text>
-                    <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
-                </View>
-                <View style={styles.ratingWrapper}>
-                    <Ionicons name="star" size={16} color="#f1c40f" />
-                    <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
-                </View>
+              <View style={styles.colorWrapper}>
+                <Text style={styles.metaLabel}>Color</Text>
+                <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
+              </View>
+              <View style={styles.ratingWrapper}>
+                <Ionicons name="star" size={16} color="#f1c40f" />
+                <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -142,7 +152,7 @@ export default function TastingNoteDetailScreen() {
           <View style={[styles.palateColumn, styles.infoBox]}>
             <Text style={styles.boxTitle}>Palate</Text>
             <View style={styles.chartContainer}>
-              <PentagonRadarChart 
+              <PentagonRadarChart
                 data={{
                   acidity: note.acidity / 20,
                   sweetness: note.sweetness / 20,
@@ -150,48 +160,48 @@ export default function TastingNoteDetailScreen() {
                   body: note.body / 20,
                   alcohol: note.alcohol / 20,
                 }}
-                size={140} 
+                size={140}
               />
             </View>
           </View>
 
           {/* Right: Nose & Finish */}
           <View style={styles.rightColumn}>
-             {/* Nose Box */}
-             <View style={styles.infoBox}>
-                <Text style={styles.boxTitle}>Nose</Text>
-                <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }}>
-                    <View style={styles.noseTagsContainer}>
-                        {note.noseList && note.noseList.length > 0 ? (
-                        note.noseList.map((scent, index) => (
-                            <View key={index} style={styles.noseTag}>
-                                <Text style={styles.noseText}>{scent}</Text>
-                            </View>
-                        ))
-                        ) : (
-                        <Text style={styles.emptyText}>-</Text>
-                        )}
-                    </View>
-                </ScrollView>
-             </View>
+            {/* Nose Box */}
+            <View style={styles.infoBox}>
+              <Text style={styles.boxTitle}>Nose</Text>
+              <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }}>
+                <View style={styles.noseTagsContainer}>
+                  {note.noseList && note.noseList.length > 0 ? (
+                    note.noseList.map((scent, index) => (
+                      <View key={index} style={styles.noseTag}>
+                        <Text style={styles.noseText}>{scent}</Text>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={styles.emptyText}>-</Text>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
 
-             {/* Finish Box */}
-             <View style={[styles.infoBox, { flex: 1 }]}>
-                <Text style={styles.boxTitle}>Finish</Text>
-                <ScrollView nestedScrollEnabled>
-                    <View style={styles.noseTagsContainer}>
-                        {finishTags.length > 0 ? (
-                            finishTags.map((tag, index) => (
-                                <View key={index} style={styles.noseTag}>
-                                    <Text style={styles.noseText}>{tag}</Text>
-                                </View>
-                            ))
-                        ) : (
-                            <Text style={styles.emptyText}>-</Text>
-                        )}
-                    </View>
-                </ScrollView>
-             </View>
+            {/* Finish Box */}
+            <View style={[styles.infoBox, { flex: 1 }]}>
+              <Text style={styles.boxTitle}>Finish</Text>
+              <ScrollView nestedScrollEnabled>
+                <View style={styles.noseTagsContainer}>
+                  {finishTags.length > 0 ? (
+                    finishTags.map((tag, index) => (
+                      <View key={index} style={styles.noseTag}>
+                        <Text style={styles.noseText}>{tag}</Text>
+                      </View>
+                    ))
+                  ) : (
+                    <Text style={styles.emptyText}>-</Text>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
           </View>
         </View>
 
@@ -368,7 +378,7 @@ const styles = StyleSheet.create({
   // Middle Section
   middleSection: {
     flexDirection: 'row',
-    height: 220, 
+    height: 220,
     gap: 16,
   },
   palateColumn: {
@@ -380,7 +390,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: -10, // 타이틀 공간 고려 및 시각적 중심 보정
   },
-  
+
   // Right Column (Nose & Finish)
   rightColumn: {
     flex: 1,

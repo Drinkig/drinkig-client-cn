@@ -53,11 +53,19 @@ const SettingScreen = () => {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        Alert.alert('오류', '링크를 열 수 없습니다.');
+        showAlert({
+          title: '오류',
+          message: '링크를 열 수 없습니다.',
+          singleButton: true,
+        });
       }
     } catch (error) {
       console.error('An error occurred', error);
-      Alert.alert('오류', '링크를 여는 중 문제가 발생했습니다.');
+      showAlert({
+        title: '오류',
+        message: '링크를 여는 중 문제가 발생했습니다.',
+        singleButton: true,
+      });
     }
   };
 
@@ -71,7 +79,11 @@ const SettingScreen = () => {
       await Linking.openURL(url);
     } catch (error) {
       console.error('An error occurred', error);
-      Alert.alert('오류', '메일 앱을 열 수 없습니다.');
+      showAlert({
+        title: '오류',
+        message: '메일 앱을 열 수 없습니다.',
+        singleButton: true,
+      });
     }
   };
 
@@ -96,54 +108,8 @@ const SettingScreen = () => {
 
   // 회원 탈퇴 핸들러
   const handleDeleteAccount = () => {
-    showAlert({
-      title: '회원 탈퇴',
-      message: '정말로 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.',
-      confirmText: '탈퇴하기',
-      singleButton: false,
-      onConfirm: async () => {
-        try {
-          showLoading();
-          if (authType === 'APPLE') {
-            // 애플 로그인 유저는 애플 인증 다시 받고 탈퇴 진행
-            await handleAppleDelete();
-          } else {
-            // 일반 유저는 바로 탈퇴 API 호출
-            const response = await deleteMember();
-            if (response.isSuccess) {
-              await logout(true);
-            } else {
-              console.error('Delete member failed:', response.message);
-              Alert.alert('오류', `회원 탈퇴 실패: ${response.message}`);
-            }
-          }
-        } catch (error: any) {
-          console.error('Delete member error:', error);
-
-          // 401 에러 체크 (status 확인 또는 메시지 확인)
-          const isAuthError =
-            error.response?.status === 401 ||
-            (error.message && error.message.includes('401')) ||
-            (error.response?.data?.code && error.response.data.code.includes('ACCESS_TOKEN'));
-
-          if (isAuthError) {
-            Alert.alert(
-              '인증 만료',
-              '안전한 탈퇴 처리를 위해 다시 로그인이 필요합니다.\n로그인 후 다시 시도해주세요.',
-              [{
-                text: '확인',
-                onPress: () => logout(true) // 로컬 데이터 비우고 로그인 화면으로
-              }]
-            );
-            return;
-          }
-
-          Alert.alert('오류', `회원 탈퇴 실패: ${error.message || '알 수 없는 오류'}`);
-        } finally {
-          hideLoading();
-        }
-      },
-    });
+    // 바로 탈퇴 확인창을 띄우지 않고, 탈퇴 방어(유지) 화면으로 이동
+    navigation.navigate('WithdrawRetention', { authType: authType || 'EMAIL' }); // authType이 null일 경우 대비
   };
 
   // 애플 회원 탈퇴 프로세스
@@ -167,7 +133,11 @@ const SettingScreen = () => {
         await logout();
       } else {
         console.error('Apple delete member failed:', response.message);
-        Alert.alert('오류', `회원 탈퇴 실패: ${response.message}`);
+        showAlert({
+          title: '오류',
+          message: `회원 탈퇴 실패: ${response.message}`,
+          singleButton: true,
+        });
       }
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
@@ -175,7 +145,11 @@ const SettingScreen = () => {
         return;
       }
       console.error('Apple delete member error:', error);
-      Alert.alert('오류', `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`);
+      showAlert({
+        title: '오류',
+        message: `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`,
+        singleButton: true,
+      });
       throw error; // 상위 catch로 전달
     }
   };

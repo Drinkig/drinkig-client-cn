@@ -40,7 +40,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator 
+    <Stack.Navigator
       screenOptions={{ headerShown: false }}
     >
       {isLoggedIn ? (
@@ -58,13 +58,13 @@ export default function RootNavigator() {
             <Stack.Screen name="WineDetail" component={WineDetailScreen} />
             <Stack.Screen name="MyWineDetail" component={MyWineDetailScreen} />
             <Stack.Screen name="Notification" component={NotificationScreen} />
-            <Stack.Screen 
-              name="WineAdd" 
-              component={WineAddScreen} 
+            <Stack.Screen
+              name="WineAdd"
+              component={WineAddScreen}
               options={{ presentation: 'modal' }}
             />
-            <Stack.Screen 
-              name="ProfileEdit" 
+            <Stack.Screen
+              name="ProfileEdit"
               component={ProfileEditScreen}
               options={{ presentation: 'modal' }}
             />
@@ -75,6 +75,8 @@ export default function RootNavigator() {
             <Stack.Screen name="Wishlist" component={WishlistScreen} />
             <Stack.Screen name="TastingNoteWrite" component={TastingNoteWriteScreen} />
             <Stack.Screen name="TastingNoteDetail" component={TastingNoteDetailScreen} />
+            <Stack.Screen name="WithdrawRetention" component={require('../screens/WithdrawRetentionScreen').default} />
+            <Stack.Screen name="WithdrawReason" component={require('../screens/WithdrawReasonScreen').default} />
           </>
         )
       ) : (

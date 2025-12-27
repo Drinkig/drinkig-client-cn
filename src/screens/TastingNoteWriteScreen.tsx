@@ -19,6 +19,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
 import { createTastingNote, TastingNoteRequest, searchWinesPublic, WineUserDTO } from '../api/wine';
+import { useGlobalUI } from '../context/GlobalUIContext';
 import TasteLevelSelector from '../components/tasting_note/TasteLevelSelector';
 import ColorSelector from '../components/tasting_note/ColorSelector';
 import StarRating from '../components/tasting_note/StarRating';
@@ -34,7 +35,8 @@ type TastingNoteWriteScreenRouteProp = RouteProp<RootStackParamList, 'TastingNot
 export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
-  
+  const { showAlert } = useGlobalUI();
+
   // 파라미터가 없을 수도 있으므로 기본값 처리 또는 undefined 확인
   const params = route.params || {};
   const [selectedWine, setSelectedWine] = useState<{
@@ -82,16 +84,16 @@ export default function TastingNoteWriteScreen() {
 
   // Form State
   const [vintageYear, setVintageYear] = useState('');
-  const [color, setColor] = useState(''); 
+  const [color, setColor] = useState('');
   const [tasteDate, setTasteDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
-  
+
   // 5 Taste Indicators (1-5 Level)
   const [sweetness, setSweetness] = useState(0);
   const [acidity, setAcidity] = useState(0);
   const [tannin, setTannin] = useState(0);
   const [body, setBody] = useState(0);
   const [alcohol, setAlcohol] = useState(0);
-  
+
   const [nose, setNose] = useState('');
   const [finish, setFinish] = useState(''); // 피니쉬 추가
   const [rating, setRating] = useState(0);
@@ -103,7 +105,7 @@ export default function TastingNoteWriteScreen() {
   const [tipModalVisible, setTipModalVisible] = useState(false);
   const [currentTip, setCurrentTip] = useState<{ title: string; description: string } | null>(null);
 
-  const isFormValid = 
+  const isFormValid =
     selectedWine.wineId &&
     color !== '' &&
     tasteDate !== '' &&
@@ -130,7 +132,7 @@ export default function TastingNoteWriteScreen() {
           page: 0,
           size: 5
         });
-        
+
         if (response.isSuccess) {
           setSearchResults(response.result.content);
           setShowSearchResults(true);
@@ -170,23 +172,43 @@ export default function TastingNoteWriteScreen() {
 
   const handleSubmit = async () => {
     if (!selectedWine.wineId) {
-      Alert.alert('오류', '와인을 선택해주세요.');
+      showAlert({
+        title: '오류',
+        message: '와인을 선택해주세요.',
+        singleButton: true,
+      });
       return;
     }
     if (!tasteDate) {
-      Alert.alert('오류', '시음 날짜를 입력해주세요.');
+      showAlert({
+        title: '오류',
+        message: '시음 날짜를 입력해주세요.',
+        singleButton: true,
+      });
       return;
     }
     if (!color) {
-      Alert.alert('오류', '와인 색상을 선택해주세요.');
+      showAlert({
+        title: '오류',
+        message: '와인 색상을 선택해주세요.',
+        singleButton: true,
+      });
       return;
     }
     if (sweetness === 0 || acidity === 0 || tannin === 0 || body === 0 || alcohol === 0) {
-      Alert.alert('오류', '모든 맛 평가 항목을 선택해주세요.');
+      showAlert({
+        title: '오류',
+        message: '모든 맛 평가 항목을 선택해주세요.',
+        singleButton: true,
+      });
       return;
     }
     if (rating === 0) {
-      Alert.alert('오류', '별점을 선택해주세요.');
+      showAlert({
+        title: '오류',
+        message: '별점을 선택해주세요.',
+        singleButton: true,
+      });
       return;
     }
 
@@ -197,7 +219,7 @@ export default function TastingNoteWriteScreen() {
       const reviewParts = [];
       if (finish) reviewParts.push(`[Finish] ${finish}`);
       if (review) reviewParts.push(review);
-      
+
       const finalReview = reviewParts.length > 0 ? reviewParts.join('\n\n') : '';
 
       const requestData: TastingNoteRequest = {
@@ -216,17 +238,28 @@ export default function TastingNoteWriteScreen() {
       };
 
       const response = await createTastingNote(requestData);
-      
+
       if (response.isSuccess) {
-        Alert.alert('성공', '테이스팅 노트가 저장되었습니다.', [
-          { text: '확인', onPress: () => navigation.goBack() }
-        ]);
+        showAlert({
+          title: '성공',
+          message: '테이스팅 노트가 저장되었습니다.',
+          singleButton: true,
+          onConfirm: () => navigation.goBack(),
+        });
       } else {
-        Alert.alert('실패', response.message || '저장에 실패했습니다.');
+        showAlert({
+          title: '실패',
+          message: response.message || '저장에 실패했습니다.',
+          singleButton: true,
+        });
       }
     } catch (error) {
       console.error('Tasting note submit error:', error);
-      Alert.alert('오류', '네트워크 오류가 발생했습니다.');
+      showAlert({
+        title: '오류',
+        message: '네트워크 오류가 발생했습니다.',
+        singleButton: true,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -243,7 +276,7 @@ export default function TastingNoteWriteScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -255,16 +288,16 @@ export default function TastingNoteWriteScreen() {
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
         <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-          
+
           {/* 와인 선택 영역 */}
           <View style={[styles.section, { zIndex: 100 }]}>
             <Text style={styles.sectionTitle}>와인 선택</Text>
-            
+
             {selectedWine.wineId ? (
               // 와인이 선택된 상태
               <View style={styles.selectedWineContainer}>
@@ -273,7 +306,7 @@ export default function TastingNoteWriteScreen() {
                     <Image source={{ uri: selectedWine.wineImage }} style={styles.wineThumbnail} resizeMode="contain" />
                   ) : (
                     <View style={styles.wineThumbnailPlaceholder}>
-                       <Icon name="wine" size={30} color="#666" />
+                      <Icon name="wine" size={30} color="#666" />
                     </View>
                   )}
                   <View style={styles.wineTextInfo}>
@@ -300,17 +333,17 @@ export default function TastingNoteWriteScreen() {
                     onChangeText={handleSearch}
                     returnKeyType="search"
                   />
-                  
+
                   {/* 검색 결과 리스트 */}
                   {showSearchResults && searchResults.length > 0 && (
                     <View style={styles.searchResultsContainer}>
-                      <ScrollView 
-                        keyboardShouldPersistTaps="handled" 
+                      <ScrollView
+                        keyboardShouldPersistTaps="handled"
                         nestedScrollEnabled={true}
                         showsVerticalScrollIndicator={true}
                       >
                         {searchResults.map((item) => (
-                          <TouchableOpacity 
+                          <TouchableOpacity
                             key={item.wineId}
                             style={styles.searchResultItem}
                             onPress={() => handleSelectWine(item)}
@@ -331,13 +364,13 @@ export default function TastingNoteWriteScreen() {
               </View>
             )}
           </View>
-          
+
           {selectedWine.wineId && (
             <>
               {/* Basic Info */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>기본 정보</Text>
-                
+
                 <View style={styles.row}>
                   <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                     <Text style={styles.label}>빈티지 (연도)</Text>
@@ -363,7 +396,7 @@ export default function TastingNoteWriteScreen() {
                       {vintageYear.length === 4 && vintageYear !== 'NV' ? (
                         <Icon name="checkmark-circle" size={20} color="#8e44ad" style={{ marginRight: 4 }} />
                       ) : (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={[styles.nvButton, vintageYear === 'NV' && styles.nvButtonActive]}
                           onPress={() => setVintageYear(vintageYear === 'NV' ? '' : 'NV')}
                         >
@@ -372,7 +405,7 @@ export default function TastingNoteWriteScreen() {
                       )}
                     </View>
                   </View>
-                  
+
                   <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
                     <Text style={styles.label}>시음 날짜</Text>
                     <TextInput
@@ -461,7 +494,7 @@ export default function TastingNoteWriteScreen() {
               {/* Rating & Review */}
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>총평 (Conclusion)</Text>
-                
+
                 <StarRating rating={rating} onRatingChange={handleRating} />
 
                 <View style={styles.inputGroup}>
@@ -540,7 +573,7 @@ const styles = StyleSheet.create({
     borderLeftColor: '#8e44ad',
     paddingLeft: 10,
   },
-  
+
   // 검색 관련 스타일 (WineAddScreen 스타일 차용)
   searchSection: {
     position: 'relative',
@@ -664,7 +697,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  
+
   // 나머지 입력 폼 스타일
   row: {
     flexDirection: 'row',
@@ -702,7 +735,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
+
   // 새로 추가된 스타일
   vintageInputWrapper: {
     flexDirection: 'row',

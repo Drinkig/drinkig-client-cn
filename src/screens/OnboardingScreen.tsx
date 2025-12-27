@@ -22,6 +22,7 @@ import {
   checkNickname,
   MemberInitRequest,
 } from '../api/member';
+import { useGlobalUI } from '../context/GlobalUIContext';
 
 import FlavorProfileStep, { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 import NewbieFlavorProfileStep from '../components/onboarding/NewbieFlavorProfileStep';
@@ -129,6 +130,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const OnboardingScreen = () => {
   const navigation = useNavigation();
   const { completeOnboarding } = useUser();
+  const { showAlert } = useGlobalUI();
 
   const [step, setStep] = useState<Step>('INTRO');
   const [formData, setFormData] = useState<OnboardingData>(INITIAL_DATA);
@@ -406,7 +408,11 @@ const OnboardingScreen = () => {
       }, 10000);
     } catch (error) {
       console.error('Onboarding Error:', error);
-      Alert.alert('오류', '정보 저장 중 문제가 발생했습니다.');
+      showAlert({
+        title: '오류',
+        message: '정보 저장 중 문제가 발생했습니다.',
+        singleButton: true,
+      });
       setLoading(false);
     }
   };
