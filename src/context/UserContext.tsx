@@ -69,14 +69,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         if (accessToken) {
           // 토큰이 있으면 Axios 헤더 설정
           client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-          
+
           // 저장된 신규 유저 상태 복원
           if (persistedIsNewUser === 'true') {
             setIsNewUser(true);
           }
-          
+
           setIsLoggedIn(true);
-          
+
           // 유저 정보 가져오기 (신규 유저가 아닐 때만)
           if (persistedIsNewUser !== 'true') {
             await refreshUserInfo();
@@ -120,9 +120,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             alcohol: response.result.alcohol,
           });
         }
+      } else {
+        // API 호출은 성공했지만 비즈니스 로직 실패 (예: 유저 없음)
+        throw new Error(response.message || 'Failed to fetch user info');
       }
     } catch (error) {
       console.error('Failed to fetch user info:', error);
+      throw error; // initAuth에서 잡아서 로그아웃 처리할 수 있도록 에러 전파
     }
   };
 
@@ -132,9 +136,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (refreshToken) {
         await AsyncStorage.setItem('refreshToken', refreshToken);
       }
-      
+
       client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-      
+
       // 신규 유저 여부 설정 (순서 중요: 로그인 상태 변경 전에 설정)
       // 서버에서 isFirst가 오면 그 값을 최우선으로 사용
       if (isFirst) {
@@ -142,18 +146,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         await AsyncStorage.setItem('isNewUser', 'true');
       } else {
         // 서버에서 기존 유저라고 하면 로컬 상태도 해제 (중요: 재로그인 시 온보딩 안 뜨게)
-        setIsNewUser(false); 
+        setIsNewUser(false);
         await AsyncStorage.removeItem('isNewUser');
       }
-      
+
       setIsLoggedIn(true);
-      
+
       // 신규 유저가 아닐 때만 유저 정보 가져오기
       if (!isFirst) {
         try {
           await refreshUserInfo();
         } catch (e) {
           console.warn('Initial user info fetch failed, but login continues:', e);
+          // 로그인 직후에는 정보를 못 가져와도 로그아웃시키지 않음 (일시적 오류일 수 있음)
+          // 단, 401 등 치명적 오류라면 로그아웃 시키는 게 맞을 수도 있음
         }
       }
     } catch (error) {
@@ -186,7 +192,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.removeItem('recommendations');
       await AsyncStorage.removeItem('flavorProfile'); // 추가
       delete client.defaults.headers.common['Authorization'];
-      
+
       setUser(null);
       setRecommendationsState([]);
       setFlavorProfileState(null); // 추가
