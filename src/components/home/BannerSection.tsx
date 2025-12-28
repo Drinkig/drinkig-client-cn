@@ -25,7 +25,8 @@ interface BannerData {
   backgroundColor: string;
   linkUrl: string;
   tag?: string;
-  iconName: string;
+  iconName?: string;
+  iconImage?: any;
 }
 
 // [수동 관리] 배너 리스트 (2개)
@@ -38,6 +39,15 @@ const BANNERS: BannerData[] = [
     backgroundColor: '#252525', // 통일된 다크 그레이
     linkUrl: 'https://web.drinkig.com/notices/2',
     iconName: 'file-document-edit-outline',
+  },
+  {
+    id: 2,
+    tag: 'EVENT',
+    title: '드링키지 런칭 기념\n광고주 무료 모집',
+    subtitle: '1개월 무료로 광고해드려요!',
+    backgroundColor: '#3a1a1a', // 프리미엄 다크 버건디
+    linkUrl: 'https://web.drinkig.com/notices/3', // 가상의 링크 (사용자가 추후 수정 가능)
+    iconImage: require('../../assets/wish_list.png'),
   },
 ];
 
@@ -146,22 +156,38 @@ export const BannerSection: React.FC = () => {
                       <Text style={styles.bannerTag}>{banner.tag}</Text>
                     </View>
                   )}
-                  <View style={{ marginTop: banner.tag ? 8 : 12 }}>
+                  <View style={{ marginTop: banner.tag ? 0 : 12 }}>
                     <Text style={styles.bannerTitle} numberOfLines={2}>{banner.title}</Text>
                     <Text style={styles.bannerSubtitle} numberOfLines={1}>{banner.subtitle}</Text>
                   </View>
                 </View>
-                <MaterialCommunityIcons
-                  name={banner.iconName}
-                  size={90}
-                  color="rgba(255,255,255,0.05)"
-                  style={{
-                    position: 'absolute',
-                    right: -10,
-                    bottom: -15,
-                    transform: [{ rotate: '-15deg' }]
-                  }}
-                />
+                {banner.iconImage ? (
+                  <Image
+                    source={banner.iconImage}
+                    style={{
+                      position: 'absolute',
+                      right: -35,
+                      bottom: -35,
+                      width: 170,
+                      height: 170,
+                    }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  banner.iconName && (
+                    <MaterialCommunityIcons
+                      name={banner.iconName}
+                      size={90}
+                      color="rgba(255,255,255,0.05)"
+                      style={{
+                        position: 'absolute',
+                        right: -10,
+                        bottom: -15,
+                        transform: [{ rotate: '-15deg' }]
+                      }}
+                    />
+                  )
+                )}
               </View>
             )}
           </TouchableOpacity>
@@ -180,7 +206,7 @@ export const BannerSection: React.FC = () => {
           />
         ))}
       </View>
-    </View>
+    </View >
   );
 };
 
