@@ -13,6 +13,8 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Animated,
+  Easing,
 } from 'react-native';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
 import * as KakaoLogin from '@react-native-seoul/kakao-login';
@@ -218,6 +220,67 @@ const LoginScreen = () => {
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
+  const floatAnim1 = React.useRef(new Animated.Value(0)).current;
+  const floatAnim2 = React.useRef(new Animated.Value(0)).current;
+  const floatAnim3 = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim1, {
+          toValue: -20,
+          duration: 4000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim1, {
+          toValue: 0,
+          duration: 4000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim2, {
+          toValue: 15,
+          duration: 5000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim2, {
+          toValue: 0,
+          duration: 5000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(floatAnim3, {
+            toValue: -10,
+            duration: 3500,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(floatAnim3, {
+            toValue: 0,
+            duration: 3500,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    ).start();
+  }, []);
+
   const updateCurrentSlideIndex = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffsetX = e.nativeEvent.contentOffset.x;
     const currentIndex = Math.round(contentOffsetX / width);
@@ -227,9 +290,9 @@ const LoginScreen = () => {
   return (
     <View style={styles.container}>
 
-      <View style={styles.backgroundCircle1} />
-      <View style={styles.backgroundCircle2} />
-      <View style={styles.backgroundCircle3} />
+      <Animated.View style={[styles.backgroundCircle1, { transform: [{ translateY: floatAnim1 }] }]} />
+      <Animated.View style={[styles.backgroundCircle2, { transform: [{ translateY: floatAnim2 }] }]} />
+      <Animated.View style={[styles.backgroundCircle3, { transform: [{ translateY: floatAnim3 }] }]} />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentContainer}>
