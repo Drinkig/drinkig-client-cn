@@ -31,6 +31,7 @@ import ProfileStep from '../components/onboarding/ProfileStep';
 import NewbieCheckStep from '../components/onboarding/NewbieCheckStep';
 import TransitionStep from '../components/onboarding/TransitionStep';
 import { MultiSelectionStep } from '../components/onboarding/SelectionSteps';
+import { CategorizedSelectionStep } from '../components/onboarding/CategorizedSelectionStep'; // [NEW] Import
 import BudgetStep from '../components/onboarding/BudgetStep';
 
 // ----------------------
@@ -98,9 +99,49 @@ const INITIAL_DATA: OnboardingData = {
   },
 };
 
-// Options for selections
-const ALCOHOL_OPTIONS = ['소주', '맥주', '위스키', '칵테일', '막걸리', '사케', '럼', '진', '보드카', '기타'];
-const FOOD_OPTIONS = ['육류', '해산물', '치즈', '디저트', '한식', '중식', '양식', '일식', '닭고기', '파스타', '피자', '바비큐', '매운 음식', '과자'];
+// [UPDATED] Categorized Options
+const ALCOHOL_CATEGORIES = [
+  {
+    title: '맥주',
+    data: ['라거', '에일', 'IPA', '스타우트/흑맥주', '밀맥주', '사워']
+  },
+  {
+    title: '위스키/브랜디',
+    data: ['싱글몰트', '블렌디드', '버번', '아이리시', '꼬냑/아르마냑']
+  },
+  {
+    title: '전통주',
+    data: ['소주/희석식', '증류식 소주', '약주/청주', '막걸리/탁주', '과실주']
+  },
+  {
+    title: '와인',
+    data: ['레드 와인', '화이트 와인', '스파클링', '로제', '내추럴', '주정강화']
+  },
+  {
+    title: '기타 주류',
+    data: ['사케', '진', '보드카', '럼', '데킬라', '하이볼', '칵테일', '기타']
+  }
+];
+
+const FOOD_CATEGORIES = [
+  {
+    title: '국가 별',
+    data: ['한식', '중식', '일식', '양식', '이탈리아', '프랑스', '스페인', '아메리칸 차이니즈', '베트남', '태국', '인도', '멕시코', '남미', '퓨전']
+  },
+  {
+    title: '육류',
+    data: ['돼지고기', '소고기', '닭고기', '양고기', '스테이크', '바베큐', '순대', '곱창', '족발/보쌈']
+  },
+  {
+    title: '해산물',
+    data: ['갑각류', '조개류', '회', '숙성사시미', '찜/탕', '스시', '장어', '생선구이']
+  },
+  {
+    title: '기타',
+    data: ['치즈', '샤퀴테리', '피자', '햄버거', '과일', '디저트', '스낵/과자']
+  }
+];
+
 const WINE_SORTS = ['레드', '화이트', '스파클링', '로제', '주정강화', '디저트'];
 const WINE_AREAS = ['FRANCE', 'ITALY', 'USA', 'CHILE', 'SPAIN', 'AUSTRALIA', 'NEW_ZEALAND', 'ARGENTINA'];
 const WINE_VARIETIES = ['CABERNET_SAUVIGNON', 'MERLOT', 'PINOT_NOIR', 'CHARDONNAY', 'SAUVIGNON_BLANC', 'SYRAH', 'RIESLING'];
@@ -128,6 +169,7 @@ const LOADING_MESSAGES = [
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const OnboardingScreen = () => {
+  // ... helper functions omitted for brevity (no change needed in logic)
   const navigation = useNavigation();
   const { completeOnboarding } = useUser();
   const { showAlert } = useGlobalUI();
@@ -381,15 +423,6 @@ const OnboardingScreen = () => {
       requestData.wineArea = null;
       requestData.wineVariety = null;
 
-      /* Original Logic (Disabled for unified flow)
-      if (formData.isNewbie) {
-        requestData.preferredAlcohols = formData.preferredAlcohols;
-        // ...
-      } else {
-        // ...
-      }
-      */
-
       console.log('🔍 Onboarding Request Payload:', JSON.stringify(requestData, null, 2));
 
       await updateMemberInitInfo(requestData);
@@ -517,13 +550,6 @@ const OnboardingScreen = () => {
       case 'BUDGET':
         handleFinalSubmit();
         return;
-
-      /* 
-       * Removed Old Expert Flow Steps
-       * case 'WINE_SORT': ...
-       * case 'WINE_AREA': ...
-       * case 'WINE_VARIETY': ...
-       */
     }
 
     if (next) {
@@ -559,12 +585,6 @@ const OnboardingScreen = () => {
 
     if (step === 'EXPERT_TRANSITION') prev = 'NEWBIE_CHECK';
     if (step === 'BUDGET') prev = 'WINE_INTEREST';
-
-    /* Removed Old Expert Back Steps
-    if (step === 'WINE_SORT') prev = 'BUDGET';
-    if (step === 'WINE_AREA') prev = 'WINE_SORT';
-    if (step === 'WINE_VARIETY') prev = 'WINE_AREA';
-    */
 
     if (prev) {
       animateTransition(prev, 'prev');
@@ -681,22 +701,22 @@ const OnboardingScreen = () => {
         return <TransitionStep isNewbie={false} name={formData.name} />;
       case 'ALCOHOL_PREF':
         return (
-          <MultiSelectionStep
+          <CategorizedSelectionStep
             title="평소에 어떤 술을 즐기시나요?"
-            options={ALCOHOL_OPTIONS}
+            categories={ALCOHOL_CATEGORIES}
             selected={formData.preferredAlcohols}
             onSelect={(v: string) => toggleSelection('preferredAlcohols', v)}
-            multi
+            allowCustomInput
           />
         );
       case 'FOOD_PREF':
         return (
-          <MultiSelectionStep
+          <CategorizedSelectionStep
             title="어떤 음식과 함께 즐기고 싶나요?"
-            options={FOOD_OPTIONS}
+            categories={FOOD_CATEGORIES}
             selected={formData.preferredFoods}
             onSelect={(v: string) => toggleSelection('preferredFoods', v)}
-            multi
+            allowCustomInput
           />
         );
       case 'FLAVOR_PROFILE':
