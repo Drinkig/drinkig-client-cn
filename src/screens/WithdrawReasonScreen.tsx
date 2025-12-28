@@ -93,10 +93,10 @@ const WithdrawReasonScreen = () => {
                 }
 
                 const response = await deleteMember(fullReason);
-                hideLoading(); // 로딩 먼저 닫기
+                hideLoading();
 
                 if (response.isSuccess) {
-                    showSuccessAlert();
+                    logout(true);
                 } else {
                     showAlert({
                         title: '오류',
@@ -106,7 +106,7 @@ const WithdrawReasonScreen = () => {
                 }
             }
         } catch (error: any) {
-            hideLoading(); // 에러 시에도 로딩 먼저 닫기
+            hideLoading();
             console.error('Delete member error:', error);
             showAlert({
                 title: '오류',
@@ -116,18 +116,7 @@ const WithdrawReasonScreen = () => {
         }
     };
 
-    const showSuccessAlert = () => {
-        // 이미 로딩이 닫힌 상태여야 함
-        showAlert({
-            title: '탈퇴 처리 완료',
-            message: '정상적으로 탈퇴되었습니다.\n이용해 주셔서 감사합니다.',
-            singleButton: true,
-            onConfirm: () => {
-                closeAlert();
-                logout(true);
-            },
-        });
-    };
+
 
     const handleAppleDelete = async () => {
         try {
@@ -139,10 +128,10 @@ const WithdrawReasonScreen = () => {
             if (!authCode) throw new Error('Failed to get authorization code');
 
             const response = await deleteAppleMember(authCode);
-            hideLoading(); // 로딩 먼저 닫기
+            hideLoading();
 
             if (response.isSuccess) {
-                showSuccessAlert();
+                logout(true);
             } else {
                 showAlert({
                     title: '오류',
@@ -151,7 +140,7 @@ const WithdrawReasonScreen = () => {
                 });
             }
         } catch (error: any) {
-            hideLoading(); // 로딩 먼저 닫기
+            hideLoading();
             if (error.code === appleAuth.Error.CANCELED) return;
             console.error('Apple delete member error:', error);
             showAlert({

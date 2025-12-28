@@ -13,7 +13,7 @@ import {
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
 import * as KakaoLogin from '@react-native-seoul/kakao-login';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { loginWithApple, loginWithKakao } from '../api/member';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
@@ -23,6 +23,14 @@ const LoginScreen = () => {
   const { login } = useUser();
   const { showLoading, hideLoading, showAlert } = useGlobalUI();
   const [loading, setLoading] = useState(false);
+
+  // 화면 포커스 시 로딩 상태 강제 해제 (좀비 로딩 방지)
+  useFocusEffect(
+    React.useCallback(() => {
+      hideLoading();
+      setLoading(false);
+    }, [hideLoading])
+  );
 
   // JWT 디코딩 함수 (Payload 확인용 - 순수 JS 구현)
   const parseJwt = (token: string) => {
