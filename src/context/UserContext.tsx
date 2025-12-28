@@ -82,9 +82,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             await refreshUserInfo();
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auth initialization failed:', error);
-        await logout();
+        // [FIX] 모든 에러에서 로그아웃하지 않고, 인증 관련 에러(401)일 때만 로그아웃
+        // 인터셉터에서 이미 재발급 시도를 했을 것이므로 여기서 401이 오면 재발급도 실패한 것임
+        if (error.response?.status === 401) {
+          await logout();
+        } else {
+          // 네트워크 에러 등일 때는 로그린 상태 유지 (이미 isLoggedIn=true 상태일 수 있음)
+          // 다만 user 정보가 없을 수 있으므로 필요시 재시도 로직이 UI에 있어야 함
+          console.warn('Network or Server error during initAuth, keeping session.');
+        }
       } finally {
         setIsLoading(false);
       }
