@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -20,35 +20,21 @@ const ProfileEditScreen = () => {
   const { user, refreshUserInfo } = useUser();
   const { showAlert, showLoading, hideLoading, closeAlert } = useGlobalUI();
 
-  // 상태 관리
+
   const [nickname, setNickname] = useState(user?.nickname || '');
   const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(null);
 
-  // 유효성 검사 상태 (Onboarding 로직 차용)
-  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(true); // 초기값은 본인이므로 true
+  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(true);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
 
-  // Sync state with user context
-  React.useEffect(() => {
-    if (user) {
-      setNickname(user.nickname);
-      setProfileImage(user.profileImage);
-      // 본인 닉네임은 언제나 사용 가능
-      setNicknameAvailable(true);
-      setNicknameError(null);
-    }
-  }, [user]);
 
-  // 변경사항 여부 & 저장 조건
-  // 1. 닉네임 변경됨 + 닉네임 사용 가능함
-  // 2. 닉네임 안바뀜 + 이미지 변경됨
-  // 3. 단, 닉네임 에러가 없어야 함
+
+
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = selectedImageAsset !== null;
 
-  // 저장 가능 조건: (닉네임바뀜 AND 사용가능 AND 검사중아님) OR (닉네임안바뀜 AND 이미지바뀜)
   const canSave = (hasNicknameChanged && nicknameAvailable && !isCheckingNickname) || (!hasNicknameChanged && hasImageChanged && !nicknameError);
 
   const handleSelectImage = async () => {
@@ -67,9 +53,8 @@ const ProfileEditScreen = () => {
     }
   };
 
-  // 실시간 유효성 검사 (Debounce 적용)
-  React.useEffect(() => {
-    // 1. 본인 닉네임과 같으면 ok
+
+  useEffect(() => {
     if (nickname === user?.nickname) {
       setNicknameAvailable(true);
       setNicknameError(null);
@@ -83,13 +68,11 @@ const ProfileEditScreen = () => {
       return;
     }
 
-    // 검사 시작 상태
     setNicknameAvailable(null);
     setNicknameError(null);
     setIsCheckingNickname(true);
 
     const timer = setTimeout(async () => {
-      // 2글자 미만
       if (nickname.length < 2) {
         setNicknameError('닉네임은 2글자 이상이어야 해요.');
         setNicknameAvailable(false);
@@ -97,7 +80,6 @@ const ProfileEditScreen = () => {
         return;
       }
 
-      // 자음/모음 단독 체크
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nickname)) {
         setNicknameError('올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).');
         setNicknameAvailable(false);
@@ -115,6 +97,7 @@ const ProfileEditScreen = () => {
           setNicknameError('이미 사용 중인 닉네임이에요');
         }
       } catch (e) {
+        console.error(e);
         setNicknameError('닉네임 확인 중 오류가 발생했습니다.');
         setNicknameAvailable(false);
       } finally {
@@ -125,7 +108,7 @@ const ProfileEditScreen = () => {
     return () => clearTimeout(timer);
   }, [nickname, user?.nickname]);
 
-  // 저장 핸들러
+
   const handleSave = async () => {
     if (nicknameError || (nickname !== user?.nickname && !nicknameAvailable)) {
       showAlert({
@@ -138,9 +121,9 @@ const ProfileEditScreen = () => {
 
     try {
       showLoading();
-      await new Promise(resolve => setTimeout(() => resolve(true), 100)); // UI 렌더링 보장
+      await new Promise(resolve => setTimeout(() => resolve(true), 100));
 
-      // 1. 프로필 이미지 업로드
+
       if (selectedImageAsset && selectedImageAsset.uri) {
         const uploadResponse = await uploadProfileImage(
           selectedImageAsset.uri,
@@ -150,13 +133,13 @@ const ProfileEditScreen = () => {
         if (!uploadResponse.isSuccess) throw new Error('Image upload failed');
       }
 
-      // 2. 닉네임 변경
+
       if (nickname !== user?.nickname) {
         const updateResponse = await updateMemberInfo(nickname);
         if (!updateResponse.isSuccess) throw new Error('Nickname update failed');
       }
 
-      // 3. 유저 정보 갱신
+
       await refreshUserInfo();
 
       hideLoading();
@@ -208,7 +191,7 @@ const ProfileEditScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 닉네임 변경 섹션 */}
+
         <View style={styles.inputSection}>
           <Text style={styles.label}>닉네임</Text>
           <View style={styles.inputRow}>

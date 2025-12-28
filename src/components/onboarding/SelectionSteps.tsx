@@ -15,10 +15,10 @@ interface MultiSelectionStepProps {
   selected: string[];
   onSelect: (value: string) => void;
   multi: true;
-  allowCustomInput?: boolean; // [NEW] 직접 입력 허용 여부
+  allowCustomInput?: boolean;
 }
 
-// 통합 컴포넌트로 사용하거나 분리해도 됨. 여기선 일단 분리해서 export
+
 export const SingleSelectionStep = ({ title, options, selected, onSelect }: SelectionStepProps) => {
   // ... (SingleSelectionStep 유지)
   return (
@@ -45,7 +45,7 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
   const [isInputVisible, setIsInputVisible] = useState(false);
   const [inputText, setInputText] = useState('');
 
-  // options에 없는 선택된 값 찾기 (커스텀 입력값)
+
   const customValue = selected.find(val => !options.includes(val) && val !== '기타');
 
   const handleCustomSubmit = () => {
@@ -63,15 +63,13 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
       <ScrollView style={{ flex: 1 }}>
         <View style={styles.grid}>
           {options.map((opt) => {
-            // '기타' 옵션 처리
             if (allowCustomInput && opt === '기타') {
               if (customValue) {
-                // 이미 커스텀 값이 입력된 경우 -> 그 값을 칩으로 보여줌 (선택 상태)
                 return (
                   <TouchableOpacity
                     key="custom-value"
                     style={[styles.chip, styles.selectedChip]}
-                    onPress={() => onSelect(customValue)} // 누르면 삭제됨
+                    onPress={() => onSelect(customValue)}
                   >
                     <Text style={[styles.chipText, styles.selectedChipText]}>{customValue}</Text>
                   </TouchableOpacity>
@@ -79,7 +77,6 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
               }
 
               if (isInputVisible) {
-                // 입력 모드
                 return (
                   <View key="custom-input" style={[styles.chip, styles.inputChip]}>
                     <TextInput
@@ -97,7 +94,7 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
                 );
               }
 
-              // 기본 '기타' 버튼 (선택 안 된 상태)
+
               return (
                 <TouchableOpacity
                   key={opt}
@@ -109,7 +106,7 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
               );
             }
 
-            // 일반 옵션
+
             return (
               <TouchableOpacity
                 key={opt}
@@ -145,17 +142,16 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8, // (10 -> 8)
+    gap: 8,
   },
   chip: {
-    paddingVertical: 10, // (14 -> 10)
-    paddingHorizontal: 14, // (22 -> 14)
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     backgroundColor: '#1a1a1a',
-    borderRadius: 12, // (30 -> 12)
+    borderRadius: 12,
     marginBottom: 4,
     borderWidth: 1.5,
     borderColor: '#333',
-    // 칩 그림자 효과 추가 (입체감)
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -164,38 +160,38 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 3,
     elevation: 2,
-    justifyContent: 'center', // [Added] 세로 중앙 정렬
-    alignItems: 'center', // [Added] 가로 중앙 정렬
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   selectedChip: {
-    backgroundColor: '#3e204a', // 선택시 배경색을 은은한 보라색으로 (#8e44ad -> #3e204a)
-    borderColor: '#8e44ad', // 테두리는 진한 보라색 유지
+    backgroundColor: '#3e204a',
+    borderColor: '#8e44ad',
   },
   chipText: {
-    color: '#bbb', // 기본 텍스트 색상 조정 (#ccc -> #bbb)
-    fontSize: 14, // (16 -> 14)
+    color: '#bbb',
+    fontSize: 14,
     fontWeight: '500',
-    textAlign: 'center', // [Added] 텍스트 중앙 정렬
-    includeFontPadding: false, // [Added] 안드로이드 세로 정렬 보정
+    textAlign: 'center',
+    includeFontPadding: false,
   },
   selectedChipText: {
-    color: '#d4acfb', // 선택시 텍스트 색상을 밝은 연보라색으로 변경 (#fff -> #d4acfb)
-    fontWeight: '700', // 굵기 증가
+    color: '#d4acfb',
+    fontWeight: '700',
   },
   inputChip: {
     backgroundColor: '#1e1e1e',
     borderColor: '#8e44ad',
     paddingVertical: 0,
     paddingHorizontal: 0,
-    minWidth: 80, // (100 -> 80)
-    borderRadius: 12, // 입력창도 동일하게
+    minWidth: 80,
+    borderRadius: 12,
   },
   textInput: {
     color: '#fff',
-    fontSize: 14, // (16 -> 14)
+    fontSize: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
-    minWidth: 60, // (80 -> 60)
+    minWidth: 60,
   },
 });
 

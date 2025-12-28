@@ -25,7 +25,7 @@ export default function InfoTab({
   finish,
   showTastingNotes,
 }: InfoTabProps) {
-  // 모든 데이터가 없으면 안내 메시지 표시
+
   const hasAnyData = description || (showTastingNotes && (features || (nose && nose.length > 0) || (palate && palate.length > 0) || (finish && finish.length > 0)));
 
   if (!hasAnyData) {

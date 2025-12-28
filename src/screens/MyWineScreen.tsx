@@ -19,15 +19,15 @@ import { getMyWines, MyWineDTO, getWineDetailPublic } from '../api/wine';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
-  const isFocused = useIsFocused(); // 화면이 포커스될 때마다 데이터를 다시 불러오기 위해 사용
+  const isFocused = useIsFocused();
 
-  // API 데이터 상태
+
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState('전체');
 
-  // 정렬 상태
-  const [sortType, setSortType] = useState('latest'); // latest, oldest, vintage_high, vintage_low, price_high, price_low
+
+  const [sortType, setSortType] = useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
 
   const wineTypes = ['전체', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화', '기타'];
@@ -54,11 +54,11 @@ const MyWineScreen = () => {
       if (response.isSuccess) {
         let wines = response.result || [];
 
-        // [임시 해결] 서버에서 wineImageUrl이 null로 오는 경우, 상세 조회를 통해 이미지 채우기
+
         const updatedWines = await Promise.all(wines.map(async (wine) => {
           if (!wine.wineImageUrl) {
             try {
-              // 와인 상세 정보 조회 (이미지 URL 확보 목적)
+
               const detailRes = await getWineDetailPublic(wine.wineId);
               if (detailRes.isSuccess && detailRes.result.wineInfoResponse.imageUrl) {
                 return { ...wine, wineImageUrl: detailRes.result.wineInfoResponse.imageUrl };
@@ -72,26 +72,25 @@ const MyWineScreen = () => {
 
         setMyWines(updatedWines);
       } else {
-        // 실패 시 (예: 데이터 없음 등) 빈 배열 처리
+
         setMyWines([]);
       }
     } catch (error) {
       console.error('Failed to fetch my wines:', error);
-      // 에러 발생 시에도 빈 목록을 보여주어 로딩 상태 탈출
+
       setMyWines([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // 필터링된 와인 목록
+
   const filteredWines = myWines.filter(wine => {
     if (selectedType === '전체') return true;
     if (selectedType === '기타') {
       return !['Red', 'White', 'Sparkling', 'Rose', 'Dessert', 'Fortified', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화'].includes(wine.wineSort);
     }
-    // 영어/한글 매핑 또는 포함 여부 확인 (API 응답값에 따라 조정 필요)
-    // 예: API가 'Red', 'White' 등으로 준다면 매핑 필요. 여기서는 간단히 포함 여부로 체크
+
     const typeMap: { [key: string]: string } = {
       '레드': 'Red',
       '화이트': 'White',
@@ -105,22 +104,22 @@ const MyWineScreen = () => {
     return wine.wineSort === targetType || wine.wineSort === selectedType;
   });
 
-  // 정렬 로직 적용
+
   const sortedWines = [...filteredWines].sort((a, b) => {
     switch (sortType) {
       case 'latest':
-        // myWineId가 클수록 최신이라고 가정 (또는 createdAt 필드가 있다면 그것 사용)
+
         return b.myWineId - a.myWineId;
       case 'longest_period':
-        // 보관 기간(period)이 긴 순서 (내림차순)
+
         return b.period - a.period;
       case 'vintage_high':
-        // NV(0)는 가장 뒤로 보내기
+
         if (a.vintageYear === 0) return 1;
         if (b.vintageYear === 0) return -1;
         return b.vintageYear - a.vintageYear;
       case 'vintage_low':
-        // NV(0)는 가장 뒤로 보내기
+
         if (a.vintageYear === 0) return 1;
         if (b.vintageYear === 0) return -1;
         return a.vintageYear - b.vintageYear;
@@ -133,10 +132,7 @@ const MyWineScreen = () => {
     }
   });
 
-  // 와인 추가 핸들러
   const handleAddWine = () => {
-    // 기존: navigation.navigate('Search' as never);
-    // 수정: 와인 등록 화면으로 바로 이동
     navigation.navigate('WineAdd' as never);
   };
 
@@ -144,13 +140,13 @@ const MyWineScreen = () => {
   const numColumns = 3;
   const gap = 12;
   const padding = 16;
-  // (전체 너비 - 좌우 패딩 - (아이템 간 간격 * (컬럼수 - 1))) / 컬럼수
+
   const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
 
   const renderWineItem = ({ item }: { item: MyWineDTO }) => (
     <TouchableOpacity
       style={[styles.wineItem, { width: itemWidth }]}
-      onPress={() => navigation.navigate('MyWineDetail', { wineId: item.myWineId })} // myWineId를 넘겨줌
+      onPress={() => navigation.navigate('MyWineDetail', { wineId: item.myWineId })}
       activeOpacity={0.8}
     >
       <View style={styles.wineImageContainer}>
@@ -161,7 +157,7 @@ const MyWineScreen = () => {
             <Icon name="wine" size={30} color="#555" />
           </View>
         )}
-        {/* 보관 기간 배지 */}
+
         <View style={styles.periodBadge}>
           <Text style={styles.periodText}>D+{item.period}</Text>
         </View>
@@ -179,7 +175,7 @@ const MyWineScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
-      {/* 헤더 */}
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>내 와인 창고</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleAddWine}>
@@ -187,7 +183,7 @@ const MyWineScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* 필터 칩 */}
+
       <View style={styles.filterContainer}>
         <FlatList
           horizontal
@@ -215,7 +211,7 @@ const MyWineScreen = () => {
         />
       </View>
 
-      {/* 와인 개수 표시 및 정렬 버튼 */}
+
       {!isLoading && myWines.length > 0 && (
         <View style={styles.countAndSortContainer}>
           <Text style={styles.countText}>
@@ -234,7 +230,7 @@ const MyWineScreen = () => {
         </View>
       )}
 
-      {/* 정렬 모달 */}
+
       <Modal
         visible={isSortModalVisible}
         transparent={true}
@@ -277,7 +273,7 @@ const MyWineScreen = () => {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* 컨텐츠 */}
+
       {isLoading ? (
         <View style={styles.centerContent}>
           <ActivityIndicator size="large" color="#8e44ad" />
@@ -300,13 +296,13 @@ const MyWineScreen = () => {
             resizeMode="contain"
           />
           {myWines.length > 0 ? (
-            // 보유 와인은 있지만 필터링 결과가 없는 경우
+
             <>
               <Text style={styles.emptyText}>해당 종류의 와인이 없어요</Text>
               <Text style={styles.subText}>다른 종류를 선택하거나{'\n'}새로운 와인을 기록해보세요!</Text>
             </>
           ) : (
-            // 보유 와인이 아예 없는 경우 (기존 문구)
+
             <>
               <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
               <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
@@ -471,13 +467,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#2a2a2a',
     borderRadius: 12,
     overflow: 'hidden',
-    // width는 renderWineItem에서 동적으로 설정
+
   },
   wineImageContainer: {
     width: '100%',
-    aspectRatio: 1, // 정사각형
-    backgroundColor: '#2a2a2a', // 카드 배경색과 통일
-    position: 'relative', // 배지 위치 잡기 위해 추가
+    aspectRatio: 1,
+    backgroundColor: '#2a2a2a',
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 10,
@@ -530,7 +526,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
-    display: 'none', // 숨김 처리
+    display: 'none',
   },
   wineType: {
     color: '#8e44ad',
@@ -553,7 +549,7 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    display: 'none', // 숨김 처리
+    display: 'none',
   },
   priceLabel: {
     color: '#888',

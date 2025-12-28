@@ -86,7 +86,7 @@ const WithdrawReasonScreen = () => {
             if (authType === 'APPLE') {
                 await handleAppleDelete();
             } else {
-                // 선택된 사유들을 콤마로 연결하고 기타 사유가 있다면 덧붙임
+
                 let fullReason = selectedReasons.filter(r => r !== '기타').join(', ');
                 if (selectedReasons.includes('기타') && otherReason.trim()) {
                     fullReason = fullReason ? `${fullReason}, ${otherReason.trim()}` : otherReason.trim();
@@ -256,12 +256,12 @@ const styles = StyleSheet.create({
         marginTop: -20,
     },
     reasonsContainer: {
-        gap: 8, // Reduce gap
+        gap: 8,
     },
     reasonItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8, // Reduce padding
+        paddingVertical: 8,
         gap: 12,
     },
     checkbox: {
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         marginTop: 4,
-        marginLeft: 36, // Indent to align with text
+        marginLeft: 36,
         minHeight: 80,
         textAlignVertical: 'top',
     },

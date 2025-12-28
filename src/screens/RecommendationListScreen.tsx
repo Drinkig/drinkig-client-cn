@@ -52,7 +52,7 @@ const RecommendationListScreen = () => {
           <View style={styles.listContainer}>
             {recommendations.map((item, index) => (
               <View key={index} style={styles.recommendationCard}>
-                {/* Left: Rank */}
+
                 <View style={styles.rankSection}>
                   {index < 3 ? (
                     <Text style={styles.rankEmoji}>{RANK_BADGES[index]}</Text>
@@ -61,14 +61,14 @@ const RecommendationListScreen = () => {
                   )}
                 </View>
 
-                {/* Right: Info */}
+
                 <View style={styles.infoSection}>
                   <View style={styles.infoHeader}>
                     <View style={[styles.typeBadge, { backgroundColor: getWineTypeColor(item.sort) }]}>
                       <Text style={styles.typeText}>{item.sort}</Text>
                     </View>
                   </View>
-                  
+
                   <Text style={styles.wineVariety}>{item.variety}</Text>
                   <Text style={styles.wineRegion}>{item.country} · {item.region}</Text>
                 </View>
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: '#333',
     marginRight: 16,
-    paddingRight: 16, // 시각적 중앙 정렬 보정
+    paddingRight: 16,
   },
   rankEmoji: {
     fontSize: 28,

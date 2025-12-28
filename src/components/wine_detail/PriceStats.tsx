@@ -11,7 +11,7 @@ export default function PriceStats({ prices }: PriceStatsProps) {
       <Text style={styles.emptyStateText}>등록된 가격 정보가 없습니다.</Text>
     </View>
   );
-  
+
   const priceValues = prices.map(p => p.price);
   const avgPrice = Math.round(priceValues.reduce((a, b) => a + b, 0) / priceValues.length);
   const minPrice = Math.min(...priceValues);
@@ -19,15 +19,15 @@ export default function PriceStats({ prices }: PriceStatsProps) {
 
   return (
     <View style={styles.priceStatsContainer}>
-      {/* 상단: 평균 구매가 */}
+
       <View style={styles.avgPriceContainer}>
         <Text style={styles.avgPriceLabel}>평균 구매가</Text>
         <Text style={styles.avgPriceValue}>₩{avgPrice.toLocaleString()}</Text>
       </View>
-      
+
       <View style={styles.divider} />
 
-      {/* 하단: 최저 ~ 최고 */}
+
       <View style={styles.rangeContainer}>
         <View style={styles.rangeItem}>
           <Text style={styles.rangeLabel}>최저</Text>
@@ -67,9 +67,9 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   avgPriceValue: {
-    fontSize: 24, // 28 -> 24로 축소
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#8e44ad', 
+    color: '#8e44ad',
   },
   divider: {
     height: 1,

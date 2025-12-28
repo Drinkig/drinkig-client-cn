@@ -23,13 +23,12 @@ const ProfileScreen = () => {
   const isFocused = useIsFocused();
   const { user: userInfo, flavorProfile } = useUser();
 
-  // 상태 관리
+
   const [selectedType, setSelectedType] = React.useState('전체');
   const [wineCount, setWineCount] = React.useState(0);
   const [tastingNotes, setTastingNotes] = React.useState<TastingNotePreviewDTO[]>([]);
 
-  // 정렬 상태 추가
-  const [sortType, setSortType] = React.useState('latest'); // latest, rating_high, rating_low
+  const [sortType, setSortType] = React.useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
 
   const sortOptions = [
@@ -40,11 +39,11 @@ const ProfileScreen = () => {
 
   const fetchMyData = async () => {
     try {
-      // 테이스팅 노트 목록 조회
+
       const response = await getMyTastingNotes();
 
       if (response.isSuccess) {
-        // [수정] 서버 응답이 { content: [...] } 형태인 경우 처리
+
         let notes = [];
         if (Array.isArray(response.result)) {
           notes = response.result;
@@ -57,11 +56,11 @@ const ProfileScreen = () => {
       }
     } catch (error) {
       console.error('Failed to fetch my data:', error);
-      setTastingNotes([]); // 에러 시 빈 배열 초기화
+      setTastingNotes([]);
     }
   };
 
-  // 포커스 될 때마다 데이터 갱신
+
   React.useEffect(() => {
     if (isFocused) {
       fetchMyData();
@@ -81,14 +80,13 @@ const ProfileScreen = () => {
     }
   };
 
-  // 필터링 및 정렬
+
   const processedNotes = React.useMemo(() => {
-    // tastingNotes가 배열이 아니면 빈 배열 반환 (방어 코드)
     if (!Array.isArray(tastingNotes)) return [];
 
     let filtered = [];
 
-    // 1. 필터링
+
     if (selectedType === '전체') {
       filtered = [...tastingNotes];
     } else {
@@ -115,7 +113,7 @@ const ProfileScreen = () => {
       }
     }
 
-    // 2. 정렬
+
     return filtered.sort((a, b) => {
       switch (sortType) {
         case 'rating_high':
@@ -124,26 +122,22 @@ const ProfileScreen = () => {
           return a.rating - b.rating;
         case 'latest':
         default:
-          // createdAt이나 tasteDate 기준 정렬 (문자열 비교)
           return (b.createdAt || '').localeCompare(a.createdAt || '');
       }
     });
   }, [tastingNotes, selectedType, sortType]);
 
-  // 그리드 아이템 렌더링 설정
+
   const { width } = Dimensions.get('window');
   const numColumns = 3;
   const gap = 12;
-  const padding = 24; // ProfileScreen의 좌우 패딩
-  // (전체 너비 - 좌우 패딩 - (아이템 간 간격 * (컬럼수 - 1))) / 컬럼수
+  const padding = 24;
   const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
 
   const renderNoteItem = ({ item }: { item: TastingNotePreviewDTO }) => (
     <TouchableOpacity
-      // 서버에서 noteId로 내려올 수 있으므로 tastingNoteId 또는 noteId 사용 (any 타입 캐스팅 활용하여 유연하게 처리)
       key={item.tastingNoteId || (item as any).noteId}
       style={[styles.noteItem, { width: itemWidth }]}
-      // 테이스팅 노트 상세 화면으로 이동 (TastingNoteDetailScreen)
       onPress={() => navigation.navigate('TastingNoteDetail', {
         tastingNoteId: item.tastingNoteId || (item as any).noteId
       })}
@@ -176,7 +170,7 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 상단 헤더 */}
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>마이페이지</Text>
         <TouchableOpacity
@@ -188,7 +182,7 @@ const ProfileScreen = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* 1. 프로필 정보 섹션 */}
+
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
             <Image
@@ -209,13 +203,12 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 2. 내 와인 취향 섹션 */}
+
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>내 와인 취향</Text>
           </View>
 
-          {/* 펜타곤 그래프 (Flavor Profile이 있을 경우 표시) */}
           {flavorProfile ? (
             <TouchableOpacity
               style={styles.chartContainer}
@@ -231,7 +224,7 @@ const ProfileScreen = () => {
               </View>
             </TouchableOpacity>
           ) : (
-            // 데이터가 없을 경우
+
             <View style={styles.emptyWrapper}>
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>아직 분석된 취향 정보가 없습니다.</Text>
@@ -241,13 +234,13 @@ const ProfileScreen = () => {
           )}
         </View>
 
-        {/* 3. 내가 마신 와인 섹션 (테이스팅 노트 리스트) */}
+
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>내가 마신 와인</Text>
           </View>
 
-          {/* 필터 칩 */}
+
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -273,13 +266,13 @@ const ProfileScreen = () => {
             ))}
           </ScrollView>
 
-          {/* 총 개수 및 정렬 버튼 (필터 칩 밑에 같은 줄로 배치) */}
+
           <View style={styles.countAndSortContainer}>
             <Text style={styles.countText}>
               총 <Text style={styles.countValue}>{processedNotes.length}</Text>병
             </Text>
 
-            {/* 정렬 버튼 */}
+
             {!Array.isArray(tastingNotes) || tastingNotes.length === 0 ? null : (
               <TouchableOpacity
                 style={styles.sortButton}
@@ -293,7 +286,7 @@ const ProfileScreen = () => {
             )}
           </View>
 
-          {/* 그리드 리스트 */}
+
           {processedNotes.length > 0 ? (
             <View style={styles.gridContainer}>
               {processedNotes.map((item) => (
@@ -301,7 +294,7 @@ const ProfileScreen = () => {
                   {renderNoteItem({ item })}
                 </View>
               ))}
-              {/* 그리드 정렬을 위한 빈 아이템 (필요 시) */}
+
               {[...Array(numColumns - (processedNotes.length % numColumns || numColumns))].map((_, i) => (
                 <View key={`empty-${i}`} style={{ width: itemWidth }} />
               ))}
@@ -315,7 +308,7 @@ const ProfileScreen = () => {
         </View>
       </ScrollView>
 
-      {/* 정렬 모달 */}
+
       <Modal
         visible={isSortModalVisible}
         transparent={true}
@@ -408,7 +401,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
-    transform: [{ scale: 1.3 }], // 이미지를 확대해서 보여줌
+    transform: [{ scale: 1.3 }],
   },
   userInfo: {
     flex: 1,
@@ -537,25 +530,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 24,
-    justifyContent: 'space-between', // gap 대신 사용 (React Native 버전에 따라 gap 지원 여부가 다를 수 있음)
+    justifyContent: 'space-between',
   },
   noteItem: {
     flexDirection: 'column',
-    marginBottom: 16, // 간격 조정
-    backgroundColor: '#2a2a2a', // 배경색 통일
+    marginBottom: 16,
+    backgroundColor: '#2a2a2a',
     borderRadius: 12,
-    overflow: 'hidden', // 자식 요소(이미지 등)가 둥근 모서리를 넘치지 않게
-    // padding: 12, // 제거 (MyWineScreen 스타일 따름)
-    // alignItems: 'center', // 제거
+    overflow: 'hidden',
   },
   imageWrapper: {
     width: '100%',
-    aspectRatio: 1, // 정사각형
-    backgroundColor: '#2a2a2a', // 여백이 자연스럽게 보이도록 배경색 변경
+    aspectRatio: 1,
+    backgroundColor: '#2a2a2a',
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 10, // 이미지가 너무 꽉 차지 않도록 여백 추가
+    padding: 10,
   },
   noteImage: {
     width: '100%',
@@ -564,16 +555,16 @@ const styles = StyleSheet.create({
   },
   ratingBadge: {
     position: 'absolute',
-    top: 6,    // 상단으로 이동
-    right: 6,  // 우측으로 이동
-    backgroundColor: 'rgba(0, 0, 0, 0.6)', // 반투명 배경
+    top: 6,
+    right: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    borderWidth: 1, // 테두리 추가 (MyWineScreen 스타일 따름)
+    borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   ratingBadgeText: {
@@ -582,9 +573,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   noteInfo: {
-    padding: 8, // 내부 패딩 추가
+    padding: 8,
     justifyContent: 'center',
-    alignItems: 'flex-start', // 왼쪽 정렬
+    alignItems: 'flex-start',
   },
   noteName: {
     color: '#fff',
@@ -623,7 +614,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  // 모달 스타일
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

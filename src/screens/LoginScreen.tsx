@@ -24,7 +24,7 @@ const LoginScreen = () => {
   const { showLoading, hideLoading, showAlert } = useGlobalUI();
   const [loading, setLoading] = useState(false);
 
-  // 화면 포커스 시 로딩 상태 강제 해제 (좀비 로딩 방지)
+
   useFocusEffect(
     React.useCallback(() => {
       hideLoading();
@@ -32,7 +32,7 @@ const LoginScreen = () => {
     }, [hideLoading])
   );
 
-  // JWT 디코딩 함수 (Payload 확인용 - 순수 JS 구현)
+
   const parseJwt = (token: string) => {
     try {
       const base64Url = token.split('.')[1];
@@ -54,7 +54,7 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       console.log('1. Starting Apple Auth Request');
-      // 1. 애플 로그인 요청
+
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
@@ -62,25 +62,20 @@ const LoginScreen = () => {
 
       console.log('2. Apple Auth Completed');
 
-      // 2. identityToken이 있는지 확인
+
       if (!appleAuthRequestResponse.identityToken) {
         throw new Error('Apple Identity Token is missing');
       }
 
-      // [DEBUG] 토큰 내용 확인 (Bundle ID 검증)
-      const decodedToken = parseJwt(appleAuthRequestResponse.identityToken);
-      console.log('--------------------------------------------------');
-      console.log('[DEBUG] Decoded Token Payload:', JSON.stringify(decodedToken, null, 2));
-      console.log('[DEBUG] Token Audience (Bundle ID):', decodedToken?.aud);
-      console.log('--------------------------------------------------');
+
 
       console.log('4. Sending Token to Server...');
-      // 3. 서버로 로그인 요청
+
       const response = await loginWithApple(appleAuthRequestResponse.identityToken);
       console.log('5. Server Response:', JSON.stringify(response));
 
       if (response.isSuccess) {
-        // 4. 서버로부터 받은 토큰으로 로그인 처리 (UserContext)
+
         const { accessToken, refreshToken, isFirst } = response.result;
         console.log('6. Tokens received:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken, isFirst });
 
@@ -88,8 +83,7 @@ const LoginScreen = () => {
           await login(accessToken, refreshToken, isFirst);
           console.log('7. Login Context Updated');
 
-          // RootNavigator에서 상태(isLoggedIn, isNewUser)에 따라 화면을 전환하므로
-          // 여기서 별도의 네비게이션 코드는 필요하지 않음.
+
         } else {
           console.error('Token missing in result:', response.result);
           showAlert({
@@ -127,22 +121,22 @@ const LoginScreen = () => {
     if (loading) return;
     setLoading(true);
     try {
-      // 1. 카카오 로그인 시도
+
       const token = await KakaoLogin.login();
 
-      // 2. 프로필 정보 가져오기
+
       const profile = await KakaoLogin.getProfile();
 
       console.log('Kakao Profile:', profile);
 
-      // 3. 서버로 전송
+
       const response = await loginWithKakao(
         profile.nickname,
         profile.email,
         profile.id.toString()
       );
 
-      // 4. 로그인 성공 처리
+
       if (response.isSuccess) {
         const { accessToken, refreshToken, isFirst } = response.result;
 
@@ -178,18 +172,11 @@ const LoginScreen = () => {
     }
   };
 
-  // const handleGuestLogin = () => {
-  //   loginGuest();
-  //   // 강제 이동 처리
-  //   navigation.reset({
-  //     index: 0,
-  //     routes: [{ name: 'Main' }],
-  //   });
-  // };
+
 
   return (
     <View style={styles.container}>
-      {/* 배경 장식 요소 */}
+
       <View style={styles.backgroundCircle1} />
       <View style={styles.backgroundCircle2} />
       <View style={styles.backgroundCircle3} />
@@ -234,13 +221,7 @@ const LoginScreen = () => {
               </TouchableOpacity>
             )}
 
-            {/* <TouchableOpacity 
-              style={styles.guestButton}  
-              onPress={handleGuestLogin}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Text style={styles.guestButtonText}>로그인 없이 둘러보기</Text>
-            </TouchableOpacity> */}
+
           </View>
         </View>
       </SafeAreaView>
@@ -288,7 +269,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'space-between', // 중앙 정렬에서 변경하여 로고와 버튼 영역 분리
+    justifyContent: 'space-between',
     paddingHorizontal: 24,
     paddingVertical: 40,
   },
@@ -311,7 +292,7 @@ const styles = StyleSheet.create({
   bottomContainer: {
     width: '100%',
     gap: 10,
-    paddingBottom: 40, // 하단 여백 추가
+    paddingBottom: 40,
   },
   appleCustomButton: {
     width: '100%',
@@ -329,7 +310,7 @@ const styles = StyleSheet.create({
   kakaoButton: {
     width: '100%',
     height: 50,
-    backgroundColor: '#FEE500', // 카카오 노란색
+    backgroundColor: '#FEE500',
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',

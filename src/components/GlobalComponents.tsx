@@ -8,7 +8,7 @@ const GlobalComponents = () => {
 
   return (
     <>
-      {/* 전역 로딩 오버레이 */}
+
       {isLoading && (
         <Modal transparent={true} animationType="fade" visible={isLoading}>
           <View style={styles.loadingOverlay}>
@@ -17,7 +17,7 @@ const GlobalComponents = () => {
         </Modal>
       )}
 
-      {/* 전역 커스텀 알럿 */}
+
       <CustomAlert
         visible={!!alertConfig}
         title={alertConfig?.title || ''}

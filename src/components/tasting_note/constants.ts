@@ -1,4 +1,4 @@
-// 색상 팔레트 정의
+
 export const COLOR_PALETTES: { [key: string]: { label: string; value: string; color: string }[] } = {
   WHITE: [
     { label: 'Water White', value: 'WATER_WHITE', color: '#FDFAF5' },
@@ -73,7 +73,7 @@ export const COLOR_PALETTES: { [key: string]: { label: string; value: string; co
   ],
 };
 
-// 도움말 정의
+
 export const TASTE_TIPS: { [key: string]: { title: string; description: string } } = {
   sweetness: {
     title: '당도 (Sweetness)',

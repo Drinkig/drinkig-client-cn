@@ -13,7 +13,6 @@ export interface BannerDTO {
     postUrl: string;
 }
 
-// 홈 화면 배너 목록 조회 API
 export const getBanners = async () => {
     const response = await client.get<BannerResponse>('/banner');
     return response.data;

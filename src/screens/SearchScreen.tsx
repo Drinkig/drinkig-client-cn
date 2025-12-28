@@ -16,10 +16,10 @@ import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navig
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
 import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
-import { searchWinesPublic, WineUserDTO } from '../api/wine'; // 사용자용 검색 API 사용
+import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
 
-// Search(탭)와 WineSearch(스택) 모두 지원하도록 타입 수정
+
 type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp<RootStackParamList, 'WineSearch'>;
 
 export default function SearchScreen() {
@@ -32,12 +32,7 @@ export default function SearchScreen() {
       if (route.params?.returnScreen) {
         setReturnScreen(route.params.returnScreen);
       } else {
-        // 탭 이동 시 파라미터가 없을 수도 있으므로 초기화하거나 유지 여부 결정
-        // 여기서는 명시적으로 들어왔을 때만 설정하고, 나갈 때 초기화하는게 좋지만
-        // 탭 간 이동이라 복잡함. 일단 params가 있으면 세팅.
-        // 다만 홈 -> 기록하기 -> 검색 -> 다른 탭 -> 다시 검색 탭 오면?
-        // 기록하기 모드가 유지되는게 좋을 수도 있고 아닐 수도 있음.
-        // 일단 params가 없으면 undefined로 리셋 (기본 검색 모드로 복귀)
+
         setReturnScreen(undefined);
       }
     }, [route.params])
@@ -45,10 +40,10 @@ export default function SearchScreen() {
 
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]); // 최근 검색어 (임시 로컬 상태)
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
 
-  // 화면 포커스 시 최근 본 와인 로드
+
   useFocusEffect(
     useCallback(() => {
       loadRecentWines();
@@ -66,18 +61,18 @@ export default function SearchScreen() {
     }
   };
 
-  // 검색 로직
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (searchText.trim().length > 0) {
         try {
-          // 사용자용 검색 API 호출
-          const response = await searchWinesPublic({ 
+
+          const response = await searchWinesPublic({
             searchName: searchText,
             page: 0,
             size: 20
           });
-          
+
           if (response.isSuccess) {
             const mappedResults: WineDBItem[] = response.result.content.map((item: WineUserDTO) => ({
               id: item.wineId,
@@ -88,7 +83,7 @@ export default function SearchScreen() {
               grape: item.variety,
               imageUri: item.imageUrl,
               vivinoRating: item.vivinoRating,
-              // 상세 정보는 없으므로 undefined 처리 (상세 화면에서 기본값 사용됨)
+
             }));
             setSearchResults(mappedResults);
           }
@@ -98,7 +93,7 @@ export default function SearchScreen() {
       } else {
         setSearchResults([]);
       }
-    }, 500); // 500ms 디바운스
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [searchText]);
@@ -106,11 +101,11 @@ export default function SearchScreen() {
   const handleSearchSubmit = () => {
     const trimmedText = searchText.trim();
     if (trimmedText) {
-      // 최근 검색어 추가
+
       if (!recentSearches.includes(trimmedText)) {
         setRecentSearches(prev => [trimmedText, ...prev].slice(0, 10));
       }
-      // 검색 결과 페이지로 이동
+
       navigation.navigate('SearchResult', { searchKeyword: trimmedText, returnScreen });
     }
   };
@@ -119,33 +114,33 @@ export default function SearchScreen() {
     switch (type) {
       case '레드':
       case 'Red':
-        return '#C0392B'; // Darker Red
+        return '#C0392B';
       case '화이트':
       case 'White':
-        return '#D4AC0D'; // Darker Gold/Yellow
+        return '#D4AC0D';
       case '스파클링':
       case 'Sparkling':
-        return '#2980B9'; // Darker Blue
+        return '#2980B9';
       case '로제':
       case 'Rose':
-        return '#C2185B'; // Darker Pink
+        return '#C2185B';
       case '디저트':
       case 'Dessert':
-        return '#D35400'; // Darker Orange
+        return '#D35400';
       default:
-        return '#7F8C8D'; // Darker Gray
+        return '#7F8C8D';
     }
   };
 
   const renderSearchResult = ({ item }: { item: WineDBItem }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.resultItem}
       onPress={() => navigation.navigate('WineDetail', { wine: item })}
     >
       <View style={styles.resultIconContainer}>
         {item.imageUri ? (
-          <Image 
-            source={{ uri: item.imageUri }} 
+          <Image
+            source={{ uri: item.imageUri }}
             style={styles.resultImage}
             resizeMode="contain"
           />
@@ -160,26 +155,26 @@ export default function SearchScreen() {
           <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.type) }]}>
             <Text style={styles.typeChipText}>{item.type}</Text>
           </View>
-            <Text style={styles.resultCountryText}>{item.country}</Text>
-          </View>
+          <Text style={styles.resultCountryText}>{item.country}</Text>
         </View>
-        {item.vivinoRating && (
-          <View style={styles.rightRatingContainer}>
-            <Icon name="star" size={14} color="#e74c3c" />
-            <Text style={styles.rightRatingText}>{item.vivinoRating.toFixed(1)}</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      </View>
+      {item.vivinoRating && (
+        <View style={styles.rightRatingContainer}>
+          <Icon name="star" size={14} color="#e74c3c" />
+          <Text style={styles.rightRatingText}>{item.vivinoRating.toFixed(1)}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
-      {/* 헤더 (검색창) */}
+
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
@@ -193,10 +188,10 @@ export default function SearchScreen() {
             value={searchText}
             onChangeText={setSearchText}
             onSubmitEditing={handleSearchSubmit}
-            autoFocus={true} // 진입 시 자동 포커스
+            autoFocus={true}
           />
           {searchText.length > 0 && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setSearchText('')}
               style={styles.clearButton}
             >
@@ -206,7 +201,7 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      {/* 컨텐츠 */}
+
       <View style={styles.content}>
         {searchText.length > 0 ? (
           <FlatList
@@ -227,13 +222,13 @@ export default function SearchScreen() {
               {recentSearches.length > 0 ? (
                 <View style={styles.recentTags}>
                   {recentSearches.map((text, index) => (
-                    <TouchableOpacity 
-                      key={index} 
+                    <TouchableOpacity
+                      key={index}
                       style={styles.recentTag}
                       onPress={() => setSearchText(text)}
                     >
                       <Text style={styles.recentTagText}>{text}</Text>
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         style={styles.removeTagButton}
                         onPress={() => setRecentSearches(prev => prev.filter((_, i) => i !== index))}
                       >
@@ -250,23 +245,23 @@ export default function SearchScreen() {
             <View style={styles.recentWineContainer}>
               <Text style={styles.sectionTitle}>최근 본 와인</Text>
               {recentWines.length > 0 ? (
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false} 
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.recentWineList}
                 >
                   {recentWines.map((wine) => (
-                    <TouchableOpacity 
-                      key={wine.id} 
+                    <TouchableOpacity
+                      key={wine.id}
                       style={styles.recentWineItem}
                       onPress={() => navigation.navigate('WineDetail', { wine })}
                     >
                       <View style={styles.recentWineImageContainer}>
                         {wine.imageUri ? (
-                          <Image 
-                            source={{ uri: wine.imageUri }} 
-                            style={styles.recentWineImage} 
-                            resizeMode="contain" 
+                          <Image
+                            source={{ uri: wine.imageUri }}
+                            style={styles.recentWineImage}
+                            resizeMode="contain"
                           />
                         ) : (
                           <Icon name="wine" size={30} color="#8e44ad" />
@@ -341,7 +336,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#333',
   },
   resultIconContainer: {
-    width: 64,  // 적당히 큰 정사각형
+    width: 64,
     height: 64,
     borderRadius: 8,
     backgroundColor: '#2a2a2a',
@@ -351,30 +346,30 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   resultImage: {
-    width: '85%', // 여백을 약간 두어 깔끔하게
+    width: '85%',
     height: '85%',
   },
   resultTextContainer: {
     flex: 1,
-    gap: 4, // 요소 간 간격 추가
-    paddingVertical: 2, // 상하 여백 살짝 추가
+    gap: 4,
+    paddingVertical: 2,
   },
   resultNameKor: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    // marginBottom 제거하고 gap으로 제어
+
   },
   resultNameEng: {
     color: '#888',
     fontSize: 13,
-    // marginBottom 제거하고 gap으로 제어
+
   },
   resultInfoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginTop: 2, // 상단 여백 추가
+    marginTop: 2,
   },
   typeChip: {
     paddingHorizontal: 8,
@@ -442,7 +437,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     marginBottom: 4,
-    height: 32, // 2줄 높이 고정
+    height: 32,
   },
   recentWineType: {
     color: '#888',

@@ -24,8 +24,8 @@ const FLAVOR_ITEMS: { key: keyof FlavorProfile; label: string; description: stri
 ];
 
 const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps) => {
-  
-  const itemsToRender = attribute 
+
+  const itemsToRender = attribute
     ? FLAVOR_ITEMS.filter(item => item.key === attribute)
     : FLAVOR_ITEMS;
 
@@ -55,12 +55,12 @@ const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps
             </Text>
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.sliderContainer}>
-          {/* 가이드 라인 (배경) */}
+
           <View style={styles.trackLine} />
-          
-          {/* 점들 */}
+
+
           <View style={styles.dotsContainer}>
             {[1, 2, 3, 4, 5].map((score) => (
               <TouchableOpacity
@@ -69,18 +69,18 @@ const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps
                 onPress={() => onChange(item.key, score)}
                 activeOpacity={0.8}
               >
-                {/* 점 디자인 */}
+
                 <View style={[
                   styles.dot,
                   currentValue === score && styles.selectedDot,
                 ]} />
-                
-                {/* 선택된 경우 숫자 표시 제거됨 */}
+
+
               </TouchableOpacity>
             ))}
           </View>
-          
-          {/* 양쪽 끝 라벨 (약함/강함) */}
+
+
           <View style={styles.sliderLabels}>
             <View style={styles.labelWrapper}>
               <Text style={styles.sliderLabelText}>{item.key === 'alcohol' ? '낮음' : '약함'}</Text>
@@ -101,7 +101,7 @@ const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps
     <View style={styles.container}>
       <Text style={styles.title}>내 입맛 분석</Text>
       <Text style={styles.subtitle}>선호하는 맛의 정도를 선택해주세요.</Text>
-      
+
       <View style={[styles.content, attribute && styles.centeredContent]}>
         {itemsToRender.map(renderItem)}
       </View>
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   centeredContent: {
     justifyContent: 'center',
-    paddingBottom: 100, // 시각적 중심 조정을 위한 여백
+    paddingBottom: 100,
   },
   itemContainer: {
     marginBottom: 0,
@@ -158,10 +158,10 @@ const styles = StyleSheet.create({
     color: '#aaa',
   },
   sliderContainer: {
-    height: 40, // 높이 축소 (50 -> 40)
+    height: 40,
     justifyContent: 'center',
     position: 'relative',
-    marginTop: 0, // 상단 여백 제거 (10 -> 0)
+    marginTop: 0,
   },
   trackLine: {
     position: 'absolute',
@@ -169,22 +169,22 @@ const styles = StyleSheet.create({
     right: 20,
     height: 2,
     backgroundColor: '#333',
-    top: 19, // 중앙 정렬 (40 - 2) / 2
+    top: 19,
   },
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
-    zIndex: 2, 
+    zIndex: 2,
   },
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10, // dotsContainer와 동일하게 맞춤
+    paddingHorizontal: 10,
     marginTop: -8,
   },
   labelWrapper: {
-    width: 40, // dotTouchArea와 동일하게 맞춤
+    width: 40,
     alignItems: 'center',
   },
   sliderLabelText: {
@@ -194,10 +194,10 @@ const styles = StyleSheet.create({
   },
   dotTouchArea: {
     width: 40,
-    height: 40, // 터치 영역 높이 축소 (50 -> 40)
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'rgba(255,0,0,0.1)', // 디버깅용
+
   },
   dot: {
     width: 8,
@@ -209,13 +209,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#8e44ad',
   },
   selectedDot: {
-    width: 12, // 크기 축소 (16 -> 14)
+    width: 12,
     height: 12,
     borderRadius: 7,
     backgroundColor: '#8e44ad',
     shadowColor: "#8e44ad",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6, 
+    shadowOpacity: 0.6,
     shadowRadius: 6,
     elevation: 6,
   },

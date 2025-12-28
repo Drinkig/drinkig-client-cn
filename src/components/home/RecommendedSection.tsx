@@ -18,11 +18,11 @@ interface RecommendedSectionProps {
   onPressWine?: (wine: WineDBItem) => void;
 }
 
-export const RecommendedSection: React.FC<RecommendedSectionProps> = ({ 
-  data, 
+export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
+  data,
   title,
   onPressMore,
-  onPressWine 
+  onPressWine
 }) => {
   return (
     <View style={styles.section}>
@@ -32,14 +32,14 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
           <Text style={styles.moreText}>더보기</Text>
         </TouchableOpacity>
       </View>
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.horizontalList}
       >
         {data.map((wine, index) => (
-          <TouchableOpacity 
-            key={`${wine.id}-${index}`} 
+          <TouchableOpacity
+            key={`${wine.id}-${index}`}
             style={styles.wineCard}
             activeOpacity={0.8}
             onPress={() => onPressWine?.(wine)}
@@ -130,21 +130,17 @@ const styles = StyleSheet.create({
   wineType: {
     fontSize: 12,
     color: '#888',
-    flex: 1, // 텍스트가 길어지면 줄어들게 하고 평점 공간 확보
+    flex: 1,
     marginRight: 4,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 2,
-    // backgroundColor: 'rgba(255, 255, 255, 0.1)', // 배경 제거하거나 더 은은하게
-    // paddingHorizontal: 6,
-    // paddingVertical: 2,
-    // borderRadius: 8,
   },
   ratingText: {
-    fontSize: 11, // 12 -> 11
-    color: '#e74c3c', // 텍스트 색상도 붉은 계열로 통일
+    fontSize: 11,
+    color: '#e74c3c',
     fontWeight: 'bold',
   },
 });

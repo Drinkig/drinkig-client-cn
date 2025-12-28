@@ -20,17 +20,16 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
     const fetchReviews = async () => {
       try {
         setLoading(true);
-        // 빈티지 파라미터 처리: ALL 또는 NV 또는 undefined는 undefined로 처리 (전체 조회)
-        // src/api/wine.ts의 getWineReviews는 vintageYear가 optional임.
+
         const vintageYear = selectedVintageYear && !isNaN(Number(selectedVintageYear))
           ? Number(selectedVintageYear)
           : undefined;
 
         const response = await getWineReviews(wineId, {
           vintageYear: vintageYear,
-          sortType: '최신순', // 기본값, 정렬은 클라이언트에서 할 수도 있고 API 파라미터로 할 수도 있음. 여기선 일단 최신순으로 가져옴.
+          sortType: '최신순',
           page: 0,
-          size: 100, // 충분히 많이 가져옴 (페이지네이션 미구현 시)
+          size: 100,
         });
 
         if (response.isSuccess) {

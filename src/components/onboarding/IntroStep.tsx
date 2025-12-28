@@ -51,9 +51,9 @@ const IntroStep = () => {
 
   return (
     <View style={styles.centerContent}>
-      <Image 
-        source={require('../../assets/onboarding/Drinky_onboarding_1.png')} 
-        style={styles.image} 
+      <Image
+        source={require('../../assets/onboarding/Drinky_onboarding_1.png')}
+        style={styles.image}
         resizeMode="contain"
       />
       <Text style={styles.title}>{title}</Text>
@@ -81,14 +81,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 32,
-    minHeight: 64, // 2줄 높이 확보
+
+    minHeight: 64,
   },
   desc: {
     fontSize: 16,
     color: '#aaa',
     textAlign: 'center',
     lineHeight: 24,
-    minHeight: 48, // 2줄 높이 확보
+
+    minHeight: 48,
   },
 });
 

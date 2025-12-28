@@ -20,7 +20,7 @@ import { getMyWines, MyWineDTO } from '../api/wine';
 export default function HomeScreen() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  
+
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
 
@@ -35,15 +35,10 @@ export default function HomeScreen() {
       const response = await getMyWines();
       if (response.isSuccess && response.result) {
         setMyWines(response.result);
-        // 가장 최근에 추가한 와인 (ID 역순 또는 purchaseDate 기준)
-        // API가 최신순 정렬을 보장하지 않는다면 정렬 필요하지만, 
-        // 보통 DB ID 역순이 최신이라 가정하거나 배열의 마지막/첫번째 확인 필요.
-        // 여기서는 단순히 배열의 첫 번째가 최신이라고 가정하거나(서버 구현에 따라 다름),
-        // 안전하게 리스트가 있다면 첫번째를 씀.
         if (response.result.length > 0) {
-           setRecentWine(response.result[0]); 
+          setRecentWine(response.result[0]);
         } else {
-           setRecentWine(null);
+          setRecentWine(null);
         }
       } else {
         setMyWines([]);
@@ -58,9 +53,9 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
-      {/* 헤더 */}
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.searchBarContainer}
           onPress={() => navigation.navigate('Search' as never)}
           activeOpacity={0.9}
@@ -69,36 +64,36 @@ export default function HomeScreen() {
           <Text style={styles.searchPlaceholder}>와인 이름, 종류 등으로 검색</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          style={styles.notificationButton} 
+        <TouchableOpacity
+          style={styles.notificationButton}
           onPress={() => navigation.navigate('Wishlist' as never)}
         >
           <Icon name="heart-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
-      {/* 메인 컨텐츠 */}
-      <ScrollView 
+
+      <ScrollView
         style={styles.content}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        
-        {/* 메인: 와인 추천받기 */}
-        <HeroSection 
+
+
+        <HeroSection
           onPress={() => {
             // TODO: 추천 플로우로 이동
             console.log('Start Recommendation Flow');
-          }} 
+          }}
         />
 
-        {/* 광고 배너 영역 */}
+
         <BannerSection />
 
-        {/* 퀵 메뉴: 테이스팅 노트 & 내 와인 */}
+
         <View style={styles.quickMenuContainer}>
-          {/* 1. 테이스팅 노트 쓰기 */}
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.quickMenuItem, styles.tastingNoteButton]}
             onPress={() => navigation.navigate('TastingNoteWrite' as never)}
             activeOpacity={0.8}
@@ -115,14 +110,14 @@ export default function HomeScreen() {
                   <Text style={styles.menuSubLabel}>기록하기</Text>
                 </View>
                 <View style={styles.arrowIconContainer}>
-                   <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+                  <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
                 </View>
               </View>
             </ImageBackground>
           </TouchableOpacity>
 
-          {/* 2. 내 와인 현황 */}
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.quickMenuItem, styles.tastingNoteButton]}
             onPress={() => navigation.navigate('MyWine' as never)}
             activeOpacity={0.8}
@@ -142,7 +137,7 @@ export default function HomeScreen() {
                   </View>
                 </View>
                 <View style={styles.arrowIconContainer}>
-                   <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+                  <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
                 </View>
               </View>
             </ImageBackground>
@@ -236,7 +231,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.3)', // 가독성을 위한 오버레이
+    backgroundColor: 'rgba(0,0,0,0.3)',
     borderRadius: 20,
   },
   arrowIconContainer: {

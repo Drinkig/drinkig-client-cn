@@ -39,14 +39,13 @@ const RecommendationResultScreen = () => {
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<OnboardingRecommendationDTO[]>([]);
 
-  // 전달받은 flavorProfile 데이터 (없을 수도 있음 - Expert 모드 등)
   const flavorProfile = (route.params as any)?.flavorProfile;
   const nickname = (route.params as any)?.nickname;
 
   const [animations, setAnimations] = useState<Animated.Value[]>([]);
 
   useEffect(() => {
-    // Save flavor profile to context/storage if available
+
     if (flavorProfile) {
       saveFlavorProfile(flavorProfile);
     }
@@ -62,7 +61,7 @@ const RecommendationResultScreen = () => {
 
   useEffect(() => {
     if (animations.length > 0) {
-      Animated.stagger(200, animations.map(anim => 
+      Animated.stagger(200, animations.map(anim =>
         Animated.timing(anim, {
           toValue: 1,
           duration: 500,
@@ -111,9 +110,9 @@ const RecommendationResultScreen = () => {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
-        {/* 펜타곤 그래프 (데이터가 있을 때만 표시) */}
+
         {flavorProfile && (
-          <Animated.View 
+          <Animated.View
             style={[
               styles.chartContainer,
               animations[0] && {
@@ -135,10 +134,10 @@ const RecommendationResultScreen = () => {
         {recommendations.map((item, index) => {
           const animIndex = (flavorProfile ? 1 : 0) + index;
           const anim = animations[animIndex];
-          
+
           return (
-            <Animated.View 
-              key={index} 
+            <Animated.View
+              key={index}
               style={[
                 styles.card,
                 anim && {
@@ -158,7 +157,7 @@ const RecommendationResultScreen = () => {
                   <Text style={styles.cardTitle}>{RANK_TITLES[index]}</Text>
                 </View>
               </View>
-              
+
               <View style={styles.cardBody}>
                 <View style={styles.textContainer}>
                   <Text style={styles.styleText}>
@@ -173,7 +172,7 @@ const RecommendationResultScreen = () => {
                 </View>
               </View>
 
-              {/* 해시태그 영역 제거 */}
+
             </Animated.View>
           );
         })}
@@ -206,7 +205,7 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 24,
-    paddingTop: 40, // 상단 패딩 추가하여 위치 내림
+    paddingTop: 40,
   },
   title: {
     fontSize: 28,
@@ -224,14 +223,14 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 24,
     paddingTop: 0,
-    gap: 12, // 20 -> 12 축소
+    gap: 12,
   },
   chartContainer: {
     alignItems: 'center',
     marginBottom: 10,
     backgroundColor: '#1a1a1a',
     paddingTop: 14,
-    paddingBottom: 1, // 하단 패딩 대폭 축소
+    paddingBottom: 1,
     paddingHorizontal: 20,
     borderRadius: 20,
     borderWidth: 1,
@@ -246,8 +245,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#1e1e1e',
     borderRadius: 16,
-    paddingHorizontal: 16, // 좌우 패딩 16
-    paddingVertical: 10,   // 상하 패딩 10로 축소
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderWidth: 1,
     borderColor: '#333',
   },
@@ -255,7 +254,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8, // 12 -> 8 축소
+    marginBottom: 8,
   },
   typeChip: {
     paddingHorizontal: 8,
@@ -285,17 +284,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#2a2a2a',
     borderRadius: 12,
-    padding: 10, // 12 -> 10 축소
+    padding: 10,
     marginBottom: 0,
   },
   iconContainer: {
-    width: 48, // 56 -> 48 축소
-    height: 48, // 56 -> 48 축소
+    width: 48,
+    height: 48,
     borderRadius: 24,
     backgroundColor: '#333',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12, // 16 -> 12 축소
+    marginRight: 12,
   },
   textContainer: {
     flex: 1,
@@ -303,10 +302,10 @@ const styles = StyleSheet.create({
   styleText: {
     fontSize: 13,
     color: '#aaa',
-    marginBottom: 6, // 2 -> 6 으로 간격 증가
+    marginBottom: 6,
   },
   varietyText: {
-    fontSize: 16, // 18 -> 16 축소
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
   },

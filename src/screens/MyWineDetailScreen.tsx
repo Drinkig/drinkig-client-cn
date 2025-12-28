@@ -40,7 +40,7 @@ export default function MyWineDetailScreen() {
       if (response.isSuccess) {
         let wineData = response.result;
 
-        // [임시 해결] wineImageUrl이 없으면 상세 조회 API를 찔러서 이미지를 가져옴
+
         if (!wineData.wineImageUrl) {
           try {
             const detailRes = await getWineDetailPublic(wineData.wineId);
@@ -48,7 +48,7 @@ export default function MyWineDetailScreen() {
               wineData = { ...wineData, wineImageUrl: detailRes.result.wineInfoResponse.imageUrl };
             }
           } catch (err) {
-            // 실패 시 원본 데이터 사용
+
           }
         }
 
@@ -111,7 +111,7 @@ export default function MyWineDetailScreen() {
 
   const handleEdit = () => {
     if (wine) {
-      // WineAddScreen으로 이동하면서 현재 와인 정보를 'myWine' 파라미터로 전달
+
       // @ts-ignore
       navigation.navigate('WineAdd', { myWine: wine });
     }
@@ -129,7 +129,7 @@ export default function MyWineDetailScreen() {
     return null;
   }
 
-  // 이미지 렌더링
+
   const renderImage = () => {
     if (wine.wineImageUrl) {
       return (
@@ -143,7 +143,7 @@ export default function MyWineDetailScreen() {
     );
   };
 
-  // 정보 행 렌더링
+
   const renderInfoRow = (icon: string, label: string, value?: string | number | null) => (
     <View style={styles.infoRow}>
       <View style={styles.labelContainer}>
@@ -158,7 +158,7 @@ export default function MyWineDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
-      {/* 헤더 */}
+
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -173,7 +173,7 @@ export default function MyWineDetailScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* 상단 정보 카드 */}
+
         <View style={styles.card}>
           <View style={styles.imageContainer}>
             {renderImage()}
@@ -192,7 +192,7 @@ export default function MyWineDetailScreen() {
           </View>
         </View>
 
-        {/* 구매 정보 섹션 */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>구매 정보</Text>
           <View style={styles.infoContainer}>
@@ -208,18 +208,18 @@ export default function MyWineDetailScreen() {
           </View>
         </View>
 
-        {/* 추가 정보 섹션 */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>상세 정보</Text>
           <View style={styles.infoContainer}>
             {renderInfoRow('map-marker', '지역', wine.wineRegion)}
-            {/* 수입사, 보관 상태 등은 API 응답에 없으므로 제외하거나 추가 요청 필요 */}
+
           </View>
         </View>
 
       </ScrollView>
 
-      {/* 하단 버튼 */}
+
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
           <MaterialCommunityIcons name="pencil" size={20} color="#fff" style={{ marginRight: 8 }} />
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a', // 카드 배경(#2a2a2a)보다 조금 더 어둡게 처리하여 구분
+    backgroundColor: '#1a1a1a',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 4,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   wineImage: {
     width: '100%',
     height: '100%',
-    // resizeMode는 컴포넌트 prop에서 제어
+
   },
   imagePlaceholder: {
     width: 80,
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-    paddingBottom: 34, // 홈 인디케이터 영역 확보
+    paddingBottom: 34,
     backgroundColor: '#1a1a1a',
     borderTopWidth: 1,
     borderTopColor: '#333',

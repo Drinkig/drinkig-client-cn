@@ -37,11 +37,10 @@ export default function SearchResultScreen() {
       const response = await searchWinesPublic({
         searchName: searchKeyword,
         page: 0,
-        size: 50, // 더 많은 결과를 가져오도록 설정
+        size: 50,
       });
 
       if (response.isSuccess) {
-        // totalElements가 있으면 사용하고, 없으면 배열 길이 사용 (방어 코드)
         const total = response.result.totalElements ?? response.result.content.length;
         setTotalCount(total);
 
@@ -94,14 +93,14 @@ export default function SearchResultScreen() {
   };
 
   const renderSearchResult = ({ item }: { item: WineDBItem }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.resultItem}
       onPress={() => handleWinePress(item)}
     >
       <View style={styles.resultIconContainer}>
         {item.imageUri ? (
-          <Image 
-            source={{ uri: item.imageUri }} 
+          <Image
+            source={{ uri: item.imageUri }}
             style={styles.resultImage}
             resizeMode="contain"
           />
@@ -131,20 +130,20 @@ export default function SearchResultScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
-      {/* 헤더 */}
+
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>'{searchKeyword}' 검색 결과</Text>
-        <View style={{ width: 24 }} /> 
+        <View style={{ width: 24 }} />
       </View>
 
-      {/* 컨텐츠 */}
+
       <View style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>

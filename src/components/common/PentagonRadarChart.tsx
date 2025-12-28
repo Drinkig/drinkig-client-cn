@@ -18,7 +18,7 @@ const LABELS = [
 
 const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
   const center = size / 2;
-  const radius = (size / 2) * 0.6; // 라벨 공간 확보를 위해 반지름 축소 (0.65 -> 0.6)
+  const radius = (size / 2) * 0.6;
   const angleStep = (Math.PI * 2) / 5;
 
   // 점수 매핑 (null/undefined는 0 또는 최소값 처리, 여기선 0으로 처리하여 중앙에 찍히게 하거나 1로 처리)
@@ -29,7 +29,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
     return val;
   };
 
-  // 각 축의 좌표 계산
+
   const getCoordinates = (value: number, index: number) => {
     const angle = index * angleStep - Math.PI / 2; // -90도부터 시작 (12시 방향)
     // 값은 0~5. 5가 radius 끝.
@@ -39,7 +39,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
     return { x, y };
   };
 
-  // 데이터 다각형 좌표
+
   const dataPoints = LABELS.map((item, index) => {
     const val = getDataValue(item.key as keyof FlavorProfile);
     return getCoordinates(val, index);
@@ -47,7 +47,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
 
   const pointsString = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
 
-  // 배경 그리드 (1~5단계 오각형)
+
   const renderGrid = () => {
     return [1, 2, 3, 4, 5].map((step) => {
       const gridPoints = LABELS.map((_, index) => getCoordinates(step, index));
@@ -64,7 +64,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
     });
   };
 
-  // 축 라인
+
   const renderAxes = () => {
     return LABELS.map((_, index) => {
       const endPoint = getCoordinates(5, index);
@@ -82,14 +82,14 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
     });
   };
 
-  // 라벨 렌더링
+
   const renderLabels = () => {
     return LABELS.map((item, index) => {
       const angle = index * angleStep - Math.PI / 2;
       const labelRadius = radius + 16; // 그래프보다 조금 더 바깥
       const x = center + labelRadius * Math.cos(angle);
       const y = center + labelRadius * Math.sin(angle);
-      
+
       return (
         <SvgText
           key={`label-${index}`}
@@ -110,13 +110,13 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
   return (
     <View style={[styles.container, { width: size, height: size }]}>
       <Svg width={size} height={size}>
-        {/* 배경 그리드 */}
+
         {renderGrid()}
-        
-        {/* 축 */}
+
+
         {renderAxes()}
 
-        {/* 데이터 영역 */}
+
         <Polygon
           points={pointsString}
           fill="rgba(142, 68, 173, 0.4)" // #8e44ad with opacity
@@ -124,7 +124,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
           strokeWidth="2"
         />
 
-        {/* 라벨 */}
+
         {renderLabels()}
       </Svg>
     </View>

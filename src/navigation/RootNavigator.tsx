@@ -21,13 +21,13 @@ import SearchScreen from '../screens/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 
-// 모든 스크린을 등록하고 navigation.navigate로 이동하는 방식으로 변경
+
 export default function RootNavigator() {
   const { isLoggedIn, isLoading, isNewUser } = useUser();
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // 최소 2초간 스플래시 화면 유지
+
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 2000);
@@ -44,15 +44,15 @@ export default function RootNavigator() {
       screenOptions={{ headerShown: false }}
     >
       {isLoggedIn ? (
-        // 로그인 상태일 때
+
         isNewUser ? (
-          // 신규 유저: 온보딩 및 결과 화면
+
           <>
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="RecommendationResult" component={RecommendationResultScreen} />
           </>
         ) : (
-          // 기존 유저: 메인 및 전체 앱 기능 노출
+
           <>
             <Stack.Screen name="Main" component={MainTabNavigator} />
             <Stack.Screen name="WineDetail" component={WineDetailScreen} />
@@ -80,7 +80,7 @@ export default function RootNavigator() {
           </>
         )
       ) : (
-        // 비로그인 상태일 때
+
         <Stack.Screen name="Login" component={LoginScreen} />
       )}
     </Stack.Navigator>

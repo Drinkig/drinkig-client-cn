@@ -18,20 +18,20 @@ export default function StarRating({ rating, onRatingChange }: StarRatingProps) 
 
     return (
       <View key={index} style={styles.starWrapper}>
-        <Icon 
-          name={iconName} 
-          size={40} 
-          color={rating >= index - 0.5 ? "#8e44ad" : "#555"} 
+        <Icon
+          name={iconName}
+          size={40}
+          color={rating >= index - 0.5 ? "#8e44ad" : "#555"}
           style={styles.starIcon}
         />
         <View style={styles.touchOverlay}>
-          <TouchableOpacity 
-            style={styles.halfStarTouch} 
+          <TouchableOpacity
+            style={styles.halfStarTouch}
             onPress={() => onRatingChange(index - 0.5)}
             activeOpacity={0.5} // 터치 피드백을 위해 약간 투명하게
           />
-          <TouchableOpacity 
-            style={styles.halfStarTouch} 
+          <TouchableOpacity
+            style={styles.halfStarTouch}
             onPress={() => onRatingChange(index)}
             activeOpacity={0.5}
           />
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   starIcon: {
-    // shadow 제거 (깔끔하게) 또는 유지
+
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   },
   halfStarTouch: {
     flex: 1,
-    // backgroundColor: 'rgba(255,0,0,0.3)', // 디버깅용
+
   },
   ratingText: {
     color: '#ccc',

@@ -16,20 +16,20 @@ const NotificationScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
-      {/* 헤더 */}
+
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>알림</Text>
-        <View style={{ width: 32 }} /> 
+        <View style={{ width: 32 }} />
       </View>
 
-      {/* 빈 화면 */}
+
       <View style={styles.emptyContainer}>
         <Icon name="notifications-off-outline" size={48} color="#555" />
         <Text style={styles.emptyText}>새로운 알림이 없습니다.</Text>

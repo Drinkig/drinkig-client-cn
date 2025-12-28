@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient'; // [NEW] Import
+import LinearGradient from 'react-native-linear-gradient';
 
 interface Category {
     title: string;
@@ -44,7 +44,6 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
                             <Text style={styles.sectionTitle}>{category.title}</Text>
                             <View style={styles.grid}>
                                 {category.data.map((opt) => {
-                                    // Handle '기타' logic if needed
                                     if (allowCustomInput && opt === '기타') {
                                         if (customValue) {
                                             return (
@@ -101,14 +100,14 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
                     <View style={{ height: 40 }} />
                 </ScrollView>
 
-                {/* Top Gradient Fade */}
+
                 <LinearGradient
                     colors={['#121212', '#12121200']}
                     style={styles.topGradient}
                     pointerEvents="none"
                 />
 
-                {/* Bottom Gradient Fade */}
+
                 <LinearGradient
                     colors={['#12121200', '#121212']}
                     style={styles.bottomGradient}
@@ -123,7 +122,7 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingTop: 20,
-        backgroundColor: '#121212', // Ensure background matches gradient
+        backgroundColor: '#121212',
     },
     stepTitle: {
         fontSize: 22,
@@ -136,13 +135,13 @@ const styles = StyleSheet.create({
         color: '#888',
         marginBottom: 10,
     },
-    // Gradients
+
     topGradient: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
-        height: 30, // Adjust height of fade
+        height: 30,
         zIndex: 1,
     },
     bottomGradient: {
@@ -150,7 +149,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 50, // Bottom fade usually looks better slightly larger
+        height: 50,
         zIndex: 1,
     },
     section: {
@@ -166,13 +165,13 @@ const styles = StyleSheet.create({
     grid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 8, // 조금 더 촘촘하게 (10 -> 8)
+        gap: 8,
     },
     chip: {
-        paddingVertical: 10, // 세로 패딩 축소 (12 -> 10)
-        paddingHorizontal: 14, // 가로 패딩 축소 (18 -> 14)
+        paddingVertical: 10,
+        paddingHorizontal: 14,
         backgroundColor: '#1a1a1a',
-        borderRadius: 12, // 둥근 정도 대폭 축소 (30 -> 12) - 라운디드 렉탱글
+        borderRadius: 12,
         marginBottom: 4,
         borderWidth: 1.5,
         borderColor: '#333',
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
     },
     chipText: {
         color: '#bbb',
-        fontSize: 14, // 폰트 사이즈 살짝 조정 (15 -> 14) 공간 확보
+        fontSize: 14,
         fontWeight: '500',
         textAlign: 'center',
         includeFontPadding: false,
@@ -207,12 +206,12 @@ const styles = StyleSheet.create({
         borderColor: '#8e44ad',
         paddingVertical: 0,
         paddingHorizontal: 0,
-        minWidth: 80, // 최소 너비 축소 (100 -> 80)
-        borderRadius: 12, // 입력창도 동일하게
+        minWidth: 80,
+        borderRadius: 12,
     },
     textInput: {
         color: '#fff',
-        fontSize: 14, // 폰트 사이즈 조정
+        fontSize: 14,
         paddingVertical: 10,
         paddingHorizontal: 14,
         minWidth: 60,

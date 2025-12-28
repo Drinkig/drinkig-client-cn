@@ -109,17 +109,17 @@ export default function TastingNoteDetailScreen() {
 
   if (!note) return null;
 
-  // Review 파싱: [Finish] 태그 분리 및 배열 변환
+
   const parseReview = (fullReview: string) => {
     const finishMatch = fullReview.match(/\[Finish\] (.*?)(?:\n\n|$)/s);
     const finishTextRaw = finishMatch ? finishMatch[1] : null;
 
-    // 피니쉬 텍스트를 쉼표로 분리하여 배열로 변환
+
     const finishTags = finishTextRaw
       ? finishTextRaw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
       : [];
 
-    // [Finish] 부분을 제거하고 남은 텍스트를 리뷰로 사용
+
     let reviewText = fullReview.replace(/\[Finish\] .*?(?:\n\n|$)/s, '').trim();
 
     return { finishTags, reviewText };
@@ -131,7 +131,7 @@ export default function TastingNoteDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
-      {/* Header */}
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#fff" />
@@ -142,10 +142,10 @@ export default function TastingNoteDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Main Content - No Global Scroll */}
+
       <View style={styles.contentContainer}>
 
-        {/* Top Section: Wine Info */}
+
         <View style={styles.topSection}>
           <View style={styles.wineImageContainer}>
             {note.imageUrl ? (
@@ -183,9 +183,9 @@ export default function TastingNoteDetailScreen() {
 
         <View style={styles.divider} />
 
-        {/* Middle Section: Palate (Left) & Nose/Finish (Right) */}
+
         <View style={styles.middleSection}>
-          {/* Left: Palate Graph - Now in a Box */}
+
           <View style={[styles.palateColumn, styles.infoBox]}>
             <Text style={styles.boxTitle}>Palate</Text>
             <View style={styles.chartContainer}>
@@ -202,9 +202,9 @@ export default function TastingNoteDetailScreen() {
             </View>
           </View>
 
-          {/* Right: Nose & Finish */}
+
           <View style={styles.rightColumn}>
-            {/* Nose Box */}
+
             <View style={styles.infoBox}>
               <Text style={styles.boxTitle}>Nose</Text>
               <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }}>
@@ -222,7 +222,7 @@ export default function TastingNoteDetailScreen() {
               </ScrollView>
             </View>
 
-            {/* Finish Box */}
+
             <View style={[styles.infoBox, { flex: 1 }]}>
               <Text style={styles.boxTitle}>Finish</Text>
               <ScrollView nestedScrollEnabled>
@@ -244,7 +244,7 @@ export default function TastingNoteDetailScreen() {
 
         <View style={styles.divider} />
 
-        {/* Bottom Section: Review Only */}
+
         <View style={styles.bottomSectionWrapper}>
           <Text style={styles.sectionHeader}>Review</Text>
           <ScrollView style={styles.bottomScroll} contentContainerStyle={styles.bottomContent}>
@@ -316,7 +316,7 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 16,
   },
-  // Top Section
+
   topSection: {
     flexDirection: 'row',
     height: 120,
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
   },
 
-  // Middle Section
+
   middleSection: {
     flexDirection: 'row',
     height: 220,
@@ -425,10 +425,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: -10, // 타이틀 공간 고려 및 시각적 중심 보정
+    marginTop: -10,
   },
 
-  // Right Column (Nose & Finish)
+
   rightColumn: {
     flex: 1,
     gap: 12,
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  // Nose Tags
+
   noseTagsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -469,14 +469,14 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 
-  // Text
+
   bodyText: {
     color: '#ccc',
     fontSize: 13,
     lineHeight: 20,
   },
 
-  // Bottom SectionWrapper (Review)
+
   bottomSectionWrapper: {
     flex: 1, // Takes remaining space
     backgroundColor: '#252525',

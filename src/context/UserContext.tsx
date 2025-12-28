@@ -5,7 +5,7 @@ import client from '../api/client';
 
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 
-// 사용자 정보 타입
+
 export interface User {
   nickname: string;
   profileImage: string | null;
@@ -20,11 +20,11 @@ export interface RecommendedWine {
   variety: string;
 }
 
-// Context 타입
+
 interface UserContextType {
   user: User | null;
   recommendations: RecommendedWine[];
-  flavorProfile: FlavorProfile | null; // 추가
+  flavorProfile: FlavorProfile | null;
   isLoggedIn: boolean;
   isLoading: boolean;
   isNewUser: boolean;
@@ -33,30 +33,30 @@ interface UserContextType {
   logout: (skipServerLogout?: boolean) => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
   setRecommendations: (recs: RecommendedWine[]) => void;
-  setFlavorProfile: (profile: FlavorProfile) => void; // 추가
+  setFlavorProfile: (profile: FlavorProfile) => void;
   refreshUserInfo: () => Promise<void>;
   completeOnboarding: () => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Provider 컴포넌트
+
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [recommendations, setRecommendationsState] = useState<RecommendedWine[]>([]);
-  const [flavorProfile, setFlavorProfileState] = useState<FlavorProfile | null>(null); // 추가
+  const [flavorProfile, setFlavorProfileState] = useState<FlavorProfile | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
 
-  // 앱 시작 시 토큰 확인 및 유저 정보 로드
+
   useEffect(() => {
     const initAuth = async () => {
       try {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
         const savedRecs = await AsyncStorage.getItem('recommendations');
-        const savedFlavor = await AsyncStorage.getItem('flavorProfile'); // 추가
+        const savedFlavor = await AsyncStorage.getItem('flavorProfile');
 
         if (savedRecs) {
           setRecommendationsState(JSON.parse(savedRecs));
@@ -67,17 +67,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (accessToken) {
-          // 토큰이 있으면 Axios 헤더 설정
+
           client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-          // 저장된 신규 유저 상태 복원
+
           if (persistedIsNewUser === 'true') {
             setIsNewUser(true);
           }
 
           setIsLoggedIn(true);
 
-          // 유저 정보 가져오기 (신규 유저가 아닐 때만)
+
           if (persistedIsNewUser !== 'true') {
             await refreshUserInfo();
           }
@@ -112,7 +112,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           authType: response.result.authType,
         });
 
-        // 취향 정보가 있으면 flavorProfile 업데이트
+
         if (
           response.result.acidity !== undefined &&
           response.result.sweetness !== undefined &&
@@ -198,12 +198,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       await AsyncStorage.removeItem('accessToken');
       await AsyncStorage.removeItem('refreshToken');
       await AsyncStorage.removeItem('recommendations');
-      await AsyncStorage.removeItem('flavorProfile'); // 추가
+      await AsyncStorage.removeItem('flavorProfile');
       delete client.defaults.headers.common['Authorization'];
 
       setUser(null);
       setRecommendationsState([]);
-      setFlavorProfileState(null); // 추가
+      setFlavorProfileState(null);
       setIsLoggedIn(false);
     } catch (error) {
       console.error('Logout failed:', error);
@@ -213,7 +213,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const completeOnboarding = async () => {
     setIsNewUser(false);
     await AsyncStorage.removeItem('isNewUser');
-    // 온보딩 완료 후 유저 정보 갱신 (선택사항)
+
     refreshUserInfo();
   };
 
@@ -238,7 +238,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// 커스텀 훅
+
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {

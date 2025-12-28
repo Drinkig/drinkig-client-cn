@@ -31,12 +31,10 @@ import ProfileStep from '../components/onboarding/ProfileStep';
 import NewbieCheckStep from '../components/onboarding/NewbieCheckStep';
 import TransitionStep from '../components/onboarding/TransitionStep';
 import { MultiSelectionStep } from '../components/onboarding/SelectionSteps';
-import { CategorizedSelectionStep } from '../components/onboarding/CategorizedSelectionStep'; // [NEW] Import
+import { CategorizedSelectionStep } from '../components/onboarding/CategorizedSelectionStep';
 import BudgetStep from '../components/onboarding/BudgetStep';
 
-// ----------------------
-// Constants & Types
-// ----------------------
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -44,36 +42,35 @@ type Step =
   | 'INTRO'
   | 'PROFILE'
   | 'NEWBIE_CHECK'
-  // Newbie Flow
+
   | 'NEWBIE_TRANSITION'
   | 'ALCOHOL_PREF'
   | 'FOOD_PREF'
-  // Expert Flow: All in one page
+
   | 'FLAVOR_PROFILE'
-  // Newbie Flow: Split pages
+
   | 'FLAVOR_ACIDITY'
   | 'FLAVOR_SWEETNESS'
   | 'FLAVOR_TANNIN'
   | 'FLAVOR_BODY'
   | 'FLAVOR_ALCOHOL'
 
-  | 'WINE_INTEREST' // Red vs White (유지: 뉴비도 wineSort 필요)
-  // Expert Flow
+  | 'WINE_INTEREST'
   | 'EXPERT_TRANSITION'
-  // Shared
+
   | 'BUDGET';
 
 interface OnboardingData {
   name: string;
   profileImageUri: string | null;
-  profileImageAsset: any | null; // Added to store full asset
+  profileImageAsset: any | null;
   isNewbie: boolean | null;
   monthPrice: number;
   wineSort: string[];
-  // Expert Only
+
   wineArea: string[];
   wineVariety: string[];
-  // Newbie Only
+
   preferredAlcohols: string[];
   preferredFoods: string[];
   flavorProfile: FlavorProfile;
@@ -99,7 +96,7 @@ const INITIAL_DATA: OnboardingData = {
   },
 };
 
-// [UPDATED] Categorized Options
+
 const ALCOHOL_CATEGORIES = [
   {
     title: '맥주',
@@ -161,15 +158,12 @@ const LOADING_MESSAGES = [
   "{nickname}님에게 가장 잘 어울리는 품종을 찾았어요!",
 ];
 
-// ----------------------
-// Component
-// ----------------------
 
-// 원형 프로그레스 컴포넌트
+
+
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const OnboardingScreen = () => {
-  // ... helper functions omitted for brevity (no change needed in logic)
   const navigation = useNavigation();
   const { completeOnboarding } = useUser();
   const { showAlert } = useGlobalUI();
@@ -183,13 +177,13 @@ const OnboardingScreen = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzingIndex, setAnalyzingIndex] = useState(0);
 
-  // Animation State
+
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const loadingBarAnim = useRef(new Animated.Value(0)).current;
 
-  // --- Helpers ---
+
 
   const isStepValid = () => {
     switch (step) {
@@ -240,7 +234,7 @@ const OnboardingScreen = () => {
 
   const toggleSelection = (key: 'wineSort' | 'wineArea' | 'wineVariety' | 'preferredAlcohols' | 'preferredFoods', value: string) => {
     setFormData((prev) => {
-      const current = prev[key] as string[]; // Type assertion since we know these keys are string[]
+      const current = prev[key] as string[];
       if (current.includes(value)) {
         return { ...prev, [key]: current.filter((item) => item !== value) };
       } else {
@@ -268,11 +262,11 @@ const OnboardingScreen = () => {
     if (result.assets && result.assets.length > 0) {
       const asset = result.assets[0];
       updateData('profileImageUri', asset.uri);
-      updateData('profileImageAsset', asset); // Store full asset
+      updateData('profileImageAsset', asset);
     }
   };
 
-  // Debounce check for nickname
+
   useEffect(() => {
     if (!formData.name) {
       setNicknameError(null);
@@ -280,13 +274,13 @@ const OnboardingScreen = () => {
       return;
     }
 
-    // 초기화 및 로딩 상태
+
     setNicknameAvailable(null);
     setNicknameError(null);
     setIsCheckingNickname(true);
 
     const timer = setTimeout(async () => {
-      // 1. Validation (2글자 이상, 자음/모음 단독 사용 금지)
+
       if (formData.name.length < 2) {
         setNicknameError('닉네임은 2글자 이상이어야 해요.');
         setNicknameAvailable(false);
@@ -294,8 +288,7 @@ const OnboardingScreen = () => {
         return;
       }
 
-      // 한글 자음/모음만 있는 경우 체크 (ㄱ-ㅎ, ㅏ-ㅣ)
-      // 완성형 한글(가-힣), 영문, 숫자 등은 허용
+
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(formData.name)) {
         setNicknameError('올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).');
         setNicknameAvailable(false);
@@ -318,48 +311,48 @@ const OnboardingScreen = () => {
       } finally {
         setIsCheckingNickname(false);
       }
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => clearTimeout(timer);
   }, [formData.name]);
 
-  // 로딩 애니메이션 및 텍스트 변경 로직
+
   useEffect(() => {
     if (analyzing) {
       setAnalyzingIndex(0);
       loadingBarAnim.setValue(0);
 
-      const times = [2000, 3000, 5000, 8000]; // 메시지 전환 타이밍 (ms)
+      const times = [2000, 3000, 5000, 8000];
 
       const timeout1 = setTimeout(() => setAnalyzingIndex(1), times[0]);
       const timeout2 = setTimeout(() => setAnalyzingIndex(2), times[1]);
       const timeout3 = setTimeout(() => setAnalyzingIndex(3), times[2]);
       const timeout4 = setTimeout(() => setAnalyzingIndex(4), times[3]);
 
-      // 2. 프로그레스 바 애니메이션 (Sequence로 다이나믹한 속도 조절)
+
       Animated.sequence([
-        // 0~2초: 빠르게 30%까지 (초기 진입)
+
         Animated.timing(loadingBarAnim, {
           toValue: 0.3,
           duration: 2000,
-          easing: Easing.out(Easing.quad), // 시작은 빠르고 끝은 부드럽게
+          easing: Easing.out(Easing.quad),
           useNativeDriver: true,
         }),
-        // 2~6초: 60%까지 천천히 (분석 중인 느낌)
+
         Animated.timing(loadingBarAnim, {
           toValue: 0.6,
           duration: 4000,
           easing: Easing.linear,
           useNativeDriver: true,
         }),
-        // 6~8초: 85%까지 다시 속도 냄
+
         Animated.timing(loadingBarAnim, {
           toValue: 0.85,
           duration: 2000,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
-        // 8~10초: 100% 마무리
+
         Animated.timing(loadingBarAnim, {
           toValue: 1,
           duration: 2000,
@@ -378,22 +371,22 @@ const OnboardingScreen = () => {
     }
   }, [analyzing]);
 
-  // 원형 프로그레스 관련 상수
+
   const CIRCLE_SIZE = 120;
   const STROKE_WIDTH = 8;
   const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-  // strokeDashoffset 보간
+
   const strokeDashoffset = loadingBarAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [CIRCUMFERENCE, 0], // 꽉 찬 상태에서 0으로 (시계 방향)
+    outputRange: [CIRCUMFERENCE, 0],
   });
 
   const handleFinalSubmit = async () => {
     setLoading(true);
     try {
-      // 1. Upload Image if exists
+
       if (formData.profileImageUri && formData.profileImageAsset) {
         await uploadProfileImage(
           formData.profileImageAsset.uri,
@@ -402,15 +395,15 @@ const OnboardingScreen = () => {
         );
       }
 
-      // 2. Send Init Info
+
       const requestData: MemberInitRequest = {
         name: formData.name,
-        isNewbie: formData.isNewbie as boolean, // 유효성 검사 통과했으므로 null 아님
+        isNewbie: formData.isNewbie as boolean,
         monthPrice: formData.monthPrice,
         wineSort: formData.wineSort,
       };
 
-      // 3. Unified Data Submission (Both Newbie and Expert use the same preference fields now)
+
       requestData.preferredAlcohols = formData.preferredAlcohols;
       requestData.preferredFoods = formData.preferredFoods;
       requestData.acidity = formData.flavorProfile.acidity ?? null;
@@ -419,7 +412,7 @@ const OnboardingScreen = () => {
       requestData.body = formData.flavorProfile.body ?? null;
       requestData.alcohol = formData.flavorProfile.alcohol ?? null;
 
-      // Expert specific fields are no longer collected, so send null
+
       requestData.wineArea = null;
       requestData.wineVariety = null;
 
@@ -427,11 +420,11 @@ const OnboardingScreen = () => {
 
       await updateMemberInitInfo(requestData);
 
-      // 3. Move to Recommendation Result (Do NOT complete onboarding yet)
+
       setLoading(false);
       setAnalyzing(true);
 
-      // 10초 대기 (영상 7.62초 재생 + 약 2.4초 멈춤 상태 유지)
+
       setTimeout(() => {
         setAnalyzing(false);
         (navigation as any).navigate('RecommendationResult', {
@@ -450,10 +443,10 @@ const OnboardingScreen = () => {
     }
   };
 
-  // --- Navigation Logic ---
+
 
   const animateTransition = (nextStepValue: Step, direction: 'next' | 'prev') => {
-    // 1. Slide out current content
+
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: direction === 'next' ? -SCREEN_WIDTH : SCREEN_WIDTH,
@@ -466,11 +459,11 @@ const OnboardingScreen = () => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // 2. Change Step & Reset position instantly for incoming
+
       setStep(nextStepValue);
       slideAnim.setValue(direction === 'next' ? SCREEN_WIDTH : -SCREEN_WIDTH);
 
-      // 3. Slide in new content
+
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
@@ -494,19 +487,19 @@ const OnboardingScreen = () => {
         next = 'PROFILE';
         break;
       case 'PROFILE':
-        // 버튼이 비활성화되므로 별도 Alert 필요 없음
+
         next = 'NEWBIE_CHECK';
         break;
       case 'NEWBIE_CHECK':
         next = formData.isNewbie ? 'NEWBIE_TRANSITION' : 'EXPERT_TRANSITION';
         break;
 
-      // Newbie Path
+
       case 'NEWBIE_TRANSITION':
         next = 'ALCOHOL_PREF';
         break;
 
-      // Expert Path (Now follows Newbie flow steps)
+
       case 'EXPERT_TRANSITION':
         next = 'ALCOHOL_PREF';
         break;
@@ -515,7 +508,7 @@ const OnboardingScreen = () => {
         next = 'FOOD_PREF';
         break;
       case 'FOOD_PREF':
-        // Newbie -> Split Flow, Expert -> Single Page Flow
+
         if (formData.isNewbie) {
           next = 'FLAVOR_ACIDITY';
         } else {
@@ -523,12 +516,12 @@ const OnboardingScreen = () => {
         }
         break;
 
-      // Expert Path
+
       case 'FLAVOR_PROFILE':
         next = 'WINE_INTEREST';
         break;
 
-      // Newbie Path
+
       case 'FLAVOR_ACIDITY':
         next = 'FLAVOR_SWEETNESS';
         break;
@@ -569,10 +562,9 @@ const OnboardingScreen = () => {
     }
     if (step === 'FOOD_PREF') prev = 'ALCOHOL_PREF';
 
-    // Expert Path Back
-    if (step === 'FLAVOR_PROFILE') prev = 'FOOD_PREF';
 
-    // Newbie Path Back
+
+
     if (step === 'FLAVOR_ACIDITY') prev = 'FOOD_PREF';
     if (step === 'FLAVOR_SWEETNESS') prev = 'FLAVOR_ACIDITY';
     if (step === 'FLAVOR_TANNIN') prev = 'FLAVOR_SWEETNESS';
@@ -591,12 +583,12 @@ const OnboardingScreen = () => {
     }
   };
 
-  // --- Render Steps ---
+
 
   const getProgress = () => {
     if (step === 'INTRO') return 0;
 
-    // Newbie: 12 steps, Expert: 8 steps
+
     const totalSteps = formData.isNewbie ? 12 : 8;
     let currentStep = 0;
 
@@ -611,11 +603,9 @@ const OnboardingScreen = () => {
       case 'ALCOHOL_PREF': currentStep = 4; break;
       case 'FOOD_PREF': currentStep = 5; break;
 
-      // Expert Flow
-      case 'FLAVOR_PROFILE': currentStep = 6; break;
 
-      // Newbie Flow
-      case 'FLAVOR_ACIDITY': currentStep = 6; break;
+
+
       case 'FLAVOR_SWEETNESS': currentStep = 7; break;
       case 'FLAVOR_TANNIN': currentStep = 8; break;
       case 'FLAVOR_BODY': currentStep = 9; break;
@@ -633,9 +623,9 @@ const OnboardingScreen = () => {
     return currentStep / totalSteps;
   };
 
-  // --- Effects ---
 
-  // Animate progress bar whenever step changes
+
+
   useEffect(() => {
     if (step === 'INTRO') {
       progressAnim.setValue(0);
@@ -724,7 +714,7 @@ const OnboardingScreen = () => {
           <FlavorProfileStep
             data={formData.flavorProfile}
             onChange={updateFlavorProfile}
-          // No attribute -> Show all
+
           />
         );
       case 'FLAVOR_ACIDITY':
@@ -771,7 +761,7 @@ const OnboardingScreen = () => {
         return (
           <MultiSelectionStep
             title="관심 있는 와인 종류는?"
-            options={WINE_SORTS} // 6개 항목 모두 포함된 상수 사용
+            options={WINE_SORTS}
             selected={formData.wineSort}
             onSelect={(v: string) => toggleSelection('wineSort', v)}
             multi
@@ -804,7 +794,7 @@ const OnboardingScreen = () => {
       case 'EXPERT_TRANSITION':
         return '취향 등록하러 가기';
       case 'BUDGET':
-        return '결과 보기'; // Always last step now
+        return '결과 보기';
       default:
         return '다음';
     }
@@ -857,7 +847,7 @@ const OnboardingScreen = () => {
           {/* 원형 프로그레스 바 */}
           <View style={{ width: CIRCLE_SIZE, height: CIRCLE_SIZE, justifyContent: 'center', alignItems: 'center', marginBottom: 10 }}>
             <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
-              {/* 배경 원 (회색) */}
+
               <Circle
                 cx={CIRCLE_SIZE / 2}
                 cy={CIRCLE_SIZE / 2}
@@ -866,7 +856,7 @@ const OnboardingScreen = () => {
                 strokeWidth={STROKE_WIDTH}
                 fill="transparent"
               />
-              {/* 진행 원 (보라색) */}
+
               <AnimatedCircle
                 cx={CIRCLE_SIZE / 2}
                 cy={CIRCLE_SIZE / 2}
@@ -877,7 +867,7 @@ const OnboardingScreen = () => {
                 strokeDasharray={CIRCUMFERENCE}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                rotation="-90" // 12시 방향부터 시작
+                rotation="-90"
                 origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
               />
             </Svg>
@@ -887,7 +877,7 @@ const OnboardingScreen = () => {
             {LOADING_MESSAGES[analyzingIndex].replace('{nickname}', formData.name)}
           </Text>
 
-          {/* 기존 직선 바 삭제됨 */}
+
         </View>
       )}
     </SafeAreaView>
@@ -964,7 +954,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     opacity: 0.9,
   },
-  // loadingBarBackground, loadingBarFill 스타일 삭제 (더 이상 사용 안 함)
+
 });
 
 export default OnboardingScreen;

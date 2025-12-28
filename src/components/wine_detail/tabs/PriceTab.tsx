@@ -13,14 +13,14 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
   const [history, setHistory] = useState<PriceHistoryDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // API 호출
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        // selectedVintageYear가 'ALL'이나 'NV'면 전체 조회, 숫자면 해당 빈티지 조회
-        const vintageYear = selectedVintageYear && !isNaN(Number(selectedVintageYear)) 
-          ? Number(selectedVintageYear) 
+
+        const vintageYear = selectedVintageYear && !isNaN(Number(selectedVintageYear))
+          ? Number(selectedVintageYear)
           : undefined;
 
         const response = await getPriceHistory(wineId, vintageYear);
@@ -53,7 +53,7 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
     );
   }
 
-  // PriceStats용 데이터 변환 (기존 컴포넌트 재사용을 위해)
+
   const statsData = history.map(h => ({
     price: h.price,
     date: h.purchaseDate,
@@ -90,37 +90,37 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
     <View style={styles.tabContent}>
       <View style={styles.sectionContainer}>
         <View style={styles.vintageInfoContainer}>
-            <Text style={styles.subSectionTitle}>
-              구매가 통계 ({selectedVintageYear || '전체'})
+          <Text style={styles.subSectionTitle}>
+            구매가 통계 ({selectedVintageYear || '전체'})
+          </Text>
+          <PriceStats prices={statsData} />
+
+          <View style={styles.priceInfoNote}>
+            <Ionicons name="information-circle-outline" size={14} color="#888" style={{ marginRight: 4 }} />
+            <Text style={styles.priceInfoText}>
+              삭제된 기록을 포함하여 유저들이 등록한 정보를 집계했습니다.
             </Text>
-            <PriceStats prices={statsData} />
-            
-            <View style={styles.priceInfoNote}>
-               <Ionicons name="information-circle-outline" size={14} color="#888" style={{marginRight: 4}} />
-               <Text style={styles.priceInfoText}>
-                 삭제된 기록을 포함하여 유저들이 등록한 정보를 집계했습니다.
-               </Text>
-            </View>
+          </View>
         </View>
 
         <View style={styles.listContainer}>
-            <Text style={styles.subSectionTitle}>구매 내역 리스트</Text>
-            
-            {/* 리스트 헤더 */}
-            <View style={styles.listHeader}>
-                <View style={styles.colVintage}><Text style={styles.headerText}>빈티지</Text></View>
-                <View style={styles.colDate}><Text style={styles.headerText}>구매일</Text></View>
-                <View style={styles.colShop}><Text style={styles.headerText}>구매처</Text></View>
-                <View style={styles.colPrice}><Text style={styles.headerText}>가격</Text></View>
-            </View>
+          <Text style={styles.subSectionTitle}>구매 내역 리스트</Text>
 
-            {/* 리스트 아이템 */}
-            {history.map((item, index) => (
-                <View key={index}>
-                    {renderPriceItem(item, index)}
-                    {index < history.length - 1 && <View style={styles.separator} />}
-                </View>
-            ))}
+
+          <View style={styles.listHeader}>
+            <View style={styles.colVintage}><Text style={styles.headerText}>빈티지</Text></View>
+            <View style={styles.colDate}><Text style={styles.headerText}>구매일</Text></View>
+            <View style={styles.colShop}><Text style={styles.headerText}>구매처</Text></View>
+            <View style={styles.colPrice}><Text style={styles.headerText}>가격</Text></View>
+          </View>
+
+
+          {history.map((item, index) => (
+            <View key={index}>
+              {renderPriceItem(item, index)}
+              {index < history.length - 1 && <View style={styles.separator} />}
+            </View>
+          ))}
         </View>
       </View>
     </View>
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#333',
   },
-  // 컬럼 너비 조정
+
   colVintage: {
     flex: 1,
     alignItems: 'center',
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   colShop: {
-    flex: 3, // 너비 증가
+    flex: 3,
     paddingHorizontal: 4,
   },
   colPrice: {
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   directBadge: {
-    backgroundColor: '#3498db', // 파란색 계열
+    backgroundColor: '#3498db',
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,

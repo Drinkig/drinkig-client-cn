@@ -8,7 +8,7 @@ interface ReviewCardProps {
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
-  // 날짜 포맷팅 (YYYY-MM-DD)
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     return dateString.split('T')[0];
@@ -16,17 +16,17 @@ export default function ReviewCard({ review }: ReviewCardProps) {
 
   const displayDate = formatDate(review.tasteDate || review.createdAt);
 
-  // 리뷰 텍스트에서 [Finish] 부분 제거
+
   const getCleanReview = (text: string) => {
     if (!text) return '';
-    // [Finish] ... \n\n 패턴 제거 (뒤에 리뷰가 있는 경우)
+
     let processed = text.replace(/^\[Finish\].*?\n\n/s, '');
-    
-    // [Finish] ... (뒤에 리뷰가 없는 경우)
+
+
     if (processed.startsWith('[Finish]')) {
       return '';
     }
-    
+
     return processed;
   };
 
@@ -39,9 +39,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           <Text style={styles.reviewUser}>{review.name}</Text>
           {review.vintageYear ? (
             review.vintageYear > 0 ? (
-            <View style={styles.vintageBadge}>
-              <Text style={styles.vintageBadgeText}>{review.vintageYear}</Text>
-            </View>
+              <View style={styles.vintageBadge}>
+                <Text style={styles.vintageBadgeText}>{review.vintageYear}</Text>
+              </View>
             ) : null
           ) : null}
         </View>

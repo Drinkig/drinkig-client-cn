@@ -1,4 +1,4 @@
-// 와인 검색을 위한 더미 데이터베이스
+
 
 export interface Review {
   id: string;
@@ -27,26 +27,26 @@ export interface WineDBItem {
   nameEng: string;
   type: string;
   country: string;
-  grape: string; // 품종
-  image?: string; // 실제 이미지 URL이 있다면 사용
-  imageUri?: string; // 로컬 이미지 URI (업로드 시 사용)
+  grape: string;
+  image?: string;
+  imageUri?: string;
   description?: string;
   features?: {
-    sweetness: number; // 1-5
-    acidity: number; // 1-5
-    body: number; // 1-5
-    tannin: number; // 1-5
+    sweetness: number;
+    acidity: number;
+    body: number;
+    tannin: number;
   };
-  // aromas?: string[]; // Deprecated
+
   nose?: string[];
   palate?: string[];
   finish?: string[];
-  vintages?: VintageData[]; // 빈티지별 데이터
+  vintages?: VintageData[];
   vivinoRating?: number;
-  price?: number; // 와인 가격 (선택적)
+  price?: number;
 }
 
-// 더미 리뷰/가격 데이터 생성 헬퍼
+
 const generateReviews = (count: number): Review[] => {
   const users = ['와인러버', '포도대장', '소믈리에조', '드링키', '한잔더'];
   const comments = [
@@ -56,7 +56,7 @@ const generateReviews = (count: number): Review[] => {
     '향이 풍부하고 끝맛이 깔끔해요.',
     '특별한 날 마시기 딱 좋은 와인입니다.',
   ];
-  
+
   return Array.from({ length: count }).map((_, i) => ({
     id: `review-${i}`,
     userName: users[Math.floor(Math.random() * users.length)],

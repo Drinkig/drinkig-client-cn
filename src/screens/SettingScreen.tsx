@@ -27,7 +27,7 @@ const SettingScreen = () => {
   const { logout } = useUser();
   const { showAlert, showLoading, hideLoading } = useGlobalUI();
 
-  // 사용자 정보 상태 (authType 확인용)
+
   const [authType, setAuthType] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
 
@@ -46,7 +46,7 @@ const SettingScreen = () => {
     fetchMemberInfo();
   }, []);
 
-  // 링크 이동 핸들러
+
   const handleLinkPress = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -69,13 +69,13 @@ const SettingScreen = () => {
     }
   };
 
-  // 이메일 연결 핸들러
+
   const handleEmailPress = async (subject: string, body: string = '') => {
     const email = 'drinkeasyy@gmail.com';
     const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
     try {
-      // mailto 스키마 처리
+
       await Linking.openURL(url);
     } catch (error) {
       console.error('An error occurred', error);
@@ -87,7 +87,7 @@ const SettingScreen = () => {
     }
   };
 
-  // 로그아웃 핸들러
+
   const handleLogout = () => {
     showAlert({
       title: '로그아웃',
@@ -97,7 +97,6 @@ const SettingScreen = () => {
       onConfirm: async () => {
         showLoading();
         try {
-          // Context의 logout 함수 호출 (내부적으로 API 호출 및 토큰 삭제, 상태 초기화)
           await logout();
         } finally {
           hideLoading();
@@ -106,57 +105,59 @@ const SettingScreen = () => {
     });
   };
 
-  // 회원 탈퇴 핸들러
   const handleDeleteAccount = () => {
-    // 바로 탈퇴 확인창을 띄우지 않고, 탈퇴 방어(유지) 화면으로 이동
-    navigation.navigate('WithdrawRetention', { authType: authType || 'EMAIL' }); // authType이 null일 경우 대비
-  };
+    showAlert({
+      title: '회원 탈퇴',
+      message: '정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제됩니다.',
+      confirmText: '탈퇴하기',
+      singleButton: false,
+      onConfirm: async () => {
+        if (authType === 'APPLE') {
+          try {
+            const appleAuthRequestResponse = await appleAuth.performRequest({
+              requestedOperation: appleAuth.Operation.REFRESH,
+            });
 
-  // 애플 회원 탈퇴 프로세스
-  const handleAppleDelete = async () => {
-    try {
-      // 1. 애플 재인증 요청 (Authorization Code 받기 위함)
-      const appleAuthRequestResponse = await appleAuth.performRequest({
-        requestedOperation: appleAuth.Operation.REFRESH, // 민감한 작업 전 재인증
-      });
+            const authCode = appleAuthRequestResponse.authorizationCode;
 
-      const authCode = appleAuthRequestResponse.authorizationCode;
+            if (!authCode) {
+              throw new Error('Failed to get authorization code');
+            }
 
-      if (!authCode) {
-        throw new Error('Failed to get authorization code');
-      }
+            const response = await deleteAppleMember(authCode);
 
-      // 2. 애플 탈퇴 API 호출
-      const response = await deleteAppleMember(authCode);
-
-      if (response.isSuccess) {
-        await logout();
-      } else {
-        console.error('Apple delete member failed:', response.message);
-        showAlert({
-          title: '오류',
-          message: `회원 탈퇴 실패: ${response.message}`,
-          singleButton: true,
-        });
-      }
-    } catch (error: any) {
-      if (error.code === appleAuth.Error.CANCELED) {
-        // 유저가 취소함 -> 아무것도 안 함
-        return;
-      }
-      console.error('Apple delete member error:', error);
-      showAlert({
-        title: '오류',
-        message: `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`,
-        singleButton: true,
-      });
-      throw error; // 상위 catch로 전달
-    }
+            if (response.isSuccess) {
+              await logout();
+            } else {
+              console.error('Apple delete member failed:', response.message);
+              showAlert({
+                title: '오류',
+                message: `회원 탈퇴 실패: ${response.message}`,
+                singleButton: true,
+              });
+            }
+          } catch (error: any) {
+            if (error.code === appleAuth.Error.CANCELED) {
+              return;
+            }
+            console.error('Apple delete member error:', error);
+            showAlert({
+              title: '오류',
+              message: `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`,
+              singleButton: true,
+            });
+          }
+        } else {
+          // General withdrawal (Email/Kakao)
+          navigation.navigate('WithdrawRetention', { authType: authType || 'EMAIL' });
+        }
+      },
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 헤더 */}
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="chevron-back" size={28} color="#fff" />
@@ -166,7 +167,7 @@ const SettingScreen = () => {
       </View>
 
       <ScrollView style={styles.content}>
-        {/* 섹션 1: 내 계정 */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>내 계정</Text>
           <View style={styles.item}>
@@ -181,7 +182,7 @@ const SettingScreen = () => {
           </View>
         </View>
 
-        {/* 섹션 2: 앱 정보 */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>앱 정보</Text>
           <View style={styles.item}>
@@ -204,7 +205,7 @@ const SettingScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 섹션 3: 문의하기 */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>문의하기</Text>
           <TouchableOpacity
@@ -223,7 +224,7 @@ const SettingScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* 섹션 4: 계정 관리 */}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>계정 관리</Text>
           <TouchableOpacity style={styles.item} onPress={handleLogout}>
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   deleteText: {
-    color: '#e74c3c', // 빨간색 경고
+    color: '#e74c3c',
   },
 });
 

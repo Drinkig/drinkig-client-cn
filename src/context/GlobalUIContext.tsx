@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 
-// 알럿 설정 타입 정의
+
 export interface AlertConfig {
   title: string;
   message: string;
@@ -13,7 +13,7 @@ interface GlobalUIContextType {
   isLoading: boolean;
   showLoading: () => void;
   hideLoading: () => void;
-  
+
   alertConfig: AlertConfig | null;
   showAlert: (config: AlertConfig) => void;
   closeAlert: () => void;
@@ -37,14 +37,14 @@ export const GlobalUIProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <GlobalUIContext.Provider 
-      value={{ 
-        isLoading, 
-        showLoading, 
-        hideLoading, 
-        alertConfig, 
-        showAlert, 
-        closeAlert 
+    <GlobalUIContext.Provider
+      value={{
+        isLoading,
+        showLoading,
+        hideLoading,
+        alertConfig,
+        showAlert,
+        closeAlert
       }}
     >
       {children}

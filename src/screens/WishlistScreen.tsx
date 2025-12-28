@@ -74,14 +74,14 @@ export default function WishlistScreen() {
   };
 
   const renderItem = ({ item }: { item: WishlistItemDTO }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => handleWinePress(item)}
     >
       <View style={styles.imageContainer}>
         {item.imageUrl ? (
-          <Image 
-            source={{ uri: item.imageUrl }} 
+          <Image
+            source={{ uri: item.imageUrl }}
             style={styles.image}
             resizeMode="contain"
           />
@@ -111,20 +111,20 @@ export default function WishlistScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
-      
-      {/* 헤더 */}
+
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
+        <TouchableOpacity
+          style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>위시리스트</Text>
-        <View style={{ width: 24 }} /> 
+        <View style={{ width: 24 }} />
       </View>
 
-      {/* 컨텐츠 */}
+
       <View style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -145,7 +145,7 @@ export default function WishlistScreen() {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Image 
+                <Image
                   source={require('../assets/wish_list.png')}
                   style={styles.emptyImage}
                   resizeMode="contain"

@@ -15,7 +15,7 @@ interface CustomAlertProps {
   onClose: () => void;
   onConfirm?: () => void;
   confirmText?: string;
-  singleButton?: boolean; // 버튼 하나만 표시 (확인용)
+  singleButton?: boolean;
 }
 
 const CustomAlert = ({

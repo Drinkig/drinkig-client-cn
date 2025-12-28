@@ -18,7 +18,7 @@ export default function ColorSelector({ wineType, selectedColor, onSelectColor }
     if (upper === 'SPARKLING' || upper === '스파클링') return 'SPARKLING';
     if (upper === 'DESSERT' || upper === '디저트') return 'DESSERT';
     if (upper === 'FORTIFIED' || upper === '주정강화') return 'FORTIFIED';
-    return 'RED'; // Default or fallback
+    return 'RED';
   };
 
   const paletteType = getPaletteType(wineType);
