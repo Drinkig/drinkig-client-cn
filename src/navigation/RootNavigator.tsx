@@ -18,6 +18,10 @@ import WishlistScreen from '../screens/WishlistScreen';
 import TastingNoteWriteScreen from '../screens/TastingNoteWriteScreen';
 import TastingNoteDetailScreen from '../screens/TastingNoteDetailScreen';
 import SearchScreen from '../screens/SearchScreen';
+import PlaceSelectionScreen from '../screens/PlaceSelectionScreen';
+import FoodSelectionScreen from '../screens/FoodSelectionScreen';
+import FoodPairingResultScreen from '../screens/FoodPairingResultScreen';
+import CountrySelectionScreen from '../screens/CountrySelectionScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -77,6 +81,12 @@ export default function RootNavigator() {
             <Stack.Screen name="TastingNoteDetail" component={TastingNoteDetailScreen} />
             <Stack.Screen name="WithdrawRetention" component={require('../screens/WithdrawRetentionScreen').default} />
             <Stack.Screen name="WithdrawReason" component={require('../screens/WithdrawReasonScreen').default} />
+
+            {/* Food Pairing Flow */}
+            <Stack.Screen name="PlaceSelection" component={PlaceSelectionScreen} />
+            <Stack.Screen name="FoodSelection" component={FoodSelectionScreen} />
+            <Stack.Screen name="CountrySelection" component={CountrySelectionScreen} />
+            <Stack.Screen name="FoodPairingResult" component={FoodPairingResultScreen} />
           </>
         )
       ) : (

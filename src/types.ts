@@ -20,6 +20,10 @@ export type RootStackParamList = {
   TastingNoteDetail: { tastingNoteId: number };
   WithdrawRetention: { authType: string };
   WithdrawReason: { authType: string };
+  PlaceSelection: { place?: 'RESTAURANT' | 'SHOP' } | undefined;
+  FoodSelection: { place: 'RESTAURANT' | 'SHOP'; country?: string };
+  CountrySelection: { place: 'RESTAURANT' };
+  FoodPairingResult: { place: 'RESTAURANT' | 'SHOP'; foodId?: number; foodName?: string; country?: string };
 };
 
 declare global {

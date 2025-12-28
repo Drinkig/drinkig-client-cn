@@ -13,12 +13,14 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 import { HeroSection } from '../components/home/HeroSection';
 import { BannerSection } from '../components/home/BannerSection';
 import { getMyWines, MyWineDTO } from '../api/wine';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
@@ -82,8 +84,7 @@ export default function HomeScreen() {
 
         <HeroSection
           onPress={() => {
-            // TODO: 추천 플로우로 이동
-            console.log('Start Recommendation Flow');
+            navigation.navigate('PlaceSelection');
           }}
         />
 
