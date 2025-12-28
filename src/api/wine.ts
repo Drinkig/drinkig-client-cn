@@ -538,3 +538,37 @@ export const deleteTastingNote = async (noteId: number) => {
   const response = await client.delete<TastingNoteDeleteResponse>(`/tasting-note/${noteId}`);
   return response.data;
 };
+
+export interface FoodRecommendationResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: FoodPairingResultDTO;
+}
+
+export interface FoodPairingResultDTO {
+  foodName: string;
+  foodFlavor: {
+    sweetness: number;
+    acidity: number;
+    body: number;
+    tannin: number;
+    alcohol: number;
+  };
+  recommendWines: FoodRecommendationDTO[];
+}
+
+export interface FoodRecommendationDTO {
+  sort: string;
+  variety: string;
+  country: string;
+  region: string;
+}
+
+export const getFoodPairingRecommendation = async (foodName: string) => {
+  const response = await client.get<FoodRecommendationResponse>('/wine/recommend/food', {
+    params: { foodName },
+  });
+  return response.data;
+};
+
