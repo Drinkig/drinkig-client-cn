@@ -39,8 +39,8 @@ function App(): React.JSX.Element {
         <GlobalUIProvider>
           <NavigationContainer>
             <RootNavigator />
-            <GlobalComponents />
           </NavigationContainer>
+          <GlobalComponents />
         </GlobalUIProvider>
       </WineProvider>
     </UserProvider>

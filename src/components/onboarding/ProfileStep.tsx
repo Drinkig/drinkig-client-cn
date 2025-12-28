@@ -11,13 +11,13 @@ interface ProfileStepProps {
   isValid?: boolean | null;
 }
 
-const ProfileStep = ({ 
-  name, 
-  profileImageUri, 
-  onNameChange, 
+const ProfileStep = ({
+  name,
+  profileImageUri,
+  onNameChange,
   onPickImage,
   errorMessage,
-  isValid 
+  isValid
 }: ProfileStepProps) => {
   return (
     <View style={styles.content}>
@@ -28,32 +28,34 @@ const ProfileStep = ({
           <Image source={{ uri: profileImageUri }} style={styles.profileImage} />
         ) : (
           <View style={styles.profilePlaceholder}>
-             <Icon name="camera-outline" size={32} color="#666" />
-             <Text style={styles.profileImageText}>사진 선택</Text>
+            <Icon name="camera-outline" size={32} color="#666" />
+            <Text style={styles.profileImageText}>사진 선택</Text>
           </View>
         )}
       </TouchableOpacity>
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>닉네임</Text>
-        <TextInput 
-            style={[
-              styles.input,
-              errorMessage ? styles.inputError : (isValid ? styles.inputSuccess : null)
-            ]} 
-            value={name}
-            onChangeText={onNameChange}
-            placeholder="닉네임을 입력하세요"
-            placeholderTextColor="#666"
-            autoCapitalize="none"
+        <TextInput
+          style={[
+            styles.input,
+            errorMessage ? styles.inputError : (isValid ? styles.inputSuccess : null)
+          ]}
+          value={name}
+          onChangeText={onNameChange}
+          placeholder="닉네임을 입력하세요"
+          placeholderTextColor="#666"
+          autoCapitalize="none"
         />
-        {errorMessage ? (
+        <View style={styles.helperRow}>
+          {errorMessage ? (
             <Text style={styles.errorText}>{errorMessage}</Text>
-        ) : isValid ? (
+          ) : isValid ? (
             <Text style={styles.successText}>사용 가능한 닉네임입니다.</Text>
-        ) : (
+          ) : (
             <Text style={styles.helperText}>2글자 이상 입력해주세요.</Text>
-        )}
+          )}
+        </View>
       </View>
     </View>
   );
@@ -122,23 +124,23 @@ const styles = StyleSheet.create({
   inputSuccess: {
     borderColor: '#2ecc71', // Green
   },
+  helperRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginTop: 6,
+    marginLeft: 4,
+  },
   errorText: {
     color: '#e74c3c',
     fontSize: 12,
-    marginTop: 6,
-    marginLeft: 4,
   },
   successText: {
     color: '#2ecc71',
     fontSize: 12,
-    marginTop: 6,
-    marginLeft: 4,
   },
   helperText: {
     color: '#666',
     fontSize: 12,
-    marginTop: 6,
-    marginLeft: 4,
   },
 });
 

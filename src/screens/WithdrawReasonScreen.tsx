@@ -25,7 +25,7 @@ const WithdrawReasonScreen = () => {
     const route = useRoute<WithdrawReasonRouteProp>();
     const { authType } = route.params;
     const { logout } = useUser();
-    const { showLoading, hideLoading, showAlert } = useGlobalUI();
+    const { showLoading, hideLoading, showAlert, closeAlert } = useGlobalUI();
 
     const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
     const [otherReason, setOtherReason] = useState<string>('');
@@ -48,8 +48,6 @@ const WithdrawReasonScreen = () => {
             }
         });
     };
-
-    // ...
 
     const handleWithdraw = () => {
         if (selectedReasons.length === 0) {
@@ -75,13 +73,16 @@ const WithdrawReasonScreen = () => {
             message: '정말 탈퇴하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.',
             confirmText: '탈퇴하기',
             singleButton: false,
-            onConfirm: processWithdrawal,
+            onConfirm: () => {
+                closeAlert();
+                processWithdrawal();
+            },
         });
     };
 
     const processWithdrawal = async () => {
+        showLoading();
         try {
-            showLoading();
             if (authType === 'APPLE') {
                 await handleAppleDelete();
             } else {
@@ -92,6 +93,8 @@ const WithdrawReasonScreen = () => {
                 }
 
                 const response = await deleteMember(fullReason);
+                hideLoading(); // 로딩 먼저 닫기
+
                 if (response.isSuccess) {
                     showSuccessAlert();
                 } else {
@@ -103,23 +106,26 @@ const WithdrawReasonScreen = () => {
                 }
             }
         } catch (error: any) {
+            hideLoading(); // 에러 시에도 로딩 먼저 닫기
             console.error('Delete member error:', error);
             showAlert({
                 title: '오류',
                 message: '회원 탈퇴 처리 중 문제가 발생했습니다.',
                 singleButton: true,
             });
-        } finally {
-            hideLoading();
         }
     };
 
     const showSuccessAlert = () => {
+        // 이미 로딩이 닫힌 상태여야 함
         showAlert({
             title: '탈퇴 처리 완료',
             message: '정상적으로 탈퇴되었습니다.\n이용해 주셔서 감사합니다.',
             singleButton: true,
-            onConfirm: () => logout(true),
+            onConfirm: () => {
+                closeAlert();
+                logout(true);
+            },
         });
     };
 
@@ -133,6 +139,8 @@ const WithdrawReasonScreen = () => {
             if (!authCode) throw new Error('Failed to get authorization code');
 
             const response = await deleteAppleMember(authCode);
+            hideLoading(); // 로딩 먼저 닫기
+
             if (response.isSuccess) {
                 showSuccessAlert();
             } else {
@@ -143,6 +151,7 @@ const WithdrawReasonScreen = () => {
                 });
             }
         } catch (error: any) {
+            hideLoading(); // 로딩 먼저 닫기
             if (error.code === appleAuth.Error.CANCELED) return;
             console.error('Apple delete member error:', error);
             showAlert({
