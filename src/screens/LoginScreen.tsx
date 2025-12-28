@@ -9,6 +9,10 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  FlatList,
+  Dimensions,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
 import * as KakaoLogin from '@react-native-seoul/kakao-login';
@@ -17,6 +21,44 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { loginWithApple, loginWithKakao } from '../api/member';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
+
+const width = Dimensions.get('window').width;
+
+const slides = [
+  {
+    id: '1',
+    image: require('../assets/onboarding/Drinky_onboarding_2.png'),
+    title: '몰랐던 와인 취향을\n가장 쉽게 발견해보세요',
+  },
+  {
+    id: '2',
+    image: require('../assets/onboarding/Drinky_onboarding_3.png'),
+    title: '나만의 와인 기록을\n남겨보세요',
+  },
+  {
+    id: '3',
+    image: require('../assets/onboarding/Drinky_smart_organize.png'),
+    title: '보유한 와인을\n똑똑하게 관리하세요',
+  },
+  {
+    id: '4',
+    image: require('../assets/onboarding/Drinky-search.png'),
+    title: '궁금한 와인을\n검색해보세요',
+  },
+];
+
+const Slide = ({ item }: { item: typeof slides[0] }) => {
+  return (
+    <View style={[styles.slide, { width }]}>
+      <Image
+        source={item.image}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      <Text style={styles.sloganText}>{item.title}</Text>
+    </View>
+  );
+};
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -174,6 +216,14 @@ const LoginScreen = () => {
 
 
 
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const updateCurrentSlideIndex = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const contentOffsetX = e.nativeEvent.contentOffset.x;
+    const currentIndex = Math.round(contentOffsetX / width);
+    setCurrentSlideIndex(currentIndex);
+  };
+
   return (
     <View style={styles.container}>
 
@@ -183,13 +233,28 @@ const LoginScreen = () => {
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentContainer}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('../assets/Standard_profile.png')}
-              style={styles.logo}
-              resizeMode="contain"
+          <View style={styles.carouselContainer}>
+            <FlatList
+              data={slides}
+              contentContainerStyle={{ height: '100%' }}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => <Slide item={item} />}
+              onMomentumScrollEnd={updateCurrentSlideIndex}
+              keyExtractor={(item) => item.id}
             />
-            <Text style={styles.sloganText}>와인이 쉬워진다, 드링키지</Text>
+            <View style={styles.indicatorContainer}>
+              {slides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.indicator,
+                    currentSlideIndex === index && styles.indicatorActive,
+                  ]}
+                />
+              ))}
+            </View>
           </View>
 
           <View style={styles.bottomContainer}>
@@ -270,29 +335,54 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
     paddingVertical: 40,
   },
-  logoContainer: {
+  carouselContainer: {
     flex: 1,
+    height: '65%', // Adjust based on your design needs relative to buttons
     justifyContent: 'center',
     alignItems: 'center',
   },
+  slide: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
   logo: {
-    width: 350,
-    height: 350,
+    width: 280, // Slightly improved size for carousel
+    height: 280,
+    marginBottom: 30,
   },
   sloganText: {
     color: '#FFFFFF',
-    fontSize: 22,
-    marginTop: 20,
-    fontWeight: '600',
-    opacity: 0.9,
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 34,
+  },
+  indicatorContainer: {
+    position: 'absolute',
+    bottom: 30,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  indicator: {
+    height: 8,
+    width: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 4,
+    opacity: 0.2,
+  },
+  indicatorActive: {
+    width: 24, // Elongated active dot
+    opacity: 1,
   },
   bottomContainer: {
     width: '100%',
     gap: 10,
-    paddingBottom: 40,
+    paddingHorizontal: 24,
+    paddingBottom: 20, // Reduced padding bottom slightly
   },
   appleCustomButton: {
     width: '100%',
