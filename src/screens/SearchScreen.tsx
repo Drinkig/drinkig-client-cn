@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback } from 'react';
-import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
+import { WineDBItem } from '../types/Wine';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
 

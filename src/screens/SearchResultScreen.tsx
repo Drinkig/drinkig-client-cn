@@ -13,7 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
-import { WineDBItem } from '../data/dummyWines';
+import { WineDBItem } from '../types/Wine';
 import { RootStackParamList } from '../types';
 
 type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;

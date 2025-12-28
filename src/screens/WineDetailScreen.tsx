@@ -16,7 +16,7 @@ import { useNavigation, useRoute, useIsFocused, RouteProp } from '@react-navigat
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
-import { WineDBItem, VintageData } from '../data/dummyWines';
+import { WineDBItem, VintageData } from '../types/Wine';
 import { MyWine } from '../context/WineContext';
 import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';

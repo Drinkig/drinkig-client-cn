@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { DUMMY_WINE_DB, WineDBItem } from '../data/dummyWines';
+import { WineDBItem } from '../types/Wine';
 import {
   addMyWine,
   MyWineAddRequest,

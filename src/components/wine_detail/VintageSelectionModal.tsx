@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { VintageData } from '../../data/dummyWines';
+import { VintageData } from '../../types/Wine';
 
 interface VintageSelectionModalProps {
   visible: boolean;
@@ -29,7 +29,7 @@ export default function VintageSelectionModal({
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>빈티지 선택</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={onClose}
               style={styles.closeButton}
             >

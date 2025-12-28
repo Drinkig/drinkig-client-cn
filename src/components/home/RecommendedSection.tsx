@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { WineDBItem } from '../../data/dummyWines';
+import { WineDBItem } from '../../types/Wine';
 
 interface RecommendedSectionProps {
   data: WineDBItem[];

@@ -1,4 +1,4 @@
-import { WineDBItem } from './data/dummyWines';
+import { WineDBItem } from './types/Wine';
 import { MyWine } from './context/WineContext';
 
 export type RootStackParamList = {

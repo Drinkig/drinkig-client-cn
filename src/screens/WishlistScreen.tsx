@@ -13,7 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getWishlist, WishlistItemDTO } from '../api/wine';
-import { WineDBItem } from '../data/dummyWines';
+import { WineDBItem } from '../types/Wine';
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
