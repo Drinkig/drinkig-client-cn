@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Config from 'react-native-config';
 
-const baseURL = Config.API_URL || (Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://127.0.0.1:8080');
+const baseURL = Config.API_URL || 'https://api.drinkig.com';
 
 const client = axios.create({
   baseURL,
