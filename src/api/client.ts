@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Config from 'react-native-config';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../utils/tokenStorage';
 
 const baseURL = Config.API_URL || 'https://api.drinkig.com';
 
@@ -22,7 +23,7 @@ client.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        const refreshToken = await getRefreshToken();
 
         if (!refreshToken) {
           throw new Error('No refresh token available');
@@ -32,7 +33,7 @@ client.interceptors.response.use(
           refreshToken: refreshToken
         }, {
           headers: {
-            Cookie: `refreshToken=${refreshToken}`,
+            Cookie: `refreshToken=${refreshToken}`, // Keep for backward compatibility if needed, but headers might not be needed if body is used
             'Authorization-Refresh': `Bearer ${refreshToken}`
           }
         });
@@ -53,10 +54,8 @@ client.interceptors.response.use(
             throw new Error('No access token in reissue response');
           }
 
-          await AsyncStorage.setItem('accessToken', newAccessToken);
-          if (newRefreshToken) {
-            await AsyncStorage.setItem('refreshToken', newRefreshToken);
-          }
+          // Use the existing refresh token if a new one wasn't returned
+          await setTokens(newAccessToken, newRefreshToken || refreshToken);
 
           client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
           originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
@@ -66,8 +65,7 @@ client.interceptors.response.use(
       } catch (reissueError) {
         console.error('Token reissue failed:', reissueError);
 
-        await AsyncStorage.removeItem('accessToken');
-        await AsyncStorage.removeItem('refreshToken');
+        await clearTokens();
 
         return Promise.reject(reissueError);
       }
@@ -79,7 +77,7 @@ client.interceptors.response.use(
 
 client.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem('accessToken');
+    const token = await getAccessToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

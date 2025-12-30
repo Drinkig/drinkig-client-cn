@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import {
   View,
   StyleSheet,
-  SafeAreaView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const SplashScreen = () => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.contentContainer}>
         <View style={styles.logoContainer}>
           <Image

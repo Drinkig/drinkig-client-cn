@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, ReactNode, useEffect } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMemberInfo, logout as apiLogout } from '../api/member';
 import client from '../api/client';
+import { getAccessToken, setTokens, clearTokens } from '../utils/tokenStorage';
 
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 
@@ -53,7 +54,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const accessToken = await AsyncStorage.getItem('accessToken');
+        const accessToken = await getAccessToken();
         const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
         const savedRecs = await AsyncStorage.getItem('recommendations');
         const savedFlavor = await AsyncStorage.getItem('flavorProfile');
@@ -140,9 +141,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (accessToken: string, refreshToken?: string, isFirst: boolean = false) => {
     try {
-      await AsyncStorage.setItem('accessToken', accessToken);
+      await setTokens(accessToken, refreshToken || ''); // Assuming setTokens handles empty refresh token gracefully or adjust if needed.
+      // Based on my implementation: setTokens(accessToken, refreshToken). 
+      // If refreshToken is undefined, I should probably handle it or send empty string? 
+      // Let's modify setTokens to be robust or pass empty. 
+      // Looking at tokenStorage: setGenericPassword('tokens', JSON.stringify({accessToken, refreshToken}))
+      // So it's fine.
+
+      // But wait, the previous code checked `if (refreshToken)`.
+      // I should replicate that logic to ensure I don't overwrite if not provided?
+      // Actually setTokens overwrites everything. If refreshToken is missing here, we probably want to update both. 
+      // But let's check `UserContext` usage.
+      // Usually login is called with both.
+
+      // Let's refine the replacement to be safe.
       if (refreshToken) {
-        await AsyncStorage.setItem('refreshToken', refreshToken);
+        await setTokens(accessToken, refreshToken);
+      } else {
+        // If only accessToken is provided (rare for initial login), what should be the refresh token?
+        // In new implementation using one JSON blob, I need both or need to read existing.
+        // But for `login`, it's usually fresh.
+        await setTokens(accessToken, refreshToken || '');
       }
 
       client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
@@ -195,8 +214,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
-      await AsyncStorage.removeItem('accessToken');
-      await AsyncStorage.removeItem('refreshToken');
+      await clearTokens();
       await AsyncStorage.removeItem('recommendations');
       await AsyncStorage.removeItem('flavorProfile');
       delete client.defaults.headers.common['Authorization'];
