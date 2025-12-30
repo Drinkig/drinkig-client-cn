@@ -603,8 +603,10 @@ const OnboardingScreen = () => {
       case 'ALCOHOL_PREF': currentStep = 4; break;
       case 'FOOD_PREF': currentStep = 5; break;
 
-
-
+      case 'FLAVOR_ACIDITY':
+      case 'FLAVOR_PROFILE':
+        currentStep = 6;
+        break;
 
       case 'FLAVOR_SWEETNESS': currentStep = 7; break;
       case 'FLAVOR_TANNIN': currentStep = 8; break;
