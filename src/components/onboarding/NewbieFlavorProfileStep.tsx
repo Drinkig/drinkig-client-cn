@@ -79,9 +79,9 @@ const NewbieFlavorProfileStep = ({ attribute, value, onChange }: NewbieFlavorPro
   if (!data) return null;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>{data.question}</Text>
-      
+
       <View style={styles.optionsContainer}>
         {data.options.map((option) => (
           <TouchableOpacity
@@ -101,11 +101,9 @@ const NewbieFlavorProfileStep = ({ attribute, value, onChange }: NewbieFlavorPro
               ]}>
                 {option.label}
               </Text>
-              {value === option.score && (
-                <Text style={styles.optionDesc}>
-                  {option.description}
-                </Text>
-              )}
+              <Text style={styles.optionDesc}>
+                {option.description}
+              </Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -162,10 +160,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+    marginBottom: 4,
   },
   selectedOptionText: {
     color: '#8e44ad',
-    marginBottom: 4,
   },
   optionDesc: {
     fontSize: 13,

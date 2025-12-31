@@ -216,11 +216,7 @@ export const uploadProfileImage = async (imageUri: string, type: string = 'image
     name: name,
   } as any);
 
-  const response = await client.post<ProfileImageResponse>('/member/profileImage', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await client.post<ProfileImageResponse>('/member/profileImage', formData);
   return response.data;
 };
 

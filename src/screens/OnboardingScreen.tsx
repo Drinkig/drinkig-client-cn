@@ -388,11 +388,18 @@ const OnboardingScreen = () => {
     try {
 
       if (formData.profileImageUri && formData.profileImageAsset) {
-        await uploadProfileImage(
-          formData.profileImageAsset.uri,
-          formData.profileImageAsset.type,
-          formData.profileImageAsset.fileName
-        );
+        console.log('📸 Starting profile image upload...');
+        try {
+          await uploadProfileImage(
+            formData.profileImageAsset.uri,
+            formData.profileImageAsset.type,
+            formData.profileImageAsset.fileName
+          );
+          console.log('✅ Profile image upload successful');
+        } catch (e) {
+          console.error('❌ Profile image upload failed:', e);
+          throw e;
+        }
       }
 
 
@@ -419,6 +426,7 @@ const OnboardingScreen = () => {
       console.log('🔍 Onboarding Request Payload:', JSON.stringify(requestData, null, 2));
 
       await updateMemberInitInfo(requestData);
+      console.log('✅ Member info update successful');
 
 
       setLoading(false);

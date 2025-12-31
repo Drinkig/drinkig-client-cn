@@ -19,6 +19,10 @@ client.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (error.response?.status === 401) {
+      console.log(`[API Error] 401 Unauthorized for ${originalRequest.url}`);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/login/apple')) {
       originalRequest._retry = true;
 
@@ -79,7 +83,10 @@ client.interceptors.request.use(
   async (config) => {
     const token = await getAccessToken();
     if (token) {
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} - Adding Authorization Header`);
       config.headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} - No Token Available`);
     }
     return config;
   },
@@ -88,13 +95,20 @@ client.interceptors.request.use(
   }
 );
 
-export const reissueToken = async () => {
-  const response = await client.post<{
+export const reissueToken = async (refreshToken: string) => {
+  // Use axios directly to bypass interceptors if needed, or use client but be careful.
+  // Using axios directly is safer for auth endpoints to avoid loops, similar to interceptor implementation.
+  const response = await axios.post<{
     isSuccess: boolean;
     code: string;
     message: string;
-    result: any;
-  }>('/reissue');
+    result: {
+      accessToken: string;
+      refreshToken: string;
+    };
+  }>(`${baseURL}/reissue`, {
+    refreshToken
+  });
   return response.data;
 };
 

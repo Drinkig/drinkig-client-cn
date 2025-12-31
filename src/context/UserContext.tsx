@@ -1,8 +1,8 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMemberInfo, logout as apiLogout } from '../api/member';
-import client from '../api/client';
-import { getAccessToken, setTokens, clearTokens } from '../utils/tokenStorage';
+import client, { reissueToken } from '../api/client';
+import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../utils/tokenStorage';
 
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 
@@ -54,7 +54,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const accessToken = await getAccessToken();
         const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
         const savedRecs = await AsyncStorage.getItem('recommendations');
         const savedFlavor = await AsyncStorage.getItem('flavorProfile');
@@ -67,33 +66,60 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           setFlavorProfileState(JSON.parse(savedFlavor));
         }
 
-        if (accessToken) {
+        // 1. Try to get Refresh Token first
+        const refreshToken = await getRefreshToken();
 
-          client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        if (refreshToken) {
+          try {
+            // 2. Attempt to reissue tokens
+            const response = await reissueToken(refreshToken);
 
+            if (response.isSuccess && response.result) {
+              const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.result;
 
-          if (persistedIsNewUser === 'true') {
-            setIsNewUser(true);
+              // 3. Update storage with new tokens
+              await setTokens(newAccessToken, newRefreshToken);
+
+              // 4. Set headers
+              client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+
+              if (persistedIsNewUser === 'true') {
+                setIsNewUser(true);
+              }
+
+              setIsLoggedIn(true);
+
+              if (persistedIsNewUser !== 'true') {
+                await refreshUserInfo();
+              }
+            } else {
+              throw new Error('Reissue failed');
+            }
+          } catch (reissueError) {
+            console.error('App start reissue failed:', reissueError);
+            await logout(); // Token invalid, logout
           }
-
-          setIsLoggedIn(true);
-
-
-          if (persistedIsNewUser !== 'true') {
-            await refreshUserInfo();
+        } else {
+          // No refresh token, check access token (legacy fallback or just logout)
+          // If no refresh token, we can't maintain session indefinitely.
+          // Check if we have just access token (older version?)
+          const accessToken = await getAccessToken();
+          if (accessToken) {
+            // Try to use it, but it might expire soon.
+            client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+            setIsLoggedIn(true);
+            // Optimistically try to fetch user info
+            try {
+              await refreshUserInfo();
+            } catch (e) {
+              await logout();
+            }
           }
         }
+
       } catch (error: any) {
         console.error('Auth initialization failed:', error);
-        // [FIX] 모든 에러에서 로그아웃하지 않고, 인증 관련 에러(401)일 때만 로그아웃
-        // 인터셉터에서 이미 재발급 시도를 했을 것이므로 여기서 401이 오면 재발급도 실패한 것임
-        if (error.response?.status === 401) {
-          await logout();
-        } else {
-          // 네트워크 에러 등일 때는 로그린 상태 유지 (이미 isLoggedIn=true 상태일 수 있음)
-          // 다만 user 정보가 없을 수 있으므로 필요시 재시도 로직이 UI에 있어야 함
-          console.warn('Network or Server error during initAuth, keeping session.');
-        }
+        await logout();
       } finally {
         setIsLoading(false);
       }
