@@ -42,6 +42,8 @@ const ProfileEditScreen = () => {
       mediaType: 'photo',
       selectionLimit: 1,
       quality: 0.8,
+      maxWidth: 1024,
+      maxHeight: 1024,
     });
 
     if (result.didCancel) return;
