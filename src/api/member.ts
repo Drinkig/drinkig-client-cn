@@ -145,7 +145,11 @@ export const uploadProfileImage = async (imageUri: string, type: string = 'image
     name: name,
   } as any);
 
-  const response = await client.post<ProfileImageResponse>('/member/profileImage', formData);
+  const response = await client.post<ProfileImageResponse>('/member/profileImage', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 
@@ -191,6 +195,25 @@ export const deleteMember = async (reason?: string) => {
 export const deleteAppleMember = async (authorizationCode: string) => {
   const response = await client.delete<AppleMemberDeleteResponse>('/member/delete/apple', {
     data: { authorizationCode },
+  });
+  return response.data;
+};
+
+export interface ReissueResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
+
+export const reissueToken = async (refreshToken: string) => {
+  const response = await client.post<ReissueResponse>('/reissue', {}, {
+    headers: {
+      'Authorization-Refresh': refreshToken.replace(/^Bearer\s+/, ''),
+    },
   });
   return response.data;
 };
