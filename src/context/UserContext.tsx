@@ -170,6 +170,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
 
     await refreshUserInfo();
+
+    try {
+      const recResponse = await getOnboardingRecommendation();
+      if (recResponse.isSuccess) {
+        setRecommendations(recResponse.result);
+      }
+    } catch (recError) {
+      console.warn('Failed to fetch recommendations on login', recError);
+    }
   };
 
   const loginGuest = () => {
