@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Animated, Easing } from 'react-native';
+import { getParticle } from '../utils/textUtils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,9 +16,10 @@ const RANK_BADGES = ['🥇', '🥈', '🥉'];
 export default function FoodPairingResultScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute();
-    const { foodName, country } = route.params as {
+    const { foodName, country, place } = route.params as {
         foodName?: string,
-        country?: string
+        country?: string,
+        place?: 'RESTAURANT' | 'SHOP'
     };
 
     const { user, flavorProfile } = useUser();
@@ -29,9 +31,23 @@ export default function FoodPairingResultScreen() {
     const [showAnalysis, setShowAnalysis] = useState(true);
     const [pairingProfile, setPairingProfile] = useState<FlavorProfile | null>(null);
 
-    const fadeAnim = useRef(new Animated.Value(0)).current;
+    // Text Animation Refs
+    const fadeAnim = useRef(new Animated.Value(0)).current; // Analysis fade
     const chartOpacityAnim = useRef(new Animated.Value(0)).current;
     const progressBarAnim = useRef(new Animated.Value(0)).current;
+
+    const heroAnim = useRef(new Animated.Value(0)).current;
+    const textStep1Anim = useRef(new Animated.Value(0)).current;
+    const textStep2Anim = useRef(new Animated.Value(0)).current;
+
+    const chartAnim = useRef(new Animated.Value(0)).current;
+    const listAnim = useRef(new Animated.Value(0)).current;
+
+    const heroY = heroAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
+    const textStep1Y = textStep1Anim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] });
+    const textStep2Y = textStep2Anim.interpolate({ inputRange: [0, 1], outputRange: [10, 0] });
+    const chartY = chartAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
+    const listY = listAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
 
     useEffect(() => {
         const fetchRecommendations = async () => {
@@ -63,79 +79,42 @@ export default function FoodPairingResultScreen() {
 
     const startAnalysisSequence = () => {
         Animated.sequence([
-            Animated.timing(progressBarAnim, {
-                toValue: 0.3,
-                duration: 1500,
-                easing: Easing.out(Easing.ease),
-                useNativeDriver: false,
-            }),
-            Animated.timing(progressBarAnim, {
-                toValue: 0.45,
-                duration: 4500,
-                easing: Easing.linear,
-                useNativeDriver: false,
-            }),
-            Animated.timing(progressBarAnim, {
-                toValue: 0.85,
-                duration: 3000,
-                easing: Easing.in(Easing.ease),
-                useNativeDriver: false,
-            }),
-            Animated.timing(progressBarAnim, {
-                toValue: 1,
-                duration: 3500,
-                easing: Easing.out(Easing.ease),
-                useNativeDriver: false,
-            })
+            Animated.timing(progressBarAnim, { toValue: 0.3, duration: 1500, easing: Easing.out(Easing.ease), useNativeDriver: false }),
+            Animated.timing(progressBarAnim, { toValue: 0.45, duration: 4500, easing: Easing.linear, useNativeDriver: false }),
+            Animated.timing(progressBarAnim, { toValue: 0.85, duration: 3000, easing: Easing.in(Easing.ease), useNativeDriver: false }),
+            Animated.timing(progressBarAnim, { toValue: 1, duration: 3500, easing: Easing.out(Easing.ease), useNativeDriver: false })
         ]).start();
 
         animateStep(0);
 
         setTimeout(() => {
             setAnalysisStep(1);
-            Animated.timing(chartOpacityAnim, {
-                toValue: 1,
-                duration: 800,
-                useNativeDriver: true,
-            }).start();
+            Animated.timing(chartOpacityAnim, { toValue: 1, duration: 800, useNativeDriver: true }).start();
         }, 2000);
 
-        setTimeout(() => {
-            setAnalysisStep(2);
-        }, 6000);
-
-        setTimeout(() => {
-            setAnalysisStep(3);
-        }, 9000);
-
-        setTimeout(() => {
-            finishAnalysis();
-        }, 12500);
+        setTimeout(() => { setAnalysisStep(2); }, 6000);
+        setTimeout(() => { setAnalysisStep(3); }, 9000);
+        setTimeout(() => { finishAnalysis(); }, 12500);
     };
 
-    const heroAnim = useRef(new Animated.Value(0)).current;
-    const chartAnim = useRef(new Animated.Value(0)).current;
-    const listAnim = useRef(new Animated.Value(0)).current;
-
-    const heroY = heroAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
-    const chartY = chartAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
-    const listY = listAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] });
 
     const animateStep = (step: number) => {
         if (step === 0) {
-            Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 500,
-                useNativeDriver: true,
-            }).start();
+            Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
         }
     };
 
     const startResultAnimation = () => {
-        Animated.stagger(200, [
-            Animated.timing(heroAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-            Animated.timing(chartAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-            Animated.timing(listAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        // Sequence: Hero Title -> Text 1 -> Text 2 (faster) -> Chart -> List
+        Animated.sequence([
+            Animated.timing(heroAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+            Animated.timing(textStep1Anim, { toValue: 1, duration: 500, useNativeDriver: true }),
+            Animated.delay(300),
+            Animated.timing(textStep2Anim, { toValue: 1, duration: 500, useNativeDriver: true }),
+            Animated.stagger(100, [
+                Animated.timing(chartAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+                Animated.timing(listAnim, { toValue: 1, duration: 500, useNativeDriver: true }),
+            ])
         ]).start();
     };
 
@@ -160,6 +139,11 @@ export default function FoodPairingResultScreen() {
         }
     };
 
+    // Derived values for result text
+    const bestMatchSort = recommendations.length > 0 ? recommendations[0].sort : '와인';
+    const displayFoodName = foodName || country || '음식';
+    const userNickname = user?.nickname || '회원';
+
     if (showAnalysis) {
         const progressWidth = progressBarAnim.interpolate({
             inputRange: [0, 1],
@@ -173,35 +157,21 @@ export default function FoodPairingResultScreen() {
                         <View style={styles.iconWrapper}>
                             {analysisStep === 0 && <Text style={{ fontSize: 80 }}>🍽️</Text>}
                             {analysisStep < 3 && analysisStep >= 1 && flavorProfile && (
-                                <Animated.View style={{
-                                    opacity: chartOpacityAnim,
-                                    alignItems: 'center'
-                                }}>
+                                <Animated.View style={{ opacity: chartOpacityAnim, alignItems: 'center' }}>
                                     <View style={styles.chartBg}>
-                                        <AnalyzingRadarChart
-                                            data={flavorProfile}
-                                            size={220}
-                                            mode={analysisStep === 1 ? 'grow' : 'jitter'}
-                                        />
+                                        <AnalyzingRadarChart data={flavorProfile} size={220} mode={analysisStep === 1 ? 'grow' : 'jitter'} />
                                     </View>
-
                                 </Animated.View>
                             )}
-                            {analysisStep < 3 && analysisStep >= 1 && !flavorProfile && (
-                                <Text style={{ fontSize: 80 }}>🍷</Text>
-                            )}
+                            {analysisStep < 3 && analysisStep >= 1 && !flavorProfile && (<Text style={{ fontSize: 80 }}>🍷</Text>)}
                             {analysisStep === 3 && (
                                 <View style={{ height: 240, justifyContent: 'center' }}>
                                     <RollingCandidates />
                                 </View>
                             )}
                         </View>
-
-                        <Text style={styles.analysisText}>
-                            {getAnalysisText(analysisStep)}
-                        </Text>
+                        <Text style={styles.analysisText}>{getAnalysisText(analysisStep)}</Text>
                     </Animated.View>
-
                     <View style={styles.progressContainer}>
                         <Animated.View style={[styles.progressBar, { width: progressWidth }]} />
                     </View>
@@ -229,11 +199,37 @@ export default function FoodPairingResultScreen() {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Animated.View style={[styles.heroContainer, { opacity: heroAnim, transform: [{ translateY: heroY }] }]}>
-                    <Text style={styles.heroTitle}>{foodName || country}</Text>
-                    <Text style={styles.heroSubtitle}>
-                        {user?.nickname || '회원'}님의 취향을 기반으로{'\n'}
-                        <Text style={{ color: '#8e44ad', fontWeight: 'bold' }}>완벽한 페어링</Text>을 찾았습니다.
-                    </Text>
+
+                    {/* Step 1 Text */}
+                    <Animated.View style={{ opacity: textStep1Anim, transform: [{ translateY: textStep1Y }], marginBottom: 16 }}>
+                        {place === 'RESTAURANT' ? (
+                            <Text style={styles.heroText}>
+                                오늘 드시는 <Text style={styles.highlight}>{displayFoodName}</Text>,{'\n'}
+                                <Text style={styles.highlight}>{bestMatchSort}</Text> 와인과 환상의 궁합인 거 아시나요?
+                            </Text>
+                        ) : (
+                            <Text style={styles.heroText}>
+                                <Text style={styles.highlight}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 함께할 와인을 찾고 계시군요,{'\n'}
+                                <Text style={styles.highlight}>{bestMatchSort}</Text>{getParticle(bestMatchSort, 'i')} 딱이에요!
+                            </Text>
+                        )}
+                    </Animated.View>
+
+                    {/* Step 2 Text */}
+                    <Animated.View style={{ opacity: textStep2Anim, transform: [{ translateY: textStep2Y }] }}>
+                        {place === 'RESTAURANT' ? (
+                            <Text style={styles.heroSubText}>
+                                <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향을 완벽하게 분석해,{'\n'}
+                                <Text style={styles.boldWhite}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는 인생 와인을 찾아냈어요.
+                            </Text>
+                        ) : (
+                            <Text style={styles.heroSubText}>
+                                <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향과 <Text style={styles.boldWhite}>{displayFoodName}</Text>의 맛을 분석해{'\n'}
+                                실패 없는 페어링을 준비했어요.
+                            </Text>
+                        )}
+                    </Animated.View>
+
                 </Animated.View>
 
                 {pairingProfile && (
@@ -462,12 +458,26 @@ const styles = StyleSheet.create({
         fontSize: 34,
         fontWeight: 'bold',
         color: '#fff',
-        marginBottom: 10,
+        marginBottom: 24,
     },
-    heroSubtitle: {
-        fontSize: 16,
+    heroText: {
+        fontSize: 18,
         color: '#ccc',
+        lineHeight: 28,
+        marginBottom: 8,
+    },
+    heroSubText: {
+        fontSize: 15,
+        color: '#888',
         lineHeight: 24,
+    },
+    highlight: {
+        color: '#8e44ad',
+        fontWeight: 'bold',
+    },
+    boldWhite: {
+        color: '#fff',
+        fontWeight: 'bold',
     },
     chartContainer: {
         alignItems: 'center',
