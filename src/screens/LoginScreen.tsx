@@ -103,9 +103,9 @@ const LoginScreen = () => {
       const response = await appleLogin(identityToken);
 
       if (response.isSuccess && response.result) {
-        const { accessToken, refreshToken } = response.result;
+        const { accessToken, refreshToken, isFirst } = response.result;
         // 3. Login via UserContext (Saves tokens and updates state)
-        await login(accessToken, refreshToken);
+        await login(accessToken, refreshToken, isFirst);
       } else {
         throw new Error(response.message || 'Token exchange failed');
       }
@@ -133,17 +133,41 @@ const LoginScreen = () => {
       // 1. Get Access Token from Kakao SDK
       const token = await KakaoLogin.login();
 
-      // 2. Exchange Kakao Token for Firebase Custom Token via Backend
-      const { customToken } = await exchangeKakaoToken(token.accessToken);
+      // 2. Exchange Kakao Token for Backend Tokens / Firebase Custom Token
+      const response: any = await exchangeKakaoToken(token.accessToken);
 
-      if (!customToken) {
-        throw new Error('Failed to get custom token from server');
+      let customToken, accessToken, refreshToken, isFirst;
+
+      // Handle response structure variations
+      if (response && response.accessToken) {
+        // Flat structure (New DTO style)
+        ({ customToken, accessToken, refreshToken, isFirst } = response);
+      } else if (response && response.result) {
+        // Wrapped structure
+        ({ customToken, accessToken, refreshToken, isFirst } = response.result);
+      } else {
+        // Fallback or old structure if somehow 'customToken' is at root but 'accessToken' is not?
+        // Just try to grab everything from root if not found yet
+        ({ customToken } = response || {});
       }
 
-      // 3. Sign In with Firebase Custom Token
-      await auth().signInWithCustomToken(customToken);
+      // 3. Sign In with Firebase Custom Token (IF provided)
+      if (customToken) {
+        try {
+          await auth().signInWithCustomToken(customToken);
+        } catch (firebaseError) {
+          console.warn('Firebase login failed:', firebaseError);
+          // Continue, as we might have backend tokens
+        }
+      }
 
-      // UserContext will handle navigation
+      // 4. Update UserContext (Primary Login Method)
+      if (accessToken && refreshToken) {
+        await login(accessToken, refreshToken, isFirst);
+      } else {
+        console.error('Missing backend tokens in response:', response);
+        throw new Error('Failed to retrieve access tokens from server.');
+      }
 
     } catch (error: any) {
       if (error.code === 'E_CANCELLED_OPERATION') {

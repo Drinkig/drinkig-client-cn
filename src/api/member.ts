@@ -2,7 +2,10 @@ import client from './client';
 
 
 export interface KakaoFirebaseResponse {
-  customToken: string;
+  customToken?: string;
+  isFirst: boolean;
+  accessToken: string;
+  refreshToken: string;
 }
 
 export interface AppleLoginResponse {
@@ -12,6 +15,7 @@ export interface AppleLoginResponse {
   result: {
     accessToken: string;
     refreshToken: string;
+    isFirst: boolean;
   };
 }
 

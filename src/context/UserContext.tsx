@@ -60,6 +60,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await getAccessToken();
+      const isNewUserStored = await AsyncStorage.getItem('isNewUser');
+      if (isNewUserStored === 'true') {
+        setIsNewUser(true);
+      }
+
       if (token) {
         try {
           await refreshUserInfo();
@@ -162,12 +167,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       await saveTokens(accessToken, refreshToken);
     }
 
-    setIsLoggedIn(true);
-
     if (isFirst) {
       setIsNewUser(true);
       await AsyncStorage.setItem('isNewUser', 'true');
     }
+
+    setIsLoggedIn(true);
 
     await refreshUserInfo();
 
