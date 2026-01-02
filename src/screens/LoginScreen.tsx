@@ -3,11 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   Platform,
   TouchableOpacity,
   Image,
-  Alert,
   ActivityIndicator,
   FlatList,
   Dimensions,
@@ -16,11 +14,13 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { appleAuth } from '@invertase/react-native-apple-authentication';
 import * as KakaoLogin from '@react-native-seoul/kakao-login';
+import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { loginWithApple, loginWithKakao } from '../api/member';
+import { exchangeKakaoToken, appleLogin } from '../api/member';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
 
@@ -67,7 +67,12 @@ const LoginScreen = () => {
   const { login } = useUser();
   const { showLoading, hideLoading, showAlert } = useGlobalUI();
   const [loading, setLoading] = useState(false);
+  const { width } = Dimensions.get('window');
 
+  const onEmailLoginLinkPress = () => {
+    if (loading) return;
+    navigation.navigate('EmailLogin'); // Assuming you have an 'EmailLogin' screen in your navigator
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -77,79 +82,39 @@ const LoginScreen = () => {
   );
 
 
-  const parseJwt = (token: string) => {
-    try {
-      const base64Url = token.split('.')[1];
-      // @ts-ignore
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      // @ts-ignore
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c: string) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      return JSON.parse(jsonPayload);
-    } catch (e) {
-      console.error('Token decode failed:', e);
-      return null;
-    }
-  };
 
   const onAppleButtonPress = async () => {
     if (loading) return;
     setLoading(true);
     try {
-      console.log('1. Starting Apple Auth Request');
-
+      // 1. Start the Apple login process
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
       });
 
-      console.log('2. Apple Auth Completed');
-
-
       if (!appleAuthRequestResponse.identityToken) {
         throw new Error('Apple Identity Token is missing');
       }
 
+      const { identityToken } = appleAuthRequestResponse;
 
+      // 2. Exchange Identity Token for Backend Access Token
+      const response = await appleLogin(identityToken);
 
-      console.log('4. Sending Token to Server...');
-
-      const response = await loginWithApple(appleAuthRequestResponse.identityToken);
-      console.log('5. Server Response:', JSON.stringify(response));
-
-      if (response.isSuccess) {
-
-        const { accessToken, refreshToken, isFirst } = response.result;
-        console.log('6. Tokens received:', { hasAccess: !!accessToken, hasRefresh: !!refreshToken, isFirst });
-
-        if (accessToken) {
-          await login(accessToken, refreshToken, isFirst);
-          console.log('7. Login Context Updated');
-
-
-        } else {
-          console.error('Token missing in result:', response.result);
-          showAlert({
-            title: '로그인 실패',
-            message: '서버로부터 토큰을 받지 못했습니다.',
-            singleButton: true,
-          });
-        }
+      if (response.isSuccess && response.result) {
+        const { accessToken, refreshToken } = response.result;
+        // 3. Login via UserContext (Saves tokens and updates state)
+        await login(accessToken, refreshToken);
       } else {
-        console.error('Server returned fail:', response);
-        showAlert({
-          title: '로그인 실패',
-          message: response.message || '로그인 중 오류가 발생했습니다.',
-          singleButton: true,
-        });
+        throw new Error(response.message || 'Token exchange failed');
       }
-      // }
+
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
-        console.log('User canceled Apple Sign In');
+        // User canceled Apple Sign In - do nothing
       } else {
-        console.error('Apple Login Error Full:', error);
+        console.error('Apple Login Error:', error);
         showAlert({
           title: '로그인 오류',
           message: `Apple 로그인 실패: ${error.message || error.code || '알 수 없는 오류'}`,
@@ -165,49 +130,29 @@ const LoginScreen = () => {
     if (loading) return;
     setLoading(true);
     try {
-
+      // 1. Get Access Token from Kakao SDK
       const token = await KakaoLogin.login();
 
+      // 2. Exchange Kakao Token for Firebase Custom Token via Backend
+      const { customToken } = await exchangeKakaoToken(token.accessToken);
 
-      const profile = await KakaoLogin.getProfile();
-
-      console.log('Kakao Profile:', profile);
-
-
-      const response = await loginWithKakao(
-        profile.nickname,
-        profile.email,
-        profile.id.toString()
-      );
-
-
-      if (response.isSuccess) {
-        const { accessToken, refreshToken, isFirst } = response.result;
-
-        if (accessToken) {
-          await login(accessToken, refreshToken, isFirst);
-        } else {
-          showAlert({
-            title: '로그인 실패',
-            message: '서버로부터 토큰을 받지 못했습니다.',
-            singleButton: true,
-          });
-        }
-      } else {
-        showAlert({
-          title: '로그인 실패',
-          message: response.message,
-          singleButton: true,
-        });
+      if (!customToken) {
+        throw new Error('Failed to get custom token from server');
       }
+
+      // 3. Sign In with Firebase Custom Token
+      await auth().signInWithCustomToken(customToken);
+
+      // UserContext will handle navigation
+
     } catch (error: any) {
       if (error.code === 'E_CANCELLED_OPERATION') {
-        console.log('Login Cancelled');
+        // Login Cancelled
       } else {
         console.error('Kakao Login Error:', error);
         showAlert({
           title: '오류',
-          message: '카카오 로그인에 실패했습니다.',
+          message: '카카오 로그인에 실패했습니다. 관리자에게 문의하세요.',
           singleButton: true,
         });
       }
@@ -321,38 +266,48 @@ const LoginScreen = () => {
           </View>
 
           <View style={styles.bottomContainer}>
-            {loading ? (
-              <ActivityIndicator size="large" color="#fff" style={{ marginBottom: 20 }} />
-            ) : (
-              Platform.OS === 'ios' && (
+            {/* Social Login Buttons */}
+            <View style={styles.buttonContainer}>
+              {/* Apple Login */}
+              {Platform.OS === 'ios' && (
                 <TouchableOpacity
-                  style={styles.appleCustomButton}
+                  style={styles.appleButton}
                   onPress={onAppleButtonPress}
+                  disabled={loading}
                 >
-                  <View style={styles.buttonContent}>
-                    <Icon name="logo-apple" size={20} color="#000" />
-                    <Text style={styles.appleButtonText}>Apple로 시작하기</Text>
-                  </View>
+                  <Icon name="logo-apple" size={20} color="#000" style={styles.buttonIcon} />
+                  <Text style={styles.appleButtonText}>Apple로 시작하기</Text>
                 </TouchableOpacity>
-              )
-            )}
+              )}
 
-            {!loading && (
+              {/* Kakao Login */}
               <TouchableOpacity
                 style={styles.kakaoButton}
                 onPress={onKakaoButtonPress}
+                disabled={loading}
               >
-                <View style={styles.buttonContent}>
-                  <Icon name="chatbubble-sharp" size={20} color="#000" />
-                  <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
-                </View>
+                <Icon name="chatbubble" size={20} color="#000" style={styles.buttonIcon} />
+                <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
               </TouchableOpacity>
-            )}
 
-
+              {/* Email Login Link */}
+              <TouchableOpacity
+                style={styles.emailLoginLink}
+                onPress={onEmailLoginLinkPress}
+                disabled={loading}
+              >
+                <Text style={styles.emailLoginLinkText}>이메일로 로그인</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </SafeAreaView>
+
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#FFF" />
+        </View>
+      )}
     </View>
   );
 };
@@ -443,50 +398,66 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     width: '100%',
-    gap: 10,
     paddingHorizontal: 24,
     paddingBottom: 20, // Reduced padding bottom slightly
   },
-  appleCustomButton: {
+  buttonContainer: {
     width: '100%',
-    height: 50,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    justifyContent: 'center',
+    gap: 12,
+    marginTop: 20, // Add some spacing from carousel
+  },
+  appleButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '100%',
   },
   appleButtonText: {
     color: '#000000',
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
   },
   kakaoButton: {
-    width: '100%',
-    height: 50,
-    backgroundColor: '#FEE500',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    backgroundColor: '#FEE500',
+    paddingVertical: 16,
+    borderRadius: 12,
+    width: '100%',
   },
   kakaoButtonText: {
     color: '#000000',
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8,
   },
-  guestButton: {
-    width: '100%',
-    padding: 16,
+  buttonIcon: {
+    marginRight: 4,
+  },
+  emailLoginLink: {
+    paddingVertical: 10,
     alignItems: 'center',
+    marginTop: 0,
   },
-  guestButtonText: {
-    color: '#888',
-    fontSize: 14,
+  emailLoginLinkText: {
+    color: '#999',
+    fontSize: 13,
     textDecorationLine: 'underline',
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

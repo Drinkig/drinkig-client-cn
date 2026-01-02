@@ -1,9 +1,8 @@
 import client from './client';
 
 
-
-export interface AppleLoginRequest {
-  identityToken: string;
+export interface KakaoFirebaseResponse {
+  customToken: string;
 }
 
 export interface AppleLoginResponse {
@@ -11,12 +10,8 @@ export interface AppleLoginResponse {
   code: string;
   message: string;
   result: {
-    id: number;
-    username: string;
-    role: string;
-    isFirst: boolean;
-    accessToken?: string;
-    refreshToken?: string;
+    accessToken: string;
+    refreshToken: string;
   };
 }
 
@@ -116,84 +111,18 @@ export interface AppleMemberDeleteResponse {
 
 
 
-export const loginWithApple = async (identityToken: string) => {
-  const response = await client.post<AppleLoginResponse>('/login/apple', {
-    identityToken,
+export const exchangeKakaoToken = async (token: string) => {
+  const response = await client.post<KakaoFirebaseResponse>('/login/kakao/firebase', {
+    token,
   });
-
-  const cookies = response.headers['set-cookie'];
-  if (cookies && Array.isArray(cookies)) {
-    const getCookieValue = (name: string) => {
-      const regex = new RegExp(`${name}=([^;]+)`);
-      for (const cookieString of cookies) {
-        const match = cookieString.match(regex);
-        if (match && match[1]) {
-          return match[1];
-        }
-      }
-      return undefined;
-    };
-
-    const accessToken = getCookieValue('accessToken');
-    const refreshToken = getCookieValue('refreshToken');
-
-    // 응답 데이터에 토큰 주입 (프론트엔드 로직 호환성 유지)
-    if (accessToken && response.data.result) {
-      response.data.result.accessToken = accessToken;
-    }
-    if (refreshToken && response.data.result) {
-      response.data.result.refreshToken = refreshToken;
-    }
-  }
-
   return response.data;
 };
 
-export const loginWithKakao = async (kakaoName: string, kakaoEmail: string, socialId: string) => {
-  try {
-    const response = await client.post<AppleLoginResponse>('/login/kakao', {
-      kakaoName,
-      kakaoEmail,
-      socialId,
-    });
-
-    // 서버가 토큰을 Body가 아닌 'Set-Cookie' 헤더로 주는 경우 처리
-    const cookies = response.headers['set-cookie'];
-    if (cookies && Array.isArray(cookies)) {
-      const getCookieValue = (name: string) => {
-        const regex = new RegExp(`${name}=([^;]+)`);
-        for (const cookieString of cookies) {
-          const match = cookieString.match(regex);
-          if (match && match[1]) {
-            return match[1];
-          }
-        }
-        return undefined;
-      };
-
-      const accessToken = getCookieValue('accessToken');
-      const refreshToken = getCookieValue('refreshToken');
-
-      // 응답 데이터에 토큰 주입 (프론트엔드 로직 호환성 유지)
-      if (accessToken && response.data.result) {
-        response.data.result.accessToken = accessToken;
-      }
-      if (refreshToken && response.data.result) {
-        response.data.result.refreshToken = refreshToken;
-      }
-    }
-
-    return response.data;
-  } catch (error: any) {
-    console.error('🔥 Login API Failed:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      headers: error.response?.headers,
-      request: error.request?._url
-    });
-    throw error;
-  }
+export const appleLogin = async (identityToken: string) => {
+  const response = await client.post<AppleLoginResponse>('/login/apple', {
+    identityToken,
+  });
+  return response.data;
 };
 
 export const logout = async () => {
@@ -254,6 +183,11 @@ export const deleteMember = async (reason?: string) => {
   return response.data;
 };
 
+// deleteAppleMember and other functions remain if they are still supported by backend logic logic
+// or if they are to be replaced by Firebase deletion. 
+// Assuming deleteAppleMember is still an API call to server to maybe Clean up DB? 
+// Or maybe we should use Firebase Auth delete manually.
+// For now, keeping existing member management APIs as requested is only about Login logic.
 export const deleteAppleMember = async (authorizationCode: string) => {
   const response = await client.delete<AppleMemberDeleteResponse>('/member/delete/apple', {
     data: { authorizationCode },

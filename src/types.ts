@@ -3,6 +3,7 @@ import { MyWine } from './context/WineContext';
 
 export type RootStackParamList = {
   Login: undefined;
+  EmailLogin: undefined;
   Onboarding: undefined;
   RecommendationResult: undefined;
   Main: undefined;

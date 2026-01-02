@@ -1,8 +1,10 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMemberInfo, logout as apiLogout } from '../api/member';
-import client, { reissueToken } from '../api/client';
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../utils/tokenStorage';
+import client from '../api/client';
+import auth from '@react-native-firebase/auth';
+import { getAccessToken, saveTokens, clearTokens } from '../utils/tokenStorage';
+
 
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 
@@ -51,81 +53,52 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isNewUser, setIsNewUser] = useState(false);
 
 
+
+  // ...
+
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const persistedIsNewUser = await AsyncStorage.getItem('isNewUser');
-        const savedRecs = await AsyncStorage.getItem('recommendations');
-        const savedFlavor = await AsyncStorage.getItem('flavorProfile');
-
-        if (savedRecs) {
-          setRecommendationsState(JSON.parse(savedRecs));
+    const checkLoginStatus = async () => {
+      const token = await getAccessToken();
+      if (token) {
+        try {
+          await refreshUserInfo();
+        } catch (e) {
+          console.error('UserContext: Failed to refresh user info with token', e);
+          // Token is likely invalid or expired found in storage => Auto Logout
+          await logout(true);
         }
-
-        if (savedFlavor) {
-          setFlavorProfileState(JSON.parse(savedFlavor));
-        }
-
-        // 1. Try to get Refresh Token first
-        const refreshToken = await getRefreshToken();
-
-        if (refreshToken) {
-          try {
-            // 2. Attempt to reissue tokens
-            const response = await reissueToken(refreshToken);
-
-            if (response.isSuccess && response.result) {
-              const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.result;
-
-              // 3. Update storage with new tokens
-              await setTokens(newAccessToken, newRefreshToken);
-
-              // 4. Set headers
-              client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-
-              if (persistedIsNewUser === 'true') {
-                setIsNewUser(true);
-              }
-
-              setIsLoggedIn(true);
-
-              if (persistedIsNewUser !== 'true') {
-                await refreshUserInfo();
-              }
-            } else {
-              throw new Error('Reissue failed');
-            }
-          } catch (reissueError) {
-            console.error('App start reissue failed:', reissueError);
-            await logout(); // Token invalid, logout
-          }
-        } else {
-          // No refresh token, check access token (legacy fallback or just logout)
-          // If no refresh token, we can't maintain session indefinitely.
-          // Check if we have just access token (older version?)
-          const accessToken = await getAccessToken();
-          if (accessToken) {
-            // Try to use it, but it might expire soon.
-            client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-            setIsLoggedIn(true);
-            // Optimistically try to fetch user info
-            try {
-              await refreshUserInfo();
-            } catch (e) {
-              await logout();
-            }
-          }
-        }
-
-      } catch (error: any) {
-        console.error('Auth initialization failed:', error);
-        await logout();
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
-    initAuth();
+    const unsubscribe = auth().onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        setIsLoggedIn(true);
+        try {
+          // We might still want to refresh info if firebase login happens (e.g. Kakao)
+          // But if we have a backend token, we prefer that.
+          // For now, let's just refresh.
+          await refreshUserInfo();
+        } catch (e) {
+          console.error('UserContext: Failed to fetch user profile', e);
+        }
+      } else {
+        // Check if we have a backend token before logging out
+        const token = await getAccessToken();
+        if (token) {
+          setIsLoggedIn(true);
+        } else {
+          setIsLoggedIn(false);
+          setUser(null);
+          setFlavorProfileState(null);
+        }
+      }
+      setIsLoading(false);
+    });
+
+    checkLoginStatus();
+
+    return unsubscribe;
   }, []);
 
   const refreshUserInfo = async () => {
@@ -166,59 +139,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (accessToken: string, refreshToken?: string, isFirst: boolean = false) => {
-    try {
-      await setTokens(accessToken, refreshToken || ''); // Assuming setTokens handles empty refresh token gracefully or adjust if needed.
-      // Based on my implementation: setTokens(accessToken, refreshToken). 
-      // If refreshToken is undefined, I should probably handle it or send empty string? 
-      // Let's modify setTokens to be robust or pass empty. 
-      // Looking at tokenStorage: setGenericPassword('tokens', JSON.stringify({accessToken, refreshToken}))
-      // So it's fine.
-
-      // But wait, the previous code checked `if (refreshToken)`.
-      // I should replicate that logic to ensure I don't overwrite if not provided?
-      // Actually setTokens overwrites everything. If refreshToken is missing here, we probably want to update both. 
-      // But let's check `UserContext` usage.
-      // Usually login is called with both.
-
-      // Let's refine the replacement to be safe.
-      if (refreshToken) {
-        await setTokens(accessToken, refreshToken);
-      } else {
-        // If only accessToken is provided (rare for initial login), what should be the refresh token?
-        // In new implementation using one JSON blob, I need both or need to read existing.
-        // But for `login`, it's usually fresh.
-        await setTokens(accessToken, refreshToken || '');
-      }
-
-      client.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
-
-      // 신규 유저 여부 설정 (순서 중요: 로그인 상태 변경 전에 설정)
-      // 서버에서 isFirst가 오면 그 값을 최우선으로 사용
-      if (isFirst) {
-        setIsNewUser(true);
-        await AsyncStorage.setItem('isNewUser', 'true');
-      } else {
-        // 서버에서 기존 유저라고 하면 로컬 상태도 해제 (중요: 재로그인 시 온보딩 안 뜨게)
-        setIsNewUser(false);
-        await AsyncStorage.removeItem('isNewUser');
-      }
-
-      setIsLoggedIn(true);
-
-      // 신규 유저가 아닐 때만 유저 정보 가져오기
-      if (!isFirst) {
-        try {
-          await refreshUserInfo();
-        } catch (e) {
-          console.warn('Initial user info fetch failed, but login continues:', e);
-          // 로그인 직후에는 정보를 못 가져와도 로그아웃시키지 않음 (일시적 오류일 수 있음)
-          // 단, 401 등 치명적 오류라면 로그아웃 시키는 게 맞을 수도 있음
-        }
-      }
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
+    if (accessToken && refreshToken) {
+      await saveTokens(accessToken, refreshToken);
     }
+
+    setIsLoggedIn(true);
+
+    if (isFirst) {
+      setIsNewUser(true);
+      await AsyncStorage.setItem('isNewUser', 'true');
+    }
+
+    await refreshUserInfo();
   };
 
   const loginGuest = () => {
@@ -231,7 +163,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async (skipServerLogout: boolean = false) => {
     try {
-      // 서버 로그아웃 요청 (실패해도 로컬 로그아웃 진행)
       if (!skipServerLogout) {
         try {
           await apiLogout();
@@ -240,10 +171,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
+      try {
+        await auth().signOut();
+      } catch (e) {
+        console.warn('Firebase signOut failed (probably no user):', e);
+      }
+
       await clearTokens();
+
       await AsyncStorage.removeItem('recommendations');
       await AsyncStorage.removeItem('flavorProfile');
-      delete client.defaults.headers.common['Authorization'];
 
       setUser(null);
       setRecommendationsState([]);
@@ -251,6 +188,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setIsLoggedIn(false);
     } catch (error) {
       console.error('Logout failed:', error);
+      // Ensure we clean up locally even if everything explodes
+      await clearTokens();
+      setIsLoggedIn(false);
     }
   };
 

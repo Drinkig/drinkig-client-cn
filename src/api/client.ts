@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import Config from 'react-native-config';
-import { getAccessToken, getRefreshToken, setTokens, clearTokens } from '../utils/tokenStorage';
+import auth from '@react-native-firebase/auth';
+import { getAccessToken } from '../utils/tokenStorage';
 
 const baseURL = Config.API_URL || 'https://api.drinkig.com';
 
@@ -14,79 +14,31 @@ const client = axios.create({
   },
 });
 
-client.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401) {
-      console.log(`[API Error] 401 Unauthorized for ${originalRequest.url}`);
-    }
-
-    if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/login/apple')) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = await getRefreshToken();
-
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-
-        const response = await axios.post(`${baseURL}/reissue`, {
-          refreshToken: refreshToken
-        }, {
-          headers: {
-            Cookie: `refreshToken=${refreshToken}`, // Keep for backward compatibility if needed, but headers might not be needed if body is used
-            'Authorization-Refresh': `Bearer ${refreshToken}`
-          }
-        });
-
-        if (response.data.isSuccess) {
-
-          let newAccessToken = response.data.result?.accessToken;
-          const newRefreshToken = response.data.result?.refreshToken;
-
-          if (!newAccessToken) {
-            const authHeader = response.headers['authorization'];
-            if (authHeader && authHeader.startsWith('Bearer ')) {
-              newAccessToken = authHeader.substring(7);
-            }
-          }
-
-          if (!newAccessToken) {
-            throw new Error('No access token in reissue response');
-          }
-
-          // Use the existing refresh token if a new one wasn't returned
-          await setTokens(newAccessToken, newRefreshToken || refreshToken);
-
-          client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-          originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-
-          return client(originalRequest);
-        }
-      } catch (reissueError) {
-        console.error('Token reissue failed:', reissueError);
-
-        await clearTokens();
-
-        return Promise.reject(reissueError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
-
 client.interceptors.request.use(
   async (config) => {
-    const token = await getAccessToken();
-    if (token) {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} - Adding Authorization Header`);
-      config.headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url} - No Token Available`);
+    // 1. Try to get backend access token first
+    const accessToken = await getAccessToken();
+    if (accessToken) {
+      if (!config.headers) {
+        config.headers = {} as any;
+      }
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+      return config;
+    }
+
+    // 2. Fallback to Firebase ID Token (Legacy/Other auth methods)
+    const user = auth().currentUser;
+
+    if (user) {
+      try {
+        const token = await user.getIdToken(true);
+        if (!config.headers) {
+          config.headers = {} as any;
+        }
+        config.headers['Authorization'] = `Bearer ${token}`;
+      } catch (e) {
+        console.error('[API Request] Failed to get ID token', e);
+      }
     }
     return config;
   },
@@ -95,21 +47,15 @@ client.interceptors.request.use(
   }
 );
 
-export const reissueToken = async (refreshToken: string) => {
-  // Use axios directly to bypass interceptors if needed, or use client but be careful.
-  // Using axios directly is safer for auth endpoints to avoid loops, similar to interceptor implementation.
-  const response = await axios.post<{
-    isSuccess: boolean;
-    code: string;
-    message: string;
-    result: {
-      accessToken: string;
-      refreshToken: string;
-    };
-  }>(`${baseURL}/reissue`, {
-    refreshToken
-  });
-  return response.data;
-};
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      console.log(`[API Error] 401 Unauthorized for ${error.config.url}`);
+      console.log('[API Error] Server Message:', JSON.stringify(error.response.data));
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default client;

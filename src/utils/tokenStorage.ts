@@ -1,43 +1,41 @@
-import * as Keychain from 'react-native-keychain';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const setTokens = async (accessToken: string, refreshToken: string) => {
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+
+export const saveTokens = async (accessToken: string, refreshToken: string) => {
     try {
-        await Keychain.setGenericPassword('tokens', JSON.stringify({ accessToken, refreshToken }));
+        await AsyncStorage.multiSet([
+            [ACCESS_TOKEN_KEY, accessToken],
+            [REFRESH_TOKEN_KEY, refreshToken],
+        ]);
     } catch (error) {
-        console.error('Secure Storage Error: Could not save tokens', error);
+        console.error('Failed to save tokens', error);
     }
 };
 
 export const getAccessToken = async (): Promise<string | null> => {
     try {
-        const credentials = await Keychain.getGenericPassword();
-        if (credentials) {
-            const tokens = JSON.parse(credentials.password);
-            return tokens.accessToken;
-        }
+        return await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
     } catch (error) {
-        console.error('Secure Storage Error: Could not retrieve access token', error);
+        console.error('Failed to get access token', error);
+        return null;
     }
-    return null;
 };
 
 export const getRefreshToken = async (): Promise<string | null> => {
     try {
-        const credentials = await Keychain.getGenericPassword();
-        if (credentials) {
-            const tokens = JSON.parse(credentials.password);
-            return tokens.refreshToken;
-        }
+        return await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
     } catch (error) {
-        console.error('Secure Storage Error: Could not retrieve refresh token', error);
+        console.error('Failed to get refresh token', error);
+        return null;
     }
-    return null;
 };
 
 export const clearTokens = async () => {
     try {
-        await Keychain.resetGenericPassword();
+        await AsyncStorage.multiRemove([ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY]);
     } catch (error) {
-        console.error('Secure Storage Error: Could not clear tokens', error);
+        console.error('Failed to clear tokens', error);
     }
 };
