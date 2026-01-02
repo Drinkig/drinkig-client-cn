@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMemberInfo, logout as apiLogout } from '../api/member';
+import { getOnboardingRecommendation } from '../api/wine';
 import client from '../api/client';
 import auth from '@react-native-firebase/auth';
 import { getAccessToken, saveTokens, clearTokens } from '../utils/tokenStorage';
@@ -62,10 +63,28 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (token) {
         try {
           await refreshUserInfo();
-        } catch (e) {
+
+          const savedRecs = await AsyncStorage.getItem('recommendations');
+          if (savedRecs) {
+            setRecommendationsState(JSON.parse(savedRecs));
+          } else {
+            try {
+              const recResponse = await getOnboardingRecommendation();
+              if (recResponse.isSuccess) {
+                setRecommendations(recResponse.result);
+              }
+            } catch (recError) {
+              console.warn('Failed to restore recommendations from server', recError);
+            }
+          }
+        } catch (e: any) {
           console.error('UserContext: Failed to refresh user info with token', e);
-          // Token is likely invalid or expired found in storage => Auto Logout
-          await logout(true);
+
+          if (e.response && e.response.status === 401) {
+            await logout(true);
+          } else {
+            setIsLoggedIn(true);
+          }
         }
       }
       setIsLoading(false);
