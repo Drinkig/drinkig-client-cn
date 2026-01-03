@@ -265,9 +265,12 @@ export default function TastingNoteWriteScreen() {
       }
     } catch (error) {
       console.error('Tasting note submit error:', error);
+      const isAuthError = (error as any).response?.status === 401;
       showAlert({
         title: '오류',
-        message: '네트워크 오류가 발생했습니다.',
+        message: isAuthError
+          ? '인증 세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요.'
+          : '네트워크 오류가 발생했습니다.',
         singleButton: true,
       });
     } finally {

@@ -76,6 +76,7 @@ client.interceptors.response.use(
           throw new Error('No refresh token available');
         }
 
+
         const { result } = await reissueToken(refreshToken);
 
         if (result && result.accessToken && result.refreshToken) {
@@ -83,7 +84,11 @@ client.interceptors.response.use(
 
           // Update default headers and original request headers
           client.defaults.headers.common['Authorization'] = `Bearer ${result.accessToken}`;
-          originalRequest.headers['Authorization'] = `Bearer ${result.accessToken}`;
+
+          // Force update the header
+          if (originalRequest.headers) {
+            originalRequest.headers['Authorization'] = `Bearer ${result.accessToken}`;
+          }
 
           console.log('[API Refresh] Token refreshed successfully. Retrying request...');
           return client(originalRequest);

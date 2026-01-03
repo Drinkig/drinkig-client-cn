@@ -56,9 +56,23 @@ export default function VintageSelectionModal({
                 ]}>
                   {item.year}
                 </Text>
-                {selectedVintage?.year === item.year && (
-                  <Ionicons name="checkmark" size={20} color="#8e44ad" />
-                )}
+
+                <View style={styles.rightContainer}>
+                  {item.reviews && item.reviews.length > 0 && (
+                    <View style={styles.ratingInfoContainer}>
+                      <Ionicons name="star" size={14} color="#f1c40f" style={styles.ratingIcon} />
+                      <Text style={styles.ratingText}>
+                        {item.rating ? item.rating.toFixed(1) : '0.0'}
+                      </Text>
+                      <Text style={styles.reviewCount}>
+                        ({item.reviews.length})
+                      </Text>
+                    </View>
+                  )}
+                  {selectedVintage?.year === item.year && (
+                    <Ionicons name="checkmark" size={20} color="#8e44ad" style={styles.checkmark} />
+                  )}
+                </View>
               </TouchableOpacity>
             )}
             contentContainerStyle={styles.vintageModalList}
@@ -121,6 +135,34 @@ const styles = StyleSheet.create({
   vintageModalItemTextSelected: {
     color: '#8e44ad',
     fontWeight: 'bold',
+  },
+  rightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ratingInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  ratingIcon: {
+    marginRight: 4,
+  },
+  ratingText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+    marginRight: 4,
+    lineHeight: 18, // Explicit line height for vertical centering
+  },
+  reviewCount: {
+    color: '#666',
+    fontSize: 12,
+    fontWeight: 'normal',
+    lineHeight: 18, // Match line height for shared baseline feeling
+  },
+  checkmark: {
+    marginLeft: 4,
   },
 });
 

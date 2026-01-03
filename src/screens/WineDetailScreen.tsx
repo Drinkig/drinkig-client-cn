@@ -18,7 +18,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../types/Wine';
 import { MyWine } from '../context/WineContext';
-import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist } from '../api/wine';
+import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist, getWineReviews } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
 
 
@@ -204,6 +204,54 @@ export default function WineDetailScreen() {
 
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
+  const [vintageStats, setVintageStats] = useState<{ [key: string]: { rating: number; count: number; reviews: any[] } }>({});
+
+  useEffect(() => {
+    const fetchVintageStats = async () => {
+      if (!wine.id) return;
+      try {
+        const response = await getWineReviews(wine.id as number, {
+          sortType: '최신순',
+          page: 0,
+          size: 100, // Fetch up to 100 reviews for stat calculation
+        });
+
+        if (response.isSuccess) {
+          const stats: { [key: string]: { sum: number; count: number; reviews: any[] } } = {};
+
+          response.result.content.forEach((review) => {
+            if (review.vintageYear) {
+              const year = review.vintageYear.toString();
+              if (!stats[year]) {
+                stats[year] = { sum: 0, count: 0, reviews: [] };
+              }
+              stats[year].sum += review.rating;
+              stats[year].count += 1;
+              stats[year].reviews.push(review);
+            }
+          });
+
+          const finalStats: { [key: string]: { rating: number; count: number; reviews: any[] } } = {};
+          Object.keys(stats).forEach(key => {
+            finalStats[key] = {
+              rating: stats[key].sum / stats[key].count,
+              count: stats[key].count,
+              reviews: stats[key].reviews
+            };
+          });
+
+          setVintageStats(finalStats);
+        }
+      } catch (error) {
+        console.error('Failed to fetch reviews for stats:', error);
+      }
+    };
+
+    if (isFocused) {
+      fetchVintageStats();
+    }
+  }, [wine.id, isFocused]);
+
   const vintages = useMemo(() => {
     const list: VintageData[] = [{
       year: 'ALL',
@@ -212,14 +260,12 @@ export default function WineDetailScreen() {
       prices: []
     }];
 
-
     list.push({
       year: 'NV',
       rating: 0,
       reviews: [],
       prices: []
     });
-
 
     for (let year = 2025; year >= 1950; year--) {
       list.push({
@@ -230,17 +276,28 @@ export default function WineDetailScreen() {
       });
     }
 
-
+    // Merge with rawVintages if available
+    let mergedList = list;
     if (rawVintages) {
-      return list.map(vItem => {
+      mergedList = list.map(vItem => {
         if (vItem.year === 'ALL') return vItem;
         const realData = rawVintages.find(rv => rv.year === vItem.year);
         return realData ? realData : vItem;
       });
     }
 
-    return list;
-  }, [rawVintages]);
+    // Merge with fetched vintageStats
+    return mergedList.map(vItem => {
+      if (vintageStats[vItem.year]) {
+        return {
+          ...vItem,
+          rating: vintageStats[vItem.year].rating,
+          reviews: vintageStats[vItem.year].reviews,
+        };
+      }
+      return vItem;
+    });
+  }, [rawVintages, vintageStats]);
 
 
 
