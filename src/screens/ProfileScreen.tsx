@@ -44,12 +44,23 @@ const ProfileScreen = () => {
 
       if (response.isSuccess) {
 
-        let notes = [];
+        let notes: any[] = [];
         if (Array.isArray(response.result)) {
           notes = response.result;
         } else if (response.result && Array.isArray((response.result as any).content)) {
           notes = (response.result as any).content;
         }
+
+        // S3 이미지 URL Fallback 적용
+        notes = notes.map((note: any) => {
+          if (!note.imageUrl && note.wineId) {
+            return {
+              ...note,
+              imageUrl: `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${note.wineId}.png`
+            };
+          }
+          return note;
+        });
 
         setTastingNotes(notes);
         setWineCount(notes.length);

@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { getMyWines, MyWineDTO, getWineDetailPublic } from '../api/wine';
+import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
@@ -55,20 +55,14 @@ const MyWineScreen = () => {
         let wines = response.result || [];
 
 
-        const updatedWines = await Promise.all(wines.map(async (wine) => {
+        const updatedWines = wines.map((wine) => {
           if (!wine.wineImageUrl) {
-            try {
-
-              const detailRes = await getWineDetailPublic(wine.wineId);
-              if (detailRes.isSuccess && detailRes.result.wineInfoResponse.imageUrl) {
-                return { ...wine, wineImageUrl: detailRes.result.wineInfoResponse.imageUrl };
-              }
-            } catch (err) {
-              // 실패 시 로그 없이 원본 반환
-            }
+            // S3 버킷의 wine 폴더에서 직접 이미지 URL 구성
+            // 예: https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/123.png
+            wine.wineImageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wine.wineId}.png`;
           }
           return wine;
-        }));
+        });
 
         setMyWines(updatedWines);
       } else {
@@ -146,7 +140,10 @@ const MyWineScreen = () => {
   const renderWineItem = ({ item }: { item: MyWineDTO }) => (
     <TouchableOpacity
       style={[styles.wineItem, { width: itemWidth }]}
-      onPress={() => navigation.navigate('MyWineDetail', { wineId: item.myWineId })}
+      onPress={() => navigation.navigate('MyWineDetail', {
+        wineId: item.myWineId,
+        wineImageUrl: item.wineImageUrl
+      })}
       activeOpacity={0.8}
     >
       <View style={styles.wineImageContainer}>

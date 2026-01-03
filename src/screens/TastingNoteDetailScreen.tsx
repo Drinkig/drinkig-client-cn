@@ -42,7 +42,11 @@ export default function TastingNoteDetailScreen() {
       setIsLoading(true);
       const response = await getTastingNoteDetail(tastingNoteId);
       if (response.isSuccess) {
-        setNote(response.result);
+        let noteData = response.result;
+        if (!noteData.imageUrl && noteData.wineId) {
+          noteData.imageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${noteData.wineId}.png`;
+        }
+        setNote(noteData);
       } else {
         showAlert({
           title: '오류',

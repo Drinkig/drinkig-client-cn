@@ -59,10 +59,15 @@ export default function TastingNoteWriteScreen() {
 
   useEffect(() => {
     if (route.params?.wineId) {
+      let imageUrl = route.params.wineImage;
+      if (!imageUrl && route.params.wineId) {
+        imageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${route.params.wineId}.png`;
+      }
+
       setSelectedWine({
         wineId: route.params.wineId,
         wineName: route.params.wineName,
-        wineImage: route.params.wineImage,
+        wineImage: imageUrl,
         wineType: route.params.wineType,
       });
 
@@ -152,10 +157,16 @@ export default function TastingNoteWriteScreen() {
 
   const handleSelectWine = (wine: WineUserDTO) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+
+    let imageUrl = wine.imageUrl;
+    if (!imageUrl && wine.wineId) {
+      imageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wine.wineId}.png`;
+    }
+
     setSelectedWine({
       wineId: wine.wineId,
       wineName: wine.name,
-      wineImage: wine.imageUrl,
+      wineImage: imageUrl,
       wineType: wine.sort,
     });
     setColor('');

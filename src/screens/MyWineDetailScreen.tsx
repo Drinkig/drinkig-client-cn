@@ -15,7 +15,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
-import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic } from '../api/wine';
+import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
@@ -40,16 +40,14 @@ export default function MyWineDetailScreen() {
       if (response.isSuccess) {
         let wineData = response.result;
 
+        // Route params로 넘어온 이미지가 있으면 우선 사용
+        if (!wineData.wineImageUrl && route.params?.wineImageUrl) {
+          wineData = { ...wineData, wineImageUrl: route.params.wineImageUrl };
+        }
 
         if (!wineData.wineImageUrl) {
-          try {
-            const detailRes = await getWineDetailPublic(wineData.wineId);
-            if (detailRes.isSuccess && detailRes.result.wineInfoResponse.imageUrl) {
-              wineData = { ...wineData, wineImageUrl: detailRes.result.wineInfoResponse.imageUrl };
-            }
-          } catch (err) {
-
-          }
+          // S3 버킷의 wine 폴더에서 직접 이미지 URL 구성
+          wineData.wineImageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wineData.wineId}.png`;
         }
 
         setWine(wineData);

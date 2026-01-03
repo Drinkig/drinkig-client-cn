@@ -16,7 +16,7 @@ export type RootStackParamList = {
   WineSearch: { returnScreen?: keyof RootStackParamList } | undefined;
   SearchResult: { searchKeyword: string; returnScreen?: keyof RootStackParamList };
   WineDetail: { wine: WineDBItem | MyWine };
-  MyWineDetail: { wineId: number };
+  MyWineDetail: { wineId: number; wineImageUrl?: string };
   TastingNoteWrite: { wineId?: number; wineName?: string; wineImage?: string; wineType?: string } | undefined;
   TastingNoteDetail: { tastingNoteId: number };
   WithdrawRetention: { authType: string };
