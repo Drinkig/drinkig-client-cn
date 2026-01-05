@@ -211,7 +211,7 @@ export default function TastingNoteDetailScreen() {
 
             <View style={styles.infoBox}>
               <Text style={styles.boxTitle}>Nose</Text>
-              <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }}>
+              <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }} showsVerticalScrollIndicator={false}>
                 <View style={styles.noseTagsContainer}>
                   {note.noseList && note.noseList.length > 0 ? (
                     note.noseList.map((scent, index) => (
@@ -229,7 +229,7 @@ export default function TastingNoteDetailScreen() {
 
             <View style={[styles.infoBox, { flex: 1 }]}>
               <Text style={styles.boxTitle}>Finish</Text>
-              <ScrollView nestedScrollEnabled>
+              <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
                 <View style={styles.noseTagsContainer}>
                   {finishTags.length > 0 ? (
                     finishTags.map((tag, index) => (
@@ -251,7 +251,7 @@ export default function TastingNoteDetailScreen() {
 
         <View style={styles.bottomSectionWrapper}>
           <Text style={styles.sectionHeader}>Review</Text>
-          <ScrollView style={styles.bottomScroll} contentContainerStyle={styles.bottomContent}>
+          <ScrollView style={styles.bottomScroll} contentContainerStyle={styles.bottomContent} showsVerticalScrollIndicator={false}>
             <Text style={styles.bodyText}>
               {reviewText || '작성된 리뷰가 없습니다.'}
             </Text>

@@ -37,6 +37,7 @@ export default function VintageSelectionModal({
             </TouchableOpacity>
           </View>
           <FlatList
+            showsVerticalScrollIndicator={false}
             data={vintages}
             keyExtractor={(item) => item.year}
             renderItem={({ item }) => (

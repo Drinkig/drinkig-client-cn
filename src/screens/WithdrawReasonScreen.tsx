@@ -162,7 +162,7 @@ const WithdrawReasonScreen = () => {
                 <View style={{ width: 28 }} />
             </View>
 
-            <ScrollView style={styles.content}>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <Text style={styles.questionText}>
                     떠나시는 이유를 알려주세요.{'\n'}
                     더 나은 서비스를 만드는 데 도움이 됩니다.

@@ -109,7 +109,7 @@ const RecommendationResultScreen = () => {
         <Text style={styles.subtitle}>회원님께 딱 맞는 와인 스타일을 찾았어요!</Text>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {flavorProfile && (
           <Animated.View

@@ -43,7 +43,7 @@ const RecommendationListScreen = () => {
         <View style={{ width: 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.introContainer}>
           <Text style={styles.introTitle}>{user?.nickname || '회원'}님에게 추천드려요!</Text>
         </View>

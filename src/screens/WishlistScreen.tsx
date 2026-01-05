@@ -132,6 +132,7 @@ export default function WishlistScreen() {
           </View>
         ) : (
           <FlatList
+            showsVerticalScrollIndicator={false}
             data={wishlist}
             renderItem={renderItem}
             keyExtractor={item => item.wineId.toString()}

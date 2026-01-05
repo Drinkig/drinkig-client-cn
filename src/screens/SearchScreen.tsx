@@ -205,6 +205,7 @@ export default function SearchScreen() {
       <View style={styles.content}>
         {searchText.length > 0 ? (
           <FlatList
+            showsVerticalScrollIndicator={false}
             data={searchResults}
             renderItem={renderSearchResult}
             keyExtractor={item => item.id.toString()}
@@ -216,7 +217,7 @@ export default function SearchScreen() {
             }
           />
         ) : (
-          <ScrollView style={styles.content}>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.recentSearchContainer}>
               <Text style={styles.sectionTitle}>최근 검색어</Text>
               {recentSearches.length > 0 ? (

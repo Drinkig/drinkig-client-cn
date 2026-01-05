@@ -151,6 +151,7 @@ export default function SearchResultScreen() {
           </View>
         ) : (
           <FlatList
+            showsVerticalScrollIndicator={false}
             data={searchResults}
             renderItem={renderSearchResult}
             keyExtractor={item => item.id.toString()}

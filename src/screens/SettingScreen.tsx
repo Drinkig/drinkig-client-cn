@@ -166,7 +166,7 @@ const SettingScreen = () => {
         <View style={{ width: 28 }} />
       </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>내 계정</Text>

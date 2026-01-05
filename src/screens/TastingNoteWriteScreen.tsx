@@ -305,7 +305,7 @@ export default function TastingNoteWriteScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
 
           <View style={[styles.section, { zIndex: 100 }]}>
@@ -353,7 +353,7 @@ export default function TastingNoteWriteScreen() {
                       <ScrollView
                         keyboardShouldPersistTaps="handled"
                         nestedScrollEnabled={true}
-                        showsVerticalScrollIndicator={true}
+                        showsVerticalScrollIndicator={false}
                       >
                         {searchResults.map((item) => (
                           <TouchableOpacity

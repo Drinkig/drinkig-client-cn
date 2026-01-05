@@ -197,7 +197,7 @@ export default function FoodPairingResultScreen() {
                 <View />
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <Animated.View style={[styles.heroContainer, { opacity: heroAnim, transform: [{ translateY: heroY }] }]}>
 
                     {/* Step 1 Text */}

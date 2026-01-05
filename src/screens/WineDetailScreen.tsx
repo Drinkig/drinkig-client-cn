@@ -383,7 +383,7 @@ export default function WineDetailScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} stickyHeaderIndices={[2]}>
+      <ScrollView contentContainerStyle={styles.content} stickyHeaderIndices={[2]} showsVerticalScrollIndicator={false}>
 
         <View>
           <View style={styles.imageContainer}>

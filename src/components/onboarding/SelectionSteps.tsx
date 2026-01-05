@@ -24,7 +24,7 @@ export const SingleSelectionStep = ({ title, options, selected, onSelect }: Sele
   return (
     <View style={styles.content}>
       <Text style={styles.stepTitle}>{title}</Text>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
           {options.map((opt) => (
             <TouchableOpacity
@@ -60,7 +60,7 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
     <View style={styles.content}>
       <Text style={styles.stepTitle}>{title}</Text>
       <Text style={styles.stepDesc}>여러 개 선택 가능해요.</Text>
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
           {options.map((opt) => {
             if (allowCustomInput && opt === '기타') {
