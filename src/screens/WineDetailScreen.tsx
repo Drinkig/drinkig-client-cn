@@ -10,6 +10,8 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  Animated,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, useIsFocused, RouteProp } from '@react-navigation/native';
@@ -20,6 +22,7 @@ import { WineDBItem, VintageData } from '../types/Wine';
 import { MyWine } from '../context/WineContext';
 import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist, getWineReviews } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
+
 
 
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
@@ -51,6 +54,49 @@ export default function WineDetailScreen() {
   const [activeTab, setActiveTab] = activeTabState;
   const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
   const [isVintageModalVisible, setVintageModalVisible] = useState(false);
+  const [isFabOpen, setIsFabOpen] = useState(false);
+  const fabAnimation = React.useRef(new Animated.Value(0)).current;
+
+  const toggleFab = () => {
+    const toValue = isFabOpen ? 0 : 1;
+    Animated.timing(fabAnimation, {
+      toValue,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+    setIsFabOpen(!isFabOpen);
+  };
+
+  const fabRotation = fabAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '45deg'],
+  });
+
+  const option1TranslateY = fabAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [20, -10],
+  });
+
+  const option1Opacity = fabAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const option2TranslateY = fabAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [20, -20],
+  });
+
+  const option2Opacity = fabAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const closeFab = () => {
+    if (isFabOpen) {
+      toggleFab();
+    }
+  };
 
 
   useEffect(() => {
@@ -350,6 +396,36 @@ export default function WineDetailScreen() {
     navigation.navigate('WineAdd', { wine: { ...wine, nameKor, nameEng, type, country, grape, id: wine.id } });
   };
 
+  const handleWriteNote = () => {
+    navigation.navigate('TastingNoteWrite', {
+      wineId: wine.id as number,
+      wineName: nameKor,
+      wineImage: imageUri,
+      wineType: type,
+    });
+  };
+
+  const handleAddToMyWine = () => {
+    const wineToPass = {
+      ...wine,
+      nameKor: nameKor,
+      nameEng: nameEng,
+      type: type,
+      country: country,
+      grape: grape,
+      imageUri: imageUri,
+      id: wine.id,
+    };
+    // @ts-ignore
+    navigation.navigate('WineAdd', { wine: wineToPass });
+    closeFab();
+  };
+
+  const handleWriteNoteWithClose = () => {
+    handleWriteNote();
+    closeFab();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
@@ -481,7 +557,7 @@ export default function WineDetailScreen() {
       </ScrollView>
 
 
-      {isMyWineItem && (
+      {isMyWineItem ? (
         <View style={styles.bottomButtonContainer}>
           <TouchableOpacity
             style={styles.recordButton}
@@ -493,6 +569,89 @@ export default function WineDetailScreen() {
             </Text>
           </TouchableOpacity>
         </View>
+      ) : (
+        <>
+          {isFabOpen && (
+            <TouchableWithoutFeedback onPress={toggleFab}>
+              <View style={styles.fabOverlay} />
+            </TouchableWithoutFeedback>
+          )}
+          <View style={styles.fabContainer}>
+            {isFabOpen && (
+              <View style={styles.fabOptionsContainer}>
+                <Animated.View
+                  style={[
+                    styles.fabOptionItem,
+                    {
+                      opacity: option1Opacity,
+                      transform: [{ translateY: option1TranslateY }],
+                      marginBottom: 16
+                    }
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={styles.fabCombinedButtonShadow}
+                    onPress={handleAddToMyWine}
+                    activeOpacity={0.8}
+                  >
+                    <View
+                      style={styles.fabCombinedGradient}
+                    >
+                      <View style={styles.fabTextContainer}>
+                        <Text style={styles.fabCombinedLabel}>보유 와인 등록</Text>
+                      </View>
+                      <View style={styles.fabIconContainer}>
+                        <MaterialCommunityIcons name="bottle-wine-outline" size={20} color="#fff" />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+
+                <Animated.View
+                  style={[
+                    styles.fabOptionItem,
+                    {
+                      opacity: option2Opacity,
+                      transform: [{ translateY: option2TranslateY }],
+                      marginBottom: 0
+                    }
+                  ]}
+                >
+                  <TouchableOpacity
+                    style={styles.fabCombinedButtonShadow}
+                    onPress={handleWriteNoteWithClose}
+                    activeOpacity={0.8}
+                  >
+                    <View
+                      style={styles.fabCombinedGradient}
+                    >
+                      <View style={styles.fabTextContainer}>
+                        <Text style={styles.fabCombinedLabel}>노트 작성</Text>
+                      </View>
+                      <View style={styles.fabIconContainer}>
+                        <MaterialCommunityIcons name="pencil-outline" size={20} color="#fff" />
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={styles.fabMainButtonShadow}
+              onPress={toggleFab}
+              activeOpacity={0.9}
+            >
+              <View
+                style={[styles.fabMainGradient, { backgroundColor: isFabOpen ? '#555' : '#333' }]}
+              >
+                <Animated.View style={{ transform: [{ rotate: fabRotation }] }}>
+                  <MaterialCommunityIcons name="plus" size={32} color="#fff" />
+                </Animated.View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </>
       )}
 
 
@@ -625,30 +784,6 @@ const styles = StyleSheet.create({
   tabBody: {
     minHeight: 300,
   },
-  bottomButtonContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    paddingBottom: 34,
-    backgroundColor: '#1a1a1a',
-    borderTopWidth: 1,
-    borderTopColor: '#333',
-  },
-  recordButton: {
-    backgroundColor: '#e74c3c',
-    borderRadius: 12,
-    height: 50,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  recordButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   vintageSelectContainer: {
     paddingVertical: 16,
     paddingHorizontal: 24,
@@ -679,5 +814,117 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#8e44ad',
     fontWeight: '600',
+  },
+  bottomButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    paddingBottom: 34,
+    backgroundColor: '#1a1a1a',
+    borderTopWidth: 1,
+    borderTopColor: '#333',
+  },
+  recordButton: {
+    backgroundColor: '#e74c3c',
+    borderRadius: 12,
+    height: 50,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recordButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 24,
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  fabOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 999,
+  },
+  fabMainButtonShadow: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  fabMainGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#333',
+  },
+  fabOptionsContainer: {
+    position: 'absolute',
+    bottom: 50,
+    right: 0,
+    minWidth: 300,
+    alignItems: 'flex-end',
+    marginBottom: 0,
+    zIndex: 2000,
+  },
+  fabOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginBottom: 16,
+    paddingRight: 0,
+  },
+  fabCombinedButtonShadow: {
+    width: 154,
+    height: 48,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+    marginRight: 0,
+    justifyContent: 'center',
+  },
+  fabCombinedGradient: {
+    width: '100%',
+    height: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 24,
+    backgroundColor: '#333',
+    paddingRight: 6,
+  },
+  fabTextContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 12,
+  },
+  fabIconContainer: {
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fabCombinedLabel: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+  fabIcon: {
+    marginLeft: 0,
   },
 });

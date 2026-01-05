@@ -147,7 +147,7 @@ export default function TastingNoteDetailScreen() {
       </View>
 
 
-      <View style={styles.contentContainer}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
 
         <View style={styles.topSection}>
@@ -211,7 +211,7 @@ export default function TastingNoteDetailScreen() {
 
             <View style={styles.infoBox}>
               <Text style={styles.boxTitle}>Nose</Text>
-              <ScrollView nestedScrollEnabled style={{ maxHeight: 80 }} showsVerticalScrollIndicator={false}>
+              <View>
                 <View style={styles.noseTagsContainer}>
                   {note.noseList && note.noseList.length > 0 ? (
                     note.noseList.map((scent, index) => (
@@ -223,13 +223,13 @@ export default function TastingNoteDetailScreen() {
                     <Text style={styles.emptyText}>-</Text>
                   )}
                 </View>
-              </ScrollView>
+              </View>
             </View>
 
 
             <View style={[styles.infoBox, { flex: 1 }]}>
               <Text style={styles.boxTitle}>Finish</Text>
-              <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+              <View>
                 <View style={styles.noseTagsContainer}>
                   {finishTags.length > 0 ? (
                     finishTags.map((tag, index) => (
@@ -241,7 +241,7 @@ export default function TastingNoteDetailScreen() {
                     <Text style={styles.emptyText}>-</Text>
                   )}
                 </View>
-              </ScrollView>
+              </View>
             </View>
           </View>
         </View>
@@ -251,14 +251,14 @@ export default function TastingNoteDetailScreen() {
 
         <View style={styles.bottomSectionWrapper}>
           <Text style={styles.sectionHeader}>Review</Text>
-          <ScrollView style={styles.bottomScroll} contentContainerStyle={styles.bottomContent} showsVerticalScrollIndicator={false}>
+          <View style={styles.bottomContent}>
             <Text style={styles.bodyText}>
               {reviewText || '작성된 리뷰가 없습니다.'}
             </Text>
-          </ScrollView>
+          </View>
         </View>
 
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -315,10 +315,10 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 32,
   },
-  contentContainer: {
-    flex: 1,
+  scrollContent: {
     padding: 16,
     gap: 16,
+    paddingBottom: 40,
   },
 
   topSection: {
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
 
   middleSection: {
     flexDirection: 'row',
-    height: 220,
+    minHeight: 220,
     gap: 16,
   },
   palateColumn: {
@@ -482,7 +482,6 @@ const styles = StyleSheet.create({
 
 
   bottomSectionWrapper: {
-    flex: 1, // Takes remaining space
     backgroundColor: '#252525',
     borderRadius: 12,
     padding: 16,
@@ -493,10 +492,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  bottomScroll: {
-    flex: 1,
-  },
   bottomContent: {
-    paddingBottom: 10,
+    paddingBottom: 0,
   },
 });
