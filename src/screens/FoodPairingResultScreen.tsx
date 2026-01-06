@@ -209,8 +209,8 @@ export default function FoodPairingResultScreen() {
                             </Text>
                         ) : (
                             <Text style={styles.heroText}>
-                                <Text style={styles.highlight}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 함께할 와인을 찾고 계시군요,{'\n'}
-                                <Text style={styles.highlight}>{bestMatchSort}</Text>{getParticle(bestMatchSort, 'i')} 딱이에요!
+                                <Text style={styles.highlight}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는 와인으로{'\n'}
+                                <Text style={styles.highlight}>{bestMatchSort}</Text> 와인을 추천해 드려요!
                             </Text>
                         )}
                     </Animated.View>
@@ -220,7 +220,7 @@ export default function FoodPairingResultScreen() {
                         {place === 'RESTAURANT' ? (
                             <Text style={styles.heroSubText}>
                                 <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향을 완벽하게 분석해,{'\n'}
-                                <Text style={styles.boldWhite}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는 인생 와인을 찾아냈어요.
+                                <Text style={styles.boldWhite}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는 와인 품종을 찾아냈어요.
                             </Text>
                         ) : (
                             <Text style={styles.heroSubText}>
