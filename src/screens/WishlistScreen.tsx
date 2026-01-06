@@ -15,6 +15,8 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getWishlist, WishlistItemDTO } from '../api/wine';
 import { WineDBItem } from '../types/Wine';
 
+import { getVintageLabel } from '../utils/wineUtils';
+
 export default function WishlistScreen() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
@@ -96,7 +98,9 @@ export default function WishlistScreen() {
           <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
             <Text style={styles.typeChipText}>{item.sort}</Text>
           </View>
-          <Text style={styles.countryText}>{item.country}</Text>
+          <Text style={styles.countryText}>
+            {item.country} · {getVintageLabel(item.vintageYear)}
+          </Text>
         </View>
       </View>
       {item.vivinoRating > 0 && (
