@@ -102,12 +102,12 @@ export default function WineDetailScreen() {
   useEffect(() => {
     const fetchDetail = async () => {
       if (!isMyWineItem && wine.id) {
+        const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL'
+          ? parseInt(selectedVintage.year)
+          : undefined;
+
         try {
           setIsLoading(true);
-
-          const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL'
-            ? parseInt(selectedVintage.year)
-            : undefined;
 
           const response = await getWineDetailPublic(wine.id as number, vintageYear);
           if (response.isSuccess) {
@@ -130,7 +130,12 @@ export default function WineDetailScreen() {
           }
         } catch (error: any) {
           if (error.response && error.response.status === 400) {
-            console.log('Server detail not found (local/dummy data), using local data only.');
+            console.log(
+              'Server detail not found (local/dummy data), using local data only.',
+              '\nCode:', error.response?.data?.code,
+              '\nMessage:', error.response?.data?.message,
+              '\nParams:', { wineId: wine.id, vintageYear }
+            );
           } else {
             console.error('Failed to fetch wine detail:', error);
           }
