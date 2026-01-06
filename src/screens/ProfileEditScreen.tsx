@@ -28,6 +28,7 @@ const ProfileEditScreen = () => {
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(true);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
 
 
@@ -112,6 +113,8 @@ const ProfileEditScreen = () => {
 
 
   const handleSave = async () => {
+    if (isSaving) return;
+
     if (nicknameError || (nickname !== user?.nickname && !nicknameAvailable)) {
       showAlert({
         title: '알림',
@@ -122,6 +125,7 @@ const ProfileEditScreen = () => {
     }
 
     try {
+      setIsSaving(true);
       showLoading();
       await new Promise(resolve => setTimeout(() => resolve(true), 100));
 
@@ -157,6 +161,7 @@ const ProfileEditScreen = () => {
 
     } catch (error) {
       hideLoading();
+      setIsSaving(false);
       console.error('Profile update failed:', error);
       setTimeout(() => {
         showAlert({
@@ -224,12 +229,12 @@ const ProfileEditScreen = () => {
         </View>
 
         <TouchableOpacity
-          style={[styles.saveButton, (!canSave) && styles.saveButtonDisabled]}
+          style={[styles.saveButton, (!canSave || isSaving) && styles.saveButtonDisabled]}
           onPress={handleSave}
-          disabled={!canSave}
+          disabled={!canSave || isSaving}
         >
-          <Text style={[styles.saveButtonText, !canSave && styles.saveButtonTextDisabled]}>
-            저장하기
+          <Text style={[styles.saveButtonText, (!canSave || isSaving) && styles.saveButtonTextDisabled]}>
+            {isSaving ? '저장 중...' : '저장하기'}
           </Text>
         </TouchableOpacity>
       </View>
