@@ -13,7 +13,8 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
-import { updateMemberInfo, uploadProfileImage, checkNickname } from '../api/member';
+import { updateMemberInfo, uploadProfileImage, deleteProfileImage, checkNickname } from '../api/member';
+import PhotoOptionsBottomSheet from '../components/common/PhotoOptionsBottomSheet';
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
@@ -29,16 +30,26 @@ const ProfileEditScreen = () => {
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
 
 
 
 
   const hasNicknameChanged = nickname !== user?.nickname;
-  const hasImageChanged = selectedImageAsset !== null;
+  const hasImageChanged = profileImage !== (user?.profileImage || null);
 
   const canSave = (hasNicknameChanged && nicknameAvailable && !isCheckingNickname) || (!hasNicknameChanged && hasImageChanged && !nicknameError);
 
-  const handleSelectImage = async () => {
+  const handleOpenImageOptions = () => {
+    setIsImageOptionsVisible(true);
+  };
+
+  const handleDeleteImage = () => {
+    setProfileImage(null);
+    setSelectedImageAsset(null);
+  };
+
+  const handleSelectImageLibrary = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       selectionLimit: 1,
@@ -137,6 +148,9 @@ const ProfileEditScreen = () => {
           selectedImageAsset.fileName || 'profile.jpg'
         );
         if (!uploadResponse.isSuccess) throw new Error('Image upload failed');
+      } else if (profileImage === null && user?.profileImage) {
+        const deleteResponse = await deleteProfileImage();
+        if (!deleteResponse.isSuccess) throw new Error('Image delete failed');
       }
 
 
@@ -185,7 +199,7 @@ const ProfileEditScreen = () => {
 
       <View style={styles.content}>
         <View style={styles.imageSection}>
-          <TouchableOpacity onPress={handleSelectImage} style={styles.imageContainer}>
+          <TouchableOpacity onPress={handleOpenImageOptions} style={styles.imageContainer}>
             <View style={styles.imageMask}>
               <Image
                 source={profileImage ? { uri: profileImage } : require('../assets/Standard_profile.png')}
@@ -238,6 +252,14 @@ const ProfileEditScreen = () => {
           </Text>
         </TouchableOpacity>
       </View>
+
+      <PhotoOptionsBottomSheet
+        visible={isImageOptionsVisible}
+        onClose={() => setIsImageOptionsVisible(false)}
+        onSelectLibrary={handleSelectImageLibrary}
+        onDelete={handleDeleteImage}
+        hasProfileImage={!!profileImage}
+      />
     </SafeAreaView>
   );
 };
