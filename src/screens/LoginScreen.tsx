@@ -171,7 +171,11 @@ const LoginScreen = () => {
 
     } catch (error: any) {
       if (error.code === 'E_CANCELLED_OPERATION') {
-        // Login Cancelled
+        showAlert({
+          title: '로그인 취소',
+          message: '카카오 로그인이 취소되었습니다.',
+          singleButton: true,
+        });
       } else {
         console.error('Kakao Login Error:', error);
         showAlert({
