@@ -760,7 +760,7 @@ const OnboardingScreen = () => {
       case 'WINE_INTEREST':
         return (
           <MultiSelectionStep
-            title="관심 있는 와인 종류는?"
+            title="추천 받고 싶은 와인 종류는?"
             options={WINE_SORTS}
             selected={formData.wineSort}
             onSelect={(v: string) => toggleSelection('wineSort', v)}
