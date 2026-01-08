@@ -7,7 +7,7 @@ import { useUser } from '../context/UserContext';
 import { getOnboardingRecommendation, OnboardingRecommendationDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart'; // 차트 컴포넌트 import
 
-const RANK_BADGES = ['🥇', '🥈', '🥉'];
+
 const RANK_TITLES = [
   "가장 추천하는 스타일",
   "이런 스타일도 좋아요",
@@ -128,6 +128,10 @@ const RecommendationResultScreen = () => {
           >
             <Text style={styles.chartTitle}>{nickname || user?.nickname}님의 입맛 취향</Text>
             <PentagonRadarChart data={flavorProfile} size={220} />
+            <Text style={styles.chartHelperText}>
+              와인 고를 때 고민된다면{'\n'}
+              소믈리에나 직원에게 보여주세요
+            </Text>
           </Animated.View>
         )}
 
@@ -153,7 +157,6 @@ const RecommendationResultScreen = () => {
             >
               <View style={styles.cardHeader}>
                 <View style={styles.headerTitleContainer}>
-                  <Text style={styles.rankBadge}>{RANK_BADGES[index]}</Text>
                   <Text style={styles.cardTitle}>{RANK_TITLES[index]}</Text>
                 </View>
               </View>
@@ -229,8 +232,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
     backgroundColor: '#1a1a1a',
-    paddingTop: 14,
-    paddingBottom: 1,
+    paddingTop: 24,
+    paddingBottom: 24,
     paddingHorizontal: 20,
     borderRadius: 20,
     borderWidth: 1,
@@ -242,11 +245,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+  chartHelperText: {
+    color: '#888',
+    fontSize: 13,
+    marginTop: 4,
+    marginBottom: 8,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
   card: {
     backgroundColor: '#1e1e1e',
     borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 15,
+    paddingBottom: 15,
     borderWidth: 1,
     borderColor: '#333',
   },
@@ -258,7 +270,7 @@ const styles = StyleSheet.create({
   },
   typeChip: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 6,
     borderRadius: 12,
   },
   typeChipText: {
@@ -269,7 +281,6 @@ const styles = StyleSheet.create({
   headerTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
   rankBadge: {
     fontSize: 20,
@@ -278,13 +289,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     color: '#fff',
+    marginLeft: 10,
   },
   cardBody: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#2a2a2a',
     borderRadius: 12,
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     marginBottom: 0,
   },
   iconContainer: {
