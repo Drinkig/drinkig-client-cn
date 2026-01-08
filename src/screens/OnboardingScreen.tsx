@@ -596,43 +596,31 @@ const OnboardingScreen = () => {
 
 
   const getProgress = () => {
-    if (step === 'INTRO') return 0;
+    if (step === 'PROFILE') return 0.15;
+    if (step === 'NEWBIE_CHECK') return 0.3;
 
+    const isNewbieMode = formData.isNewbie;
 
-    const totalSteps = formData.isNewbie ? 12 : 8;
-    let currentStep = 0;
+    if (step === 'NEWBIE_TRANSITION' || step === 'EXPERT_TRANSITION') return 0.4;
 
-    switch (step) {
-      case 'PROFILE': currentStep = 1; break;
-      case 'NEWBIE_CHECK': currentStep = 2; break;
+    if (step === 'ALCOHOL_PREF') return 0.5;
+    if (step === 'FOOD_PREF') return 0.6;
 
-      case 'NEWBIE_TRANSITION':
-      case 'EXPERT_TRANSITION':
-        currentStep = 3; break;
-
-      case 'ALCOHOL_PREF': currentStep = 4; break;
-      case 'FOOD_PREF': currentStep = 5; break;
-
-      case 'FLAVOR_ACIDITY':
-      case 'FLAVOR_PROFILE':
-        currentStep = 6;
-        break;
-
-      case 'FLAVOR_SWEETNESS': currentStep = 7; break;
-      case 'FLAVOR_TANNIN': currentStep = 8; break;
-      case 'FLAVOR_BODY': currentStep = 9; break;
-      case 'FLAVOR_ALCOHOL': currentStep = 10; break;
-
-      case 'WINE_INTEREST':
-        currentStep = formData.isNewbie ? 11 : 7;
-        break;
-
-      case 'BUDGET':
-        currentStep = formData.isNewbie ? 12 : 8;
-        break;
+    if (isNewbieMode) {
+      if (step === 'FLAVOR_ACIDITY') return 0.65;
+      if (step === 'FLAVOR_SWEETNESS') return 0.7;
+      if (step === 'FLAVOR_TANNIN') return 0.75;
+      if (step === 'FLAVOR_BODY') return 0.8;
+      if (step === 'FLAVOR_ALCOHOL') return 0.85;
+      if (step === 'WINE_INTEREST') return 0.9;
+      if (step === 'BUDGET') return 0.95;
+    } else {
+      if (step === 'FLAVOR_PROFILE') return 0.75;
+      if (step === 'WINE_INTEREST') return 0.85;
+      if (step === 'BUDGET') return 0.95;
     }
 
-    return currentStep / totalSteps;
+    return 0;
   };
 
 
@@ -942,7 +930,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   disabledButton: {
-    opacity: 0.6,
+    opacity: 0.3,
   },
   nextButtonText: {
     color: '#fff',

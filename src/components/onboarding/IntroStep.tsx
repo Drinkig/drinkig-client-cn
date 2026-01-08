@@ -4,7 +4,7 @@ import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 
 const IntroStep = () => {
   const fullTitle = "안녕하세요!\n저는 소믈리에 드링키에요.";
-  const fullDesc = "몇 가지 질문을 통해\n회원님의 와인 취향을 분석하고 추천해드릴게요.";
+  const fullDesc = "몇 가지 질문을 통해 회원님의 와인 취향을\n분석하고 추천해드릴게요.";
 
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
@@ -16,7 +16,6 @@ const IntroStep = () => {
       currentIdx++;
       setTitle(fullTitle.slice(0, currentIdx));
 
-      // 햅틱
       const char = fullTitle[currentIdx - 1];
       if (char && char !== ' ' && char !== '\n') {
         ReactNativeHapticFeedback.trigger("impactLight", {

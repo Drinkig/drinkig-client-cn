@@ -71,7 +71,7 @@ const LoginScreen = () => {
 
   const onEmailLoginLinkPress = () => {
     if (loading) return;
-    navigation.navigate('EmailLogin'); // Assuming you have an 'EmailLogin' screen in your navigator
+    navigation.navigate('EmailLogin');
   };
 
   useFocusEffect(
@@ -87,7 +87,6 @@ const LoginScreen = () => {
     if (loading) return;
     setLoading(true);
     try {
-      // 1. Start the Apple login process
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: appleAuth.Operation.LOGIN,
         requestedScopes: [appleAuth.Scope.EMAIL, appleAuth.Scope.FULL_NAME],
@@ -99,12 +98,10 @@ const LoginScreen = () => {
 
       const { identityToken } = appleAuthRequestResponse;
 
-      // 2. Exchange Identity Token for Backend Access Token
       const response = await appleLogin(identityToken);
 
       if (response.isSuccess && response.result) {
         const { accessToken, refreshToken, isFirst } = response.result;
-        // 3. Login via UserContext (Saves tokens and updates state)
         await login(accessToken, refreshToken, isFirst);
       } else {
         throw new Error(response.message || 'Token exchange failed');
@@ -112,7 +109,6 @@ const LoginScreen = () => {
 
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
-        // User canceled Apple Sign In - do nothing
       } else {
         console.error('Apple Login Error:', error);
         showAlert({
@@ -130,38 +126,27 @@ const LoginScreen = () => {
     if (loading) return;
     setLoading(true);
     try {
-      // 1. Get Access Token from Kakao SDK
       const token = await KakaoLogin.login();
-
-      // 2. Exchange Kakao Token for Backend Tokens / Firebase Custom Token
       const response: any = await exchangeKakaoToken(token.accessToken);
 
       let customToken, accessToken, refreshToken, isFirst;
 
-      // Handle response structure variations
       if (response && response.accessToken) {
-        // Flat structure (New DTO style)
         ({ customToken, accessToken, refreshToken, isFirst } = response);
       } else if (response && response.result) {
-        // Wrapped structure
         ({ customToken, accessToken, refreshToken, isFirst } = response.result);
       } else {
-        // Fallback or old structure if somehow 'customToken' is at root but 'accessToken' is not?
-        // Just try to grab everything from root if not found yet
         ({ customToken } = response || {});
       }
 
-      // 3. Sign In with Firebase Custom Token (IF provided)
       if (customToken) {
         try {
           await auth().signInWithCustomToken(customToken);
         } catch (firebaseError) {
           console.warn('Firebase login failed:', firebaseError);
-          // Continue, as we might have backend tokens
         }
       }
 
-      // 4. Update UserContext (Primary Login Method)
       if (accessToken && refreshToken) {
         await login(accessToken, refreshToken, isFirst);
       } else {
@@ -385,7 +370,7 @@ const styles = StyleSheet.create({
   },
   carouselContainer: {
     flex: 1,
-    height: '65%', // Adjust based on your design needs relative to buttons
+    height: '65%',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -395,7 +380,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   logo: {
-    width: 280, // Slightly improved size for carousel
+    width: 280,
     height: 280,
     marginBottom: 30,
   },
@@ -421,18 +406,18 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   indicatorActive: {
-    width: 24, // Elongated active dot
+    width: 24,
     opacity: 1,
   },
   bottomContainer: {
     width: '100%',
     paddingHorizontal: 24,
-    paddingBottom: 20, // Reduced padding bottom slightly
+    paddingBottom: 20,
   },
   buttonContainer: {
     width: '100%',
     gap: 12,
-    marginTop: 20, // Add some spacing from carousel
+    marginTop: 20,
   },
   appleButton: {
     flexDirection: 'row',

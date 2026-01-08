@@ -13,31 +13,31 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
       <Text style={styles.stepTitle}>
         {name}님은{'\n'}와인에 대해 얼마나 알고 계신가요?
       </Text>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={[styles.selectionCard, isNewbie === true && styles.selectedCard]}
         onPress={() => onSelect(true)}
       >
         <View style={styles.cardTextContainer}>
-          <Text style={styles.cardTitle}>와인 초보에요</Text>
-          <Text style={styles.cardDesc}>아직 잘 모르지만 배우고 싶어요.</Text>
+          <Text style={styles.cardTitle}>아직 잘 모르겠어요</Text>
+          <Text style={styles.cardDesc}>내 취향을 알아가고 싶어요.</Text>
         </View>
-        <Image 
+        <Image
           source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')}
           style={styles.cardImage}
           resizeMode="contain"
         />
       </TouchableOpacity>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[styles.selectionCard, isNewbie === false && styles.selectedCard]}
         onPress={() => onSelect(false)}
       >
         <View style={styles.cardTextContainer}>
           <Text style={styles.cardTitle}>즐겨 마시는 편이에요</Text>
-          <Text style={styles.cardDesc}>선호하는 스타일이 확고해요.</Text>
+          <Text style={styles.cardDesc}>좋아하는 품종이나 국가가 확실해요.</Text>
         </View>
-        <Image 
+        <Image
           source={require('../../assets/onboarding/Drinky_onboarding_2.png')}
           style={styles.cardImage}
           resizeMode="contain"
@@ -56,20 +56,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 24, // 간격을 조금 넓힘 (서브타이틀 제거로 인한 여백 확보)
-    lineHeight: 32, // 줄간격 추가
+    marginBottom: 24,
+    lineHeight: 32,
   },
   selectionCard: {
     width: '100%',
-    height: 110, // 높이 축소 (140 -> 110)
+    height: 110,
     padding: 20,
     backgroundColor: '#1e1e1e',
-    borderRadius: 16, // 라운드도 살짝 조정
+    borderRadius: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#333',
     flexDirection: 'row',
-    alignItems: 'center', // 텍스트 수직 중앙 정렬로 변경
+    alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -79,11 +79,11 @@ const styles = StyleSheet.create({
   },
   cardTextContainer: {
     flex: 1,
-    marginRight: 80, // 이미지 공간 확보
+    marginRight: 80,
     zIndex: 2,
   },
   cardTitle: {
-    fontSize: 18, // 폰트 크기 살짝 조정
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   cardImage: {
     position: 'absolute',
     right: -10,
-    bottom: -15, // 위치 미세 조정
+    bottom: -15,
     width: 100,
     height: 100,
     opacity: 0.9,
