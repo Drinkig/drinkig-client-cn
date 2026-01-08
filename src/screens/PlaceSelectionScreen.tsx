@@ -27,7 +27,7 @@ export default function PlaceSelectionScreen() {
             </View>
 
             <View style={styles.content}>
-                <Text style={styles.title}>어디서 드시나요?</Text>
+                <Text style={styles.title}>어디서 구매하시나요?</Text>
                 <Text style={styles.subtitle}>장소에 따라 최적의 와인을 추천해드려요</Text>
 
                 <View style={styles.selectionContainer}>
