@@ -69,10 +69,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const { width } = Dimensions.get('window');
 
-  const onEmailLoginLinkPress = () => {
-    if (loading) return;
-    navigation.navigate('EmailLogin');
-  };
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -303,14 +300,7 @@ const LoginScreen = () => {
                 <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
               </TouchableOpacity>
 
-              {/* Email Login Link */}
-              <TouchableOpacity
-                style={styles.emailLoginLink}
-                onPress={onEmailLoginLinkPress}
-                disabled={loading}
-              >
-                <Text style={styles.emailLoginLinkText}>이메일로 로그인</Text>
-              </TouchableOpacity>
+
             </View>
           </View>
         </View>

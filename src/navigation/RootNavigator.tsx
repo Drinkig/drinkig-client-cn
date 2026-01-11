@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useUser } from '../context/UserContext';
 import MainTabNavigator from './MainTabNavigator';
 import LoginScreen from '../screens/LoginScreen';
-import EmailLoginScreen from '../screens/EmailLoginScreen';
+
 import SplashScreen from '../screens/SplashScreen';
 import WineDetailScreen from '../screens/WineDetailScreen';
 import MyWineDetailScreen from '../screens/MyWineDetailScreen';
@@ -94,7 +94,7 @@ export default function RootNavigator() {
 
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="EmailLogin" component={EmailLoginScreen} />
+
         </>
       )}
     </Stack.Navigator>
