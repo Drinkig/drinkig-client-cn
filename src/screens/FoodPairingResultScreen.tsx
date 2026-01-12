@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Animated, Easing, BackHandler } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Animated, Easing } from 'react-native';
 import { getParticle } from '../utils/textUtils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -76,20 +76,6 @@ export default function FoodPairingResultScreen() {
     useEffect(() => {
         startAnalysisSequence();
     }, []);
-
-    useEffect(() => {
-        const backAction = () => {
-            navigation.navigate('Main');
-            return true;
-        };
-
-        const backHandler = BackHandler.addEventListener(
-            'hardwareBackPress',
-            backAction
-        );
-
-        return () => backHandler.remove();
-    }, [navigation]);
 
     const startAnalysisSequence = () => {
         Animated.sequence([
