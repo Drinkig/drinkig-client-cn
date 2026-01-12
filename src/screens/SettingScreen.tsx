@@ -30,6 +30,7 @@ const SettingScreen = () => {
 
   const [authType, setAuthType] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
 
   useEffect(() => {
     const fetchMemberInfo = async () => {
@@ -38,6 +39,7 @@ const SettingScreen = () => {
         if (response.isSuccess) {
           setAuthType(response.result.authType);
           setUserEmail(response.result.email);
+          setUsername(response.result.username);
         }
       } catch (error) {
         console.error('Failed to fetch member info:', error);
@@ -70,12 +72,41 @@ const SettingScreen = () => {
   };
 
 
-  const handleEmailPress = async (subject: string, body: string = '') => {
+  const handleEmailPress = async (type: 'REPORT' | 'SUGGESTION') => {
     const email = 'drinkeasyy@gmail.com';
+    let subject = '';
+    let body = '';
+
+    const deviceInfo = `
+-------------------
+Device: ${DeviceInfo.getModel()}
+User ID: ${username}
+OS: ${DeviceInfo.getSystemName()} ${DeviceInfo.getSystemVersion()}
+App Version: ${DeviceInfo.getVersion()}
+-------------------
+`;
+
+    if (type === 'REPORT') {
+      subject = '[오류 제보] ';
+      body = `오류를 제보해주셔서 감사합니다.
+발생한 문제에 대해 자세히 설명해 주세요. 관련 사진이나 스크린샷을 첨부해 주시면 문제 해결에 큰 도움이 됩니다.
+
+(여기에 내용을 작성해 주세요)
+
+${deviceInfo}`;
+    } else {
+      subject = '[기능 제안] ';
+      body = `기능을 제안해주셔서 감사합니다.
+제안하고 싶은 기능에 대해 자세히 설명해 주세요.
+
+(여기에 내용을 작성해 주세요)
+
+${deviceInfo}`;
+    }
+
     const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
     try {
-
       await Linking.openURL(url);
     } catch (error) {
       console.error('An error occurred', error);
@@ -210,14 +241,14 @@ const SettingScreen = () => {
           <Text style={styles.sectionTitle}>문의하기</Text>
           <TouchableOpacity
             style={styles.item}
-            onPress={() => handleEmailPress('[오류 제보] ')}
+            onPress={() => handleEmailPress('REPORT')}
           >
             <Text style={styles.itemText}>오류 제보</Text>
             <Icon name="bug-outline" size={20} color="#fff" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.item}
-            onPress={() => handleEmailPress('[기능 제안] ')}
+            onPress={() => handleEmailPress('SUGGESTION')}
           >
             <Text style={styles.itemText}>기능 제안</Text>
             <Icon name="bulb-outline" size={20} color="#fff" />
