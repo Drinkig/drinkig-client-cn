@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Animated, Easing } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Animated, Easing, BackHandler } from 'react-native';
 import { getParticle } from '../utils/textUtils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -76,6 +76,21 @@ export default function FoodPairingResultScreen() {
     useEffect(() => {
         startAnalysisSequence();
     }, []);
+
+    // Handle hardware back button
+    useEffect(() => {
+        const backAction = () => {
+            navigation.navigate('Main');
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, [navigation]);
 
     const startAnalysisSequence = () => {
         Animated.sequence([
@@ -191,7 +206,7 @@ export default function FoodPairingResultScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('Main')} style={styles.backButton}>
                     <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
                 </TouchableOpacity>
                 <View />
