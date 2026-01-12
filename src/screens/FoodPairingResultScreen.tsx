@@ -77,7 +77,6 @@ export default function FoodPairingResultScreen() {
         startAnalysisSequence();
     }, []);
 
-    // Handle hardware back button
     useEffect(() => {
         const backAction = () => {
             navigation.navigate('Main');
