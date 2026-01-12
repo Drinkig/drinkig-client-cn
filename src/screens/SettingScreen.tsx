@@ -22,6 +22,27 @@ import {
 } from '../api/member';
 import DeviceInfo from 'react-native-device-info';
 
+const MAIL_TEMPLATES = {
+  REPORT: {
+    subject: '[오류 제보] ',
+    body: `오류를 제보해주셔서 감사합니다.
+발생한 문제에 대해 자세히 설명해 주세요. 관련 사진이나 스크린샷을 첨부해 주시면 문제 해결에 큰 도움이 됩니다.
+
+(여기에 내용을 작성해 주세요)
+
+`,
+  },
+  SUGGESTION: {
+    subject: '[기능 제안] ',
+    body: `기능을 제안해주셔서 감사합니다.
+제안하고 싶은 기능에 대해 자세히 설명해 주세요.
+
+(여기에 내용을 작성해 주세요)
+
+`,
+  },
+};
+
 const SettingScreen = () => {
   const navigation = useNavigation();
   const { logout } = useUser();
@@ -86,23 +107,9 @@ App Version: ${DeviceInfo.getVersion()}
 -------------------
 `;
 
-    if (type === 'REPORT') {
-      subject = '[오류 제보] ';
-      body = `오류를 제보해주셔서 감사합니다.
-발생한 문제에 대해 자세히 설명해 주세요. 관련 사진이나 스크린샷을 첨부해 주시면 문제 해결에 큰 도움이 됩니다.
-
-(여기에 내용을 작성해 주세요)
-
-${deviceInfo}`;
-    } else {
-      subject = '[기능 제안] ';
-      body = `기능을 제안해주셔서 감사합니다.
-제안하고 싶은 기능에 대해 자세히 설명해 주세요.
-
-(여기에 내용을 작성해 주세요)
-
-${deviceInfo}`;
-    }
+    const template = MAIL_TEMPLATES[type];
+    subject = template.subject;
+    body = `${template.body}${deviceInfo}`;
 
     const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
