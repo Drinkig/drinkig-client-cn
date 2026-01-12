@@ -265,12 +265,12 @@ export default function TastingNoteDetailScreen() {
 
 const getWineTypeColor = (type: string) => {
   switch (type?.toUpperCase()) {
-    case 'RED': case '레드': return '#C0392B';
-    case 'WHITE': case '화이트': return '#D4AC0D';
-    case 'SPARKLING': case '스파클링': return '#2980B9';
-    case 'ROSE': case '로제': return '#C2185B';
-    case 'DESSERT': case '디저트': return '#D35400';
-    default: return '#7F8C8D';
+    case 'RED': case '레드': return '#EF5350';
+    case 'WHITE': case '화이트': return '#F4D03F';
+    case 'SPARKLING': case '스파클링': return '#5DADE2';
+    case 'ROSE': case '로제': return '#F1948A';
+    case 'DESSERT': case '디저트': return '#F5B041';
+    default: return '#95A5A6';
   }
 };
 

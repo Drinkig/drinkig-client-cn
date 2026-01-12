@@ -17,18 +17,18 @@ const RANK_TITLES = [
 const getWineTypeColor = (type: string) => {
   switch (type) {
     case '레드':
-      return '#C0392B';
+      return '#EF5350';
     case '화이트':
-      return '#D4AC0D';
+      return '#F4D03F';
     case '스파클링':
-      return '#2980B9';
+      return '#5DADE2';
     case '로제':
-      return '#C2185B';
+      return '#F1948A';
     case '디저트':
     case '주정강화':
-      return '#D35400';
+      return '#F5B041';
     default:
-      return '#7F8C8D';
+      return '#95A5A6';
   }
 };
 

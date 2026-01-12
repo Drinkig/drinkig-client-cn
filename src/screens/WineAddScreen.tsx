@@ -113,21 +113,21 @@ const WineAddScreen = () => {
     switch (type) {
       case '레드':
       case 'Red':
-        return '#C0392B';
+        return '#EF5350';
       case '화이트':
       case 'White':
-        return '#D4AC0D';
+        return '#F4D03F';
       case '스파클링':
       case 'Sparkling':
-        return '#2980B9';
+        return '#5DADE2';
       case '로제':
       case 'Rose':
-        return '#C2185B';
+        return '#F1948A';
       case '디저트':
       case 'Dessert':
-        return '#D35400';
+        return '#F5B041';
       default:
-        return '#7F8C8D';
+        return '#95A5A6';
     }
   };
 
