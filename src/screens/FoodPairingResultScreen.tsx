@@ -191,7 +191,7 @@ export default function FoodPairingResultScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <TouchableOpacity onPress={() => navigation.navigate('Main')} style={styles.backButton}>
                     <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
                 </TouchableOpacity>
                 <View />
