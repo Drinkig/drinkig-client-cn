@@ -12,7 +12,7 @@ const SplashScreen = () => {
       <View style={styles.contentContainer}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/Logo_Icon_2.png')}
+            source={require('../assets/Drinkig-App-Logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
