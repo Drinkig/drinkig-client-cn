@@ -4,6 +4,16 @@
 .env.local
 .env*.local
 
+# Android signing
+*.keystore
+*.jks
+google-services.json
+
+# iOS signing  
+*.mobileprovision
+*.p12
+*.cer
+
 # Xcode
 *.local
 .xcode.env
