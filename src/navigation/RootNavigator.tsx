@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useUser } from '../context/UserContext';
 import MainTabNavigator from './MainTabNavigator';
 import LoginScreen from '../screens/LoginScreen';
-
 import SplashScreen from '../screens/SplashScreen';
 import WineDetailScreen from '../screens/WineDetailScreen';
 import MyWineDetailScreen from '../screens/MyWineDetailScreen';
@@ -32,10 +31,11 @@ export default function RootNavigator() {
   const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-
+    // JS Splash Screen delay - keeps the splash visible while JS loads or for a minimum time
+    // The user explicitly wants the JS splash.
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2000);
+    }, 2000); // 2 seconds delay as before
 
     return () => clearTimeout(timer);
   }, []);
