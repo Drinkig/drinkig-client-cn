@@ -1,8 +1,13 @@
 # OSX
 .DS_Store
 .env
+.env.local
+.env*.local
 
 # Xcode
+*.local
+.xcode.env
+.xcode.env.local
 build/
 *.pbxuser
 !default.pbxuser
@@ -28,6 +33,9 @@ local.properties
 *.iml
 *.hprof
 .cxx/
+*.keystore
+*.jks
+debug.keystore
 
 # node.js
 node_modules/
