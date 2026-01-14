@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import PriceStats from '../PriceStats';
 import { getPriceHistory, PriceHistoryDTO } from '../../../api/wine';
+import { sendReportEmail } from '../../../utils/reportUtils';
 
 interface PriceTabProps {
   wineId: number;
@@ -82,6 +84,17 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
       </View>
       <View style={styles.colPrice}>
         <Text style={styles.priceText}>₩{item.price.toLocaleString()}</Text>
+        <TouchableOpacity
+          style={styles.reportBtn}
+          onPress={() => sendReportEmail('PRICE', {
+            vintage: item.vintage ? String(item.vintage) : 'NV',
+            shopName: item.shopName,
+            price: item.price,
+            purchaseDate: item.purchaseDate
+          })}
+        >
+          <MaterialCommunityIcons name="alarm-light-outline" size={16} color="#666" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -214,7 +227,13 @@ const styles = StyleSheet.create({
   },
   colPrice: {
     flex: 2,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 8,
+  },
+  reportBtn: {
+    padding: 2,
   },
   shopContainer: {
     flexDirection: 'row',

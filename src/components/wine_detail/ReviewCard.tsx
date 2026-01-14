@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ReviewDTO } from '../../api/wine';
+import { sendReportEmail } from '../../utils/reportUtils';
 
 interface ReviewCardProps {
   review: ReviewDTO;
@@ -53,7 +55,19 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       {cleanReview !== '' && (
         <Text style={styles.reviewComment}>{cleanReview}</Text>
       )}
-      <Text style={styles.reviewDate}>시음일: {displayDate}</Text>
+      <View style={styles.reviewDateContainer}>
+        <Text style={styles.reviewDate}>시음일: {displayDate}</Text>
+        <TouchableOpacity
+          style={styles.reportButton}
+          onPress={() => sendReportEmail('REVIEW', {
+            writerName: review.name,
+            reviewDate: displayDate,
+            reviewContent: cleanReview
+          })}
+        >
+          <MaterialCommunityIcons name="alarm-light-outline" size={16} color="#666" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -105,9 +119,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     lineHeight: 20,
   },
+  reviewDateContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
   reviewDate: {
     color: '#666',
     fontSize: 12,
+  },
+  reportButton: {
+    padding: 4,
   },
 });
 
