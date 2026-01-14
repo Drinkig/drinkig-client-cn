@@ -636,6 +636,8 @@ const OnboardingScreen = () => {
     }
     if (step === "FOOD_PREF") prev = "ALCOHOL_PREF";
 
+    if (step === "FLAVOR_PROFILE") prev = "FOOD_PREF";
+
     if (step === "FLAVOR_ACIDITY") prev = "FOOD_PREF";
     if (step === "FLAVOR_SWEETNESS") prev = "FLAVOR_ACIDITY";
     if (step === "FLAVOR_TANNIN") prev = "FLAVOR_SWEETNESS";
