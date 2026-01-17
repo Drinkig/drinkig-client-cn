@@ -1,44 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import { useNavigation } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-  TextInput,
   Image,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { useNavigation } from '@react-navigation/native';
-import { useUser } from '../context/UserContext';
-import { useGlobalUI } from '../context/GlobalUIContext';
-import { updateMemberInfo, uploadProfileImage, deleteProfileImage, checkNickname } from '../api/member';
-import PhotoOptionsBottomSheet from '../components/common/PhotoOptionsBottomSheet';
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { launchImageLibrary } from "react-native-image-picker";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Ionicons";
+import {
+  checkNickname,
+  deleteProfileImage,
+  updateMemberInfo,
+  uploadProfileImage,
+} from "../api/member";
+import PhotoOptionsBottomSheet from "../components/common/PhotoOptionsBottomSheet";
+import { useGlobalUI } from "../context/GlobalUIContext";
+import { useUser } from "../context/UserContext";
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const { user, refreshUserInfo } = useUser();
   const { showAlert, showLoading, hideLoading, closeAlert } = useGlobalUI();
 
+  const [nickname, setNickname] = useState(user?.nickname || "");
+  const [profileImage, setProfileImage] = useState<string | null>(
+    user?.profileImage || null
+  );
+  const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(
+    null
+  );
 
-  const [nickname, setNickname] = useState(user?.nickname || '');
-  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
-  const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(null);
-
-  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(true);
+  const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(
+    true
+  );
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
 
-
-
-
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = profileImage !== (user?.profileImage || null);
 
-  const canSave = (hasNicknameChanged && nicknameAvailable && !isCheckingNickname) || (!hasNicknameChanged && hasImageChanged && !nicknameError);
+  const canSave =
+    (hasNicknameChanged && nicknameAvailable && !isCheckingNickname) ||
+    (!hasNicknameChanged && hasImageChanged && !nicknameError);
 
   const handleOpenImageOptions = () => {
     setIsImageOptionsVisible(true);
@@ -51,7 +60,7 @@ const ProfileEditScreen = () => {
 
   const handleSelectImageLibrary = async () => {
     const result = await launchImageLibrary({
-      mediaType: 'photo',
+      mediaType: "photo",
       selectionLimit: 1,
       quality: 0.8,
       maxWidth: 1024,
@@ -66,7 +75,6 @@ const ProfileEditScreen = () => {
       setSelectedImageAsset(asset);
     }
   };
-
 
   useEffect(() => {
     if (nickname === user?.nickname) {
@@ -88,14 +96,16 @@ const ProfileEditScreen = () => {
 
     const timer = setTimeout(async () => {
       if (nickname.length < 2) {
-        setNicknameError('닉네임은 2글자 이상이어야 해요.');
+        setNicknameError("닉네임은 2글자 이상이어야 해요.");
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
       }
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nickname)) {
-        setNicknameError('올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).');
+        setNicknameError(
+          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가)."
+        );
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
@@ -108,11 +118,11 @@ const ProfileEditScreen = () => {
           setNicknameError(null);
         } else {
           setNicknameAvailable(false);
-          setNicknameError('이미 사용 중인 닉네임이에요');
+          setNicknameError("이미 사용 중인 닉네임이에요");
         }
       } catch (e) {
         console.error(e);
-        setNicknameError('닉네임 확인 중 오류가 발생했습니다.');
+        setNicknameError("닉네임 확인 중 오류가 발생했습니다.");
         setNicknameAvailable(false);
       } finally {
         setIsCheckingNickname(false);
@@ -122,15 +132,14 @@ const ProfileEditScreen = () => {
     return () => clearTimeout(timer);
   }, [nickname, user?.nickname]);
 
-
   const handleSave = async () => {
     if (isSaving) return;
 
     if (nicknameError || (nickname !== user?.nickname && !nicknameAvailable)) {
       showAlert({
-        title: '알림',
-        message: nicknameError || '닉네임 확인이 필요해요.',
-        singleButton: true
+        title: "알림",
+        message: nicknameError || "닉네임 확인이 필요해요.",
+        singleButton: true,
       });
       return;
     }
@@ -138,27 +147,25 @@ const ProfileEditScreen = () => {
     try {
       setIsSaving(true);
       showLoading();
-      await new Promise(resolve => setTimeout(() => resolve(true), 100));
-
+      await new Promise((resolve) => setTimeout(() => resolve(true), 100));
 
       if (selectedImageAsset && selectedImageAsset.uri) {
         const uploadResponse = await uploadProfileImage(
           selectedImageAsset.uri,
-          selectedImageAsset.type || 'image/jpeg',
-          selectedImageAsset.fileName || 'profile.jpg'
+          selectedImageAsset.type || "image/jpeg",
+          selectedImageAsset.fileName || "profile.jpg"
         );
-        if (!uploadResponse.isSuccess) throw new Error('Image upload failed');
+        if (!uploadResponse.isSuccess) throw new Error("Image upload failed");
       } else if (profileImage === null && user?.profileImage) {
         const deleteResponse = await deleteProfileImage();
-        if (!deleteResponse.isSuccess) throw new Error('Image delete failed');
+        if (!deleteResponse.isSuccess) throw new Error("Image delete failed");
       }
-
 
       if (nickname !== user?.nickname) {
         const updateResponse = await updateMemberInfo(nickname);
-        if (!updateResponse.isSuccess) throw new Error('Nickname update failed');
+        if (!updateResponse.isSuccess)
+          throw new Error("Nickname update failed");
       }
-
 
       await refreshUserInfo();
 
@@ -167,20 +174,19 @@ const ProfileEditScreen = () => {
 
       setTimeout(() => {
         showAlert({
-          title: '성공',
-          message: '프로필이 수정되었습니다.',
+          title: "성공",
+          message: "프로필이 수정되었습니다.",
           singleButton: true,
         });
       }, 500);
-
     } catch (error) {
       hideLoading();
       setIsSaving(false);
-      console.error('Profile update failed:', error);
+      console.error("Profile update failed:", error);
       setTimeout(() => {
         showAlert({
-          title: '오류',
-          message: '프로필 수정 중 문제가 발생했습니다.',
+          title: "오류",
+          message: "프로필 수정 중 문제가 발생했습니다.",
           singleButton: true,
         });
       }, 500);
@@ -190,7 +196,10 @@ const ProfileEditScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Icon name="chevron-back" size={28} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>프로필 수정</Text>
@@ -199,10 +208,17 @@ const ProfileEditScreen = () => {
 
       <View style={styles.content}>
         <View style={styles.imageSection}>
-          <TouchableOpacity onPress={handleOpenImageOptions} style={styles.imageContainer}>
+          <TouchableOpacity
+            onPress={handleOpenImageOptions}
+            style={styles.imageContainer}
+          >
             <View style={styles.imageMask}>
               <Image
-                source={profileImage ? { uri: profileImage } : require('../assets/Standard_profile.png')}
+                source={
+                  profileImage
+                    ? { uri: profileImage }
+                    : require("../assets/Standard_profile.png")
+                }
                 style={styles.profileImage}
               />
             </View>
@@ -212,7 +228,6 @@ const ProfileEditScreen = () => {
           </TouchableOpacity>
         </View>
 
-
         <View style={styles.inputSection}>
           <Text style={styles.label}>닉네임</Text>
           <View style={styles.inputRow}>
@@ -221,7 +236,9 @@ const ProfileEditScreen = () => {
                 styles.input,
                 nicknameError
                   ? styles.inputError
-                  : (nicknameAvailable && nickname !== user?.nickname ? styles.inputSuccess : null)
+                  : nicknameAvailable && nickname !== user?.nickname
+                  ? styles.inputSuccess
+                  : null,
               ]}
               value={nickname}
               onChangeText={setNickname}
@@ -243,12 +260,20 @@ const ProfileEditScreen = () => {
         </View>
 
         <TouchableOpacity
-          style={[styles.saveButton, (!canSave || isSaving) && styles.saveButtonDisabled]}
+          style={[
+            styles.saveButton,
+            (!canSave || isSaving) && styles.saveButtonDisabled,
+          ]}
           onPress={handleSave}
           disabled={!canSave || isSaving}
         >
-          <Text style={[styles.saveButtonText, (!canSave || isSaving) && styles.saveButtonTextDisabled]}>
-            {isSaving ? '저장 중...' : '저장하기'}
+          <Text
+            style={[
+              styles.saveButtonText,
+              (!canSave || isSaving) && styles.saveButtonTextDisabled,
+            ]}
+          >
+            {isSaving ? "저장 중..." : "저장하기"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -267,24 +292,24 @@ const ProfileEditScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: "#1a1a1a",
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: "#333",
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontWeight: "bold",
+    color: "#fff",
   },
   content: {
     flex: 1,
@@ -292,122 +317,122 @@ const styles = StyleSheet.create({
     paddingTop: 40,
   },
   imageSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
   },
   imageContainer: {
-    position: 'relative',
+    position: "relative",
     width: 120,
     height: 120,
   },
   imageMask: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: '#444',
-    overflow: 'hidden',
+    borderColor: "#444",
+    overflow: "hidden",
   },
   profileImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     transform: [{ scale: 1.3 }],
   },
   cameraIconContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: '#8e44ad',
+    backgroundColor: "#8e44ad",
     width: 36,
     height: 36,
     borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 2,
-    borderColor: '#1a1a1a',
+    borderColor: "#1a1a1a",
   },
   inputSection: {
     marginBottom: 40,
   },
   label: {
     fontSize: 14,
-    color: '#888',
+    color: "#888",
     marginBottom: 8,
     marginLeft: 4,
   },
   inputRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
   },
   input: {
     flex: 1,
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: '#fff',
+    color: "#fff",
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: "#444",
   },
   inputError: {
-    borderColor: '#e74c3c',
+    borderColor: "#e74c3c",
   },
   inputSuccess: {
-    borderColor: '#2ecc71',
+    borderColor: "#2ecc71",
   },
   checkButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 16,
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#8e44ad',
+    borderColor: "#8e44ad",
   },
   checkButtonDisabled: {
-    borderColor: '#444',
+    borderColor: "#444",
     opacity: 0.5,
   },
   checkButtonText: {
-    color: '#8e44ad',
-    fontWeight: 'bold',
+    color: "#8e44ad",
+    fontWeight: "bold",
   },
   helperRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "flex-start",
     marginTop: 6,
     marginLeft: 4,
   },
   helperText: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   errorText: {
     fontSize: 12,
-    color: '#e74c3c',
+    color: "#e74c3c",
   },
   successText: {
     fontSize: 12,
-    color: '#2ecc71',
+    color: "#2ecc71",
   },
   saveButton: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: "#8e44ad",
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   saveButtonDisabled: {
-    backgroundColor: '#333',
+    backgroundColor: "#333",
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: "#444",
   },
   saveButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   saveButtonTextDisabled: {
-    color: '#666',
+    color: "#666",
   },
 });
 
