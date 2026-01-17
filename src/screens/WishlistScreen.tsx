@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   FlatList,
   StatusBar,
   TouchableOpacity,
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getWishlist, WishlistItemDTO } from '../api/wine';

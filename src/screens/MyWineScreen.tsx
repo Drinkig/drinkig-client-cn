@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   StatusBar,
   FlatList,
@@ -13,6 +12,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';

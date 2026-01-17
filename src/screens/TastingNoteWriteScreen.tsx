@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   LayoutAnimation,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -15,6 +14,7 @@ import {
   UIManager,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { logEvent, logScreen } from "utils/analytics";
 import {

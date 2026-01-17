@@ -1,30 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useUser } from '../context/UserContext';
-import MainTabNavigator from './MainTabNavigator';
-import LoginScreen from '../screens/LoginScreen';
-import SplashScreen from '../screens/SplashScreen';
-import WineDetailScreen from '../screens/WineDetailScreen';
-import MyWineDetailScreen from '../screens/MyWineDetailScreen';
-import NotificationScreen from '../screens/NotificationScreen';
-import WineAddScreen from '../screens/WineAddScreen';
-import ProfileEditScreen from '../screens/ProfileEditScreen';
-import SettingScreen from '../screens/SettingScreen';
-import OnboardingScreen from '../screens/OnboardingScreen';
-import RecommendationResultScreen from '../screens/RecommendationResultScreen';
-import RecommendationListScreen from '../screens/RecommendationListScreen';
-import SearchResultScreen from '../screens/SearchResultScreen';
-import WishlistScreen from '../screens/WishlistScreen';
-import TastingNoteWriteScreen from '../screens/TastingNoteWriteScreen';
-import TastingNoteDetailScreen from '../screens/TastingNoteDetailScreen';
-import SearchScreen from '../screens/SearchScreen';
-import PlaceSelectionScreen from '../screens/PlaceSelectionScreen';
-import FoodSelectionScreen from '../screens/FoodSelectionScreen';
-import FoodPairingResultScreen from '../screens/FoodPairingResultScreen';
-import CountrySelectionScreen from '../screens/CountrySelectionScreen';
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useEffect, useState } from "react";
+import { useUser } from "../context/UserContext";
+import CountrySelectionScreen from "../screens/CountrySelectionScreen";
+import FoodPairingResultScreen from "../screens/FoodPairingResultScreen";
+import FoodSelectionScreen from "../screens/FoodSelectionScreen";
+import LoginScreen from "../screens/LoginScreen";
+import MyWineDetailScreen from "../screens/MyWineDetailScreen";
+import NotificationScreen from "../screens/NotificationScreen";
+import OnboardingScreen from "../screens/OnboardingScreen";
+import PlaceSelectionScreen from "../screens/PlaceSelectionScreen";
+import ProfileEditScreen from "../screens/ProfileEditScreen";
+import RecommendationListScreen from "../screens/RecommendationListScreen";
+import RecommendationResultScreen from "../screens/RecommendationResultScreen";
+import SearchResultScreen from "../screens/SearchResultScreen";
+import SearchScreen from "../screens/SearchScreen";
+import SettingScreen from "../screens/SettingScreen";
+import SplashScreen from "../screens/SplashScreen";
+import TastingNoteDetailScreen from "../screens/TastingNoteDetailScreen";
+import TastingNoteWriteScreen from "../screens/TastingNoteWriteScreen";
+import WineAddScreen from "../screens/WineAddScreen";
+import WineDetailScreen from "../screens/WineDetailScreen";
+import WishlistScreen from "../screens/WishlistScreen";
+import MainTabNavigator from "./MainTabNavigator";
 
 const Stack = createNativeStackNavigator();
-
 
 export default function RootNavigator() {
   const { isLoggedIn, isLoading, isNewUser } = useUser();
@@ -45,19 +44,17 @@ export default function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator
-      screenOptions={{ headerShown: false }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isLoggedIn ? (
-
         isNewUser ? (
-
           <>
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-            <Stack.Screen name="RecommendationResult" component={RecommendationResultScreen} />
+            <Stack.Screen
+              name="RecommendationResult"
+              component={RecommendationResultScreen}
+            />
           </>
         ) : (
-
           <>
             <Stack.Screen name="Main" component={MainTabNavigator} />
             <Stack.Screen name="WineDetail" component={WineDetailScreen} />
@@ -66,35 +63,60 @@ export default function RootNavigator() {
             <Stack.Screen
               name="WineAdd"
               component={WineAddScreen}
-              options={{ presentation: 'modal' }}
+              options={{ presentation: "transparentModal" }}
             />
             <Stack.Screen
               name="ProfileEdit"
               component={ProfileEditScreen}
-              options={{ presentation: 'modal' }}
+              options={{ presentation: "transparentModal" }}
             />
             <Stack.Screen name="Setting" component={SettingScreen} />
-            <Stack.Screen name="RecommendationList" component={RecommendationListScreen} />
+            <Stack.Screen
+              name="RecommendationList"
+              component={RecommendationListScreen}
+            />
             <Stack.Screen name="SearchResult" component={SearchResultScreen} />
             <Stack.Screen name="WineSearch" component={SearchScreen} />
             <Stack.Screen name="Wishlist" component={WishlistScreen} />
-            <Stack.Screen name="TastingNoteWrite" component={TastingNoteWriteScreen} />
-            <Stack.Screen name="TastingNoteDetail" component={TastingNoteDetailScreen} />
-            <Stack.Screen name="WithdrawRetention" component={require('../screens/WithdrawRetentionScreen').default} />
-            <Stack.Screen name="WithdrawReason" component={require('../screens/WithdrawReasonScreen').default} />
+            <Stack.Screen
+              name="TastingNoteWrite"
+              component={TastingNoteWriteScreen}
+            />
+            <Stack.Screen
+              name="TastingNoteDetail"
+              component={TastingNoteDetailScreen}
+            />
+            <Stack.Screen
+              name="WithdrawRetention"
+              component={require("../screens/WithdrawRetentionScreen").default}
+            />
+            <Stack.Screen
+              name="WithdrawReason"
+              component={require("../screens/WithdrawReasonScreen").default}
+            />
 
             {/* Food Pairing Flow */}
-            <Stack.Screen name="PlaceSelection" component={PlaceSelectionScreen} />
-            <Stack.Screen name="FoodSelection" component={FoodSelectionScreen} />
-            <Stack.Screen name="CountrySelection" component={CountrySelectionScreen} />
-            <Stack.Screen name="FoodPairingResult" component={FoodPairingResultScreen} />
+            <Stack.Screen
+              name="PlaceSelection"
+              component={PlaceSelectionScreen}
+            />
+            <Stack.Screen
+              name="FoodSelection"
+              component={FoodSelectionScreen}
+            />
+            <Stack.Screen
+              name="CountrySelection"
+              component={CountrySelectionScreen}
+            />
+            <Stack.Screen
+              name="FoodPairingResult"
+              component={FoodPairingResultScreen}
+            />
           </>
         )
       ) : (
-
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
-
         </>
       )}
     </Stack.Navigator>
