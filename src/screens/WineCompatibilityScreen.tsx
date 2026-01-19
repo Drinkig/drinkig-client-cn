@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#eee',
         lineHeight: 20,
-        minHeight: 40,
+        minHeight: 60,
     },
     detailsContainer: {
         marginTop: 10,
