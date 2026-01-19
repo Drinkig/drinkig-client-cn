@@ -17,6 +17,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { getMyWines, getMyTastingNotes, TastingNotePreviewDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
+import AdBanner from '../components/common/AdBanner';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -191,6 +192,8 @@ const ProfileScreen = () => {
           <Icon name="settings-outline" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
+
+      <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 

@@ -15,6 +15,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { WineDBItem } from '../types/Wine';
 import { RootStackParamList } from '../types';
+import AdBanner from '../components/common/AdBanner';
 
 type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;
 
@@ -145,6 +146,7 @@ export default function SearchResultScreen() {
 
 
       <View style={styles.content}>
+        <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
         {isLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#E50914" />
