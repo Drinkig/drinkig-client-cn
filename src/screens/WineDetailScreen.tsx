@@ -22,6 +22,8 @@ import { WineDBItem, VintageData } from '../types/Wine';
 import { MyWine } from '../context/WineContext';
 import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist, getWineReviews } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
+import { useUser } from '../context/UserContext';
+
 
 
 
@@ -45,6 +47,7 @@ export default function WineDetailScreen() {
   const isMyWineItem = isMyWine(wine);
   const isFocused = useIsFocused();
   const { showAlert } = useGlobalUI();
+  const { flavorProfile } = useUser();
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -264,7 +267,7 @@ export default function WineDetailScreen() {
         const response = await getWineReviews(wine.id as number, {
           sortType: '최신순',
           page: 0,
-          size: 100, // Fetch up to 100 reviews for stat calculation
+          size: 100,
         });
 
         if (response.isSuccess) {
@@ -327,7 +330,6 @@ export default function WineDetailScreen() {
       });
     }
 
-    // Merge with rawVintages if available
     let mergedList = list;
     if (rawVintages) {
       mergedList = list.map(vItem => {
@@ -337,7 +339,6 @@ export default function WineDetailScreen() {
       });
     }
 
-    // Merge with fetched vintageStats
     return mergedList.map(vItem => {
       if (vintageStats[vItem.year]) {
         return {
@@ -477,6 +478,25 @@ export default function WineDetailScreen() {
                 <MaterialCommunityIcons name="bottle-wine" size={80} color="#ccc" />
               </View>
             ))}
+            {!isMyWineItem && (
+              <TouchableOpacity
+                style={styles.compatibilityButton}
+                onPress={() => navigation.navigate('WineCompatibility', {
+                  userProfile: flavorProfile,
+                  wineStats: {
+                    sweetness: features?.sweetness,
+                    acidity: features?.acidity,
+                    tannin: features?.tannin,
+                    body: features?.body,
+                    alcohol: 0,
+                  },
+                  wineName: nameKor
+                })}
+              >
+                <MaterialCommunityIcons name="heart-pulse" size={16} color="#fff" style={{ marginRight: 6 }} />
+                <Text style={styles.compatibilityButtonText}>나와의 궁합 보기</Text>
+              </TouchableOpacity>
+            )}
           </View>
           <View style={styles.infoContainer}>
             <Text style={styles.wineNameKor}>{nameKor}</Text>
@@ -493,6 +513,8 @@ export default function WineDetailScreen() {
                 <Text style={styles.tagText}>{grape}</Text>
               </View>
             </View>
+
+
           </View>
         </View>
 
@@ -660,6 +682,7 @@ export default function WineDetailScreen() {
       )}
 
 
+
       <VintageSelectionModal
         visible={isVintageModalVisible}
         onClose={() => setVintageModalVisible(false)}
@@ -667,6 +690,8 @@ export default function WineDetailScreen() {
         selectedVintage={selectedVintage}
         onSelect={setSelectedVintage}
       />
+
+
     </SafeAreaView>
   );
 }
@@ -804,6 +829,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#333',
+  },
+  compatibilityButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#8e44ad',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  compatibilityButtonText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: 'bold',
   },
   vintageSelectLabel: {
     fontSize: 16,

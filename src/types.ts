@@ -25,6 +25,7 @@ export type RootStackParamList = {
   FoodSelection: { place: 'RESTAURANT' | 'SHOP'; country?: string };
   CountrySelection: { place: 'RESTAURANT' };
   FoodPairingResult: { place: 'RESTAURANT' | 'SHOP'; foodId?: number; foodName?: string; country?: string };
+  WineCompatibility: { userProfile: any; wineStats: any; wineName?: string };
 };
 
 declare global {

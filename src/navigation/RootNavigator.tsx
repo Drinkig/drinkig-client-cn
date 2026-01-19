@@ -112,6 +112,10 @@ export default function RootNavigator() {
               name="FoodPairingResult"
               component={FoodPairingResultScreen}
             />
+            <Stack.Screen
+              name="WineCompatibility"
+              component={require("../screens/WineCompatibilityScreen").default}
+            />
           </>
         )
       ) : (
