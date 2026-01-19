@@ -18,6 +18,7 @@ import { useCallback } from 'react';
 import { WineDBItem } from '../types/Wine';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
+import AdBanner from '../components/common/AdBanner';
 
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp<RootStackParamList, 'WineSearch'>;
@@ -203,6 +204,7 @@ export default function SearchScreen() {
 
 
       <View style={styles.content}>
+        <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
         {searchText.length > 0 ? (
           <FlatList
             showsVerticalScrollIndicator={false}

@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
+import AdBanner from '../components/common/AdBanner';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
@@ -169,7 +170,7 @@ const MyWineScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
 
@@ -307,6 +308,8 @@ const MyWineScreen = () => {
           )}
         </View>
       )}
+
+      <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
     </SafeAreaView>
   );
 };

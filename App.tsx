@@ -1,5 +1,6 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import mobileAds from 'react-native-google-mobile-ads';
 import { NavigationContainer } from '@react-navigation/native';
 import { UserProvider } from './src/context/UserContext';
 import { WineProvider } from './src/context/WineContext';
@@ -27,6 +28,13 @@ function App(): React.JSX.Element {
       }
     };
     initializeApp();
+
+    // AdMob 초기화
+    mobileAds()
+      .initialize()
+      .then(adapterStatuses => {
+        console.log('[App] AdMob initialized:', adapterStatuses);
+      });
   }, []);
 
   if (!isReady) {
