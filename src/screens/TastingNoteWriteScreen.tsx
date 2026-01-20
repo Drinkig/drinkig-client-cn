@@ -23,6 +23,7 @@ import {
   TastingNoteRequest,
   WineUserDTO,
 } from "../api/wine";
+import CalendarModal from "../components/tasting_note/CalendarModal";
 import ColorSelector from "../components/tasting_note/ColorSelector";
 import HelpModal from "../components/tasting_note/HelpModal";
 import StarRating from "../components/tasting_note/StarRating";
@@ -112,7 +113,7 @@ export default function TastingNoteWriteScreen() {
   const [vintageYear, setVintageYear] = useState("");
   const [color, setColor] = useState("");
   const [tasteDate, setTasteDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
 
   const [sweetness, setSweetness] = useState(0);
@@ -133,6 +134,7 @@ export default function TastingNoteWriteScreen() {
     title: string;
     description: string;
   } | null>(null);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
   const isFormValid =
     selectedWine.wineId &&
@@ -512,13 +514,15 @@ export default function TastingNoteWriteScreen() {
 
                   <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
                     <Text style={styles.label}>시음 날짜</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="YYYY-MM-DD"
-                      placeholderTextColor="#666"
-                      value={tasteDate}
-                      onChangeText={setTasteDate}
-                    />
+                    <TouchableOpacity
+                      style={styles.dateButton}
+                      onPress={() => setCalendarVisible(true)}
+                    >
+                      <Text style={styles.dateButtonText}>
+                        {tasteDate || "날짜 선택"}
+                      </Text>
+                      <Icon name="calendar-outline" size={20} color="#8e44ad" />
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -623,6 +627,13 @@ export default function TastingNoteWriteScreen() {
         title={currentTip?.title || ""}
         description={currentTip?.description || ""}
         onClose={() => setTipModalVisible(false)}
+      />
+
+      <CalendarModal
+        visible={calendarVisible}
+        selectedDate={tasteDate}
+        onDateSelect={setTasteDate}
+        onClose={() => setCalendarVisible(false)}
       />
     </SafeAreaView>
   );
@@ -870,5 +881,18 @@ const styles = StyleSheet.create({
   },
   nvButtonTextActive: {
     color: "#fff",
+  },
+
+  dateButton: {
+    backgroundColor: "#2a2a2a",
+    borderRadius: 8,
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dateButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
