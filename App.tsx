@@ -1,6 +1,7 @@
 import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import mobileAds from 'react-native-google-mobile-ads';
+import { requestTrackingPermission } from 'react-native-tracking-transparency';
 import { NavigationContainer } from '@react-navigation/native';
 import { UserProvider } from './src/context/UserContext';
 import { WineProvider } from './src/context/WineContext';
@@ -25,6 +26,11 @@ function App(): React.JSX.Element {
         console.error('[App] Migration check failed:', error);
       } finally {
         setIsReady(true);
+        // ATT 권한 요청 (앱 로드 완료 후 약간의 딜레이를 두고 실행)
+        setTimeout(async () => {
+          const trackingStatus = await requestTrackingPermission();
+          console.log('[App] ATT Status:', trackingStatus);
+        }, 1000);
       }
     };
     initializeApp();
