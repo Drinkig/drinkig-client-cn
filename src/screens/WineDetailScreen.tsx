@@ -54,6 +54,7 @@ export default function WineDetailScreen() {
   const [activeTab, setActiveTab] = activeTabState;
   const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
   const [isVintageModalVisible, setVintageModalVisible] = useState(false);
+
   const [isFabOpen, setIsFabOpen] = useState(false);
   const fabAnimation = React.useRef(new Animated.Value(0)).current;
 
@@ -358,6 +359,8 @@ export default function WineDetailScreen() {
       setSelectedVintage(vintages[0]);
     }
   }, [vintages, selectedVintage]);
+
+
 
 
   const renderTabContent = () => {
@@ -705,14 +708,14 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: 16,
     backgroundColor: '#222',
     height: 320,
     justifyContent: 'center',
   },
   wineImage: {
-    width: '60%',
-    height: 300,
+    width: '100%',
+    height: '90%',
   },
   imagePlaceholder: {
     width: 120,
