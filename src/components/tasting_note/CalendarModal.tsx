@@ -7,7 +7,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { Calendar } from "react-native-calendars";
+import { Calendar, LocaleConfig } from "react-native-calendars";
 import Icon from "react-native-vector-icons/Ionicons";
 
 interface CalendarModalProps {
@@ -16,6 +16,50 @@ interface CalendarModalProps {
   onDateSelect: (date: string) => void;
   onClose: () => void;
 }
+
+LocaleConfig.locales.ko = {
+  monthNames: [
+    "01월",
+    "02월",
+    "03월",
+    "04월",
+    "05월",
+    "06월",
+    "07월",
+    "08월",
+    "09월",
+    "10월",
+    "11월",
+    "12월",
+  ],
+  monthNamesShort: [
+    "01월",
+    "02월",
+    "03월",
+    "04월",
+    "05월",
+    "06월",
+    "07월",
+    "08월",
+    "09월",
+    "10월",
+    "11월",
+    "12월",
+  ],
+  dayNames: [
+    "일요일",
+    "월요일",
+    "화요일",
+    "수요일",
+    "목요일",
+    "금요일",
+    "토요일",
+  ],
+  dayNamesShort: ["일", "월", "화", "수", "목", "금", "토"],
+  today: "오늘",
+};
+
+LocaleConfig.defaultLocale = "ko";
 
 export default function CalendarModal({
   visible,
@@ -50,6 +94,7 @@ export default function CalendarModal({
                   onClose();
                 }}
                 maxDate={new Date().toISOString().split("T")[0]}
+                monthFormat={"yyyy년 MM월"}
                 theme={{
                   backgroundColor: "#2a2a2a",
                   calendarBackground: "#2a2a2a",
