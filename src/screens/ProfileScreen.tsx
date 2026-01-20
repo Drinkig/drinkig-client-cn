@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { getMyWines, getMyTastingNotes, TastingNotePreviewDTO } from '../api/wine';
@@ -181,7 +181,7 @@ const ProfileScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>마이페이지</Text>
@@ -193,9 +193,8 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
-
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
 
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
@@ -391,13 +390,14 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   scrollContent: {
-    paddingVertical: 20,
+    paddingTop: 0,
+    paddingBottom: 110,
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 30,
-    marginTop: 10,
+    marginTop: 20,
     paddingHorizontal: 24,
   },
   avatarContainer: {

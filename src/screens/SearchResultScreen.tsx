@@ -129,7 +129,7 @@ export default function SearchResultScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
 
@@ -146,9 +146,9 @@ export default function SearchResultScreen() {
 
 
       <View style={styles.content}>
-        <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
         {isLoading ? (
           <View style={styles.loadingContainer}>
+            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
             <ActivityIndicator size="large" color="#E50914" />
           </View>
         ) : (
@@ -158,7 +158,12 @@ export default function SearchResultScreen() {
             renderItem={renderSearchResult}
             keyExtractor={item => item.id.toString()}
             contentContainerStyle={styles.listContent}
-            ListHeaderComponent={!isLoading && searchResults.length > 0 ? <SearchResultHeader count={totalCount} /> : null}
+            ListHeaderComponent={
+              <View>
+                <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
+                {!isLoading && searchResults.length > 0 ? <SearchResultHeader count={totalCount} /> : null}
+              </View>
+            }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
@@ -208,6 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   resultCountContainer: {
+    paddingTop: 16,
     paddingBottom: 16,
   },
   resultCountText: {
@@ -219,7 +225,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 110,
   },
   resultItem: {
     flexDirection: 'row',
