@@ -13,6 +13,7 @@ import {
   NativeScrollEvent,
   Animated,
   Easing,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { appleAuth } from '@invertase/react-native-apple-authentication';
@@ -302,6 +303,19 @@ const LoginScreen = () => {
 
 
             </View>
+
+            {/* Terms of Service Agreement */}
+            <View style={styles.agreementContainer}>
+              <Text style={styles.agreementText}>
+                로그인하시면{' '}
+                <Text
+                  style={styles.agreementLink}
+                  onPress={() => Linking.openURL('https://web.drinkig.com/terms')}>
+                  이용약관
+                </Text>
+                에 동의하는 것으로 간주됩니다
+              </Text>
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -461,6 +475,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  agreementContainer: {
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  agreementText: {
+    fontSize: 12,
+    color: '#888888',
+    textAlign: 'center',
+  },
+  agreementLink: {
+    textDecorationLine: 'underline',
+    color: '#888888',
   },
 });
 
