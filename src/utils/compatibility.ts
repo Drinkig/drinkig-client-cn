@@ -32,46 +32,6 @@ const getPenalty = (diff: number): number => {
     }
 };
 
-export const calculateCompatibility = (
-    userProfile: FlavorProfile | null,
-    wineStats: Partial<FlavorProfile> | null
-): CompatibilityResult | null => {
-    if (!userProfile || !wineStats) return null;
-
-    let totalPenalty = 0;
-    const details: CompatibilityDetail[] = [];
-
-    const keys: (keyof FlavorProfile)[] = ['sweetness', 'acidity', 'tannin', 'body'];
-
-    keys.forEach((key) => {
-        const userVal = userProfile[key] || 0;
-        const wineVal = wineStats[key] || 0;
-
-        const safeUserVal = Math.max(1, Math.min(5, userVal));
-        const safeWineVal = Math.max(1, Math.min(5, wineVal));
-
-        const diff = safeWineVal - safeUserVal;
-        const absDiff = Math.abs(diff);
-
-        totalPenalty += getPenalty(absDiff);
-
-        const label = ATTRIBUTE_LABELS[key] || key;
-
-        details.push({
-            key,
-            label,
-            userValue: safeUserVal,
-            wineValue: safeWineVal,
-            feedback: getFeedback(key, diff),
-            diff,
-        });
-    });
-
-    const score = Math.max(0, 100 - totalPenalty);
-
-    return { result: score, details } as any;
-};
-
 export const calculateCompatibilityScore = (
     userProfile: FlavorProfile | null,
     wineStats: Partial<FlavorProfile> | null
