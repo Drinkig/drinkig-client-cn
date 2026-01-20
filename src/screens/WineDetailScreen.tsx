@@ -54,7 +54,7 @@ export default function WineDetailScreen() {
   const [activeTab, setActiveTab] = activeTabState;
   const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
   const [isVintageModalVisible, setVintageModalVisible] = useState(false);
-  const [isTallImage, setIsTallImage] = useState(false);
+
   const [isFabOpen, setIsFabOpen] = useState(false);
   const fabAnimation = React.useRef(new Animated.Value(0)).current;
 
@@ -360,19 +360,7 @@ export default function WineDetailScreen() {
     }
   }, [vintages, selectedVintage]);
 
-  useEffect(() => {
-    if (imageUri) {
-      Image.getSize(
-        imageUri,
-        (width, height) => {
-          setIsTallImage(height / width > 1.5);
-        },
-        () => {
-          setIsTallImage(false);
-        }
-      );
-    }
-  }, [imageUri]);
+
 
 
   const renderTabContent = () => {
@@ -482,11 +470,11 @@ export default function WineDetailScreen() {
       <ScrollView contentContainerStyle={styles.content} stickyHeaderIndices={[2]} showsVerticalScrollIndicator={false}>
 
         <View>
-          <View style={[styles.imageContainer, !isTallImage && { paddingVertical: 0 }]}>
+          <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
               <ActivityIndicator size="large" color="#8e44ad" />
             ) : (imageUri ? (
-              <Image source={{ uri: imageUri }} style={[styles.wineImage, !isTallImage && { width: '100%', height: '100%' }]} resizeMode="contain" />
+              <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
             ) : (
               <View style={styles.imagePlaceholder}>
                 <MaterialCommunityIcons name="bottle-wine" size={80} color="#ccc" />
@@ -726,7 +714,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   wineImage: {
-    width: '85%',
+    width: '100%',
     height: '90%',
   },
   imagePlaceholder: {
