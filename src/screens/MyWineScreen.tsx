@@ -274,43 +274,50 @@ const MyWineScreen = () => {
 
       {isLoading ? (
         <View style={styles.centerContent}>
+          <AdBanner style={{ marginBottom: 20, backgroundColor: '#1a1a1a', width: '100%' }} />
           <ActivityIndicator size="large" color="#8e44ad" />
         </View>
       ) : sortedWines.length > 0 ? (
-        <FlatList
-          data={sortedWines}
-          renderItem={renderWineItem}
-          keyExtractor={(item) => item.myWineId.toString()}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          numColumns={numColumns}
-          columnWrapperStyle={{ gap: gap }}
-        />
+        <View style={{ flex: 1 }}>
+          <FlatList
+            data={sortedWines}
+            renderItem={renderWineItem}
+            keyExtractor={(item) => item.myWineId.toString()}
+            contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
+            showsVerticalScrollIndicator={false}
+            numColumns={numColumns}
+            columnWrapperStyle={{ gap: gap }}
+            ListFooterComponent={null}
+          />
+          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a', width: '100%' }} />
+        </View>
       ) : (
         <View style={styles.emptyContent}>
-          <Image
-            source={require('../assets/Drinky_no_wine_1.png')}
-            style={styles.emptyImage}
-            resizeMode="contain"
-          />
-          {myWines.length > 0 ? (
+          <View style={styles.emptyInner}>
+            <Image
+              source={require('../assets/Drinky_no_wine_1.png')}
+              style={styles.emptyImage}
+              resizeMode="contain"
+            />
+            {myWines.length > 0 ? (
+              <>
+                <Text style={styles.emptyText}>해당 종류의 와인이 없어요</Text>
+                <Text style={styles.subText}>다른 종류를 선택하거나{'\n'}새로운 와인을 기록해보세요!</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
+                <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
+              </>
+            )}
+          </View>
 
-            <>
-              <Text style={styles.emptyText}>해당 종류의 와인이 없어요</Text>
-              <Text style={styles.subText}>다른 종류를 선택하거나{'\n'}새로운 와인을 기록해보세요!</Text>
-            </>
-          ) : (
-
-            <>
-              <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
-              <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
-            </>
-          )}
+          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a', width: '100%' }} />
         </View>
       )}
 
-      <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
-    </SafeAreaView>
+
+    </SafeAreaView >
   );
 };
 
@@ -432,6 +439,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+    paddingBottom: 100,
   },
   centerContent: {
     flex: 1,
@@ -440,9 +448,15 @@ const styles = StyleSheet.create({
   },
   emptyContent: {
     flex: 1,
+    justifyContent: 'space-between',
+    paddingBottom: 0,
+  },
+  emptyInner: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   emptyImage: {
     width: 200,
     height: 200,
@@ -521,45 +535,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'left',
   },
-  // 기존 스타일 중 사용하지 않는 것들 삭제 또는 유지 (다른 곳에서 안쓰면 삭제)
-  wineDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    display: 'none',
-  },
-  wineType: {
-    color: '#8e44ad',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  separator: {
-    color: '#666',
-    fontSize: 12,
-    marginHorizontal: 6,
-  },
-  wineCountry: {
-    color: '#888',
-    fontSize: 12,
-  },
-  wineVintage: {
-    color: '#888',
-    fontSize: 12,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    display: 'none',
-  },
-  priceLabel: {
-    color: '#888',
-    fontSize: 12,
-  },
-  priceValue: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+
 });
 
 export default MyWineScreen;

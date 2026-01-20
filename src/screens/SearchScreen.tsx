@@ -169,7 +169,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
 
@@ -204,7 +204,6 @@ export default function SearchScreen() {
 
 
       <View style={styles.content}>
-        <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a' }} />
         {searchText.length > 0 ? (
           <FlatList
             showsVerticalScrollIndicator={false}
@@ -212,6 +211,7 @@ export default function SearchScreen() {
             renderItem={renderSearchResult}
             keyExtractor={item => item.id.toString()}
             contentContainerStyle={styles.listContent}
+            ListHeaderComponent={<AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
@@ -220,6 +220,7 @@ export default function SearchScreen() {
           />
         ) : (
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
             <View style={styles.recentSearchContainer}>
               <Text style={styles.sectionTitle}>최근 검색어</Text>
               {recentSearches.length > 0 ? (
@@ -329,7 +330,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 110,
   },
   resultItem: {
     flexDirection: 'row',
