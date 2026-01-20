@@ -24,6 +24,7 @@
     "axios": "^1.13.2",
     "react": "19.1.1",
     "react-native": "0.82.1",
+    "react-native-calendars": "^1.1313.0",
     "react-native-config": "^1.6.1",
     "react-native-device-info": "^15.0.1",
     "react-native-google-mobile-ads": "^16.0.1",
