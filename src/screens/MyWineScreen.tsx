@@ -30,6 +30,7 @@ const MyWineScreen = () => {
 
   const [sortType, setSortType] = useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const wineTypes = ['전체', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화', '기타'];
   const sortOptions = [
@@ -174,7 +175,10 @@ const MyWineScreen = () => {
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
 
-      <View style={styles.header}>
+      <View
+        style={styles.header}
+        onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
+      >
         <Text style={styles.headerTitle}>내 와인 창고</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleAddWine}>
           <Icon name="add" size={24} color="#fff" />
@@ -229,47 +233,44 @@ const MyWineScreen = () => {
       )}
 
 
-      <Modal
-        visible={isSortModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setIsSortModalVisible(false)}
-      >
-        <TouchableWithoutFeedback onPress={() => setIsSortModalVisible(false)}>
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>정렬</Text>
-                  <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
-                    <Icon name="close" size={24} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-                {sortOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option.value}
-                    style={styles.sortOptionItem}
-                    onPress={() => {
-                      setSortType(option.value);
-                      setIsSortModalVisible(false);
-                    }}
-                  >
-                    <Text style={[
-                      styles.sortOptionText,
-                      sortType === option.value && styles.sortOptionTextSelected
-                    ]}>
-                      {option.label}
-                    </Text>
-                    {sortType === option.value && (
-                      <Icon name="checkmark" size={20} color="#8e44ad" />
-                    )}
-                  </TouchableOpacity>
-                ))}
+      {isSortModalVisible && (
+        <View style={[styles.sortModalOverlay, { top: headerHeight }]}>
+          <TouchableOpacity
+            style={styles.sortModalBackdrop}
+            activeOpacity={1}
+            onPress={() => setIsSortModalVisible(false)}
+          >
+            <View style={styles.sortModalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>정렬</Text>
+                <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
+                  <Icon name="close" size={24} color="#fff" />
+                </TouchableOpacity>
               </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+              {sortOptions.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={styles.sortOptionItem}
+                  onPress={() => {
+                    setSortType(option.value);
+                    setIsSortModalVisible(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.sortOptionText,
+                    sortType === option.value && styles.sortOptionTextSelected
+                  ]}>
+                    {option.label}
+                  </Text>
+                  {sortType === option.value && (
+                    <Icon name="checkmark" size={20} color="#8e44ad" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
 
 
       {isLoading ? (
@@ -398,12 +399,19 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 13,
   },
-  modalOverlay: {
+  sortModalOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+  },
+  sortModalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
+  sortModalContent: {
     backgroundColor: '#1a1a1a',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

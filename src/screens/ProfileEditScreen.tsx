@@ -41,6 +41,7 @@ const ProfileEditScreen = () => {
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = profileImage !== (user?.profileImage || null);
@@ -195,7 +196,10 @@ const ProfileEditScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      <View
+        style={styles.header}
+        onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -237,8 +241,8 @@ const ProfileEditScreen = () => {
                 nicknameError
                   ? styles.inputError
                   : nicknameAvailable && nickname !== user?.nickname
-                  ? styles.inputSuccess
-                  : null,
+                    ? styles.inputSuccess
+                    : null,
               ]}
               value={nickname}
               onChangeText={setNickname}
@@ -284,6 +288,7 @@ const ProfileEditScreen = () => {
         onSelectLibrary={handleSelectImageLibrary}
         onDelete={handleDeleteImage}
         hasProfileImage={!!profileImage}
+        headerHeight={headerHeight}
       />
     </SafeAreaView>
   );
