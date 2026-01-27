@@ -70,7 +70,16 @@ const RecommendationListScreen = () => {
                   </View>
 
                   <Text style={styles.wineVariety}>{item.variety}</Text>
+                  {item.varietyEng && <Text style={styles.wineVarietyEng}>{item.varietyEng}</Text>}
+
+                  <View style={{ height: 4 }} />
+
                   <Text style={styles.wineRegion}>{item.country} · {item.region}</Text>
+                  {(item.countryEng || item.regionEng) && (
+                    <Text style={styles.wineRegionEng}>
+                      {item.countryEng || ''}{(item.countryEng && item.regionEng) ? ' · ' : ''}{item.regionEng || ''}
+                    </Text>
+                  )}
                 </View>
               </View>
             ))}
@@ -173,7 +182,18 @@ const styles = StyleSheet.create({
   },
   wineRegion: {
     fontSize: 13,
+    color: '#ccc',
+    fontWeight: '500',
+  },
+  wineVarietyEng: {
+    fontSize: 14,
     color: '#888',
+    marginBottom: 4,
+    fontStyle: 'italic',
+  },
+  wineRegionEng: {
+    fontSize: 12,
+    color: '#666',
   },
   emptyContainer: {
     padding: 40,

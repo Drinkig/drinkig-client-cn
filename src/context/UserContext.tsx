@@ -20,8 +20,11 @@ export interface User {
 export interface RecommendedWine {
   sort: string;
   country: string;
+  countryEng?: string;
   region: string;
+  regionEng?: string;
   variety: string;
+  varietyEng?: string;
 }
 
 

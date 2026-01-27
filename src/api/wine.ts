@@ -358,8 +358,11 @@ export interface OnboardingRecommendationResponse {
 export interface OnboardingRecommendationDTO {
   sort: string;
   country: string;
+  countryEng?: string;
   region: string;
+  regionEng?: string;
   variety: string;
+  varietyEng?: string;
 }
 
 export const getMyWines = async () => {
@@ -561,8 +564,11 @@ export interface FoodPairingResultDTO {
 export interface FoodRecommendationDTO {
   sort: string;
   variety: string;
+  varietyEng?: string;
   country: string;
+  countryEng?: string;
   region: string;
+  regionEng?: string;
 }
 
 export const getFoodPairingRecommendation = async (foodName: string) => {
