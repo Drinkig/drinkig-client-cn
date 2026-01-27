@@ -259,9 +259,20 @@ export default function FoodPairingResultScreen() {
                                         <View style={[styles.wineTypeBadge, { backgroundColor: getWineColor(item.sort) }]}>
                                             <Text style={styles.wineTypeText}>{item.sort}</Text>
                                         </View>
-                                        <Text style={styles.wineName}>{item.variety}</Text>
+                                        <Text style={styles.wineName}>
+                                            {item.variety}
+                                            {item.varietyEng && <Text style={styles.wineVarietySmallEng}> ({item.varietyEng})</Text>}
+                                        </Text>
                                     </View>
+
+                                    <View style={{ height: 4 }} />
+
                                     <Text style={styles.wineCountry}>{item.country} {item.region && `· ${item.region}`}</Text>
+                                    {(item.countryEng || item.regionEng) && (
+                                        <Text style={styles.wineRegionEng}>
+                                            {item.countryEng || ''}{(item.countryEng && item.regionEng) ? ' · ' : ''}{item.regionEng || ''}
+                                        </Text>
+                                    )}
                                 </View>
                                 <View style={styles.rankBadge}>
                                     {index < 3 ? (
@@ -408,7 +419,17 @@ const styles = StyleSheet.create({
     },
     wineCountry: {
         fontSize: 12,
-        color: '#888',
+        color: '#ccc',
+    },
+    wineVarietySmallEng: {
+        fontSize: 13,
+        color: '#aaa',
+        fontWeight: 'normal',
+        fontStyle: 'italic',
+    },
+    wineRegionEng: {
+        fontSize: 11,
+        color: '#666',
     },
     rankBadge: {
         width: 32,
