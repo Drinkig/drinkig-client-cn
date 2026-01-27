@@ -27,7 +27,16 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
 
         const response = await getPriceHistory(wineId, vintageYear);
         if (response.isSuccess) {
-          setHistory(response.result);
+          const uniqueHistory = response.result.filter((item, index, self) =>
+            index === self.findIndex((t) => (
+              t.vintage === item.vintage &&
+              t.purchaseDate === item.purchaseDate &&
+              t.price === item.price &&
+              t.shopName === item.shopName &&
+              t.purchaseType === item.purchaseType
+            ))
+          );
+          setHistory(uniqueHistory);
         }
       } catch (error) {
         console.error('Failed to fetch price history:', error);

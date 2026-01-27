@@ -63,13 +63,12 @@ export default function RootNavigator() {
             <Stack.Screen
               name="WineAdd"
               component={WineAddScreen}
-              options={{ presentation: "transparentModal" }}
+              options={{
+                presentation: "containedModal",
+                animation: "slide_from_bottom",
+              }}
             />
-            <Stack.Screen
-              name="ProfileEdit"
-              component={ProfileEditScreen}
-              options={{ presentation: "transparentModal" }}
-            />
+            <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
             <Stack.Screen name="Setting" component={SettingScreen} />
             <Stack.Screen
               name="RecommendationList"

@@ -68,6 +68,9 @@ const WineAddScreen = () => {
   const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
 
+  const [quantity, setQuantity] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
+
   const [activeStep, setActiveStep] = useState(initialWine || myWine ? 2 : 1);
   const [maxStep, setMaxStep] = useState(initialWine || myWine ? 2 : 1);
 
@@ -187,9 +190,11 @@ const WineAddScreen = () => {
   };
 
   const handleSave = async () => {
-    if (!isFormValid()) return;
+    if (!isFormValid() || isSaving) return;
 
     if (!selectedWineId) return;
+
+    setIsSaving(true);
 
     try {
       if (isEditMode) {
@@ -224,23 +229,43 @@ const WineAddScreen = () => {
           purchaseShop: purchaseShop,
         };
 
-        const response = await addMyWine(requestData);
+        let successCount = 0;
+        let failCount = 0;
 
-        if (response.isSuccess) {
-          logEvent("wine_add_success");
-          handleShowAlert("성공", "내 와인 창고에 추가되었습니다.", () => {
+        for (let i = 0; i < quantity; i++) {
+          try {
+            const response = await addMyWine(requestData);
+            if (response.isSuccess) {
+              successCount++;
+            } else {
+              failCount++;
+            }
+          } catch (e) {
+            failCount++;
+          }
+        }
+
+        if (successCount > 0) {
+          logEvent("wine_add_success", { count: successCount });
+          const message = quantity > 1
+            ? `${successCount}병이 내 와인 창고에 추가되었습니다.${failCount > 0 ? ` (${failCount}건 실패)` : ''}`
+            : "내 와인 창고에 추가되었습니다.";
+
+          handleShowAlert("성공", message, () => {
             navigation.goBack();
           });
         } else {
           handleShowAlert(
             "오류",
-            response.message || "와인 등록에 실패했습니다."
+            "와인 등록에 실패했습니다."
           );
         }
       }
     } catch (error) {
       console.error("My wine add failed:", error);
       handleShowAlert("오류", "서버 통신 중 문제가 발생했습니다.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -423,6 +448,32 @@ const WineAddScreen = () => {
 
           {activeStep === 2 && (
             <View style={styles.stepContent}>
+              {!isEditMode && (
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>수량</Text>
+                  <View style={styles.quantityContainer}>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => {
+                        if (quantity > 1) setQuantity(prev => prev - 1);
+                      }}
+                    >
+                      <Icon name="remove" size={20} color="#fff" />
+                    </TouchableOpacity>
+                    <View style={styles.quantityValueContainer}>
+                      <Text style={styles.quantityValue}>{quantity}</Text>
+                      <Text style={styles.quantityUnit}>병</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.quantityButton}
+                      onPress={() => setQuantity(prev => prev + 1)}
+                    >
+                      <Icon name="add" size={20} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>와인 종류</Text>
                 <View
@@ -455,13 +506,13 @@ const WineAddScreen = () => {
 
                   {((vintage.length === 4 && !isNaN(Number(vintage))) ||
                     vintage === "NV") && (
-                    <Icon
-                      name="checkmark-circle"
-                      size={20}
-                      color="#2ecc71"
-                      style={{ marginRight: 8 }}
-                    />
-                  )}
+                      <Icon
+                        name="checkmark-circle"
+                        size={20}
+                        color="#2ecc71"
+                        style={{ marginRight: 8 }}
+                      />
+                    )}
                   <TouchableOpacity
                     style={[
                       styles.nvButton,
@@ -525,7 +576,7 @@ const WineAddScreen = () => {
                       style={[
                         styles.typeButtonText,
                         purchaseType === "offline" &&
-                          styles.typeButtonTextActive,
+                        styles.typeButtonTextActive,
                       ]}
                     >
                       매장
@@ -542,7 +593,7 @@ const WineAddScreen = () => {
                       style={[
                         styles.typeButtonText,
                         purchaseType === "direct" &&
-                          styles.typeButtonTextActive,
+                        styles.typeButtonTextActive,
                       ]}
                     >
                       직구
@@ -592,13 +643,13 @@ const WineAddScreen = () => {
                   )}
                 </View>
               </View>
-            </View>
+            </View >
           )}
 
           <View style={{ height: 40 }} />
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </ScrollView >
+      </KeyboardAvoidingView >
+    </SafeAreaView >
   );
 };
 
@@ -867,6 +918,36 @@ const styles = StyleSheet.create({
   },
   typeButtonTextActive: {
     color: "#fff",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    marginTop: 8,
+  },
+  quantityButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#444",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  quantityValueContainer: {
+    minWidth: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: 'row',
+  },
+  quantityValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginRight: 4,
+  },
+  quantityUnit: {
+    fontSize: 14,
+    color: "#888",
   },
 });
 

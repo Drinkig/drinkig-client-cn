@@ -28,14 +28,14 @@ const ProfileEditScreen = () => {
 
   const [nickname, setNickname] = useState(user?.nickname || "");
   const [profileImage, setProfileImage] = useState<string | null>(
-    user?.profileImage || null
+    user?.profileImage || null,
   );
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(
-    null
+    null,
   );
 
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(
-    true
+    true,
   );
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
@@ -104,7 +104,7 @@ const ProfileEditScreen = () => {
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nickname)) {
         setNicknameError(
-          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가)."
+          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).",
         );
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
@@ -153,7 +153,7 @@ const ProfileEditScreen = () => {
         const uploadResponse = await uploadProfileImage(
           selectedImageAsset.uri,
           selectedImageAsset.type || "image/jpeg",
-          selectedImageAsset.fileName || "profile.jpg"
+          selectedImageAsset.fileName || "profile.jpg",
         );
         if (!uploadResponse.isSuccess) throw new Error("Image upload failed");
       } else if (profileImage === null && user?.profileImage) {
