@@ -25,6 +25,7 @@ import {
   WineUserDTO,
 } from "../api/wine";
 import CustomAlert from "../components/CustomAlert";
+import CalendarModal from "../components/tasting_note/CalendarModal";
 
 if (
   Platform.OS === "android" &&
@@ -70,6 +71,7 @@ const WineAddScreen = () => {
 
   const [quantity, setQuantity] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCalendarVisible, setCalendarVisible] = useState(false);
 
   const [activeStep, setActiveStep] = useState(initialWine || myWine ? 2 : 1);
   const [maxStep, setMaxStep] = useState(initialWine || myWine ? 2 : 1);
@@ -625,14 +627,13 @@ const WineAddScreen = () => {
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>구매일자</Text>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor="#666"
-                    value={purchaseDate}
-                    onChangeText={setPurchaseDate}
-                  />
+                <TouchableOpacity
+                  style={styles.inputWrapper}
+                  onPress={() => setCalendarVisible(true)}
+                >
+                  <Text style={[styles.textInput, { paddingVertical: 12 }]}>
+                    {purchaseDate || "YYYY-MM-DD"}
+                  </Text>
                   {purchaseDate.length > 0 && (
                     <Icon
                       name="checkmark-circle"
@@ -641,7 +642,7 @@ const WineAddScreen = () => {
                       style={{ marginLeft: 8 }}
                     />
                   )}
-                </View>
+                </TouchableOpacity>
               </View>
             </View >
           )}
@@ -649,6 +650,14 @@ const WineAddScreen = () => {
           <View style={{ height: 40 }} />
         </ScrollView >
       </KeyboardAvoidingView >
+
+      {/* Calendar Modal */}
+      <CalendarModal
+        visible={isCalendarVisible}
+        selectedDate={purchaseDate}
+        onDateSelect={setPurchaseDate}
+        onClose={() => setCalendarVisible(false)}
+      />
     </SafeAreaView >
   );
 };
