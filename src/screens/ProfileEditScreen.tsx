@@ -28,20 +28,19 @@ const ProfileEditScreen = () => {
 
   const [nickname, setNickname] = useState(user?.nickname || "");
   const [profileImage, setProfileImage] = useState<string | null>(
-    user?.profileImage || null
+    user?.profileImage || null,
   );
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(
-    null
+    null,
   );
 
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(
-    true
+    true,
   );
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
-  const [headerHeight, setHeaderHeight] = useState(0);
 
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = profileImage !== (user?.profileImage || null);
@@ -105,7 +104,7 @@ const ProfileEditScreen = () => {
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nickname)) {
         setNicknameError(
-          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가)."
+          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).",
         );
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
@@ -154,7 +153,7 @@ const ProfileEditScreen = () => {
         const uploadResponse = await uploadProfileImage(
           selectedImageAsset.uri,
           selectedImageAsset.type || "image/jpeg",
-          selectedImageAsset.fileName || "profile.jpg"
+          selectedImageAsset.fileName || "profile.jpg",
         );
         if (!uploadResponse.isSuccess) throw new Error("Image upload failed");
       } else if (profileImage === null && user?.profileImage) {
@@ -196,10 +195,7 @@ const ProfileEditScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View
-        style={styles.header}
-        onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
-      >
+      <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
@@ -241,8 +237,8 @@ const ProfileEditScreen = () => {
                 nicknameError
                   ? styles.inputError
                   : nicknameAvailable && nickname !== user?.nickname
-                    ? styles.inputSuccess
-                    : null,
+                  ? styles.inputSuccess
+                  : null,
               ]}
               value={nickname}
               onChangeText={setNickname}
@@ -288,7 +284,6 @@ const ProfileEditScreen = () => {
         onSelectLibrary={handleSelectImageLibrary}
         onDelete={handleDeleteImage}
         hasProfileImage={!!profileImage}
-        headerHeight={headerHeight}
       />
     </SafeAreaView>
   );
