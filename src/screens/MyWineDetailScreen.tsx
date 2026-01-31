@@ -172,7 +172,23 @@ export default function MyWineDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        <View style={styles.card}>
+        <TouchableOpacity
+          style={[styles.card, { zIndex: 10 }]}
+          onPress={() => {
+            const wineParam = {
+              id: wine.wineId,
+              nameKor: wine.wineName,
+              nameEng: '',
+              type: wine.wineSort,
+              country: wine.wineCountry,
+              grape: wine.wineVariety,
+              imageUri: wine.wineImageUrl,
+            };
+            // @ts-ignore
+            navigation.navigate('WineDetail', { wine: wineParam });
+          }}
+          activeOpacity={0.5}
+        >
           <View style={styles.imageContainer}>
             {renderImage()}
           </View>
@@ -188,7 +204,7 @@ export default function MyWineDetailScreen() {
             </View>
             <Text style={styles.grapeText}>{wine.wineVariety}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
 
         <View style={styles.section}>
