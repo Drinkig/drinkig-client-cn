@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   StatusBar,
   Image,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,6 +16,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
+import MenuBottomSheet from '../components/common/MenuBottomSheet';
+import SelectionModal from '../components/common/SelectionModal';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
 
@@ -28,6 +29,8 @@ export default function MyWineDetailScreen() {
 
   const [wine, setWine] = useState<MyWineDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const [isFinishModalVisible, setIsFinishModalVisible] = useState(false);
 
   useEffect(() => {
     fetchWineDetail();
@@ -115,6 +118,10 @@ export default function MyWineDetailScreen() {
     }
   };
 
+  const handleFinishedDrinking = () => {
+    setIsFinishModalVisible(true);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -165,8 +172,8 @@ export default function MyWineDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>내 와인 상세</Text>
-        <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-          <Ionicons name="trash-outline" size={22} color="#e74c3c" />
+        <TouchableOpacity onPress={() => setIsMenuVisible(true)} style={styles.deleteButton}>
+          <Ionicons name="ellipsis-vertical" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -234,10 +241,54 @@ export default function MyWineDetailScreen() {
       </ScrollView>
 
 
+      <MenuBottomSheet
+        visible={isMenuVisible}
+        onClose={() => setIsMenuVisible(false)}
+        title="와인 관리"
+        options={[
+          {
+            label: '수정하기',
+            icon: 'create-outline',
+            onPress: handleEdit,
+          },
+          {
+            label: '삭제하기',
+            icon: 'trash-outline',
+            onPress: handleDelete,
+            isDestructive: true,
+          },
+        ]}
+      />
+
+      <SelectionModal
+        visible={isFinishModalVisible}
+        title="다 마셨어요"
+        message={'테이스팅 노트를 작성하거나\n와인을 삭제할 수 있습니다.'}
+        onClose={() => setIsFinishModalVisible(false)}
+        option1Text="테이스팅 노트 작성"
+        onSelectOption1={() => {
+          setIsFinishModalVisible(false);
+          if (wine) {
+            // @ts-ignore
+            navigation.navigate('TastingNoteWrite', {
+              wineId: wine.wineId,
+              wineName: wine.wineName,
+              wineImage: wine.wineImageUrl,
+              wineType: wine.wineSort,
+            });
+          }
+        }}
+        option2Text="와인 삭제하기"
+        onSelectOption2={() => {
+          setIsFinishModalVisible(false);
+          handleDelete();
+        }}
+      />
+
       <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
-          <MaterialCommunityIcons name="pencil" size={20} color="#fff" style={{ marginRight: 8 }} />
-          <Text style={styles.editButtonText}>정보 수정하기</Text>
+        <TouchableOpacity style={styles.editButton} onPress={handleFinishedDrinking}>
+          <MaterialCommunityIcons name="glass-wine" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <Text style={styles.editButtonText}>다 마셨어요</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
