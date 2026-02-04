@@ -1,15 +1,17 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Dimensions,
+  FlatList,
+  Image,
   KeyboardAvoidingView,
-  LayoutAnimation,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  UIManager,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,12 +29,7 @@ import {
 import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const WineAddScreen = () => {
   const navigation = useNavigation();
@@ -41,40 +38,45 @@ const WineAddScreen = () => {
   const myWine = route.params?.myWine as MyWineDTO;
   const isEditMode = !!myWine;
 
+  // Step management
+  const [currentStep, setCurrentStep] = useState(initialWine || myWine ? 2 : 1);
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+
+  // Wine selection (Step 1)
   const [selectedWineId, setSelectedWineId] = useState<number | null>(
-    myWine?.wineId || initialWine?.id || null
+    myWine?.wineId || initialWine?.id || null,
   );
-  const [name, setName] = useState(
-    myWine?.wineName || initialWine?.nameKor || ""
+  const [selectedWineName, setSelectedWineName] = useState(
+    myWine?.wineName || initialWine?.nameKor || "",
   );
+  const [searchQuery, setSearchQuery] = useState("");
   const [type, setType] = useState(myWine?.wineSort || initialWine?.type || "");
+  const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
 
+  // Purchase details (Step 2)
   const [vintage, setVintage] = useState(
-    myWine ? (myWine.vintageYear === 0 ? "NV" : String(myWine.vintageYear)) : ""
+    myWine
+      ? myWine.vintageYear === 0
+        ? "NV"
+        : String(myWine.vintageYear)
+      : "",
   );
-
   const [purchasePrice, setPurchasePrice] = useState(
-    myWine ? myWine.purchasePrice.toLocaleString() : ""
+    myWine ? myWine.purchasePrice.toLocaleString() : "",
   );
-
   const [purchaseDate, setPurchaseDate] = useState(
-    myWine?.purchaseDate || new Date().toISOString().split("T")[0]
+    myWine?.purchaseDate || new Date().toISOString().split("T")[0],
   );
-
   const [purchaseType, setPurchaseType] = useState<"offline" | "direct">(
-    myWine?.purchaseType === "DIRECT" ? "direct" : "offline"
+    myWine?.purchaseType === "DIRECT" ? "direct" : "offline",
   );
   const [purchaseShop, setPurchaseShop] = useState(myWine?.purchaseShop || "");
-
-  const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
-
   const [quantity, setQuantity] = useState(1);
+
   const [isSaving, setIsSaving] = useState(false);
   const [isCalendarVisible, setCalendarVisible] = useState(false);
-
-  const [activeStep, setActiveStep] = useState(initialWine || myWine ? 2 : 1);
-  const [maxStep, setMaxStep] = useState(initialWine || myWine ? 2 : 1);
 
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{
@@ -89,7 +91,7 @@ const WineAddScreen = () => {
   const handleShowAlert = (
     title: string,
     message: string,
-    onConfirm?: () => void
+    onConfirm?: () => void,
   ) => {
     setAlertConfig({ title, message, onConfirm });
     setAlertVisible(true);
@@ -102,16 +104,20 @@ const WineAddScreen = () => {
   useEffect(() => {
     if (initialWine) {
       setSelectedWineId(initialWine.id);
-      setName(initialWine.nameKor);
+      setSelectedWineName(initialWine.nameKor);
       setType(initialWine.type);
     }
   }, [initialWine]);
 
-  const handleStepChange = (step: number) => {
-    if (step > maxStep) return;
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setActiveStep((prev) => (prev === step ? 0 : step));
-  };
+  // Animate progress bar
+  useEffect(() => {
+    const targetProgress = currentStep === 1 ? 0.5 : 1;
+    Animated.timing(progressAnim, {
+      toValue: targetProgress,
+      duration: 500,
+      useNativeDriver: false,
+    }).start();
+  }, [currentStep]);
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
@@ -135,64 +141,103 @@ const WineAddScreen = () => {
     }
   };
 
-  const handleSearch = async (text: string) => {
-    setName(text);
-    if (text.trim().length > 0) {
-      try {
-        const response = await searchWinesPublic({
-          searchName: text,
-          page: 0,
-          size: 5,
-        });
+  useEffect(() => {
+    let timer = 0;
+    if (searchQuery.length === 0) setSearchResults([]);
+    else {
+      timer = setTimeout(async () => {
+        try {
+          const response = await searchWinesPublic({
+            searchName: searchQuery,
+          });
 
-        if (response.isSuccess) {
-          setSearchResults(response.result.content);
-          setShowSearchResults(true);
-        } else {
+          if (response.isSuccess) {
+            setSearchResults(response.result.content);
+          } else {
+            setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Search failed:", error);
           setSearchResults([]);
-          setShowSearchResults(false);
         }
-      } catch (error) {
-        console.error("Search failed:", error);
-        setSearchResults([]);
-      }
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
+      }, 400);
     }
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSearch = async (text: string) => {
+    setSearchQuery(text);
+    setSelectedWineId(null);
+    setSelectedWineName("");
   };
 
   const handleSelectWine = (wine: WineUserDTO) => {
     setSelectedWineId(wine.wineId);
-    setName(wine.name);
+    setSelectedWineName(wine.name);
     setType(wine.sort);
-
-    setShowSearchResults(false);
-
-    const nextMaxStep = Math.max(maxStep, 2);
-    setMaxStep(nextMaxStep);
-
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setActiveStep(2);
   };
 
-  const isFormValid = () => {
+  const isStep1Valid = () => {
+    return !!selectedWineId;
+  };
+
+  const isStep2Valid = () => {
     if (!selectedWineId) return false;
-
     if (!vintage && vintage !== "NV") return false;
-
     const priceValue = purchasePrice.replace(/,/g, "");
     if (!purchasePrice || priceValue.length < 4) return false;
-
     if (!purchaseDate) return false;
-
     if (!purchaseShop.trim()) return false;
-
     return true;
   };
 
+  const animateTransition = (nextStep: number, direction: "next" | "prev") => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: direction === "next" ? -SCREEN_WIDTH : SCREEN_WIDTH,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setCurrentStep(nextStep);
+      slideAnim.setValue(direction === "next" ? SCREEN_WIDTH : -SCREEN_WIDTH);
+
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  const handleNext = () => {
+    if (currentStep === 1 && isStep1Valid()) {
+      animateTransition(2, "next");
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep === 2) {
+      animateTransition(1, "prev");
+    } else {
+      navigation.goBack();
+    }
+  };
+
   const handleSave = async () => {
-    if (!isFormValid() || isSaving) return;
+    if (!isStep2Valid() || isSaving) return;
 
     if (!selectedWineId) return;
 
@@ -249,18 +294,18 @@ const WineAddScreen = () => {
 
         if (successCount > 0) {
           logEvent("wine_add_success", { count: successCount });
-          const message = quantity > 1
-            ? `${successCount}병이 내 와인 창고에 추가되었습니다.${failCount > 0 ? ` (${failCount}건 실패)` : ''}`
-            : "내 와인 창고에 추가되었습니다.";
+          const message =
+            quantity > 1
+              ? `${successCount}병이 내 와인 창고에 추가되었습니다.${
+                  failCount > 0 ? ` (${failCount}건 실패)` : ""
+                }`
+              : "내 와인 창고에 추가되었습니다.";
 
           handleShowAlert("성공", message, () => {
             navigation.goBack();
           });
         } else {
-          handleShowAlert(
-            "오류",
-            "와인 등록에 실패했습니다."
-          );
+          handleShowAlert("오류", "와인 등록에 실패했습니다.");
         }
       }
     } catch (error) {
@@ -270,6 +315,327 @@ const WineAddScreen = () => {
       setIsSaving(false);
     }
   };
+
+  const renderProgressBar = () => {
+    if (isEditMode) return null;
+
+    const widthInterpolation = progressAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["0%", "100%"],
+    });
+
+    return (
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBarBackground}>
+          <Animated.View
+            style={[styles.progressBarFill, { width: widthInterpolation }]}
+          />
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchResult = ({ item }: { item: WineUserDTO }) => {
+    const isSelected = selectedWineId === item.wineId;
+
+    return (
+      <TouchableOpacity
+        style={[styles.resultItem, isSelected && styles.resultItemSelected]}
+        onPress={() => handleSelectWine(item)}
+      >
+        <View style={styles.resultIconContainer}>
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.resultImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <Icon name="wine" size={20} color="#8e44ad" />
+          )}
+        </View>
+        <View style={styles.resultTextContainer}>
+          <Text style={styles.resultNameKor} lineBreakStrategyIOS="hangul-word">
+            {item.name}
+          </Text>
+          <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+          <View style={styles.resultInfoContainer}>
+            <View
+              style={[
+                styles.typeChip,
+                { backgroundColor: getWineTypeColor(item.sort) },
+              ]}
+            >
+              <Text style={styles.typeChipText}>{item.sort}</Text>
+            </View>
+            <Text style={styles.resultCountryText}>{item.country}</Text>
+          </View>
+        </View>
+
+        {isSelected ? (
+          <Icon name="checkmark-circle" size={24} color="#8e44ad" />
+        ) : (
+          <View style={{ width: 24, height: 24 }} />
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const renderStep1 = () => (
+    <View style={styles.stepContainer}>
+      <Text style={styles.stepTitle}>어떤 와인을 추가하시나요?</Text>
+      <Text style={styles.stepSubtitle}>와인 이름으로 검색해주세요</Text>
+
+      <View style={styles.searchBarContainer}>
+        <Icon name="search" size={20} color="#888" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="와인 이름을 검색하세요"
+          placeholderTextColor="#666"
+          value={searchQuery}
+          onChangeText={handleSearch}
+          returnKeyType="search"
+          autoFocus={!initialWine && !myWine}
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity
+            onPress={() => {
+              setSearchQuery("");
+              setSearchResults([]);
+              setSelectedWineId(null);
+            }}
+            style={styles.clearButton}
+          >
+            <Icon name="close-circle" size={18} color="#666" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <FlatList
+        data={searchResults}
+        renderItem={renderSearchResult}
+        keyExtractor={(item) => item.wineId.toString()}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          searchQuery.length > 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
+            </View>
+          ) : null
+        }
+      />
+    </View>
+  );
+
+  const renderStep2 = () => (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        style={styles.stepContainer}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.step2Content}
+      >
+        <Text style={styles.stepTitle}>구매 정보를 입력해주세요</Text>
+        <Text style={styles.stepSubtitle}>선택한 와인: {selectedWineName}</Text>
+
+        {!isEditMode && (
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>수량</Text>
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() => {
+                  if (quantity > 1) setQuantity((prev) => prev - 1);
+                }}
+              >
+                <Icon name="remove" size={20} color="#fff" />
+              </TouchableOpacity>
+              <View style={styles.quantityValueContainer}>
+                <Text style={styles.quantityValue}>{quantity}</Text>
+                <Text style={styles.quantityUnit}>병</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() => setQuantity((prev) => prev + 1)}
+              >
+                <Icon name="add" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>와인 종류</Text>
+          <View style={[styles.inputWrapper, { backgroundColor: "#2a2a2a" }]}>
+            <Text style={[styles.textInput, { color: "#aaa" }]}>
+              {type || "-"}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>빈티지 (년도)</Text>
+          <View style={styles.vintageInputWrapper}>
+            <TextInput
+              style={styles.vintageInput}
+              placeholder="ex) 2019"
+              placeholderTextColor="#666"
+              keyboardType="numeric"
+              value={vintage}
+              onChangeText={(text) => {
+                if (text !== "NV") {
+                  setVintage(text.replace(/[^0-9]/g, ""));
+                } else {
+                  setVintage(text);
+                }
+              }}
+              maxLength={4}
+            />
+
+            {((vintage.length === 4 && !isNaN(Number(vintage))) ||
+              vintage === "NV") && (
+              <Icon
+                name="checkmark-circle"
+                size={20}
+                color="#2ecc71"
+                style={{ marginRight: 8 }}
+              />
+            )}
+            <TouchableOpacity
+              style={[
+                styles.nvButton,
+                vintage === "NV" && styles.nvButtonActive,
+              ]}
+              onPress={() => setVintage(vintage === "NV" ? "" : "NV")}
+            >
+              <Text
+                style={[
+                  styles.nvButtonText,
+                  vintage === "NV" && styles.nvButtonTextActive,
+                ]}
+              >
+                NV
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>구매가</Text>
+          <View style={styles.priceInputWrapper}>
+            <Text style={styles.currencySymbol}>₩</Text>
+            <TextInput
+              style={styles.priceInput}
+              placeholder="0"
+              placeholderTextColor="#666"
+              keyboardType="numeric"
+              value={purchasePrice}
+              onChangeText={(text) => {
+                const numericValue = text.replace(/[^0-9]/g, "");
+                const formattedValue = numericValue.replace(
+                  /\B(?=(\d{3})+(?!\d))/g,
+                  ",",
+                );
+                setPurchasePrice(formattedValue);
+              }}
+            />
+            {purchasePrice.replace(/,/g, "").length >= 4 && (
+              <Icon
+                name="checkmark-circle"
+                size={20}
+                color="#2ecc71"
+                style={{ marginLeft: 8 }}
+              />
+            )}
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>구매처</Text>
+          <View style={styles.purchaseTypeContainer}>
+            <TouchableOpacity
+              style={[
+                styles.typeButton,
+                purchaseType === "offline" && styles.typeButtonActive,
+              ]}
+              onPress={() => setPurchaseType("offline")}
+            >
+              <Text
+                style={[
+                  styles.typeButtonText,
+                  purchaseType === "offline" && styles.typeButtonTextActive,
+                ]}
+              >
+                매장
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.typeButton,
+                purchaseType === "direct" && styles.typeButtonActive,
+              ]}
+              onPress={() => setPurchaseType("direct")}
+            >
+              <Text
+                style={[
+                  styles.typeButtonText,
+                  purchaseType === "direct" && styles.typeButtonTextActive,
+                ]}
+              >
+                직구
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              placeholder={
+                purchaseType === "offline"
+                  ? "매장 이름을 입력하세요"
+                  : "직구 사이트 주소를 입력하세요"
+              }
+              placeholderTextColor="#666"
+              value={purchaseShop}
+              onChangeText={setPurchaseShop}
+            />
+            {purchaseShop.length > 0 && (
+              <Icon
+                name="checkmark-circle"
+                size={20}
+                color="#2ecc71"
+                style={{ marginLeft: 8 }}
+              />
+            )}
+          </View>
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>구매일자</Text>
+          <TouchableOpacity
+            style={styles.inputWrapper}
+            onPress={() => setCalendarVisible(true)}
+          >
+            <Text style={[styles.textInput, { paddingVertical: 12 }]}>
+              {purchaseDate || "YYYY-MM-DD"}
+            </Text>
+            {purchaseDate.length > 0 && (
+              <Icon
+                name="checkmark-circle"
+                size={20}
+                color="#2ecc71"
+                style={{ marginLeft: 8 }}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -286,379 +652,64 @@ const WineAddScreen = () => {
       />
 
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.closeButton}
-        >
-          <Text style={styles.closeText}>취소</Text>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {isEditMode ? "와인 정보 수정" : "보유 와인 추가"}
         </Text>
+        <View style={styles.headerRight} />
+      </View>
+
+      {renderProgressBar()}
+
+      <Animated.View
+        style={[
+          styles.body,
+          {
+            transform: [{ translateX: slideAnim }],
+            opacity: fadeAnim,
+          },
+        ]}
+      >
+        {currentStep === 1 ? renderStep1() : renderStep2()}
+      </Animated.View>
+
+      <View style={styles.footer}>
         <TouchableOpacity
-          onPress={handleSave}
-          style={styles.saveButton}
-          disabled={!isFormValid()}
+          style={[
+            styles.nextButton,
+            ((currentStep === 1 && !isStep1Valid()) ||
+              (currentStep === 2 && !isStep2Valid()) ||
+              isSaving) &&
+              styles.disabledButton,
+          ]}
+          onPress={currentStep === 1 ? handleNext : handleSave}
+          disabled={
+            (currentStep === 1 && !isStep1Valid()) ||
+            (currentStep === 2 && !isStep2Valid()) ||
+            isSaving
+          }
         >
-          <Text style={[styles.saveText, !isFormValid() && { color: "#555" }]}>
-            저장
+          <Text style={styles.nextButtonText}>
+            {isSaving
+              ? "저장 중..."
+              : currentStep === 1
+              ? "다음"
+              : isEditMode
+              ? "수정 완료"
+              : "추가 완료"}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {!isEditMode && (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => handleStepChange(1)}
-              style={styles.stepHeader}
-            >
-              <View
-                style={[
-                  styles.stepCircle,
-                  activeStep >= 1 && styles.stepCircleActive,
-                  maxStep > 1 && styles.stepCircleCompleted,
-                ]}
-              >
-                {maxStep > 1 ? (
-                  <Icon name="checkmark" size={16} color="#fff" />
-                ) : (
-                  <Text
-                    style={[
-                      styles.stepNumber,
-                      activeStep >= 1 && styles.stepNumberActive,
-                    ]}
-                  >
-                    1
-                  </Text>
-                )}
-              </View>
-              <Text
-                style={[
-                  styles.stepTitle,
-                  activeStep === 1 && styles.stepTitleActive,
-                  maxStep > 1 && activeStep !== 1 && { color: "#ccc" },
-                ]}
-              >
-                와인 검색
-              </Text>
-              <Icon
-                name={activeStep === 1 ? "chevron-up" : "chevron-down"}
-                size={20}
-                color={
-                  activeStep === 1 ? "#fff" : maxStep > 1 ? "#ccc" : "#888"
-                }
-              />
-            </TouchableOpacity>
-          )}
-
-          {activeStep === 1 && (
-            <View style={styles.stepContent}>
-              <View style={styles.searchSection}>
-                <View style={styles.nameInputContainer}>
-                  <TextInput
-                    style={styles.nameInput}
-                    placeholder="와인 이름을 검색하세요"
-                    placeholderTextColor="#666"
-                    value={name}
-                    onChangeText={handleSearch}
-                    returnKeyType="search"
-                    multiline={false}
-                  />
-
-                  {showSearchResults && searchResults.length > 0 && (
-                    <View style={styles.searchResultsContainer}>
-                      <View>
-                        {searchResults.map((item) => (
-                          <TouchableOpacity
-                            key={item.wineId}
-                            style={styles.searchResultItem}
-                            onPress={() => handleSelectWine(item)}
-                          >
-                            <View style={styles.resultTextContainer}>
-                              <Text style={styles.resultNameKor}>
-                                {item.name}
-                              </Text>
-                              <Text style={styles.resultNameEng}>
-                                {item.nameEng}
-                              </Text>
-                            </View>
-                            <View
-                              style={[
-                                styles.typeChip,
-                                {
-                                  backgroundColor: getWineTypeColor(item.sort),
-                                },
-                              ]}
-                            >
-                              <Text style={styles.typeChipText}>
-                                {item.sort}
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    </View>
-                  )}
-                </View>
-              </View>
-            </View>
-          )}
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => handleStepChange(2)}
-            style={styles.stepHeader}
-            disabled={maxStep < 2 && activeStep !== 2}
-          >
-            <View
-              style={[
-                styles.stepCircle,
-                activeStep >= 2 && styles.stepCircleActive,
-                maxStep < 2 && styles.stepCircleDisabled,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.stepNumber,
-                  activeStep >= 2 && styles.stepNumberActive,
-                  maxStep < 2 && styles.stepNumberDisabled,
-                ]}
-              >
-                2
-              </Text>
-            </View>
-            <Text
-              style={[
-                styles.stepTitle,
-                activeStep === 2 && styles.stepTitleActive,
-                maxStep < 2 && styles.stepTitleDisabled,
-              ]}
-            >
-              상세 구매 정보
-            </Text>
-            <Icon
-              name={activeStep === 2 ? "chevron-up" : "chevron-down"}
-              size={20}
-              color={activeStep === 2 ? "#fff" : maxStep < 2 ? "#444" : "#888"}
-            />
-          </TouchableOpacity>
-
-          {activeStep === 2 && (
-            <View style={styles.stepContent}>
-              {!isEditMode && (
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>수량</Text>
-                  <View style={styles.quantityContainer}>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => {
-                        if (quantity > 1) setQuantity(prev => prev - 1);
-                      }}
-                    >
-                      <Icon name="remove" size={20} color="#fff" />
-                    </TouchableOpacity>
-                    <View style={styles.quantityValueContainer}>
-                      <Text style={styles.quantityValue}>{quantity}</Text>
-                      <Text style={styles.quantityUnit}>병</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => setQuantity(prev => prev + 1)}
-                    >
-                      <Icon name="add" size={20} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>와인 종류</Text>
-                <View
-                  style={[styles.inputWrapper, { backgroundColor: "#2a2a2a" }]}
-                >
-                  <Text style={[styles.textInput, { color: "#aaa" }]}>
-                    {type || "-"}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>빈티지 (년도)</Text>
-                <View style={styles.vintageInputWrapper}>
-                  <TextInput
-                    style={styles.vintageInput}
-                    placeholder="ex) 2019"
-                    placeholderTextColor="#666"
-                    keyboardType="numeric"
-                    value={vintage}
-                    onChangeText={(text) => {
-                      if (text !== "NV") {
-                        setVintage(text.replace(/[^0-9]/g, ""));
-                      } else {
-                        setVintage(text);
-                      }
-                    }}
-                    maxLength={4}
-                  />
-
-                  {((vintage.length === 4 && !isNaN(Number(vintage))) ||
-                    vintage === "NV") && (
-                      <Icon
-                        name="checkmark-circle"
-                        size={20}
-                        color="#2ecc71"
-                        style={{ marginRight: 8 }}
-                      />
-                    )}
-                  <TouchableOpacity
-                    style={[
-                      styles.nvButton,
-                      vintage === "NV" && styles.nvButtonActive,
-                    ]}
-                    onPress={() => setVintage(vintage === "NV" ? "" : "NV")}
-                  >
-                    <Text
-                      style={[
-                        styles.nvButtonText,
-                        vintage === "NV" && styles.nvButtonTextActive,
-                      ]}
-                    >
-                      NV
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>구매가</Text>
-                <View style={styles.priceInputWrapper}>
-                  <Text style={styles.currencySymbol}>₩</Text>
-                  <TextInput
-                    style={styles.priceInput}
-                    placeholder="0"
-                    placeholderTextColor="#666"
-                    keyboardType="numeric"
-                    value={purchasePrice}
-                    onChangeText={(text) => {
-                      const numericValue = text.replace(/[^0-9]/g, "");
-                      const formattedValue = numericValue.replace(
-                        /\B(?=(\d{3})+(?!\d))/g,
-                        ","
-                      );
-                      setPurchasePrice(formattedValue);
-                    }}
-                  />
-                  {purchasePrice.replace(/,/g, "").length >= 4 && (
-                    <Icon
-                      name="checkmark-circle"
-                      size={20}
-                      color="#2ecc71"
-                      style={{ marginLeft: 8 }}
-                    />
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>구매처</Text>
-                <View style={styles.purchaseTypeContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.typeButton,
-                      purchaseType === "offline" && styles.typeButtonActive,
-                    ]}
-                    onPress={() => setPurchaseType("offline")}
-                  >
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        purchaseType === "offline" &&
-                        styles.typeButtonTextActive,
-                      ]}
-                    >
-                      매장
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.typeButton,
-                      purchaseType === "direct" && styles.typeButtonActive,
-                    ]}
-                    onPress={() => setPurchaseType("direct")}
-                  >
-                    <Text
-                      style={[
-                        styles.typeButtonText,
-                        purchaseType === "direct" &&
-                        styles.typeButtonTextActive,
-                      ]}
-                    >
-                      직구
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.inputWrapper}>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder={
-                      purchaseType === "offline"
-                        ? "매장 이름을 입력하세요"
-                        : "직구 사이트 주소를 입력하세요"
-                    }
-                    placeholderTextColor="#666"
-                    value={purchaseShop}
-                    onChangeText={setPurchaseShop}
-                  />
-                  {purchaseShop.length > 0 && (
-                    <Icon
-                      name="checkmark-circle"
-                      size={20}
-                      color="#2ecc71"
-                      style={{ marginLeft: 8 }}
-                    />
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>구매일자</Text>
-                <TouchableOpacity
-                  style={styles.inputWrapper}
-                  onPress={() => setCalendarVisible(true)}
-                >
-                  <Text style={[styles.textInput, { paddingVertical: 12 }]}>
-                    {purchaseDate || "YYYY-MM-DD"}
-                  </Text>
-                  {purchaseDate.length > 0 && (
-                    <Icon
-                      name="checkmark-circle"
-                      size={20}
-                      color="#2ecc71"
-                      style={{ marginLeft: 8 }}
-                    />
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View >
-          )}
-
-          <View style={{ height: 40 }} />
-        </ScrollView >
-      </KeyboardAvoidingView >
-
-      {/* Calendar Modal */}
       <CalendarModal
         visible={isCalendarVisible}
         selectedDate={purchaseDate}
         onDateSelect={setPurchaseDate}
         onClose={() => setCalendarVisible(false)}
       />
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 
@@ -681,154 +732,156 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
-  closeButton: {
+  backButton: {
     padding: 8,
+    width: 40,
   },
-  closeText: {
-    color: "#888",
-    fontSize: 16,
+  headerRight: {
+    width: 40,
   },
-  saveButton: {
-    padding: 8,
+  progressContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
   },
-  saveText: {
-    color: "#8e44ad",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-  },
-  stepHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    marginBottom: 16,
-    backgroundColor: "#1a1a1a",
-  },
-  stepCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  progressBarBackground: {
+    height: 6,
     backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: "#666",
+    borderRadius: 3,
+    overflow: "hidden",
   },
-  stepCircleActive: {
+  progressBarFill: {
+    height: "100%",
     backgroundColor: "#8e44ad",
-    borderColor: "#8e44ad",
+    borderRadius: 3,
   },
-  stepCircleCompleted: {
-    backgroundColor: "#2ecc71",
-    borderColor: "#2ecc71",
+  body: {
+    flex: 1,
   },
-  stepCircleDisabled: {
-    borderColor: "#444",
-    backgroundColor: "#222",
-  },
-  stepNumber: {
-    color: "#888",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  stepNumberActive: {
-    color: "#fff",
-  },
-  stepNumberDisabled: {
-    color: "#444",
+  stepContainer: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 24,
   },
   stepTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 8,
+  },
+  stepSubtitle: {
+    fontSize: 14,
     color: "#888",
-    flex: 1,
-  },
-  stepTitleActive: {
-    color: "#fff",
-  },
-  stepTitleDisabled: {
-    color: "#555",
-  },
-  stepContent: {
     marginBottom: 24,
-    paddingLeft: 12,
   },
-  searchSection: {
-    marginBottom: 24,
-    zIndex: 100,
-  },
-  nameInputContainer: {
-    position: "relative",
-    zIndex: 100,
-  },
-  nameInput: {
-    fontSize: 18,
-    color: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#444",
-    paddingVertical: 8,
-  },
-  searchResultsContainer: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    marginTop: 4,
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: "#2a2a2a",
     borderRadius: 8,
-    zIndex: 999,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 8,
-    borderWidth: 1,
-    borderColor: "#444",
+    paddingHorizontal: 12,
+    height: 48,
+    marginBottom: 16,
   },
-  searchResultItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#444",
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#fff",
+    fontSize: 16,
+    padding: 0,
+    height: "100%",
+  },
+  clearButton: {
+    padding: 4,
+  },
+  listContent: {
+    paddingBottom: 16,
+  },
+  resultItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    width: "100%",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#333",
+    borderRadius: 8,
+  },
+  resultItemSelected: {
+    backgroundColor: "#2a1a3a",
+  },
+  resultIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: "#2a2a2a",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+    overflow: "hidden",
+  },
+  resultImage: {
+    width: "85%",
+    height: "85%",
   },
   resultTextContainer: {
     flex: 1,
-    marginRight: 24,
+    gap: 4,
+    paddingVertical: 2,
   },
   resultNameKor: {
     color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-    lineHeight: 20,
+    fontSize: 16,
+    fontWeight: "600",
   },
   resultNameEng: {
     color: "#888",
-    fontSize: 12,
+    fontSize: 13,
+  },
+  resultInfoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginTop: 2,
   },
   typeChip: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-    flexShrink: 0,
-    marginLeft: 8, // 이름과 간격
   },
   typeChipText: {
     color: "#fff",
     fontSize: 10,
     fontWeight: "bold",
   },
+  resultCountryText: {
+    color: "#666",
+    fontSize: 12,
+  },
+  rightRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingLeft: 8,
+  },
+  rightRatingText: {
+    fontSize: 14,
+    color: "#e74c3c",
+    fontWeight: "bold",
+  },
+  emptyContainer: {
+    padding: 48,
+    alignItems: "center",
+  },
+  emptyText: {
+    color: "#666",
+    fontSize: 16,
+  },
+  step2Content: {
+    paddingBottom: 24,
+  },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 13,
@@ -849,6 +902,36 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: "#fff",
     fontSize: 16,
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    marginTop: 8,
+  },
+  quantityButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#444",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  quantityValueContainer: {
+    minWidth: 60,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+  },
+  quantityValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginRight: 4,
+  },
+  quantityUnit: {
+    fontSize: 14,
+    color: "#888",
   },
   vintageInputWrapper: {
     flexDirection: "row",
@@ -928,35 +1011,26 @@ const styles = StyleSheet.create({
   typeButtonTextActive: {
     color: "#fff",
   },
-  quantityContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    marginTop: 8,
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#222",
   },
-  quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#444",
+  nextButton: {
+    width: "100%",
+    height: 56,
+    backgroundColor: "#8e44ad",
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
   },
-  quantityValueContainer: {
-    minWidth: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: 'row',
+  disabledButton: {
+    opacity: 0.3,
   },
-  quantityValue: {
+  nextButtonText: {
+    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
-    marginRight: 4,
-  },
-  quantityUnit: {
-    fontSize: 14,
-    color: "#888",
   },
 });
 
