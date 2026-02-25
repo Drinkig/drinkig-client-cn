@@ -57,12 +57,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 8,
     borderRadius: 20,
-    // Ambient Purple Glow
-    shadowColor: colors.primary,
+    // Premium matte shadow
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 16,
-    elevation: 12,
+    elevation: 10,
   },
   heroSection: {
     borderRadius: 20,
