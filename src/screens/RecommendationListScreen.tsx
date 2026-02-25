@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useUser } from '../context/UserContext';
+import { colors } from '../constants/colors';
 
 const RANK_BADGES = ['🥇', '🥈', '🥉'];
 
@@ -37,7 +38,7 @@ const RecommendationListScreen = () => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>추천 와인 스타일</Text>
         <View style={{ width: 40 }} />
@@ -97,7 +98,7 @@ const RecommendationListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 8,
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   scrollContent: {
     padding: 24,
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   introTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     lineHeight: 34,
   },
   listContainer: {
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
     alignItems: 'center',
   },
   rankSection: {
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#333',
+    borderRightColor: colors.border,
     marginRight: 16,
     paddingRight: 16,
   },
@@ -170,14 +171,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   typeText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 11,
     fontWeight: 'bold',
   },
   wineVariety: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
   wineRegion: {
@@ -187,7 +188,7 @@ const styles = StyleSheet.create({
   },
   wineVarietyEng: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 4,
     fontStyle: 'italic',
   },
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 16,
   },
 });

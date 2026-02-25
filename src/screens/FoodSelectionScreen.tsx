@@ -7,6 +7,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { FOOD_CATEGORIES } from '../data/mockFoodCategories';
 import { COUNTRY_FOODS } from '../data/mockCountryFoods';
+import { colors } from '../constants/colors';
 
 export default function FoodSelectionScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -33,10 +34,10 @@ export default function FoodSelectionScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={colors.white} />
                 </TouchableOpacity>
             </View>
 
@@ -106,7 +107,7 @@ export default function FoodSelectionScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -124,7 +125,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#fff',
+        color: colors.white,
     },
     contentContainer: {
         flex: 1,
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
         width: '30%',
         backgroundColor: '#222',
         borderRightWidth: 1,
-        borderRightColor: '#333',
+        borderRightColor: colors.border,
     },
     categoryItem: {
         paddingVertical: 20,
@@ -143,16 +144,16 @@ const styles = StyleSheet.create({
         position: 'relative',
     },
     categoryItemActive: {
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     categoryText: {
-        color: '#888',
+        color: colors.textSecondary,
         fontSize: 14,
         fontWeight: '500',
         lineHeight: 20,
     },
     categoryTextActive: {
-        color: '#fff',
+        color: colors.white,
         fontWeight: 'bold',
     },
     activeIndicator: {
@@ -161,13 +162,13 @@ const styles = StyleSheet.create({
         top: 15,
         bottom: 15,
         width: 4,
-        backgroundColor: '#8e44ad',
+        backgroundColor: colors.primary,
         borderTopRightRadius: 4,
         borderBottomRightRadius: 4,
     },
     mainContent: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     topSection: {
         paddingHorizontal: 24,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 26,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 8,
     },
     subtitle: {
@@ -191,12 +192,12 @@ const styles = StyleSheet.create({
     selectedCategoryTitle: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 6,
     },
     selectedCategorySubtitle: {
         fontSize: 14,
-        color: '#888',
+        color: colors.textSecondary,
     },
     itemsContainer: {
         padding: 16,
@@ -209,10 +210,10 @@ const styles = StyleSheet.create({
     foodItem: {
         paddingVertical: 12,
         paddingHorizontal: 16,
-        backgroundColor: '#252525',
+        backgroundColor: colors.surface1,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: colors.border,
         marginBottom: 8,
         justifyContent: 'center',
         alignItems: 'center',

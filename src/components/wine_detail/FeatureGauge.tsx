@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../../constants/colors';
 
 interface FeatureGaugeProps {
   label: string;
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
   },
   featureLabel: {
     width: 50,
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '500',
   },
@@ -47,10 +48,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   gaugeActive: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
   },
   gaugeInactive: {
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
 });
 

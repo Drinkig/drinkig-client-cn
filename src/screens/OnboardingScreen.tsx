@@ -35,6 +35,7 @@ import NewbieFlavorProfileStep from "../components/onboarding/NewbieFlavorProfil
 import ProfileStep from "../components/onboarding/ProfileStep";
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import TransitionStep from "../components/onboarding/TransitionStep";
+import { colors } from '../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -861,7 +862,7 @@ const OnboardingScreen = () => {
       <View style={styles.header}>
         {step !== "INTRO" && (
           <TouchableOpacity onPress={prevStep} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color="#fff" />
+            <Icon name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
         )}
       </View>
@@ -890,7 +891,7 @@ const OnboardingScreen = () => {
           disabled={loading || !isStepValid()}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.white} />
           ) : (
             <Text style={styles.nextButtonText}>{getButtonText()}</Text>
           )}
@@ -914,7 +915,7 @@ const OnboardingScreen = () => {
                 cx={CIRCLE_SIZE / 2}
                 cy={CIRCLE_SIZE / 2}
                 r={RADIUS}
-                stroke="#333"
+                stroke={colors.border}
                 strokeWidth={STROKE_WIDTH}
                 fill="transparent"
               />
@@ -923,7 +924,7 @@ const OnboardingScreen = () => {
                 cx={CIRCLE_SIZE / 2}
                 cy={CIRCLE_SIZE / 2}
                 r={RADIUS}
-                stroke="#8e44ad"
+                stroke={colors.primary}
                 strokeWidth={STROKE_WIDTH}
                 fill="transparent"
                 strokeDasharray={CIRCUMFERENCE}
@@ -966,13 +967,13 @@ const styles = StyleSheet.create({
   },
   progressBarBackground: {
     height: 6,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 3,
     overflow: "hidden",
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   body: {
@@ -987,7 +988,7 @@ const styles = StyleSheet.create({
   nextButton: {
     width: "100%",
     height: 56,
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
@@ -996,7 +997,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   nextButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -1008,7 +1009,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   analyzingText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "500",
     marginTop: 20,

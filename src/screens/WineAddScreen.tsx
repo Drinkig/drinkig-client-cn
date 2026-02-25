@@ -28,6 +28,7 @@ import {
 } from "../api/wine";
 import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
+import { colors } from '../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -351,7 +352,7 @@ const WineAddScreen = () => {
               resizeMode="contain"
             />
           ) : (
-            <Icon name="wine" size={20} color="#8e44ad" />
+            <Icon name="wine" size={20} color={colors.primary} />
           )}
         </View>
         <View style={styles.resultTextContainer}>
@@ -373,7 +374,7 @@ const WineAddScreen = () => {
         </View>
 
         {isSelected ? (
-          <Icon name="checkmark-circle" size={24} color="#8e44ad" />
+          <Icon name="checkmark-circle" size={24} color={colors.primary} />
         ) : (
           <View style={{ width: 24, height: 24 }} />
         )}
@@ -387,7 +388,7 @@ const WineAddScreen = () => {
       <Text style={styles.stepSubtitle}>와인 이름으로 검색해주세요</Text>
 
       <View style={styles.searchBarContainer}>
-        <Icon name="search" size={20} color="#888" style={styles.searchIcon} />
+        <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="와인 이름을 검색하세요"
@@ -451,7 +452,7 @@ const WineAddScreen = () => {
                   if (quantity > 1) setQuantity((prev) => prev - 1);
                 }}
               >
-                <Icon name="remove" size={20} color="#fff" />
+                <Icon name="remove" size={20} color={colors.white} />
               </TouchableOpacity>
               <View style={styles.quantityValueContainer}>
                 <Text style={styles.quantityValue}>{quantity}</Text>
@@ -461,7 +462,7 @@ const WineAddScreen = () => {
                 style={styles.quantityButton}
                 onPress={() => setQuantity((prev) => prev + 1)}
               >
-                <Icon name="add" size={20} color="#fff" />
+                <Icon name="add" size={20} color={colors.white} />
               </TouchableOpacity>
             </View>
           </View>
@@ -469,7 +470,7 @@ const WineAddScreen = () => {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>와인 종류</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: "#2a2a2a" }]}>
+          <View style={[styles.inputWrapper, { backgroundColor: colors.surface1 }]}>
             <Text style={[styles.textInput, { color: "#aaa" }]}>
               {type || "-"}
             </Text>
@@ -653,7 +654,7 @@ const WineAddScreen = () => {
 
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {isEditMode ? "와인 정보 수정" : "보유 와인 추가"}
@@ -716,7 +717,7 @@ const WineAddScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
@@ -725,12 +726,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
+    color: colors.white,
   },
   backButton: {
     padding: 8,
@@ -745,13 +746,13 @@ const styles = StyleSheet.create({
   },
   progressBarBackground: {
     height: 6,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 3,
     overflow: "hidden",
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   body: {
@@ -765,18 +766,18 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#fff",
+    color: colors.white,
     marginBottom: 8,
   },
   stepSubtitle: {
     fontSize: 14,
-    color: "#888",
+    color: colors.textSecondary,
     marginBottom: 24,
   },
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 48,
@@ -787,7 +788,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     padding: 0,
     height: "100%",
@@ -804,7 +805,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: colors.border,
     borderRadius: 8,
   },
   resultItemSelected: {
@@ -814,7 +815,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -830,12 +831,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   resultNameKor: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "600",
   },
   resultNameEng: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 13,
   },
   resultInfoContainer: {
@@ -850,7 +851,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 10,
     fontWeight: "bold",
   },
@@ -866,7 +867,7 @@ const styles = StyleSheet.create({
   },
   rightRatingText: {
     fontSize: 14,
-    color: "#e74c3c",
+    color: colors.error,
     fontWeight: "bold",
   },
   emptyContainer: {
@@ -885,13 +886,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    color: "#888",
+    color: colors.textSecondary,
     marginBottom: 8,
   },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#444",
@@ -900,7 +901,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     paddingVertical: 12,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
   quantityContainer: {
@@ -926,17 +927,17 @@ const styles = StyleSheet.create({
   quantityValue: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
+    color: colors.white,
     marginRight: 4,
   },
   quantityUnit: {
     fontSize: 14,
-    color: "#888",
+    color: colors.textSecondary,
   },
   vintageInputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#444",
@@ -945,7 +946,7 @@ const styles = StyleSheet.create({
   vintageInput: {
     flex: 1,
     padding: 12,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
   nvButton: {
@@ -955,34 +956,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#444",
   },
   nvButtonActive: {
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
   },
   nvButtonText: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: "bold",
   },
   nvButtonTextActive: {
-    color: "#fff",
+    color: colors.white,
   },
   priceInputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#444",
     paddingHorizontal: 12,
   },
   currencySymbol: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 16,
     marginRight: 8,
   },
   priceInput: {
     flex: 1,
     paddingVertical: 12,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
   purchaseTypeContainer: {
@@ -993,23 +994,23 @@ const styles = StyleSheet.create({
   typeButton: {
     flex: 1,
     paddingVertical: 10,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 8,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#444",
   },
   typeButtonActive: {
-    backgroundColor: "#8e44ad",
-    borderColor: "#8e44ad",
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   typeButtonText: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: "600",
   },
   typeButtonTextActive: {
-    color: "#fff",
+    color: colors.white,
   },
   footer: {
     padding: 20,
@@ -1019,7 +1020,7 @@ const styles = StyleSheet.create({
   nextButton: {
     width: "100%",
     height: 56,
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
@@ -1028,7 +1029,7 @@ const styles = StyleSheet.create({
     opacity: 0.3,
   },
   nextButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
   },

@@ -16,6 +16,7 @@ import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { WineDBItem } from '../types/Wine';
 import { RootStackParamList } from '../types';
 import AdBanner from '../components/common/AdBanner';
+import { colors } from '../constants/colors';
 
 type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;
 
@@ -106,7 +107,7 @@ export default function SearchResultScreen() {
             resizeMode="contain"
           />
         ) : (
-          <Icon name="wine" size={20} color="#8e44ad" />
+          <Icon name="wine" size={20} color={colors.primary} />
         )}
       </View>
       <View style={styles.resultTextContainer}>
@@ -121,7 +122,7 @@ export default function SearchResultScreen() {
       </View>
       {item.vivinoRating && (
         <View style={styles.rightRatingContainer}>
-          <Icon name="star" size={14} color="#e74c3c" />
+          <Icon name="star" size={14} color={colors.error} />
           <Text style={styles.rightRatingText}>{item.vivinoRating.toFixed(1)}</Text>
         </View>
       )}
@@ -130,7 +131,7 @@ export default function SearchResultScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
@@ -138,7 +139,7 @@ export default function SearchResultScreen() {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>'{searchKeyword}' 검색 결과</Text>
         <View style={{ width: 24 }} />
@@ -148,7 +149,7 @@ export default function SearchResultScreen() {
       <View style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
+            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />
             <ActivityIndicator size="large" color="#E50914" />
           </View>
         ) : (
@@ -160,7 +161,7 @@ export default function SearchResultScreen() {
             contentContainerStyle={styles.listContent}
             ListHeaderComponent={
               <View>
-                <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
+                <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />
                 {!isLoading && searchResults.length > 0 ? <SearchResultHeader count={totalCount} /> : null}
               </View>
             }
@@ -185,7 +186,7 @@ const SearchResultHeader = ({ count }: { count: number }) => (
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -194,13 +195,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -217,11 +218,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   resultCountText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   resultCountHighlight: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   listContent: {
@@ -234,13 +235,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   resultIconContainer: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -256,12 +257,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   resultNameKor: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   resultNameEng: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   resultInfoContainer: {
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   },
   rightRatingText: {
     fontSize: 14,
-    color: '#e74c3c',
+    color: colors.error,
     fontWeight: 'bold',
   },
   emptyContainer: {

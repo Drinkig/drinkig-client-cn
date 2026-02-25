@@ -14,6 +14,7 @@ import { RootStackParamList } from '../types';
 import { calculateCompatibilityScore, CompatibilityResult } from '../utils/compatibility';
 import { useUser } from '../context/UserContext';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { colors } from '../constants/colors';
 
 type WineCompatibilityRouteProp = RouteProp<RootStackParamList, 'WineCompatibility'>;
 
@@ -31,7 +32,7 @@ const getOverallFeedback = (score: number, nickname: string) => {
 
 const getScoreColor = (score: number) => {
     if (score >= 90) return '#2ecc71';
-    if (score >= 80) return '#8e44ad';
+    if (score >= 80) return colors.primary;
     if (score >= 60) return '#f39c12';
     return '#95a5a6';
 };
@@ -138,7 +139,7 @@ const WineCompatibilityScreen = () => {
     if (isLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+                <StatusBar barStyle="light-content" backgroundColor={colors.background} />
                 <Image
                     source={require('../assets/onboarding/Drinky-search.png')}
                     style={styles.loadingImage}
@@ -154,7 +155,7 @@ const WineCompatibilityScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
             <View style={styles.content}>
                 <View style={styles.header}>
                     <View style={styles.headerRight} />
@@ -242,11 +243,11 @@ const WineCompatibilityScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     loadingContainer: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -256,14 +257,14 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     loadingText: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 16,
         fontWeight: 'bold',
         textAlign: 'center',
         lineHeight: 24,
     },
     highlightText: {
-        color: '#8e44ad',
+        color: colors.primary,
     },
     content: {
         flex: 1,
@@ -275,12 +276,12 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#333',
+        borderBottomColor: colors.border,
     },
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
     },
     headerRight: {
         width: 32,
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
     reportTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         lineHeight: 28,
     },
     conversationSection: {
@@ -315,14 +316,14 @@ const styles = StyleSheet.create({
     },
     bubbleContainer: {
         flex: 1,
-        backgroundColor: '#2a2a2a',
+        backgroundColor: colors.surface1,
         borderRadius: 20,
         borderTopRightRadius: 4,
         padding: 16,
         marginRight: 110,
         position: 'relative',
         borderWidth: 1,
-        borderColor: '#8e44ad',
+        borderColor: colors.primary,
         zIndex: 1,
     },
     bubbleArrow: {
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
         borderLeftWidth: 10,
         borderRightWidth: 0,
         borderBottomWidth: 10,
-        borderLeftColor: '#8e44ad',
+        borderLeftColor: colors.primary,
         borderRightColor: 'transparent',
         borderBottomColor: 'transparent',
     },
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
     scoreBigText: {
         fontSize: 30,
         fontWeight: 'bold',
-        color: '#8e44ad',
+        color: colors.primary,
     },
     scoreUnitText: {
         fontSize: 18,
@@ -364,7 +365,7 @@ const styles = StyleSheet.create({
     },
     detailsContainer: {
         marginTop: 10,
-        backgroundColor: '#2a2a2a',
+        backgroundColor: colors.surface1,
         borderRadius: 16,
         padding: 20,
         marginHorizontal: 0,
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
     detailLabel: {
         fontSize: 15,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         width: 60,
     },
     feedbackText: {
@@ -391,7 +392,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     feedbackNeutral: {
-        color: '#888',
+        color: colors.textSecondary,
     },
     bottomContainer: {
         position: 'absolute',
@@ -402,12 +403,12 @@ const styles = StyleSheet.create({
         paddingBottom: 34,
     },
     ctaButton: {
-        backgroundColor: '#8e44ad',
+        backgroundColor: colors.primary,
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: "#000",
+        shadowColor: colors.black,
         shadowOffset: {
             width: 0,
             height: 4,
@@ -420,7 +421,7 @@ const styles = StyleSheet.create({
         opacity: 0.3,
     },
     ctaButtonText: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 18,
         fontWeight: 'bold',
     },

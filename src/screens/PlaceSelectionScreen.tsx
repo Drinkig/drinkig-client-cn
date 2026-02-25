@@ -5,6 +5,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { colors } from '../constants/colors';
 
 export default function PlaceSelectionScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -19,11 +20,11 @@ export default function PlaceSelectionScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={colors.white} />
                 </TouchableOpacity>
             </View>
 
@@ -38,7 +39,7 @@ export default function PlaceSelectionScreen() {
                         activeOpacity={0.9}
                     >
                         <View style={[styles.iconContainer, { backgroundColor: '#FF9F43' }]}>
-                            <MaterialCommunityIcons name="silverware-fork-knife" size={40} color="#fff" />
+                            <MaterialCommunityIcons name="silverware-fork-knife" size={40} color={colors.white} />
                         </View>
                         <Text style={styles.cardTitle}>레스토랑</Text>
                         <Text style={styles.cardDesc}>음식과 분위기에{'\n'}딱 맞는 와인</Text>
@@ -49,8 +50,8 @@ export default function PlaceSelectionScreen() {
                         onPress={() => handleSelect('SHOP')}
                         activeOpacity={0.9}
                     >
-                        <View style={[styles.iconContainer, { backgroundColor: '#8e44ad' }]}>
-                            <MaterialCommunityIcons name="store" size={40} color="#fff" />
+                        <View style={[styles.iconContainer, { backgroundColor: colors.primary }]}>
+                            <MaterialCommunityIcons name="store" size={40} color={colors.white} />
                         </View>
                         <Text style={styles.cardTitle}>와인샵/편의점</Text>
                         <Text style={styles.cardDesc}>가성비 좋고{'\n'}구매하기 쉬운</Text>
@@ -64,7 +65,7 @@ export default function PlaceSelectionScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     header: {
         paddingHorizontal: 20,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 8,
     },
     subtitle: {
@@ -98,14 +99,14 @@ const styles = StyleSheet.create({
     },
     selectionCard: {
         flex: 1,
-        backgroundColor: '#252525',
+        backgroundColor: colors.surface1,
         borderRadius: 24,
         padding: 24,
         height: 220,
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: colors.border,
     },
     iconContainer: {
         width: 70,
@@ -118,12 +119,12 @@ const styles = StyleSheet.create({
     cardTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 8,
     },
     cardDesc: {
         fontSize: 14,
-        color: '#888',
+        color: colors.textSecondary,
         textAlign: 'center',
         lineHeight: 20,
     },

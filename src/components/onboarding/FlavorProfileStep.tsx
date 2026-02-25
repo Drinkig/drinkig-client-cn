@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { colors } from '../../constants/colors';
 
 export interface FlavorProfile {
   acidity: number | null | undefined;
@@ -117,12 +118,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 20,
   },
   content: {
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   itemLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
     marginRight: 8,
   },
   itemDesc: {
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     height: 2,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     top: 19,
   },
   dotsContainer: {
@@ -206,14 +207,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#444',
   },
   activeDot: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
   },
   selectedDot: {
     width: 12,
     height: 12,
     borderRadius: 7,
-    backgroundColor: '#8e44ad',
-    shadowColor: "#8e44ad",
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 6,
@@ -225,18 +226,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#1e1e1e',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   unknownButtonSelected: {
     backgroundColor: '#2a1a2a',
-    borderColor: '#8e44ad',
+    borderColor: colors.primary,
   },
   unknownText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 12,
   },
   unknownTextSelected: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontWeight: '600',
   },
 });

@@ -6,6 +6,7 @@ import { useNavigation, useRoute } from '@react-navigation/native'; // useRoute 
 import { useUser } from '../context/UserContext';
 import { getOnboardingRecommendation, OnboardingRecommendationDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart'; // 차트 컴포넌트 import
+import { colors } from '../constants/colors';
 
 
 const RANK_TITLES = [
@@ -96,7 +97,7 @@ const RecommendationResultScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#8e44ad" />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>회원님의 취향을 분석 중입니다...</Text>
       </View>
     );
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#121212',
   },
   loadingText: {
-    color: '#fff',
+    color: colors.white,
     marginTop: 16,
     fontSize: 16,
   },
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
   },
   subtitle: {
@@ -231,22 +232,22 @@ const styles = StyleSheet.create({
   chartContainer: {
     alignItems: 'center',
     marginBottom: 10,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     paddingTop: 24,
     paddingBottom: 24,
     paddingHorizontal: 20,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   chartTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
   },
   chartHelperText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
     marginTop: 4,
     marginBottom: 8,
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     paddingTop: 15,
     paddingBottom: 15,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -274,7 +275,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -288,13 +289,13 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginLeft: 10,
   },
   cardBody: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 20,
@@ -304,7 +305,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -320,7 +321,7 @@ const styles = StyleSheet.create({
   varietyText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   tagContainer: {
     flexDirection: 'row',
@@ -328,7 +329,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
@@ -343,14 +344,14 @@ const styles = StyleSheet.create({
     borderTopColor: '#222',
   },
   button: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
     height: 56,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
   },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { colors } from '../../constants/colors';
 
 interface StarRatingProps {
   rating: number;
@@ -21,7 +22,7 @@ export default function StarRating({ rating, onRatingChange }: StarRatingProps) 
         <Icon
           name={iconName}
           size={40}
-          color={rating >= index - 0.5 ? "#8e44ad" : "#555"}
+          color={rating >= index - 0.5 ? colors.primary : "#555"}
           style={styles.starIcon}
         />
         <View style={styles.touchOverlay}>
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
   },
   starIcon: {
 
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,

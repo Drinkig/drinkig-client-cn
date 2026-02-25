@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { colors } from '../../constants/colors';
 
 interface ProfileStepProps {
   name: string;
@@ -69,12 +70,12 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 40,
   },
   stepDesc: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 24,
   },
   profileImageBtn: {
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
     fontSize: 14,
   },
@@ -114,12 +115,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e1e1e',
     borderRadius: 8,
     paddingHorizontal: 16,
-    color: '#fff',
+    color: colors.white,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   inputError: {
-    borderColor: '#e74c3c', // Red
+    borderColor: colors.error, // Red
   },
   inputSuccess: {
     borderColor: '#2ecc71', // Green
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   errorText: {
-    color: '#e74c3c',
+    color: colors.error,
     fontSize: 12,
   },
   successText: {

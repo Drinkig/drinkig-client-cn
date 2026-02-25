@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'rea
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ReviewCard from '../ReviewCard';
 import { getWineReviews, ReviewDTO } from '../../../api/wine';
+import { colors } from '../../../constants/colors';
 
 type SortOption = 'latest' | 'rating_high' | 'rating_low';
 
@@ -83,7 +84,7 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#8e44ad" />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -138,7 +139,7 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
                     {getSortLabel(option)}
                   </Text>
                   {sortOption === option && (
-                    <Ionicons name="checkmark" size={16} color="#8e44ad" />
+                    <Ionicons name="checkmark" size={16} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -179,13 +180,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
 
   sortDropdownHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   sortDropdownHeaderText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 13,
     fontWeight: '500',
     marginRight: 4,
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 40,
     right: 0,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#444',
@@ -220,17 +221,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   sortDropdownItemSelected: {
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
   sortDropdownItemText: {
     color: '#aaa',
     fontSize: 13,
   },
   sortDropdownItemTextSelected: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
   },
 

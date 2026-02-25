@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '../../constants/colors';
 
 interface PriceStatsProps {
   prices: { price: number }[];
@@ -52,7 +53,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   priceStatsContainer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     padding: 20,
     marginBottom: 12,
@@ -63,13 +64,13 @@ const styles = StyleSheet.create({
   },
   avgPriceLabel: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   avgPriceValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#8e44ad',
+    color: colors.primary,
   },
   divider: {
     height: 1,
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   },
   rangeLabel: {
     fontSize: 12,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 4,
   },
   rangeValue: {

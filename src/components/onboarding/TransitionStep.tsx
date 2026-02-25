@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { colors } from '../../constants/colors';
 
 interface TransitionStepProps {
   isNewbie: boolean;
@@ -36,7 +37,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginBottom: 10,
     lineHeight: 32, // 줄바꿈 시 간격 확보

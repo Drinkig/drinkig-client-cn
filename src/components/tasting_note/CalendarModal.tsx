@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 import Icon from "react-native-vector-icons/Ionicons";
+import { colors } from '../../constants/colors';
 
 interface CalendarModalProps {
   visible: boolean;
@@ -84,7 +85,7 @@ export default function CalendarModal({
                   onPress={onClose}
                   style={styles.modalCloseButton}
                 >
-                  <Icon name="close" size={24} color="#fff" />
+                  <Icon name="close" size={24} color={colors.white} />
                 </TouchableOpacity>
               </View>
               <Calendar
@@ -96,16 +97,16 @@ export default function CalendarModal({
                 maxDate={new Date().toISOString().split("T")[0]}
                 monthFormat={"yyyy년 MM월"}
                 theme={{
-                  backgroundColor: "#2a2a2a",
-                  calendarBackground: "#2a2a2a",
-                  textSectionTitleColor: "#888",
-                  selectedDayBackgroundColor: "#8e44ad",
-                  selectedDayTextColor: "#ffffff",
-                  todayTextColor: "#8e44ad",
-                  dayTextColor: "#ffffff",
+                  backgroundColor: colors.surface1,
+                  calendarBackground: colors.surface1,
+                  textSectionTitleColor: colors.textSecondary,
+                  selectedDayBackgroundColor: colors.primary,
+                  selectedDayTextColor: colors.white,
+                  todayTextColor: colors.primary,
+                  dayTextColor: colors.white,
                   textDisabledColor: "#444",
-                  monthTextColor: "#ffffff",
-                  arrowColor: "#8e44ad",
+                  monthTextColor: colors.white,
+                  arrowColor: colors.primary,
                   textDayFontSize: 16,
                   textMonthFontSize: 18,
                   textDayHeaderFontSize: 14,
@@ -113,7 +114,7 @@ export default function CalendarModal({
                 markedDates={{
                   [selectedDate]: {
                     selected: true,
-                    selectedColor: "#8e44ad",
+                    selectedColor: colors.primary,
                   },
                 }}
               />
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 16,
     width: "100%",
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
   },

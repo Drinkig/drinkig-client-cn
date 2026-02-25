@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { FlavorProfile } from './FlavorProfileStep';
+import { colors } from '../../constants/colors';
 
 interface NewbieFlavorProfileStepProps {
   attribute: keyof FlavorProfile;
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 30,
     lineHeight: 32,
   },
@@ -143,10 +144,10 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   selectedOptionButton: {
-    borderColor: '#8e44ad',
+    borderColor: colors.primary,
     backgroundColor: '#2a1a2a',
   },
   emoji: {
@@ -159,11 +160,11 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
   selectedOptionText: {
-    color: '#8e44ad',
+    color: colors.primary,
   },
   optionDesc: {
     fontSize: 13,

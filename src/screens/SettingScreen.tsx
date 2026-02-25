@@ -21,6 +21,7 @@ import {
   MemberInfoResponse
 } from '../api/member';
 import DeviceInfo from 'react-native-device-info';
+import { colors } from '../constants/colors';
 
 const MAIL_TEMPLATES = {
   REPORT: {
@@ -198,7 +199,7 @@ App Version: ${DeviceInfo.getVersion()}
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="chevron-back" size={28} color="#fff" />
+          <Icon name="chevron-back" size={28} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>설정</Text>
         <View style={{ width: 28 }} />
@@ -251,14 +252,14 @@ App Version: ${DeviceInfo.getVersion()}
             onPress={() => handleEmailPress('REPORT')}
           >
             <Text style={styles.itemText}>오류 제보</Text>
-            <Icon name="bug-outline" size={20} color="#fff" />
+            <Icon name="bug-outline" size={20} color={colors.white} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.item}
             onPress={() => handleEmailPress('SUGGESTION')}
           >
             <Text style={styles.itemText}>기능 제안</Text>
-            <Icon name="bulb-outline" size={20} color="#fff" />
+            <Icon name="bulb-outline" size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
 
@@ -271,7 +272,7 @@ App Version: ${DeviceInfo.getVersion()}
           </TouchableOpacity>
           <TouchableOpacity style={styles.item} onPress={handleDeleteAccount}>
             <Text style={[styles.itemText, styles.deleteText]}>회원 탈퇴</Text>
-            <Icon name="trash-outline" size={20} color="#e74c3c" />
+            <Icon name="trash-outline" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -282,7 +283,7 @@ App Version: ${DeviceInfo.getVersion()}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
@@ -299,7 +300,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   content: {
     flex: 1,
@@ -307,12 +308,12 @@ const styles = StyleSheet.create({
   section: {
     marginTop: 24,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
     paddingBottom: 8,
   },
   sectionTitle: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 8,
     paddingHorizontal: 24,
   },
@@ -325,14 +326,14 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    color: '#fff',
+    color: colors.white,
   },
   versionText: {
     fontSize: 16,
-    color: '#888',
+    color: colors.textSecondary,
   },
   deleteText: {
-    color: '#e74c3c',
+    color: colors.error,
   },
 });
 

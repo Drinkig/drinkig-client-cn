@@ -7,6 +7,7 @@ import {
     View,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { colors } from '../../constants/colors';
 
 export interface MenuOption {
     label: string;
@@ -94,7 +95,7 @@ const MenuBottomSheet = ({
                             <Ionicons
                                 name={option.icon || "ellipse-outline"}
                                 size={24}
-                                color={option.isDestructive ? "#e74c3c" : "#fff"}
+                                color={option.isDestructive ? colors.error : colors.white}
                                 style={styles.icon}
                             />
                             <Text
@@ -130,10 +131,10 @@ const styles = StyleSheet.create({
     backdrop: {
         flex: 1,
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: "#000",
+        backgroundColor: colors.black,
     },
     sheetContainer: {
-        backgroundColor: "#1a1a1a",
+        backgroundColor: colors.background,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         paddingVertical: 20,
@@ -144,12 +145,12 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         paddingBottom: 16,
         borderBottomWidth: 1,
-        borderBottomColor: "#333",
+        borderBottomColor: colors.border,
     },
     title: {
         fontSize: 18,
         fontWeight: "bold",
-        color: "#fff",
+        color: colors.white,
     },
     optionsContainer: {
         marginBottom: 20,
@@ -165,21 +166,21 @@ const styles = StyleSheet.create({
     },
     optionText: {
         fontSize: 16,
-        color: "#fff",
+        color: colors.white,
         fontWeight: "500",
     },
     deleteText: {
-        color: "#e74c3c",
+        color: colors.error,
     },
     cancelButton: {
-        backgroundColor: "#333",
+        backgroundColor: colors.border,
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: "center",
         marginBottom: 10,
     },
     cancelButtonText: {
-        color: "#fff",
+        color: colors.white,
         fontSize: 16,
         fontWeight: "bold",
     },

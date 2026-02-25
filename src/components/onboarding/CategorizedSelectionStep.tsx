@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { colors } from '../../constants/colors';
 
 interface Category {
     title: string;
@@ -64,7 +65,7 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
                                                         value={inputText}
                                                         onChangeText={setInputText}
                                                         placeholder="직접 입력"
-                                                        placeholderTextColor="#888"
+                                                        placeholderTextColor={colors.textSecondary}
                                                         autoFocus
                                                         onSubmitEditing={handleCustomSubmit}
                                                         onBlur={handleCustomSubmit}
@@ -127,12 +128,12 @@ const styles = StyleSheet.create({
     stepTitle: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 8,
     },
     stepDesc: {
         fontSize: 14,
-        color: '#888',
+        color: colors.textSecondary,
         marginBottom: 10,
     },
 
@@ -170,12 +171,12 @@ const styles = StyleSheet.create({
     chip: {
         paddingVertical: 10,
         paddingHorizontal: 14,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
         borderRadius: 12,
         marginBottom: 4,
         borderWidth: 1.5,
-        borderColor: '#333',
-        shadowColor: "#000",
+        borderColor: colors.border,
+        shadowColor: colors.black,
         shadowOffset: {
             width: 0,
             height: 2,
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     },
     selectedChip: {
         backgroundColor: '#3e204a',
-        borderColor: '#8e44ad',
+        borderColor: colors.primary,
     },
     chipText: {
         color: '#bbb',
@@ -203,14 +204,14 @@ const styles = StyleSheet.create({
     },
     inputChip: {
         backgroundColor: '#1e1e1e',
-        borderColor: '#8e44ad',
+        borderColor: colors.primary,
         paddingVertical: 0,
         paddingHorizontal: 0,
         minWidth: 80,
         borderRadius: 12,
     },
     textInput: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 14,
         paddingVertical: 10,
         paddingHorizontal: 14,

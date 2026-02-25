@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Modal } from 'react-native';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import CustomAlert from './CustomAlert';
+import { colors } from '../constants/colors';
 
 const GlobalComponents = () => {
   const { isLoading, alertConfig, closeAlert } = useGlobalUI();
@@ -12,7 +13,7 @@ const GlobalComponents = () => {
       {isLoading && (
         <Modal transparent={true} animationType="fade" visible={isLoading}>
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#8e44ad" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         </Modal>
       )}
@@ -37,7 +38,7 @@ const GlobalComponents = () => {
 const styles = StyleSheet.create({
   loadingOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(25, 22, 28, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
   },

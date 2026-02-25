@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { colors } from '../../constants/colors';
 
 interface TasteLevelSelectorProps {
   label: string;
@@ -16,7 +17,7 @@ export default function TasteLevelSelector({ label, value, onChange, onHelpPress
         <Text style={styles.levelLabel}>{label}</Text>
         {onHelpPress && (
           <TouchableOpacity onPress={onHelpPress} style={styles.helpIconContainer}>
-            <Icon name="help-circle-outline" size={18} color="#888" />
+            <Icon name="help-circle-outline" size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
       </View>
@@ -31,7 +32,7 @@ export default function TasteLevelSelector({ label, value, onChange, onHelpPress
               ]}
               onPress={() => onChange(level)}
             >
-              <Text style={[styles.levelButtonText, value === level && { color: '#fff' }]}>{level}</Text>
+              <Text style={[styles.levelButtonText, value === level && { color: colors.white }]}>{level}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -79,13 +80,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
   levelButtonSelected: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
   },
   levelButtonText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 18,
     fontWeight: 'bold',
   },

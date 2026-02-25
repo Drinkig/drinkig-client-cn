@@ -32,6 +32,7 @@ import MyRecordTab from '../components/wine_detail/tabs/MyRecordTab';
 import InfoTab from '../components/wine_detail/tabs/InfoTab';
 import ReviewTab from '../components/wine_detail/tabs/ReviewTab';
 import PriceTab from '../components/wine_detail/tabs/PriceTab';
+import { colors } from '../constants/colors';
 
 type WineDetailRouteProp = RouteProp<RootStackParamList, 'WineDetail'>;
 
@@ -437,7 +438,7 @@ export default function WineDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
@@ -445,7 +446,7 @@ export default function WineDetailScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
           {isMyWineItem ? '내 와인 상세' : '와인 정보'}
@@ -460,7 +461,7 @@ export default function WineDetailScreen() {
             <Ionicons
               name={isLiked ? "heart" : "heart-outline"}
               size={24}
-              color={isLiked ? "#e74c3c" : "#fff"}
+              color={isLiked ? colors.error : colors.white}
             />
           </TouchableOpacity>
         ) : (
@@ -473,7 +474,7 @@ export default function WineDetailScreen() {
         <View>
           <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
-              <ActivityIndicator size="large" color="#8e44ad" />
+              <ActivityIndicator size="large" color={colors.primary} />
             ) : (imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
             ) : (
@@ -496,7 +497,7 @@ export default function WineDetailScreen() {
                   wineName: nameKor
                 })}
               >
-                <MaterialCommunityIcons name="heart-pulse" size={16} color="#fff" style={{ marginRight: 6 }} />
+                <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />
                 <Text style={styles.compatibilityButtonText}>나와의 궁합 보기</Text>
               </TouchableOpacity>
             )}
@@ -533,7 +534,7 @@ export default function WineDetailScreen() {
                 <Text style={styles.vintageSelectValue}>
                   {selectedVintage ? selectedVintage.year : '선택'}
                 </Text>
-                <Ionicons name="chevron-forward" size={20} color="#888" />
+                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
               </View>
             </TouchableOpacity>
           </View>
@@ -593,7 +594,7 @@ export default function WineDetailScreen() {
             style={styles.recordButton}
             onPress={handleAddRecord}
           >
-            <MaterialCommunityIcons name="pencil" size={20} color="#fff" style={{ marginRight: 8 }} />
+            <MaterialCommunityIcons name="pencil" size={20} color={colors.white} style={{ marginRight: 8 }} />
             <Text style={styles.recordButtonText}>
               기록 수정하기
             </Text>
@@ -631,7 +632,7 @@ export default function WineDetailScreen() {
                         <Text style={styles.fabCombinedLabel}>보유 와인 등록</Text>
                       </View>
                       <View style={styles.fabIconContainer}>
-                        <MaterialCommunityIcons name="bottle-wine-outline" size={20} color="#fff" />
+                        <MaterialCommunityIcons name="bottle-wine-outline" size={20} color={colors.white} />
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -659,7 +660,7 @@ export default function WineDetailScreen() {
                         <Text style={styles.fabCombinedLabel}>노트 작성</Text>
                       </View>
                       <View style={styles.fabIconContainer}>
-                        <MaterialCommunityIcons name="pencil-outline" size={20} color="#fff" />
+                        <MaterialCommunityIcons name="pencil-outline" size={20} color={colors.white} />
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -673,10 +674,10 @@ export default function WineDetailScreen() {
               activeOpacity={0.9}
             >
               <View
-                style={[styles.fabMainGradient, { backgroundColor: isFabOpen ? '#555' : '#333' }]}
+                style={[styles.fabMainGradient, { backgroundColor: isFabOpen ? '#555' : colors.border }]}
               >
                 <Animated.View style={{ transform: [{ rotate: fabRotation }] }}>
-                  <MaterialCommunityIcons name="plus" size={32} color="#fff" />
+                  <MaterialCommunityIcons name="plus" size={32} color={colors.white} />
                 </Animated.View>
               </View>
             </TouchableOpacity>
@@ -702,7 +703,7 @@ export default function WineDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -711,8 +712,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    backgroundColor: '#1a1a1a',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.background,
   },
   backButton: {
     padding: 4,
@@ -720,7 +721,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   wishlistButton: {
     padding: 4,
@@ -745,7 +746,7 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: 120,
     height: 180,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 12,
@@ -757,12 +758,12 @@ const styles = StyleSheet.create({
   wineNameKor: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
   },
   wineNameEng: {
     fontSize: 16,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 16,
   },
   tagContainer: {
@@ -771,12 +772,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tag: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   tagText: {
     color: '#ccc',
@@ -789,8 +790,8 @@ const styles = StyleSheet.create({
 
   tabHeaderContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    backgroundColor: '#1a1a1a',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.background,
   },
   tabHeaderContent: {
     paddingHorizontal: 8,
@@ -803,15 +804,15 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTabButton: {
-    borderBottomColor: '#8e44ad',
+    borderBottomColor: colors.primary,
   },
   tabText: {
     fontSize: 16,
-    color: '#888',
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   activeTabText: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   tabBody: {
@@ -820,7 +821,7 @@ const styles = StyleSheet.create({
   vintageSelectContainer: {
     paddingVertical: 16,
     paddingHorizontal: 24,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   vintageSelectButton: {
     flexDirection: 'row',
@@ -828,10 +829,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   compatibilityButton: {
     position: 'absolute',
@@ -839,20 +840,20 @@ const styles = StyleSheet.create({
     right: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
   },
   compatibilityButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 13,
     fontWeight: 'bold',
   },
   vintageSelectLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   vintageSelectValueContainer: {
     flexDirection: 'row',
@@ -861,7 +862,7 @@ const styles = StyleSheet.create({
   },
   vintageSelectValue: {
     fontSize: 16,
-    color: '#8e44ad',
+    color: colors.primary,
     fontWeight: '600',
   },
   bottomButtonContainer: {
@@ -871,12 +872,12 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 16,
     paddingBottom: 34,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: colors.border,
   },
   recordButton: {
-    backgroundColor: '#e74c3c',
+    backgroundColor: colors.error,
     borderRadius: 12,
     height: 50,
     flexDirection: 'row',
@@ -884,7 +885,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recordButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -904,7 +905,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
@@ -916,7 +917,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
   fabOptionsContainer: {
     position: 'absolute',
@@ -938,7 +939,7 @@ const styles = StyleSheet.create({
     width: 154,
     height: 48,
     borderRadius: 24,
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
@@ -952,7 +953,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 24,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     paddingRight: 6,
   },
   fabTextContainer: {
@@ -967,7 +968,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   fabCombinedLabel: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 15,
     fontWeight: '600',
     includeFontPadding: false,

@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { colors } from '../../constants/colors';
 
 interface HelpModalProps {
   visible: boolean;
@@ -31,7 +32,7 @@ export default function HelpModal({ visible, title, description, onClose }: Help
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>{title}</Text>
                 <TouchableOpacity onPress={onClose} style={styles.modalCloseButton}>
-                  <Icon name="close" size={24} color="#888" />
+                  <Icon name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
               <Text style={styles.modalDescription}>{description}</Text>
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 24,
     width: '100%',
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   modalTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -88,13 +89,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   modalConfirmButton: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   modalConfirmButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },

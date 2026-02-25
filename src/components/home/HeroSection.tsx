@@ -7,6 +7,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { colors } from '../../constants/colors';
 
 interface HeroSectionProps {
   onPress: () => void;
@@ -28,7 +29,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
         activeOpacity={0.9}
       >
         <Text style={styles.recommendButtonText}>추천받기</Text>
-        <Icon name="arrow-forward" size={14} color="#8e44ad" />
+        <Icon name="arrow-forward" size={14} color={colors.primary} />
       </TouchableOpacity>
 
       <Image
@@ -45,14 +46,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 16,
     marginTop: 8,
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
     borderRadius: 20,
     padding: 24,
     position: 'relative',
     overflow: 'hidden',
     height: 210,
     flexShrink: 0,
-    shadowColor: "#8e44ad",
+    shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
       height: 4,
@@ -70,14 +71,14 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.textPrimary,
     marginBottom: 8,
     lineHeight: 32,
     flexShrink: 1,
   },
   heroSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(244, 239, 249, 0.9)',
     marginBottom: 16,
   },
   recommendButton: {
@@ -86,13 +87,13 @@ const styles = StyleSheet.create({
     left: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 24,
     zIndex: 2,
     gap: 4,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   recommendButtonText: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontWeight: 'bold',
     fontSize: 14,
   },

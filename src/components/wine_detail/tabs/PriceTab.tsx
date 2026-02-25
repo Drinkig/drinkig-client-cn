@@ -5,6 +5,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import PriceStats from '../PriceStats';
 import { getPriceHistory, PriceHistoryDTO } from '../../../api/wine';
 import { sendReportEmail } from '../../../utils/reportUtils';
+import { colors } from '../../../constants/colors';
 
 interface PriceTabProps {
   wineId: number;
@@ -51,7 +52,7 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator color="#8e44ad" />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -118,7 +119,7 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
           <PriceStats prices={statsData} />
 
           <View style={styles.priceInfoNote}>
-            <Ionicons name="information-circle-outline" size={14} color="#888" style={{ marginRight: 4 }} />
+            <Ionicons name="information-circle-outline" size={14} color={colors.textSecondary} style={{ marginRight: 4 }} />
             <Text style={styles.priceInfoText}>
               삭제된 기록을 포함하여 유저들이 등록한 정보를 집계했습니다.
             </Text>
@@ -185,7 +186,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   priceInfoText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 12,
   },
   listContainer: {
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   headerText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
     fontWeight: '500',
   },
@@ -213,13 +214,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   priceText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: '600',
   },
   separator: {
     height: 1,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
 
   colVintage: {
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
   },
   directBadgeText: {
     fontSize: 10,
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   loadingContainer: {

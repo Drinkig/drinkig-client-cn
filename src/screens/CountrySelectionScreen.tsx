@@ -6,6 +6,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { COUNTRIES } from '../data/mockCountries';
+import { colors } from '../constants/colors';
 
 export default function CountrySelectionScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -29,10 +30,10 @@ export default function CountrySelectionScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={colors.white} />
                 </TouchableOpacity>
             </View>
 
@@ -64,7 +65,7 @@ export default function CountrySelectionScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     header: {
         paddingHorizontal: 20,
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 26,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 8,
     },
     subtitle: {
@@ -104,10 +105,10 @@ const styles = StyleSheet.create({
     chip: {
         paddingVertical: 12,
         paddingHorizontal: 10,
-        backgroundColor: '#252525',
+        backgroundColor: colors.surface1,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: colors.border,
         minWidth: '30%',
         height: 56,
         flexDirection: 'row',

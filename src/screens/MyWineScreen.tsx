@@ -17,6 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
 import AdBanner from '../components/common/AdBanner';
+import { colors } from '../constants/colors';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
@@ -172,7 +173,7 @@ const MyWineScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View
@@ -181,7 +182,7 @@ const MyWineScreen = () => {
       >
         <Text style={styles.headerTitle}>내 와인 창고</Text>
         <TouchableOpacity style={styles.addButton} onPress={handleAddWine}>
-          <Icon name="add" size={24} color="#fff" />
+          <Icon name="add" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -227,7 +228,7 @@ const MyWineScreen = () => {
             <Text style={styles.sortButtonText}>
               {sortOptions.find(opt => opt.value === sortType)?.label}
             </Text>
-            <Icon name="chevron-down" size={14} color="#888" style={{ marginLeft: 4 }} />
+            <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
           </TouchableOpacity>
         </View>
       )}
@@ -244,7 +245,7 @@ const MyWineScreen = () => {
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>정렬</Text>
                 <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
-                  <Icon name="close" size={24} color="#fff" />
+                  <Icon name="close" size={24} color={colors.textPrimary} />
                 </TouchableOpacity>
               </View>
               {sortOptions.map((option) => (
@@ -263,7 +264,7 @@ const MyWineScreen = () => {
                     {option.label}
                   </Text>
                   {sortType === option.value && (
-                    <Icon name="checkmark" size={20} color="#8e44ad" />
+                    <Icon name="checkmark" size={20} color={colors.primary} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -275,8 +276,8 @@ const MyWineScreen = () => {
 
       {isLoading ? (
         <View style={styles.centerContent}>
-          <AdBanner style={{ marginBottom: 20, backgroundColor: '#1a1a1a', width: '100%' }} />
-          <ActivityIndicator size="large" color="#8e44ad" />
+          <AdBanner style={{ marginBottom: 20, backgroundColor: colors.background, width: '100%' }} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : sortedWines.length > 0 ? (
         <View style={{ flex: 1 }}>
@@ -290,7 +291,7 @@ const MyWineScreen = () => {
             columnWrapperStyle={{ gap: gap }}
             ListFooterComponent={null}
           />
-          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a', width: '100%' }} />
+          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: colors.background, width: '100%' }} />
         </View>
       ) : (
         <View style={styles.emptyContent}>
@@ -313,7 +314,7 @@ const MyWineScreen = () => {
             )}
           </View>
 
-          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: '#1a1a1a', width: '100%' }} />
+          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: colors.background, width: '100%' }} />
         </View>
       )}
 
@@ -325,7 +326,7 @@ const MyWineScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -334,18 +335,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.textPrimary,
   },
   addButton: {
     padding: 4,
   },
   filterContainer: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     paddingTop: 24,
     paddingBottom: 12,
   },
@@ -356,22 +357,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
     marginRight: 8,
   },
   filterChipSelected: {
-    backgroundColor: '#8e44ad',
-    borderColor: '#8e44ad',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filterChipText: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   filterChipTextSelected: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   countAndSortContainer: {
@@ -383,11 +384,11 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   countText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   countValue: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontWeight: 'bold',
   },
   sortButton: {
@@ -396,7 +397,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   sortButtonText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   sortModalOverlay: {
@@ -408,11 +409,11 @@ const styles = StyleSheet.create({
   },
   sortModalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(25, 22, 28, 0.5)',
     justifyContent: 'flex-end',
   },
   sortModalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.textPrimary,
   },
   sortOptionItem: {
     flexDirection: 'row',
@@ -435,14 +436,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   sortOptionText: {
     fontSize: 16,
-    color: '#ccc',
+    color: colors.textTertiary,
   },
   sortOptionTextSelected: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontWeight: 'bold',
   },
   listContent: {
@@ -471,13 +472,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyText: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 20,
   },
   subText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
     textAlign: 'center',
     marginTop: 10,
@@ -486,7 +487,7 @@ const styles = StyleSheet.create({
   wineItem: {
     flexDirection: 'column',
     marginBottom: 16,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     overflow: 'hidden',
 
@@ -494,7 +495,7 @@ const styles = StyleSheet.create({
   wineImageContainer: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -522,7 +523,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   periodText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -532,14 +533,14 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   wineName: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 13,
     fontWeight: 'bold',
     marginBottom: 2,
     textAlign: 'left',
   },
   wineVintageText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 11,
     textAlign: 'left',
   },

@@ -5,6 +5,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '../constants/colors';
 
 const SplashScreen = () => {
   return (
@@ -25,7 +26,7 @@ const SplashScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#7E13B1',
+    backgroundColor: colors.primaryDark,
   },
   contentContainer: {
     flex: 1,

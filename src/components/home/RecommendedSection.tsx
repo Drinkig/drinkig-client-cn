@@ -10,6 +10,7 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { WineDBItem } from '../../types/Wine';
+import { colors } from '../../constants/colors';
 
 interface RecommendedSectionProps {
   data: WineDBItem[];
@@ -59,7 +60,7 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
                 </Text>
                 {wine.vivinoRating && (
                   <View style={styles.ratingContainer}>
-                    <Icon name="star" size={10} color="#e74c3c" />
+                    <Icon name="star" size={10} color={colors.error} />
                     <Text style={styles.ratingText}>{wine.vivinoRating.toFixed(1)}</Text>
                   </View>
                 )}
@@ -86,11 +87,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   moreText: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
   },
   horizontalList: {
     paddingHorizontal: 20,
@@ -98,13 +99,13 @@ const styles = StyleSheet.create({
   },
   wineCard: {
     width: 140,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     overflow: 'hidden',
   },
   wineImageContainer: {
     height: 140,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   wineName: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
   wineDetailsRow: {
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
   },
   wineType: {
     fontSize: 12,
-    color: '#888',
+    color: colors.textSecondary,
     flex: 1,
     marginRight: 4,
   },
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 11,
-    color: '#e74c3c',
+    color: colors.error,
     fontWeight: 'bold',
   },
 });

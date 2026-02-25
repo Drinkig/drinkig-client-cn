@@ -18,6 +18,7 @@ import { RootStackParamList } from '../types';
 import { HeroSection } from '../components/home/HeroSection';
 import { BannerSection } from '../components/home/BannerSection';
 import { getMyWines, MyWineDTO } from '../api/wine';
+import { colors } from '../constants/colors';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -53,7 +54,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
@@ -62,7 +63,7 @@ export default function HomeScreen() {
           onPress={() => navigation.navigate('Search' as never)}
           activeOpacity={0.9}
         >
-          <Icon name="search" size={20} color="#888" style={styles.searchIcon} />
+          <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
           <Text style={styles.searchPlaceholder}>와인 이름, 종류 등으로 검색</Text>
         </TouchableOpacity>
 
@@ -70,7 +71,7 @@ export default function HomeScreen() {
           style={styles.notificationButton}
           onPress={() => navigation.navigate('Wishlist' as never)}
         >
-          <Icon name="heart-outline" size={24} color="#fff" />
+          <Icon name="heart-outline" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
@@ -107,11 +108,11 @@ export default function HomeScreen() {
             >
               <View style={styles.tastingNoteContent}>
                 <View>
-                  <Text style={[styles.menuLabel, { color: '#ddd' }]}>테이스팅 노트</Text>
+                  <Text style={[styles.menuLabel, { color: colors.textSecondary }]}>테이스팅 노트</Text>
                   <Text style={styles.menuSubLabel}>기록하기</Text>
                 </View>
                 <View style={styles.arrowIconContainer}>
-                  <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+                  <Icon name="chevron-forward" size={20} color={colors.textTertiary} />
                 </View>
               </View>
             </ImageBackground>
@@ -131,14 +132,14 @@ export default function HomeScreen() {
             >
               <View style={styles.tastingNoteContent}>
                 <View>
-                  <Text style={[styles.menuLabel, { color: '#ddd' }]}>내 와인 창고</Text>
+                  <Text style={[styles.menuLabel, { color: colors.textSecondary }]}>내 와인 창고</Text>
                   <View style={styles.statRow}>
                     <Text style={styles.statNumber}>{myWines.length}</Text>
-                    <Text style={[styles.statUnit, { color: '#ddd' }]}>병</Text>
+                    <Text style={[styles.statUnit, { color: colors.textSecondary }]}>병</Text>
                   </View>
                 </View>
                 <View style={styles.arrowIconContainer}>
-                  <Icon name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+                  <Icon name="chevron-forward" size={20} color={colors.textTertiary} />
                 </View>
               </View>
             </ImageBackground>
@@ -153,7 +154,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -162,14 +163,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     zIndex: 10,
   },
   searchBarContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     paddingHorizontal: 16,
     height: 44,
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   searchPlaceholder: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   notificationButton: {
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#e74c3c',
+    backgroundColor: colors.error,
   },
   content: {
     flex: 1,
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
   },
   quickMenuItem: {
     flex: 1,
-    backgroundColor: '#252525',
+    backgroundColor: colors.surface1,
     borderRadius: 20,
     padding: 20,
     height: 140,
@@ -232,7 +233,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(25, 22, 28, 0.6)',
     borderRadius: 20,
   },
   arrowIconContainer: {
@@ -242,18 +243,18 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#333',
+    backgroundColor: colors.surface2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuLabel: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
     marginBottom: 4,
     fontWeight: '500',
   },
   menuSubLabel: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -262,13 +263,13 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   statNumber: {
-    color: '#fff',
+    color: colors.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: 4,
   },
   statUnit: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '600',
   },
