@@ -57,22 +57,26 @@ export default function HomeScreen() {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.searchBarContainer}
-          onPress={() => navigation.navigate('Search' as never)}
-          activeOpacity={0.9}
-        >
-          <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <Text style={styles.searchPlaceholder}>와인 이름, 종류 등으로 검색</Text>
-        </TouchableOpacity>
+      <View style={styles.headerContainer}>
+        <View style={styles.headerPill}>
+          <TouchableOpacity
+            style={styles.searchBarContainer}
+            onPress={() => navigation.navigate('Search' as never)}
+            activeOpacity={0.9}
+          >
+            <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+            <Text style={styles.searchPlaceholder}>와인 이름, 종류 등으로 검색</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.notificationButton}
-          onPress={() => navigation.navigate('Wishlist' as never)}
-        >
-          <Icon name="heart-outline" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
+          <View style={styles.headerSeparator} />
+
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => navigation.navigate('Wishlist' as never)}
+          >
+            <Icon name="heart-outline" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
 
@@ -156,24 +160,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  headerContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    gap: 12,
-    backgroundColor: colors.background,
+    backgroundColor: colors.background, // Keep the very top background the same as the app
     zIndex: 10,
+  },
+  headerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface1, // Matte pill color
+    borderRadius: 24, // High border radius for pill shape
+    height: 52, // Slightly taller for comfortable touch target
+    paddingHorizontal: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    // Add subtle shadow exactly like the bottom tab bar
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   searchBarContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
+    backgroundColor: 'transparent', // Transparent to let the pill background show
     paddingHorizontal: 16,
-    height: 44,
+    height: '100%',
+  },
+  headerSeparator: {
+    width: 1,
+    height: 24,
+    backgroundColor: colors.border, // Subtle vertical line separating search and icon
+    marginHorizontal: 8,
   },
   searchIcon: {
     marginRight: 8,
@@ -187,7 +208,7 @@ const styles = StyleSheet.create({
     height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
+    borderRadius: 22,
   },
   notificationBadge: {
     position: 'absolute',

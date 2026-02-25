@@ -174,32 +174,34 @@ export default function SearchScreen() {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <View style={styles.searchBarContainer}>
-          <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="와인 이름, 종류 등으로 검색"
-            placeholderTextColor={colors.textSecondary}
-            value={searchText}
-            onChangeText={setSearchText}
-            onSubmitEditing={handleSearchSubmit}
-            autoFocus={true}
-          />
-          {searchText.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearchText('')}
-              style={styles.clearButton}
-            >
-              <Icon name="close-circle" size={18} color="#666" />
-            </TouchableOpacity>
-          )}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerPill}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color={colors.white} />
+          </TouchableOpacity>
+          <View style={styles.searchBarContainer}>
+            <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="와인 이름, 종류 등으로 검색"
+              placeholderTextColor={colors.textSecondary}
+              value={searchText}
+              onChangeText={setSearchText}
+              onSubmitEditing={handleSearchSubmit}
+              autoFocus={true}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchText('')}
+                style={styles.clearButton}
+              >
+                <Icon name="close-circle" size={18} color="#666" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
@@ -293,26 +295,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  headerContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: 12,
+    backgroundColor: colors.background,
+    zIndex: 10,
+  },
+  headerPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface1, // Matte pill color
+    borderRadius: 24, // High border radius for pill shape
+    height: 52, // Taller pill
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   backButton: {
-    padding: 4,
+    padding: 8,
+    marginRight: 4,
   },
   searchBarContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 40,
+    backgroundColor: 'transparent', // Transparent to let pill show
+    height: '100%',
   },
   searchIcon: {
     marginRight: 8,
