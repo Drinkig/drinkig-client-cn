@@ -18,7 +18,6 @@ import { useCallback } from 'react';
 import { WineDBItem } from '../types/Wine';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
-import AdBanner from '../components/common/AdBanner';
 import { colors } from '../constants/colors';
 
 
@@ -214,7 +213,6 @@ export default function SearchScreen() {
             renderItem={renderSearchResult}
             keyExtractor={item => item.id.toString()}
             contentContainerStyle={styles.listContent}
-            ListHeaderComponent={<AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
@@ -223,7 +221,6 @@ export default function SearchScreen() {
           />
         ) : (
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />
             <View style={styles.recentSearchContainer}>
               <Text style={styles.sectionTitle}>최근 검색어</Text>
               {recentSearches.length > 0 ? (
@@ -297,7 +294,8 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 18,
+    paddingTop: 20,
     backgroundColor: colors.background,
     zIndex: 10,
   },

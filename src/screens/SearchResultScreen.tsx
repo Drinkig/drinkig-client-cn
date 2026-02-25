@@ -15,7 +15,6 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { WineDBItem } from '../types/Wine';
 import { RootStackParamList } from '../types';
-import AdBanner from '../components/common/AdBanner';
 import { colors } from '../constants/colors';
 
 type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;
@@ -149,7 +148,6 @@ export default function SearchResultScreen() {
       <View style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />
             <ActivityIndicator size="large" color="#E50914" />
           </View>
         ) : (
@@ -161,7 +159,6 @@ export default function SearchResultScreen() {
             contentContainerStyle={styles.listContent}
             ListHeaderComponent={
               <View>
-                <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />
                 {!isLoading && searchResults.length > 0 ? <SearchResultHeader count={totalCount} /> : null}
               </View>
             }
@@ -193,7 +190,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 18,
+    paddingTop: 20,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },

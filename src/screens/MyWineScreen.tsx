@@ -16,7 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
-import AdBanner from '../components/common/AdBanner';
 import { colors } from '../constants/colors';
 
 const MyWineScreen = () => {
@@ -171,22 +170,23 @@ const MyWineScreen = () => {
     </TouchableOpacity>
   );
 
+
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-
-      <View
-        style={styles.header}
-        onLayout={(event) => setHeaderHeight(event.nativeEvent.layout.height)}
-      >
-        <Text style={styles.headerTitle}>내 와인 창고</Text>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddWine}>
-          <Icon name="add" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
+      {/* Relative 3D Pill Header (Safe) */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerTitle}>내 와인 창고</Text>
+          <TouchableOpacity style={styles.addButton} onPress={handleAddWine} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Icon name="add" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
-
+      {/* Pinned Filter and Sort Section */}
       <View style={styles.filterContainer}>
         <FlatList
           horizontal
@@ -214,7 +214,6 @@ const MyWineScreen = () => {
         />
       </View>
 
-
       {!isLoading && myWines.length > 0 && (
         <View style={styles.countAndSortContainer}>
           <Text style={styles.countText}>
@@ -233,9 +232,51 @@ const MyWineScreen = () => {
         </View>
       )}
 
+      {/* Wine Grid */}
+      <FlatList
+        data={isLoading ? [] : sortedWines}
+        renderItem={renderWineItem}
+        keyExtractor={(item) => item.myWineId.toString()}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
+        showsVerticalScrollIndicator={false}
+        numColumns={numColumns}
+        columnWrapperStyle={(!isLoading && sortedWines.length > 0) ? { gap: gap } : undefined}
+        ListFooterComponent={null}
+        ListEmptyComponent={() => {
+          if (isLoading) {
+            return (
+              <View style={styles.centerContent}>
+                <ActivityIndicator size="large" color={colors.primary} />
+              </View>
+            );
+          }
+          return (
+            <View style={styles.emptyContent}>
+              <View style={styles.emptyInner}>
+                <Image
+                  source={require('../assets/Drinky_no_wine_1.png')}
+                  style={styles.emptyImage}
+                  resizeMode="contain"
+                />
+                {myWines.length > 0 ? (
+                  <>
+                    <Text style={styles.emptyText}>해당 종류의 와인이 없어요</Text>
+                    <Text style={styles.subText}>다른 종류를 선택하거나{'\n'}새로운 와인을 기록해보세요!</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
+                    <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
+                  </>
+                )}
+              </View>
+            </View>
+          );
+        }}
+      />
 
       {isSortModalVisible && (
-        <View style={[styles.sortModalOverlay, { top: headerHeight }]}>
+        <View style={[styles.sortModalOverlay, { top: 70 }]}>
           <TouchableOpacity
             style={styles.sortModalBackdrop}
             activeOpacity={1}
@@ -274,51 +315,6 @@ const MyWineScreen = () => {
       )}
 
 
-      {isLoading ? (
-        <View style={styles.centerContent}>
-          <AdBanner style={{ marginBottom: 20, backgroundColor: colors.background, width: '100%' }} />
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
-      ) : sortedWines.length > 0 ? (
-        <View style={{ flex: 1 }}>
-          <FlatList
-            data={sortedWines}
-            renderItem={renderWineItem}
-            keyExtractor={(item) => item.myWineId.toString()}
-            contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
-            showsVerticalScrollIndicator={false}
-            numColumns={numColumns}
-            columnWrapperStyle={{ gap: gap }}
-            ListFooterComponent={null}
-          />
-          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: colors.background, width: '100%' }} />
-        </View>
-      ) : (
-        <View style={styles.emptyContent}>
-          <View style={styles.emptyInner}>
-            <Image
-              source={require('../assets/Drinky_no_wine_1.png')}
-              style={styles.emptyImage}
-              resizeMode="contain"
-            />
-            {myWines.length > 0 ? (
-              <>
-                <Text style={styles.emptyText}>해당 종류의 와인이 없어요</Text>
-                <Text style={styles.subText}>다른 종류를 선택하거나{'\n'}새로운 와인을 기록해보세요!</Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
-                <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
-              </>
-            )}
-          </View>
-
-          <AdBanner style={{ marginTop: 0, marginBottom: 0, backgroundColor: colors.background, width: '100%' }} />
-        </View>
-      )}
-
-
     </SafeAreaView >
   );
 };
@@ -328,14 +324,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingTop: 20,
+    backgroundColor: colors.background,
+    zIndex: 10,
+  },
+  headerPill: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: 'rgba(42, 41, 43, 0.75)', // Matte glass-like pill
+    borderRadius: 24,
+    height: 52,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    // Subtle 3D shadow matching Home
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   headerTitle: {
     fontSize: 20,
@@ -346,8 +357,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   filterContainer: {
-    backgroundColor: colors.background,
-    paddingTop: 24,
+    marginTop: 8,
     paddingBottom: 12,
   },
   filterChipsContainer: {
@@ -447,7 +457,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: 16,
     paddingBottom: 100,
   },
   centerContent: {

@@ -229,6 +229,14 @@ const styles = StyleSheet.create({
     height: '100%',
     overflow: 'hidden',
     backgroundColor: colors.border,
+    // Add subtle structural shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)', // Matte embossed border
   },
   bannerContent: {
     flex: 1,

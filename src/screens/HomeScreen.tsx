@@ -162,7 +162,8 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 18,
+    paddingTop: 20,
     backgroundColor: colors.background, // Keep the very top background the same as the app
     zIndex: 10,
   },
@@ -233,15 +234,22 @@ const styles = StyleSheet.create({
   },
   quickMenuItem: {
     flex: 1,
-    backgroundColor: colors.surface1,
+    backgroundColor: colors.surface1, // Darker surface matching the theme
     borderRadius: 20,
-    padding: 20,
     height: 140,
     justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.04)', // Very subtle matte edge
+    // Premium 3D float shadow matching the banners
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
   tastingNoteButton: {
     padding: 0,
-    backgroundColor: 'transparent',
+    // Removed transparent background so the surface2 color shows
   },
   tastingNoteBackground: {
     flex: 1,

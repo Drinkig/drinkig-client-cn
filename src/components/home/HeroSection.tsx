@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import LinearGradient from 'react-native-linear-gradient';
 import { colors } from '../../constants/colors';
 
 interface HeroSectionProps {
@@ -15,52 +16,62 @@ interface HeroSectionProps {
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
   return (
-    <View style={styles.heroSection}>
-      <View style={styles.heroTextContainer}>
-        <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit>
-          지금 와인 고르는 중인가요?
-        </Text>
-        <Text style={styles.heroSubtitle}>취향에 딱 맞는 와인을 추천해드려요</Text>
+    <View style={styles.heroSectionShadow}>
+      <View style={styles.heroSection}>
+        <LinearGradient
+          colors={[colors.primaryDark, '#4A086B']} // Deep signature purple gradient
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+
+        <View style={styles.heroTextContainer}>
+          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit>
+            지금 와인 고르는 중인가요?
+          </Text>
+          <Text style={styles.heroSubtitle}>취향에 딱 맞는 와인을 추천해드려요</Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.recommendButton}
+          onPress={onPress}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.recommendButtonText}>추천받기</Text>
+          <Icon name="arrow-forward" size={14} color={colors.primaryDark} />
+        </TouchableOpacity>
+
+        <Image
+          source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')}
+          style={styles.heroImage}
+          resizeMode="contain"
+        />
       </View>
-
-      <TouchableOpacity
-        style={styles.recommendButton}
-        onPress={onPress}
-        activeOpacity={0.9}
-      >
-        <Text style={styles.recommendButtonText}>추천받기</Text>
-        <Icon name="arrow-forward" size={14} color={colors.primary} />
-      </TouchableOpacity>
-
-      <Image
-        source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')}
-        style={styles.heroImage}
-        resizeMode="contain"
-      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  heroSection: {
+  heroSectionShadow: {
     marginHorizontal: 20,
     marginBottom: 16,
     marginTop: 8,
-    backgroundColor: colors.primary,
+    borderRadius: 20,
+    // Ambient Purple Glow
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  heroSection: {
     borderRadius: 20,
     padding: 24,
     position: 'relative',
-    overflow: 'hidden',
+    overflow: 'hidden', // Contain gradient and image bounds
     height: 210,
     flexShrink: 0,
-    shadowColor: colors.primary,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    backgroundColor: colors.surface1, // Fallback
   },
   heroTextContainer: {
     zIndex: 2,
@@ -103,7 +114,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   recommendButtonText: {
-    color: colors.primary,
+    color: colors.primaryDark,
     fontWeight: 'bold',
     fontSize: 14,
   },

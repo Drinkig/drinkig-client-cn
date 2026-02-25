@@ -17,7 +17,6 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { getMyWines, getMyTastingNotes, TastingNotePreviewDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
-import AdBanner from '../components/common/AdBanner';
 import { colors } from '../constants/colors';
 
 const ProfileScreen = () => {
@@ -183,19 +182,21 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>마이페이지</Text>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => navigation.navigate('Setting' as never)}
-        >
-          <Icon name="settings-outline" size={24} color={colors.white} />
-        </TouchableOpacity>
+      {/* Relative 3D Pill Header (Safe) */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerTitle}>마이페이지</Text>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('Setting' as never)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="settings-outline" size={24} color={colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: colors.background }} />
 
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
@@ -373,14 +374,29 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingTop: 20,
+    backgroundColor: colors.background,
+    zIndex: 10,
+  },
+  headerPill: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: 'rgba(42, 41, 43, 0.75)', // Matte glass-like pill
+    borderRadius: 24,
+    height: 52,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    // Subtle 3D shadow matching Home
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   headerTitle: {
     fontSize: 20,
