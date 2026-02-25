@@ -8,33 +8,23 @@ import ProfileScreen from '../screens/ProfileScreen';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../constants/colors';
+import { CustomTabBar } from '../components/navigation/CustomTabBar';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
   return (
     <Tab.Navigator
+      tabBar={props => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
-          height: Platform.OS === 'ios' ? 90 : 70,
-          paddingBottom: Platform.OS === 'ios' ? 30 : 10,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: '홈',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
-          ),
+          tabBarLabel: '홈', // Used for accessibility in CustomTabBar
         }}
       />
       <Tab.Screen
@@ -42,9 +32,6 @@ export default function MainTabNavigator() {
         component={SearchScreen}
         options={{
           tabBarLabel: '검색',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search" color={color} size={size} />
-          ),
         }}
       />
       <Tab.Screen
@@ -52,9 +39,6 @@ export default function MainTabNavigator() {
         component={MyWineScreen}
         options={{
           tabBarLabel: '내 와인',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="bottle-wine" color={color} size={size} />
-          ),
         }}
       />
       <Tab.Screen
@@ -62,9 +46,6 @@ export default function MainTabNavigator() {
         component={ProfileScreen}
         options={{
           tabBarLabel: '마이페이지',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" color={color} size={size} />
-          ),
         }}
       />
     </Tab.Navigator>
