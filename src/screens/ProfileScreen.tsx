@@ -17,7 +17,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useUser } from '../context/UserContext';
 import { getMyWines, getMyTastingNotes, TastingNotePreviewDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
-import AdBanner from '../components/common/AdBanner';
+import { colors } from '../constants/colors';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -163,7 +163,7 @@ const ProfileScreen = () => {
             resizeMode="contain"
           />
         ) : (
-          <View style={[styles.noteImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#333' }]}>
+          <View style={[styles.noteImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.border }]}>
             <Icon name="wine" size={30} color="#666" />
           </View>
         )}
@@ -182,19 +182,21 @@ const ProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>마이페이지</Text>
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={() => navigation.navigate('Setting' as never)}
-        >
-          <Icon name="settings-outline" size={24} color="#fff" />
-        </TouchableOpacity>
+      {/* Relative 3D Pill Header (Safe) */}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerPill}>
+          <Text style={styles.headerTitle}>마이페이지</Text>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate('Setting' as never)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="settings-outline" size={24} color={colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
 
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>
@@ -294,7 +296,7 @@ const ProfileScreen = () => {
                 <Text style={styles.sortButtonText}>
                   {sortOptions.find(opt => opt.value === sortType)?.label}
                 </Text>
-                <Icon name="chevron-down" size={14} color="#888" style={{ marginLeft: 4 }} />
+                <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
               </TouchableOpacity>
             )}
           </View>
@@ -335,7 +337,7 @@ const ProfileScreen = () => {
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>정렬</Text>
                   <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
-                    <Icon name="close" size={24} color="#fff" />
+                    <Icon name="close" size={24} color={colors.white} />
                   </TouchableOpacity>
                 </View>
                 {sortOptions.map((option) => (
@@ -354,7 +356,7 @@ const ProfileScreen = () => {
                       {option.label}
                     </Text>
                     {sortType === option.value && (
-                      <Icon name="checkmark" size={20} color="#8e44ad" />
+                      <Icon name="checkmark" size={20} color={colors.primary} />
                     )}
                   </TouchableOpacity>
                 ))}
@@ -370,21 +372,36 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
-  header: {
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingTop: 20,
+    backgroundColor: colors.background,
+    zIndex: 10,
+  },
+  headerPill: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    backgroundColor: 'rgba(42, 41, 43, 0.75)', // Matte glass-like pill
+    borderRadius: 24,
+    height: 52,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.06)',
+    // Subtle 3D shadow matching Home
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   settingsButton: {
     padding: 4,
@@ -404,7 +421,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -424,12 +441,12 @@ const styles = StyleSheet.create({
   nickname: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
   wineCountText: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     fontWeight: '600',
   },
 
@@ -437,7 +454,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     borderWidth: 1,
     borderColor: '#555',
   },
@@ -456,7 +473,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   countAndSortContainer: {
     flexDirection: 'row',
@@ -466,11 +483,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   countText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   countValue: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   sortButton: {
@@ -479,18 +496,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   sortButtonText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   chartContainer: {
     marginBottom: 24,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginHorizontal: 24,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   chartContentWrapper: {
     flexDirection: 'row',
@@ -504,13 +521,13 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
   },
   chartLinkTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
   },
   chartLinkSubtitle: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -523,21 +540,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   filterChipSelected: {
-    backgroundColor: '#8e44ad',
-    borderColor: '#8e44ad',
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filterChipText: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   filterChipTextSelected: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   gridContainer: {
@@ -549,14 +566,14 @@ const styles = StyleSheet.create({
   noteItem: {
     flexDirection: 'column',
     marginBottom: 16,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     overflow: 'hidden',
   },
   imageWrapper: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -582,7 +599,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   ratingBadgeText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -592,7 +609,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   noteName: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 13,
     fontWeight: 'bold',
     marginBottom: 2,
@@ -607,18 +624,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyContainer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 30,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
     borderStyle: 'dashed',
     width: '100%',
   },
   emptyText: {
     fontSize: 16,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 8,
     fontWeight: 'bold',
   },
@@ -635,7 +652,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -650,7 +667,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   sortOptionItem: {
     flexDirection: 'row',
@@ -658,14 +675,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   sortOptionText: {
     fontSize: 16,
     color: '#ccc',
   },
   sortOptionTextSelected: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontWeight: 'bold',
   },
 });

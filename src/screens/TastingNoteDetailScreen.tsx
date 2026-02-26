@@ -19,6 +19,7 @@ import { getTastingNoteDetail, TastingNoteDTO, deleteTastingNote } from '../api/
 import { useGlobalUI } from '../context/GlobalUIContext';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { COLOR_PALETTES } from '../components/tasting_note/constants';
+import { colors } from '../constants/colors';
 
 type TastingNoteDetailRouteProp = RouteProp<RootStackParamList, 'TastingNoteDetail'>;
 
@@ -106,7 +107,7 @@ export default function TastingNoteDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#8e44ad" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -133,16 +134,16 @@ export default function TastingNoteDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>테이스팅 노트</Text>
         <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
-          <Ionicons name="trash-outline" size={24} color="#e74c3c" />
+          <Ionicons name="trash-outline" size={24} color={colors.error} />
         </TouchableOpacity>
       </View>
 
@@ -287,13 +288,13 @@ const getHexColorFromValue = (value: string) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -302,13 +303,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -330,7 +331,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#252525',
+    backgroundColor: colors.surface1,
     marginRight: 16,
     justifyContent: 'center',
     alignItems: 'center',
@@ -361,16 +362,16 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   typeText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
   dateText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 12,
   },
   wineName: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
     lineHeight: 24,
@@ -390,7 +391,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   metaLabel: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 12,
   },
   colorCircle: {
@@ -398,7 +399,7 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: colors.white,
   },
   ratingWrapper: {
     flexDirection: 'row',
@@ -406,14 +407,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingValue: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
 
   divider: {
     height: 1,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
 
 
@@ -438,13 +439,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   infoBox: {
-    backgroundColor: '#252525',
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     padding: 12,
     gap: 8,
   },
   boxTitle: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -456,7 +457,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   noseTag: {
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -482,12 +483,12 @@ const styles = StyleSheet.create({
 
 
   bottomSectionWrapper: {
-    backgroundColor: '#252525',
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     padding: 16,
   },
   sectionHeader: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 8,

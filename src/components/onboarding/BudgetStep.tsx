@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { colors } from '../../constants/colors';
 
 interface BudgetOption {
   label: string;
@@ -39,12 +40,12 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
   },
   stepDesc: {
     fontSize: 14,
-    color: '#888',
+    color: colors.textSecondary,
     marginBottom: 24,
   },
   selectionCard: {
@@ -54,16 +55,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   selectedCard: {
-    borderColor: '#8e44ad',
+    borderColor: colors.primary,
     backgroundColor: '#2a1a2a',
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
 });

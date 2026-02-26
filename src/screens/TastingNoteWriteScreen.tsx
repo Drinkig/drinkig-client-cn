@@ -31,6 +31,7 @@ import TasteLevelSelector from "../components/tasting_note/TasteLevelSelector";
 import { TASTE_TIPS } from "../components/tasting_note/constants";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
+import { colors } from '../constants/colors';
 
 if (
   Platform.OS === "android" &&
@@ -328,14 +329,14 @@ export default function TastingNoteWriteScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Icon name="close" size={24} color="#fff" />
+          <Icon name="close" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>테이스팅 노트 작성</Text>
         <TouchableOpacity
@@ -395,7 +396,7 @@ export default function TastingNoteWriteScreen() {
               <View style={styles.searchSection}>
                 <View style={styles.nameInputContainer}>
                   <View style={styles.searchIconContainer}>
-                    <Icon name="search" size={20} color="#888" />
+                    <Icon name="search" size={20} color={colors.textSecondary} />
                   </View>
                   <TextInput
                     style={styles.nameInput}
@@ -486,7 +487,7 @@ export default function TastingNoteWriteScreen() {
                         <Icon
                           name="checkmark-circle"
                           size={20}
-                          color="#8e44ad"
+                          color={colors.primary}
                           style={{ marginRight: 4 }}
                         />
                       ) : (
@@ -521,7 +522,7 @@ export default function TastingNoteWriteScreen() {
                       <Text style={styles.dateButtonText}>
                         {tasteDate || "날짜 선택"}
                       </Text>
-                      <Icon name="calendar-outline" size={20} color="#8e44ad" />
+                      <Icon name="calendar-outline" size={20} color={colors.primary} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -642,7 +643,7 @@ export default function TastingNoteWriteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
@@ -651,18 +652,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "600",
   },
   saveButton: {
-    color: "#8e44ad",
+    color: colors.primary,
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -677,12 +678,12 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 16,
     borderLeftWidth: 3,
-    borderLeftColor: "#8e44ad",
+    borderLeftColor: colors.primary,
     paddingLeft: 10,
   },
 
@@ -701,11 +702,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   nameInput: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     padding: 12,
     paddingLeft: 40,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
   searchResultsContainer: {
@@ -714,7 +715,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     marginTop: 4,
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     zIndex: 999,
     elevation: 10,
@@ -736,13 +737,13 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   resultNameKor: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 14,
     fontWeight: "bold",
     marginBottom: 2,
   },
   resultNameEng: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 12,
   },
   typeChip: {
@@ -752,13 +753,13 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   typeChipText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 10,
     fontWeight: "bold",
   },
 
   selectedWineContainer: {
-    backgroundColor: "#252525",
+    backgroundColor: colors.surface1,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
@@ -773,13 +774,13 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
   },
   wineThumbnailPlaceholder: {
     width: 60,
     height: 60,
     borderRadius: 8,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -788,23 +789,23 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   wineName: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 4,
   },
   wineType: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 14,
   },
   changeButton: {
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: "center",
   },
   changeButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 14,
     fontWeight: "500",
   },
@@ -821,10 +822,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     padding: 12,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
   textArea: {
@@ -841,7 +842,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   ratingValue: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -849,20 +850,20 @@ const styles = StyleSheet.create({
   vintageInputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     paddingRight: 8,
     borderWidth: 1,
     borderColor: "transparent",
   },
   vintageInputWrapperValid: {
-    borderColor: "#8e44ad",
+    borderColor: colors.primary,
     backgroundColor: "rgba(142, 68, 173, 0.05)",
   },
   vintageInput: {
     flex: 1,
     padding: 12,
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
   nvButton: {
@@ -872,19 +873,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#444",
   },
   nvButtonActive: {
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
   },
   nvButtonText: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: "bold",
   },
   nvButtonTextActive: {
-    color: "#fff",
+    color: colors.white,
   },
 
   dateButton: {
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     padding: 12,
     flexDirection: "row",
@@ -892,7 +893,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dateButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
   },
 });

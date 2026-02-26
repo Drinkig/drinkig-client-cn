@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { VintageData } from '../../types/Wine';
+import { colors } from '../../constants/colors';
 
 interface VintageSelectionModalProps {
   visible: boolean;
@@ -33,7 +34,7 @@ export default function VintageSelectionModal({
               onPress={onClose}
               style={styles.closeButton}
             >
-              <Ionicons name="close" size={24} color="#fff" />
+              <Ionicons name="close" size={24} color={colors.white} />
             </TouchableOpacity>
           </View>
           <FlatList
@@ -71,7 +72,7 @@ export default function VintageSelectionModal({
                     </View>
                   )}
                   {selectedVintage?.year === item.year && (
-                    <Ionicons name="checkmark" size={20} color="#8e44ad" style={styles.checkmark} />
+                    <Ionicons name="checkmark" size={20} color={colors.primary} style={styles.checkmark} />
                   )}
                 </View>
               </TouchableOpacity>
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '80%',
@@ -103,12 +104,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   closeButton: {
     padding: 4,
@@ -123,18 +124,18 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#2a2a2a',
+    borderBottomColor: colors.surface1,
   },
   vintageModalItemSelected: {
-    backgroundColor: '#333',
-    borderBottomColor: '#333',
+    backgroundColor: colors.border,
+    borderBottomColor: colors.border,
   },
   vintageModalItemText: {
     fontSize: 16,
     color: '#ccc',
   },
   vintageModalItemTextSelected: {
-    color: '#8e44ad',
+    color: colors.primary,
     fontWeight: 'bold',
   },
   rightContainer: {
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   ratingText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: '500',
     marginRight: 4,

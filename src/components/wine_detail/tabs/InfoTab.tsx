@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FeatureGauge from '../FeatureGauge';
+import { colors } from '../../../constants/colors';
 
 interface InfoTabProps {
   description: string | null;
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 16,
   },
   description: {

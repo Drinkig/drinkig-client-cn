@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Polygon, Line, Text as SvgText, Circle, G } from 'react-native-svg';
 import { FlavorProfile } from '../onboarding/FlavorProfileStep';
+import { colors } from '../../constants/colors';
 
 interface PentagonRadarChartProps {
   data: FlavorProfile;
@@ -56,7 +57,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
         <Polygon
           key={`grid-${step}`}
           points={gridString}
-          stroke="#333"
+          stroke={colors.border}
           strokeWidth="1"
           fill="none"
         />
@@ -75,7 +76,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
           y1={center}
           x2={endPoint.x}
           y2={endPoint.y}
-          stroke="#333"
+          stroke={colors.border}
           strokeWidth="1"
         />
       );
@@ -120,7 +121,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
         <Polygon
           points={pointsString}
           fill="rgba(142, 68, 173, 0.4)" // #8e44ad with opacity
-          stroke="#8e44ad"
+          stroke={colors.primary}
           strokeWidth="2"
         />
 

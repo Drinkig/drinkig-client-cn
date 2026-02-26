@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MyWine } from '../../../context/WineContext';
 import FeatureGauge from '../FeatureGauge';
+import { colors } from '../../../constants/colors';
 
 interface MyRecordTabProps {
   wine: MyWine;
@@ -73,7 +74,7 @@ export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
             <FeatureGauge label="타닌" value={features.tannin} />
           </View>
         ) : (
-          <Text style={{ color: '#888', fontStyle: 'italic' }}>테이스팅 노트가 기록되지 않았습니다.</Text>
+          <Text style={{ color: colors.textSecondary, fontStyle: 'italic' }}>테이스팅 노트가 기록되지 않았습니다.</Text>
         )}
       </View>
     </View>
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 16,
   },
   divider: {
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   myRatingHeader: {
     flexDirection: 'row',
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   myRatingDate: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   ratingContainer: {
@@ -122,12 +123,12 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: 'bold',
   },
   myComment: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     lineHeight: 24,
     fontStyle: 'italic',
@@ -139,12 +140,12 @@ const styles = StyleSheet.create({
   label: {
     width: 80,
     fontSize: 15,
-    color: '#888',
+    color: colors.textSecondary,
   },
   value: {
     flex: 1,
     fontSize: 15,
-    color: '#fff',
+    color: colors.white,
   },
   featuresContainer: {
     gap: 12,

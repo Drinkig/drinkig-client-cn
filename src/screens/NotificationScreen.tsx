@@ -9,13 +9,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import { colors } from '../constants/colors';
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
@@ -23,7 +24,7 @@ const NotificationScreen = () => {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>알림</Text>
         <View style={{ width: 32 }} />
@@ -41,7 +42,7 @@ const NotificationScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -50,7 +51,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
   },
   emptyContainer: {
     flex: 1,
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 16,
     marginTop: 16,
   },

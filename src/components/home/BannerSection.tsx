@@ -12,6 +12,7 @@ import {
   Linking,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { colors } from '../../constants/colors';
 
 const { width } = Dimensions.get('window');
 const BANNER_WIDTH = width - 40; // 좌우 마진 20씩 제외한 너비
@@ -36,7 +37,7 @@ const BANNERS: BannerData[] = [
     tag: 'NOTICE',
     title: '새롭게 단장한 드링키지\n사용법 정리',
     subtitle: '확 바뀐 기능들을 확인해보세요',
-    backgroundColor: '#252525', // 통일된 다크 그레이
+    backgroundColor: colors.surface1, // 통일된 다크 그레이
     linkUrl: 'https://web.drinkig.com/notices/2',
     iconName: 'file-document-edit-outline',
   },
@@ -227,7 +228,15 @@ const styles = StyleSheet.create({
     padding: 20,
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
+    // Add subtle structural shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)', // Matte embossed border
   },
   bannerContent: {
     flex: 1,
@@ -245,13 +254,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   bannerTag: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 8,
     fontWeight: '800',
     letterSpacing: 1,
   },
   bannerTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
     lineHeight: 24,
@@ -287,7 +296,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.3)',
   },
   paginationDotActive: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.white,
     width: 18,
   },
 });

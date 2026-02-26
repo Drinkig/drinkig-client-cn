@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { colors } from '../constants/colors';
 
 type WithdrawRetentionRouteProp = RouteProp<{
     WithdrawRetention: { authType: string };
@@ -49,7 +50,7 @@ const WithdrawRetentionScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     content: {
         flex: 1,
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         textAlign: 'center',
         marginBottom: 12,
         lineHeight: 32,
@@ -82,13 +83,13 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     stayButton: {
-        backgroundColor: '#8e44ad',
+        backgroundColor: colors.primary,
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: 'center',
     },
     stayButtonText: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 16,
         fontWeight: 'bold',
     },

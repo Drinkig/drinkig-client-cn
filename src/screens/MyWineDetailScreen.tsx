@@ -18,6 +18,7 @@ import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic, searchWi
 import { useGlobalUI } from '../context/GlobalUIContext';
 import MenuBottomSheet from '../components/common/MenuBottomSheet';
 import SelectionModal from '../components/common/SelectionModal';
+import { colors } from '../constants/colors';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
 
@@ -125,7 +126,7 @@ export default function MyWineDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#8e44ad" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -152,7 +153,7 @@ export default function MyWineDetailScreen() {
   const renderInfoRow = (icon: string, label: string, value?: string | number | null) => (
     <View style={styles.infoRow}>
       <View style={styles.labelContainer}>
-        <MaterialCommunityIcons name={icon} size={20} color="#8e44ad" style={styles.icon} />
+        <MaterialCommunityIcons name={icon} size={20} color={colors.primary} style={styles.icon} />
         <Text style={styles.label}>{label}</Text>
       </View>
       <Text style={styles.value}>{value || '-'}</Text>
@@ -161,7 +162,7 @@ export default function MyWineDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
@@ -169,11 +170,11 @@ export default function MyWineDetailScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>내 와인 상세</Text>
         <TouchableOpacity onPress={() => setIsMenuVisible(true)} style={styles.deleteButton}>
-          <Ionicons name="ellipsis-vertical" size={22} color="#fff" />
+          <Ionicons name="ellipsis-vertical" size={22} color={colors.white} />
         </TouchableOpacity>
       </View>
 
@@ -287,7 +288,7 @@ export default function MyWineDetailScreen() {
 
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity style={styles.editButton} onPress={handleFinishedDrinking}>
-          <MaterialCommunityIcons name="glass-wine" size={20} color="#fff" style={{ marginRight: 8 }} />
+          <MaterialCommunityIcons name="glass-wine" size={20} color={colors.white} style={{ marginRight: 8 }} />
           <Text style={styles.editButtonText}>다 마셨어요</Text>
         </TouchableOpacity>
       </View>
@@ -298,11 +299,11 @@ export default function MyWineDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -313,8 +314,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    backgroundColor: '#1a1a1a',
+    borderBottomColor: colors.border,
+    backgroundColor: colors.background,
   },
   backButton: {
     padding: 4,
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: colors.white,
   },
   content: {
     padding: 16,
@@ -333,7 +334,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flexDirection: 'row',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 16,
     marginBottom: 24,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 8,
     overflow: 'hidden',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 4,
@@ -358,7 +359,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 120,
     borderRadius: 8,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
   wineName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 8,
   },
   badges: {
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   badge: {
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -388,7 +389,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   grapeText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   section: {
@@ -397,12 +398,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 12,
     marginLeft: 4,
   },
   infoContainer: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 16,
   },
@@ -425,12 +426,12 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 16,
-    color: '#fff',
+    color: colors.white,
     fontWeight: '500',
   },
   divider: {
     height: 1,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
   },
   bottomButtonContainer: {
     position: 'absolute',
@@ -439,12 +440,12 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 16,
     paddingBottom: 34,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
     borderTopWidth: 1,
-    borderTopColor: '#333',
+    borderTopColor: colors.border,
   },
   editButton: {
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     height: 50,
     flexDirection: 'row',
@@ -452,7 +453,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
   },

@@ -24,6 +24,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { exchangeKakaoToken, appleLogin } from '../api/member';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
+import { colors } from '../constants/colors';
 
 const width = Dimensions.get('window').width;
 
@@ -286,7 +287,7 @@ const LoginScreen = () => {
                   onPress={onAppleButtonPress}
                   disabled={loading}
                 >
-                  <Icon name="logo-apple" size={20} color="#000" style={styles.buttonIcon} />
+                  <Icon name="logo-apple" size={20} color={colors.black} style={styles.buttonIcon} />
                   <Text style={styles.appleButtonText}>Apple로 시작하기</Text>
                 </TouchableOpacity>
               )}
@@ -297,7 +298,7 @@ const LoginScreen = () => {
                 onPress={onKakaoButtonPress}
                 disabled={loading}
               >
-                <Icon name="chatbubble" size={20} color="#000" style={styles.buttonIcon} />
+                <Icon name="chatbubble" size={20} color={colors.black} style={styles.buttonIcon} />
                 <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
               </TouchableOpacity>
 
@@ -322,7 +323,7 @@ const LoginScreen = () => {
 
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#FFF" />
+          <ActivityIndicator size="large" color={colors.white} />
         </View>
       )}
     </View>
@@ -332,7 +333,7 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   safeArea: {
     flex: 1,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     borderRadius: 150,
-    backgroundColor: '#7E13B1',
+    backgroundColor: colors.primaryDark,
     opacity: 0.15,
   },
   backgroundCircle2: {
@@ -354,7 +355,7 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     borderRadius: 125,
-    backgroundColor: '#7E13B1',
+    backgroundColor: colors.primaryDark,
     opacity: 0.15,
   },
   backgroundCircle3: {
@@ -389,7 +390,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   sloganText: {
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     fontSize: 24,
     fontWeight: '700',
     textAlign: 'center',
@@ -405,7 +406,7 @@ const styles = StyleSheet.create({
   indicator: {
     height: 8,
     width: 8,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
     borderRadius: 4,
     opacity: 0.2,
   },
@@ -427,13 +428,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
     paddingVertical: 16,
     borderRadius: 12,
     width: '100%',
   },
   appleButtonText: {
-    color: '#000000',
+    color: colors.black,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -448,7 +449,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   kakaoButtonText: {
-    color: '#000000',
+    color: colors.black,
     fontSize: 16,
     fontWeight: '600',
     marginLeft: 8,
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   emailLoginLinkText: {
-    color: '#999',
+    color: colors.textSecondary,
     fontSize: 13,
     textDecorationLine: 'underline',
   },
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(25, 22, 28, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -482,12 +483,12 @@ const styles = StyleSheet.create({
   },
   agreementText: {
     fontSize: 12,
-    color: '#888888',
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   agreementLink: {
     textDecorationLine: 'underline',
-    color: '#888888',
+    color: colors.textSecondary,
   },
 });
 

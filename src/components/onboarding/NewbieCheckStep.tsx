@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { colors } from '../../constants/colors';
 
 interface NewbieCheckStepProps {
   isNewbie: boolean | null;
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 24,
     lineHeight: 32,
   },
@@ -67,14 +68,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     position: 'relative',
     overflow: 'hidden',
   },
   selectedCard: {
-    borderColor: '#8e44ad',
+    borderColor: colors.primary,
     backgroundColor: '#2a1a2a',
   },
   cardTextContainer: {
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 4,
   },
   cardDesc: {

@@ -18,7 +18,7 @@ import { useCallback } from 'react';
 import { WineDBItem } from '../types/Wine';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
-import AdBanner from '../components/common/AdBanner';
+import { colors } from '../constants/colors';
 
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp<RootStackParamList, 'WineSearch'>;
@@ -146,7 +146,7 @@ export default function SearchScreen() {
             resizeMode="contain"
           />
         ) : (
-          <Icon name="wine" size={20} color="#8e44ad" />
+          <Icon name="wine" size={20} color={colors.primary} />
         )}
       </View>
       <View style={styles.resultTextContainer}>
@@ -161,7 +161,7 @@ export default function SearchScreen() {
       </View>
       {item.vivinoRating && (
         <View style={styles.rightRatingContainer}>
-          <Icon name="star" size={14} color="#e74c3c" />
+          <Icon name="star" size={14} color={colors.error} />
           <Text style={styles.rightRatingText}>{item.vivinoRating.toFixed(1)}</Text>
         </View>
       )}
@@ -170,35 +170,37 @@ export default function SearchScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.searchBarContainer}>
-          <Icon name="search" size={20} color="#888" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="와인 이름, 종류 등으로 검색"
-            placeholderTextColor="#888"
-            value={searchText}
-            onChangeText={setSearchText}
-            onSubmitEditing={handleSearchSubmit}
-            autoFocus={true}
-          />
-          {searchText.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearchText('')}
-              style={styles.clearButton}
-            >
-              <Icon name="close-circle" size={18} color="#666" />
-            </TouchableOpacity>
-          )}
+      <View style={styles.headerContainer}>
+        <View style={styles.headerPill}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-back" size={24} color={colors.white} />
+          </TouchableOpacity>
+          <View style={styles.searchBarContainer}>
+            <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="와인 이름, 종류 등으로 검색"
+              placeholderTextColor={colors.textSecondary}
+              value={searchText}
+              onChangeText={setSearchText}
+              onSubmitEditing={handleSearchSubmit}
+              autoFocus={true}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearchText('')}
+                style={styles.clearButton}
+              >
+                <Icon name="close-circle" size={18} color="#666" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
 
@@ -211,7 +213,6 @@ export default function SearchScreen() {
             renderItem={renderSearchResult}
             keyExtractor={item => item.id.toString()}
             contentContainerStyle={styles.listContent}
-            ListHeaderComponent={<AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
@@ -220,7 +221,6 @@ export default function SearchScreen() {
           />
         ) : (
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <AdBanner style={{ marginTop: 0, marginBottom: 0, marginVertical: 0, backgroundColor: '#1a1a1a' }} />
             <View style={styles.recentSearchContainer}>
               <Text style={styles.sectionTitle}>최근 검색어</Text>
               {recentSearches.length > 0 ? (
@@ -236,7 +236,7 @@ export default function SearchScreen() {
                         style={styles.removeTagButton}
                         onPress={() => setRecentSearches(prev => prev.filter((_, i) => i !== index))}
                       >
-                        <Icon name="close" size={14} color="#888" />
+                        <Icon name="close" size={14} color={colors.textSecondary} />
                       </TouchableOpacity>
                     </TouchableOpacity>
                   ))}
@@ -268,7 +268,7 @@ export default function SearchScreen() {
                             resizeMode="contain"
                           />
                         ) : (
-                          <Icon name="wine" size={30} color="#8e44ad" />
+                          <Icon name="wine" size={30} color={colors.primary} />
                         )}
                       </View>
                       <Text style={styles.recentWineName} numberOfLines={2}>{wine.nameKor}</Text>
@@ -290,35 +290,47 @@ export default function SearchScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
-  header: {
+  headerContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    paddingTop: 20,
+    backgroundColor: colors.background,
+    zIndex: 10,
+  },
+  headerPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-    gap: 12,
+    backgroundColor: colors.surface1, // Matte pill color
+    borderRadius: 24, // High border radius for pill shape
+    height: 52, // Taller pill
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   backButton: {
-    padding: 4,
+    padding: 8,
+    marginRight: 4,
   },
   searchBarContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 40,
+    backgroundColor: 'transparent', // Transparent to let pill show
+    height: '100%',
   },
   searchIcon: {
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     padding: 0,
     height: '100%',
@@ -339,13 +351,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   resultIconContainer: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -361,13 +373,13 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   resultNameKor: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
 
   },
   resultNameEng: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
 
   },
@@ -383,7 +395,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -399,7 +411,7 @@ const styles = StyleSheet.create({
   },
   rightRatingText: {
     fontSize: 14,
-    color: '#e74c3c',
+    color: colors.error,
     fontWeight: 'bold',
   },
   emptyContainer: {
@@ -428,7 +440,7 @@ const styles = StyleSheet.create({
   recentWineImageContainer: {
     width: 100,
     height: 100,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
@@ -439,18 +451,18 @@ const styles = StyleSheet.create({
     height: '80%',
   },
   recentWineName: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 12,
     fontWeight: '500',
     marginBottom: 4,
     height: 32,
   },
   recentWineType: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 11,
   },
   sectionTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 16,
@@ -463,12 +475,12 @@ const styles = StyleSheet.create({
   recentTag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: colors.border,
   },
   recentTagText: {
     color: '#ccc',

@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { colors } from '../constants/colors';
 
 interface CustomAlertProps {
   visible: boolean;
@@ -74,11 +75,11 @@ const styles = StyleSheet.create({
   },
   alertBox: {
     width: 280,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     marginBottom: 12,
   },
   message: {
@@ -109,14 +110,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     alignItems: 'center',
   },
   confirmButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    backgroundColor: '#8e44ad',
+    backgroundColor: colors.primary,
     alignItems: 'center',
   },
   fullWidthButton: {
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   confirmText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: 'bold',
   },

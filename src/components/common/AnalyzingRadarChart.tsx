@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Polygon, Line, Text as SvgText } from 'react-native-svg';
 import { FlavorProfile } from '../onboarding/FlavorProfileStep';
+import { colors } from '../../constants/colors';
 
 interface AnalyzingRadarChartProps {
     data: FlavorProfile;
@@ -140,7 +141,7 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
                 <Polygon
                     key={`grid-${step}`}
                     points={gridString}
-                    stroke="#333"
+                    stroke={colors.border}
                     strokeWidth="1"
                     fill="none"
                 />
@@ -158,7 +159,7 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
                     y1={center}
                     x2={endPoint.x}
                     y2={endPoint.y}
-                    stroke="#333"
+                    stroke={colors.border}
                     strokeWidth="1"
                     fill="none"
                 />
@@ -198,7 +199,7 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
                 <Polygon
                     points={pointsString}
                     fill="rgba(142, 68, 173, 0.4)"
-                    stroke="#8e44ad"
+                    stroke={colors.primary}
                     strokeWidth="2"
                 />
                 {renderLabels()}

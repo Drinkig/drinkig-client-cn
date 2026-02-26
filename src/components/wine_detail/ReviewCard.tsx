@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ReviewDTO } from '../../api/wine';
 import { sendReportEmail } from '../../utils/reportUtils';
+import { colors } from '../../constants/colors';
 
 interface ReviewCardProps {
   review: ReviewDTO;
@@ -74,7 +75,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
 
 const styles = StyleSheet.create({
   reviewItem: {
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     borderRadius: 8,
     padding: 12,
   },
@@ -89,12 +90,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   reviewUser: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: '600',
     fontSize: 14,
   },
   vintageBadge: {
-    backgroundColor: '#333',
+    backgroundColor: colors.border,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   ratingText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 14,
     fontWeight: 'bold',
   },

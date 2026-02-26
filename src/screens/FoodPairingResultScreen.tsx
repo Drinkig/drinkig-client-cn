@@ -11,6 +11,7 @@ import { useUser } from '../context/UserContext';
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 import AnalyzingRadarChart from '../components/common/AnalyzingRadarChart';
 import RollingCandidates from '../components/common/RollingCandidates';
+import { colors } from '../constants/colors';
 
 const RANK_BADGES = ['🥇', '🥈', '🥉'];
 
@@ -184,7 +185,7 @@ export default function FoodPairingResultScreen() {
     if (loading) {
         return (
             <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color="#8e44ad" />
+                <ActivityIndicator size="large" color={colors.primary} />
             </SafeAreaView>
         )
     }
@@ -193,7 +194,7 @@ export default function FoodPairingResultScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.navigate('Main')} style={styles.backButton}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={colors.white} />
                 </TouchableOpacity>
                 <View />
             </View>
@@ -245,7 +246,7 @@ export default function FoodPairingResultScreen() {
                         </View>
                         <Text style={styles.chartDescription}>
                             추천된 품종이 없다면, 이 그래프를{'\n'}
-                            <Text style={{ color: '#fff', fontWeight: 'bold' }}>소믈리에나 샵 직원</Text>에게 보여주세요.
+                            <Text style={{ color: colors.white, fontWeight: 'bold' }}>소믈리에나 샵 직원</Text>에게 보여주세요.
                         </Text>
                     </Animated.View>
                 )}
@@ -304,17 +305,17 @@ export default function FoodPairingResultScreen() {
 }
 
 const getWineColor = (type: string) => {
-    if (type.includes('레드') || type.toUpperCase().includes('RED')) return '#e74c3c';
+    if (type.includes('레드') || type.toUpperCase().includes('RED')) return colors.error;
     if (type.includes('화이트') || type.toUpperCase().includes('WHITE')) return '#f1c40f';
     if (type.includes('스파클링') || type.toUpperCase().includes('SPARKLING')) return '#3498db';
     if (type.includes('로제') || type.toUpperCase().includes('ROSE')) return '#e91e63';
-    return '#888';
+    return colors.textSecondary;
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     analysisContainer: {
         flex: 1,
@@ -342,7 +343,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     analysisText: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
@@ -352,31 +353,31 @@ const styles = StyleSheet.create({
     progressContainer: {
         width: '100%',
         height: 4,
-        backgroundColor: '#333',
+        backgroundColor: colors.border,
         borderRadius: 2,
         marginTop: 40,
         overflow: 'hidden',
     },
     progressBar: {
         height: '100%',
-        backgroundColor: '#8e44ad',
+        backgroundColor: colors.primary,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 20,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     backButton: {
         marginRight: 16,
     },
     headerTitle: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 18,
         fontWeight: 'bold',
     },
     headerSubtitle: {
-        color: '#888',
+        color: colors.textSecondary,
         fontSize: 13,
         marginTop: 2,
     },
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     wineCard: {
-        backgroundColor: '#252525',
+        backgroundColor: colors.surface1,
         borderRadius: 16,
         padding: 16,
         marginBottom: 12,
@@ -409,12 +410,12 @@ const styles = StyleSheet.create({
     wineTypeText: {
         fontSize: 10,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
     },
     wineName: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         flex: 1,
     },
     wineCountry: {
@@ -438,12 +439,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 12,
         borderRadius: 16,
-        backgroundColor: '#333',
+        backgroundColor: colors.border,
         borderWidth: 1,
-        borderColor: '#8e44ad',
+        borderColor: colors.primary,
     },
     rankText: {
-        color: '#8e44ad',
+        color: colors.primary,
         fontWeight: 'bold',
         fontSize: 14,
     },
@@ -453,14 +454,14 @@ const styles = StyleSheet.create({
         borderTopColor: '#222',
     },
     button: {
-        backgroundColor: '#8e44ad',
+        backgroundColor: colors.primary,
         height: 56,
         borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
     },
     buttonText: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 18,
         fontWeight: 'bold',
     },
@@ -469,7 +470,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     emptyText: {
-        color: '#888',
+        color: colors.textSecondary,
         fontSize: 16,
     },
     heroContainer: {
@@ -479,7 +480,7 @@ const styles = StyleSheet.create({
     heroTitle: {
         fontSize: 34,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 24,
     },
     heroText: {
@@ -490,15 +491,15 @@ const styles = StyleSheet.create({
     },
     heroSubText: {
         fontSize: 15,
-        color: '#888',
+        color: colors.textSecondary,
         lineHeight: 24,
     },
     highlight: {
-        color: '#8e44ad',
+        color: colors.primary,
         fontWeight: 'bold',
     },
     boldWhite: {
-        color: '#fff',
+        color: colors.white,
         fontWeight: 'bold',
     },
     chartContainer: {
@@ -511,7 +512,7 @@ const styles = StyleSheet.create({
     chartTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         marginBottom: 15,
         letterSpacing: 0.5,
     },
@@ -520,7 +521,7 @@ const styles = StyleSheet.create({
     },
     chartDescription: {
         textAlign: 'center',
-        color: '#888',
+        color: colors.textSecondary,
         fontSize: 13,
         lineHeight: 20,
         marginTop: 10,

@@ -16,6 +16,7 @@ import { getWishlist, WishlistItemDTO } from '../api/wine';
 import { WineDBItem } from '../types/Wine';
 
 import { getVintageLabel } from '../utils/wineUtils';
+import { colors } from '../constants/colors';
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
@@ -88,7 +89,7 @@ export default function WishlistScreen() {
             resizeMode="contain"
           />
         ) : (
-          <Icon name="wine" size={30} color="#8e44ad" />
+          <Icon name="wine" size={30} color={colors.primary} />
         )}
       </View>
       <View style={styles.infoContainer}>
@@ -105,7 +106,7 @@ export default function WishlistScreen() {
       </View>
       {item.vivinoRating > 0 && (
         <View style={styles.ratingContainer}>
-          <Icon name="star" size={14} color="#e74c3c" />
+          <Icon name="star" size={14} color={colors.error} />
           <Text style={styles.ratingText}>{item.vivinoRating.toFixed(1)}</Text>
         </View>
       )}
@@ -114,7 +115,7 @@ export default function WishlistScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
 
       <View style={styles.header}>
@@ -122,7 +123,7 @@ export default function WishlistScreen() {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color="#fff" />
+          <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>위시리스트</Text>
         <View style={{ width: 24 }} />
@@ -169,7 +170,7 @@ export default function WishlistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -178,13 +179,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -203,11 +204,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   countText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   countHighlight: {
-    color: '#fff',
+    color: colors.white,
     fontWeight: 'bold',
   },
   itemContainer: {
@@ -215,13 +216,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#333',
+    borderBottomColor: colors.border,
   },
   imageContainer: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: '#2a2a2a',
+    backgroundColor: colors.surface1,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -237,12 +238,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   nameKor: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 16,
     fontWeight: '600',
   },
   nameEng: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   detailRow: {
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
@@ -273,7 +274,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    color: '#e74c3c',
+    color: colors.error,
     fontWeight: 'bold',
   },
   emptyContainer: {
@@ -287,13 +288,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   emptySubText: {
-    color: '#888',
+    color: colors.textSecondary,
     fontSize: 14,
   },
 });

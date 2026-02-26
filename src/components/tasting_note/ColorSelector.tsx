@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLOR_PALETTES } from './constants';
+import { colors } from '../../constants/colors';
 
 interface ColorSelectorProps {
   wineType?: string;
@@ -50,12 +51,12 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   sectionTitle: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
     borderLeftWidth: 3,
-    borderLeftColor: '#8e44ad',
+    borderLeftColor: colors.primary,
     paddingLeft: 10,
   },
   colorPaletteContainer: {
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   colorOptionSelected: {
-    borderColor: '#8e44ad',
+    borderColor: colors.primary,
     backgroundColor: 'rgba(142, 68, 173, 0.1)',
   },
   colorCircle: {

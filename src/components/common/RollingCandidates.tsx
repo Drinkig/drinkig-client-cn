@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
+import { colors } from '../../constants/colors';
 
 const CARD_HEIGHT = 42;
 const GAP = 10;
@@ -89,14 +90,14 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         borderRadius: 4,
-        backgroundColor: '#333',
+        backgroundColor: colors.border,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 10,
     },
     badgeText: {
         fontSize: 10,
-        color: '#8e44ad',
+        color: colors.primary,
         fontWeight: 'bold',
     },
     content: {
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 50,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
         opacity: 0.8,
     },
     gradientBottom: {
@@ -130,7 +131,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 50,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
         opacity: 0.8,
     }
 });

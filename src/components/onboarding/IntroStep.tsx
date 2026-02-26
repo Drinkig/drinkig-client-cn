@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { colors } from '../../constants/colors';
 
 const IntroStep = () => {
   const fullTitle = "안녕하세요!\n저는 소믈리에 드링키에요.";
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: colors.white,
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 32,

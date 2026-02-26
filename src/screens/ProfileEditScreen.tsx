@@ -20,6 +20,7 @@ import {
 import PhotoOptionsBottomSheet from "../components/common/PhotoOptionsBottomSheet";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useUser } from "../context/UserContext";
+import { colors } from '../constants/colors';
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
@@ -200,7 +201,7 @@ const ProfileEditScreen = () => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Icon name="chevron-back" size={28} color="#fff" />
+          <Icon name="chevron-back" size={28} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>프로필 수정</Text>
         <View style={{ width: 28 }} />
@@ -223,7 +224,7 @@ const ProfileEditScreen = () => {
               />
             </View>
             <View style={styles.cameraIconContainer}>
-              <Icon name="camera" size={20} color="#fff" />
+              <Icon name="camera" size={20} color={colors.white} />
             </View>
           </TouchableOpacity>
         </View>
@@ -292,7 +293,7 @@ const ProfileEditScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: colors.border,
   },
   backButton: {
     padding: 4,
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
+    color: colors.white,
   },
   content: {
     flex: 1,
@@ -342,21 +343,21 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
     width: 36,
     height: 36,
     borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#1a1a1a",
+    borderColor: colors.background,
   },
   inputSection: {
     marginBottom: 40,
   },
   label: {
     fontSize: 14,
-    color: "#888",
+    color: colors.textSecondary,
     marginBottom: 8,
     marginLeft: 4,
   },
@@ -366,16 +367,16 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
-    color: "#fff",
+    color: colors.white,
     borderWidth: 1,
     borderColor: "#444",
   },
   inputError: {
-    borderColor: "#e74c3c",
+    borderColor: colors.error,
   },
   inputSuccess: {
     borderColor: "#2ecc71",
@@ -384,17 +385,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 16,
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#8e44ad",
+    borderColor: colors.primary,
   },
   checkButtonDisabled: {
     borderColor: "#444",
     opacity: 0.5,
   },
   checkButtonText: {
-    color: "#8e44ad",
+    color: colors.primary,
     fontWeight: "bold",
   },
   helperRow: {
@@ -409,25 +410,25 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 12,
-    color: "#e74c3c",
+    color: colors.error,
   },
   successText: {
     fontSize: 12,
     color: "#2ecc71",
   },
   saveButton: {
-    backgroundColor: "#8e44ad",
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
   },
   saveButtonDisabled: {
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     borderWidth: 1,
     borderColor: "#444",
   },
   saveButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
   },

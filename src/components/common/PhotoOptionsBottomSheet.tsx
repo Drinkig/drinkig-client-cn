@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { colors } from '../../constants/colors';
 
 interface PhotoOptionsBottomSheetProps {
   visible: boolean;
@@ -83,7 +84,7 @@ const PhotoOptionsBottomSheet = ({
             <Ionicons
               name="images-outline"
               size={24}
-              color="#fff"
+              color={colors.white}
               style={styles.icon}
             />
             <Text style={styles.optionText}>라이브러리에서 선택</Text>
@@ -105,7 +106,7 @@ const PhotoOptionsBottomSheet = ({
             <Ionicons
               name="trash-outline"
               size={24}
-              color={hasProfileImage ? "#e74c3c" : "#666"}
+              color={hasProfileImage ? colors.error : "#666"}
               style={styles.icon}
             />
             <Text
@@ -140,10 +141,10 @@ const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#000",
+    backgroundColor: colors.black,
   },
   sheetContainer: {
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingVertical: 20,
@@ -154,12 +155,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: colors.border,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff",
+    color: colors.white,
   },
   optionsContainer: {
     marginBottom: 20,
@@ -178,24 +179,24 @@ const styles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: "#fff",
+    color: colors.white,
     fontWeight: "500",
   },
   deleteText: {
-    color: "#e74c3c",
+    color: colors.error,
   },
   disabledText: {
     color: "#666",
   },
   cancelButton: {
-    backgroundColor: "#333",
+    backgroundColor: colors.border,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
     marginBottom: 10,
   },
   cancelButtonText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "bold",
   },

@@ -15,6 +15,7 @@ import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import { deleteMember, deleteAppleMember } from '../api/member';
 import appleAuth from '@invertase/react-native-apple-authentication';
+import { colors } from '../constants/colors';
 
 type WithdrawReasonRouteProp = RouteProp<{
     WithdrawReason: { authType: string };
@@ -156,7 +157,7 @@ const WithdrawReasonScreen = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Icon name="chevron-back" size={28} color="#fff" />
+                    <Icon name="chevron-back" size={28} color={colors.white} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>회원 탈퇴</Text>
                 <View style={{ width: 28 }} />
@@ -183,7 +184,7 @@ const WithdrawReasonScreen = () => {
                                         styles.checkbox,
                                         isSelected && styles.checkboxSelected
                                     ]}>
-                                        {isSelected && <Icon name="checkmark" size={16} color="#fff" />}
+                                        {isSelected && <Icon name="checkmark" size={16} color={colors.white} />}
                                     </View>
                                     <Text style={styles.reasonText}>{reason}</Text>
                                 </TouchableOpacity>
@@ -219,7 +220,7 @@ const WithdrawReasonScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: colors.background,
     },
     header: {
         flexDirection: 'row',
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#333',
+        borderBottomColor: colors.border,
     },
     backButton: {
         padding: 4,
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
     },
     content: {
         flex: 1,
@@ -245,13 +246,13 @@ const styles = StyleSheet.create({
     questionText: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#fff',
+        color: colors.white,
         lineHeight: 30,
         marginBottom: 32,
     },
     subQuestionText: {
         fontSize: 14,
-        color: '#888',
+        color: colors.textSecondary,
         marginBottom: 24,
         marginTop: -20,
     },
@@ -274,18 +275,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     checkboxSelected: {
-        borderColor: '#8e44ad',
-        backgroundColor: '#8e44ad',
+        borderColor: colors.primary,
+        backgroundColor: colors.primary,
     },
     reasonText: {
         fontSize: 16,
         color: '#eee',
     },
     otherInput: {
-        backgroundColor: '#2a2a2a',
+        backgroundColor: colors.surface1,
         borderRadius: 8,
         padding: 12,
-        color: '#fff',
+        color: colors.white,
         fontSize: 14,
         marginTop: 4,
         marginLeft: 36,
@@ -295,10 +296,10 @@ const styles = StyleSheet.create({
     footer: {
         padding: 24,
         borderTopWidth: 1,
-        borderTopColor: '#333',
+        borderTopColor: colors.border,
     },
     withdrawButton: {
-        backgroundColor: '#e74c3c',
+        backgroundColor: colors.error,
         paddingVertical: 16,
         borderRadius: 12,
         alignItems: 'center',
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#555',
     },
     withdrawButtonText: {
-        color: '#fff',
+        color: colors.white,
         fontSize: 16,
         fontWeight: 'bold',
     },
