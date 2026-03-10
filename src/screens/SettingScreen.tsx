@@ -44,15 +44,73 @@ const MAIL_TEMPLATES = {
   },
 };
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import { ActionSheetIOS, Platform } from 'react-native';
+import { getSystemLanguage } from '../i18n';
+
 const SettingScreen = () => {
   const navigation = useNavigation();
   const { logout } = useUser();
   const { showAlert, showLoading, hideLoading } = useGlobalUI();
-
+  const { i18n } = useTranslation();
 
   const [authType, setAuthType] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
   const [username, setUsername] = useState<string>('');
+  const [currentLanguageValue, setCurrentLanguageValue] = useState<string>('system');
+
+  useEffect(() => {
+    const loadLang = async () => {
+      const saved = await AsyncStorage.getItem('@app_language');
+      if (saved) {
+        setCurrentLanguageValue(saved);
+      }
+    };
+    loadLang();
+  }, []);
+
+  const changeAppLanguage = async (val: string) => {
+    setCurrentLanguageValue(val);
+    await AsyncStorage.setItem('@app_language', val);
+
+    if (val === 'system') {
+      i18n.changeLanguage(getSystemLanguage());
+    } else {
+      i18n.changeLanguage(val);
+    }
+  };
+
+  const handleChangeLanguage = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['취소', '기기 설정에 따름', '한국어', 'English'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            changeAppLanguage('system');
+          } else if (buttonIndex === 2) {
+            changeAppLanguage('ko');
+          } else if (buttonIndex === 3) {
+            changeAppLanguage('en');
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        '언어 설정',
+        '앱에서 사용할 언어를 선택해주세요.',
+        [
+          { text: '기기 설정에 따름', onPress: () => changeAppLanguage('system') },
+          { text: '한국어', onPress: () => changeAppLanguage('ko') },
+          { text: 'English', onPress: () => changeAppLanguage('en') },
+          { text: '취소', style: 'cancel' }
+        ]
+      );
+    }
+  };
 
   useEffect(() => {
     const fetchMemberInfo = async () => {
@@ -228,6 +286,18 @@ App Version: ${DeviceInfo.getVersion()}
             <Text style={styles.itemText}>버전 정보</Text>
             <Text style={styles.versionText}>{DeviceInfo.getVersion()}</Text>
           </View>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={handleChangeLanguage}
+          >
+            <Text style={styles.itemText}>언어 설정</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={[styles.versionText, { marginRight: 8 }]}>
+                {currentLanguageValue === 'ko' ? '한국어' : currentLanguageValue === 'en' ? 'English' : '기본 설정'}
+              </Text>
+              <Icon name="chevron-forward" size={20} color="#666" />
+            </View>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.item}
             onPress={() => handleLinkPress('https://web.drinkig.com/terms')}

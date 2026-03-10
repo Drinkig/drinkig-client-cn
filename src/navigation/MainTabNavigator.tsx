@@ -12,7 +12,11 @@ import { CustomTabBar } from '../components/navigation/CustomTabBar';
 
 const Tab = createBottomTabNavigator();
 
+import { useTranslation } from 'react-i18next';
+
 export default function MainTabNavigator() {
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
       tabBar={props => <CustomTabBar {...props} />}
@@ -24,28 +28,28 @@ export default function MainTabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: '홈', // Used for accessibility in CustomTabBar
+          tabBarLabel: t('tab.home', '홈'), // Used for accessibility in CustomTabBar
         }}
       />
       <Tab.Screen
         name="Search"
         component={SearchScreen}
         options={{
-          tabBarLabel: '검색',
+          tabBarLabel: t('tab.search', '검색'),
         }}
       />
       <Tab.Screen
         name="MyWine"
         component={MyWineScreen}
         options={{
-          tabBarLabel: '내 와인',
+          tabBarLabel: t('tab.myWine', '내 와인'),
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: '마이페이지',
+          tabBarLabel: t('tab.profile', '마이페이지'),
         }}
       />
     </Tab.Navigator>

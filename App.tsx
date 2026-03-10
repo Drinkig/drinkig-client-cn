@@ -9,6 +9,7 @@ import { GlobalUIProvider } from "./src/context/GlobalUIContext";
 import { UserProvider } from "./src/context/UserContext";
 import { WineProvider } from "./src/context/WineContext";
 import RootNavigator from "./src/navigation/RootNavigator";
+import i18n, { getSystemLanguage } from "./src/i18n";
 
 function App(): React.JSX.Element {
   const [isReady, setIsReady] = React.useState(false);
@@ -16,6 +17,13 @@ function App(): React.JSX.Element {
   React.useEffect(() => {
     const initializeApp = async () => {
       try {
+        const savedLanguage = await AsyncStorage.getItem('@app_language');
+        if (savedLanguage && savedLanguage !== 'system') {
+          i18n.changeLanguage(savedLanguage);
+        } else if (savedLanguage === 'system') {
+          i18n.changeLanguage(getSystemLanguage());
+        }
+
         const hasMigrated = await AsyncStorage.getItem("MIGRATION_CHECK_V2");
         if (!hasMigrated) {
           // 2.0.0 업데이트 또는 신규 설치 시 최초 1회 실행
