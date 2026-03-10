@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import ReviewCard from '../ReviewCard';
 import { getWineReviews, ReviewDTO } from '../../../api/wine';
 import { colors } from '../../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 type SortOption = 'latest' | 'rating_high' | 'rating_low';
 
@@ -13,6 +14,7 @@ interface ReviewTabProps {
 }
 
 export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProps) {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('latest');
@@ -70,9 +72,9 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
 
   const getSortLabel = (option: SortOption) => {
     switch (option) {
-      case 'rating_high': return '별점높은순';
-      case 'rating_low': return '별점낮은순';
-      case 'latest': default: return '최신순';
+      case 'rating_high': return t('wineDetail.review.sort.rating_high');
+      case 'rating_low': return t('wineDetail.review.sort.rating_low');
+      case 'latest': default: return t('wineDetail.review.sort.latest');
     }
   };
 
@@ -92,7 +94,7 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
   if (reviews.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyStateText}>아직 작성된 리뷰가 없습니다.</Text>
+        <Text style={styles.emptyStateText}>{t('wineDetail.review.empty')}</Text>
       </View>
     );
   }
@@ -104,7 +106,7 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
         <View style={styles.reviewHeaderContainer}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>
-              {selectedVintageYear && selectedVintageYear !== 'ALL' && selectedVintageYear !== 'NV' ? `${selectedVintageYear} 빈티지 리뷰` : '전체 리뷰'} ({totalElements})
+              {selectedVintageYear && selectedVintageYear !== 'ALL' && selectedVintageYear !== 'NV' ? t('wineDetail.review.vintageReview', { vintage: selectedVintageYear }) : t('wineDetail.review.allVintage')} ({totalElements})
             </Text>
 
             <TouchableOpacity

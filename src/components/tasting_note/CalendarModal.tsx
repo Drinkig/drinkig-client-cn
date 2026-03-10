@@ -10,6 +10,7 @@ import {
 import { Calendar, LocaleConfig } from "react-native-calendars";
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from '../../constants/colors';
+import { useTranslation } from "react-i18next";
 
 interface CalendarModalProps {
   visible: boolean;
@@ -68,6 +69,8 @@ export default function CalendarModal({
   onDateSelect,
   onClose,
 }: CalendarModalProps) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -80,7 +83,7 @@ export default function CalendarModal({
           <TouchableWithoutFeedback>
             <View style={styles.modalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>시음 날짜 선택</Text>
+                <Text style={styles.modalTitle}>{t('tastingNoteWrite.calendar.title')}</Text>
                 <TouchableOpacity
                   onPress={onClose}
                   style={styles.modalCloseButton}

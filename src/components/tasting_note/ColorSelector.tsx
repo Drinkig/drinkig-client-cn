@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { COLOR_PALETTES } from './constants';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface ColorSelectorProps {
   wineType?: string;
@@ -10,6 +11,8 @@ interface ColorSelectorProps {
 }
 
 export default function ColorSelector({ wineType, selectedColor, onSelectColor }: ColorSelectorProps) {
+  const { t } = useTranslation();
+
   const getPaletteType = (type?: string) => {
     if (!type) return 'RED';
     const upper = type.toUpperCase();
@@ -27,7 +30,7 @@ export default function ColorSelector({ wineType, selectedColor, onSelectColor }
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>와인 색상</Text>
+      <Text style={styles.sectionTitle}>{t('tastingNoteWrite.color.title')}</Text>
       <View style={styles.colorPaletteContainer}>
         {palette.map((option) => (
           <TouchableOpacity

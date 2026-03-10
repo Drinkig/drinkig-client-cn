@@ -4,5 +4,340 @@
         "search": "검색",
         "myWine": "내 와인",
         "profile": "프로필"
+    },
+    "home": {
+        "searchPlaceholder": "와인 이름, 종류 등으로 검색",
+        "hero": {
+            "title": "지금 와인 고르는 중인가요?",
+            "subtitle": "취향에 딱 맞는 와인을 추천해드려요",
+            "button": "추천받기"
+        },
+        "quickMenu": {
+            "tastingNoteTitle": "테이스팅 노트",
+            "tastingNoteSub": "기록하기",
+            "myWineTitle": "내 와인 창고",
+            "bottlesUnit": "병"
+        },
+        "banner": {
+            "noticeTag": "NOTICE",
+            "noticeTitle": "새롭게 단장한 드링키지\n사용법 정리",
+            "noticeSub": "확 바뀐 기능들을 확인해보세요",
+            "eventTag": "EVENT",
+            "eventTitle": "드링키지 런칭 기념\n광고주 무료 모집",
+            "eventSub": "1개월 무료로 광고해드려요!"
+        }
+    },
+    "search": {
+        "placeholder": "와인 이름, 종류 등으로 검색",
+        "emptyResult": "검색 결과가 없습니다.",
+        "recentSearch": "최근 검색어",
+        "emptyRecentSearch": "최근 검색 기록이 없습니다.",
+        "recentWine": "최근 본 와인",
+        "emptyRecentWine": "최근 본 와인이 없습니다.",
+        "resultHeaderTitle": "'{{keyword}}' 검색 결과",
+        "resultCount": "총 <0>{{count}}개</0>의 검색 결과"
+    },
+    "myWine": {
+        "headerTitle": "내 와인 창고",
+        "types": {
+            "all": "전체",
+            "red": "레드",
+            "white": "화이트",
+            "sparkling": "스파클링",
+            "rose": "로제",
+            "dessert": "디저트",
+            "fortified": "주정강화",
+            "other": "기타"
+        },
+        "sort": {
+            "title": "정렬",
+            "latest": "최근 등록 순",
+            "longestPeriod": "보관 오래된 순",
+            "vintageHigh": "빈티지 높은 순",
+            "vintageLow": "빈티지 낮은 순",
+            "priceHigh": "가격 높은 순",
+            "priceLow": "가격 낮은 순"
+        },
+        "countText": "총 <0>{{count}}</0>병",
+        "emptyType": {
+            "title": "해당 종류의 와인이 없어요",
+            "desc": "다른 종류를 선택하거나\n새로운 와인을 기록해보세요!"
+        },
+        "empty": {
+            "title": "아직 기록된 와인이 없어요",
+            "desc": "우측 상단의 + 버튼을 눌러\n첫 번째 와인을 기록해보세요!"
+        }
+    },
+    "profile": {
+        "headerTitle": "마이페이지",
+        "guest": "게스트",
+        "wineCountText": "마신 와인 {{count}}병",
+        "editBtn": "수정",
+        "tasteTitle": "내 와인 취향",
+        "chartLinkTitle": "추천 와인 스타일",
+        "chartLinkSubtitle": "보러가기",
+        "emptyFlavor": {
+            "title": "아직 분석된 취향 정보가 없습니다.",
+            "desc": "온보딩을 완료하거나 와인을 더 많이 즐겨보세요!"
+        },
+        "historyTitle": "내가 마신 와인",
+        "historyCountText": "총 <0>{{count}}</0>병",
+        "emptyNotes": {
+            "title": "아직 기록된 와인이 없습니다.",
+            "desc": "마신 와인을 기록해보세요!"
+        },
+        "sort": {
+            "title": "정렬",
+            "latest": "최근 등록 순",
+            "ratingHigh": "별점 높은 순",
+            "ratingLow": "별점 낮은 순"
+        }
+    },
+    "taste": {
+        "acidity": "산도",
+        "sweetness": "당도",
+        "tannin": "타닌",
+        "body": "바디",
+        "alcohol": "알코올"
+    },
+    "wineDetail": {
+        "myWineHeader": "내 와인 상세",
+        "infoHeader": "와인 정보",
+        "compatibility": "나와의 궁합 보기",
+        "vintage": "빈티지",
+        "select": "선택",
+        "tabs": {
+            "myRecord": "내 기록",
+            "info": "상세 정보",
+            "review": "리뷰",
+            "price": "가격"
+        },
+        "fab": {
+            "addWine": "보유 와인 등록",
+            "writeNote": "노트 작성",
+            "editRecord": "기록 수정하기"
+        },
+        "info": {
+            "empty": "등록된 상세 정보가 없습니다.",
+            "descTitle": "와인 설명",
+            "noteTitle": "테이스팅 노트",
+            "nose": "노즈",
+            "palate": "팔레트",
+            "finish": "피니시"
+        },
+        "myRecord": {
+            "title": "나의 시음 기록",
+            "noDate": "날짜 미입력",
+            "purchaseInfo": "구매 정보",
+            "purchasePrice": "구매가",
+            "purchaseShop": "구매처",
+            "purchaseDate": "구매일",
+            "myNote": "나의 테이스팅 노트",
+            "emptyNote": "테이스팅 노트가 기록되지 않았습니다."
+        },
+        "price": {
+            "empty": "등록된 가격 정보가 없습니다.",
+            "statsTitle": "구매가 통계",
+            "infoNote": "삭제된 기록을 포함하여 유저들이 등록한 정보를 집계했습니다.",
+            "listTitle": "구매 내역 리스트",
+            "headerDate": "구매일",
+            "headerShop": "구매처",
+            "headerPrice": "가격",
+            "directBadge": "직구"
+        },
+        "review": {
+            "empty": "아직 작성된 리뷰가 없습니다.",
+            "allVintage": "전체 리뷰",
+            "vintageReview": "{{vintage}} 빈티지 리뷰",
+            "sort": {
+                "latest": "최신순",
+                "rating_high": "별점높은순",
+                "rating_low": "별점낮은순"
+            }
+        }
+    },
+    "wineAdd": {
+        "headerAdd": "보유 와인 추가",
+        "headerEdit": "와인 정보 수정",
+        "step1": {
+            "title": "어떤 와인을 추가하시나요?",
+            "subtitle": "와인 이름으로 검색해주세요",
+            "placeholder": "와인 이름을 검색하세요",
+            "empty": "검색 결과가 없습니다."
+        },
+        "step2": {
+            "title": "구매 정보를 입력해주세요",
+            "subtitle": "선택한 와인: {{name}}",
+            "quantity": "수량",
+            "unit": "병",
+            "type": "와인 종류",
+            "vintage": "빈티지 (년도)",
+            "vintagePlaceholder": "ex) 2019",
+            "price": "구매가",
+            "shop": "구매처",
+            "shopOffline": "매장",
+            "shopDirect": "직구",
+            "shopPlaceholderOff": "매장 이름을 입력하세요",
+            "shopPlaceholderDir": "직구 사이트 주소를 입력하세요",
+            "date": "구매일자",
+            "datePlaceholder": "YYYY-MM-DD"
+        },
+        "button": {
+            "next": "다음",
+            "add": "추가 완료",
+            "edit": "수정 완료",
+            "saving": "저장 중..."
+        },
+        "alert": {
+            "success": "성공",
+            "error": "오류",
+            "editSuccess": "와인 정보가 수정되었습니다.",
+            "editFail": "수정에 실패했습니다.",
+            "addSuccessPlural": "{{count}}병이 내 와인 창고에 추가되었습니다.",
+            "addSuccessPluralFail": "{{count}}병이 내 와인 창고에 추가되었습니다. ({{failCount}}건 실패)",
+            "addSuccessSingular": "내 와인 창고에 추가되었습니다.",
+            "addFail": "와인 등록에 실패했습니다.",
+            "networkError": "서버 통신 중 문제가 발생했습니다."
+        }
+    },
+    "myWineDetail": {
+        "header": "내 와인 상세",
+        "error": {
+            "fetchFailTitle": "오류",
+            "fetchFailMsg": "와인 정보를 불러오는데 실패했습니다.",
+            "networkFailMsg": "서버 통신 중 문제가 발생했습니다."
+        },
+        "delete": {
+            "title": "와인 삭제",
+            "message": "정말로 이 와인을 삭제하시겠습니까?",
+            "confirm": "삭제",
+            "successTitle": "성공",
+            "successMsg": "와인이 삭제되었습니다.",
+            "failMsg": "와인 삭제에 실패했습니다."
+        },
+        "section": {
+            "purchaseInfo": "구매 정보",
+            "detailInfo": "상세 정보"
+        },
+        "info": {
+            "vintage": "빈티지",
+            "price": "구매가",
+            "shop": "구매처",
+            "shopDirect": "직구",
+            "shopOffline": "매장",
+            "date": "구매일",
+            "storagePeriod": "보관 기간",
+            "periodDays": "{{days}}일",
+            "region": "지역"
+        },
+        "menu": {
+            "title": "와인 관리",
+            "edit": "수정하기",
+            "delete": "삭제하기"
+        },
+        "finishModal": {
+            "title": "다 마셨어요",
+            "message": "테이스팅 노트를 작성하거나\n와인을 삭제할 수 있습니다.",
+            "writeNote": "테이스팅 노트 작성",
+            "delete": "와인 삭제하기"
+        },
+        "button": {
+            "finished": "다 마셨어요"
+        }
+    },
+    "tastingNoteWrite": {
+        "header": "테이스팅 노트 작성",
+        "save": "저장",
+        "error": {
+            "noWine": "와인을 선택해주세요.",
+            "noDate": "시음 날짜를 입력해주세요.",
+            "noColor": "와인 색상을 선택해주세요.",
+            "noTaste": "모든 맛 평가 항목을 선택해주세요.",
+            "noRating": "별점을 선택해주세요.",
+            "saveFail": "저장에 실패했습니다.",
+            "networkFail": "네트워크 오류가 발생했습니다.",
+            "authExpired": "인증 세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요."
+        },
+        "success": {
+            "saveTitle": "성공",
+            "saveMsg": "테이스팅 노트가 저장되었습니다."
+        },
+        "section": {
+            "wineSelection": "와인 선택",
+            "basicInfo": "기본 정보",
+            "nose": "향 (Nose)",
+            "palate": "맛 (Palate)",
+            "finish": "피니쉬 (Finish)",
+            "conclusion": "총평 (Conclusion)"
+        },
+        "wineSearch": {
+            "changeButton": "와인 변경 (검색)",
+            "placeholder": "와인 이름을 검색하세요"
+        },
+        "basicInfo": {
+            "vintage": "빈티지 (연도)",
+            "vintagePlaceholder": "예: 2020",
+            "tasteDate": "시음 날짜",
+            "datePlaceholder": "날짜 선택"
+        },
+        "nose": {
+            "label": "느껴지는 향을 쉼표(,)로 구분하여 적어주세요",
+            "placeholder": "예: 체리, 오크, 바닐라, 가죽"
+        },
+        "palate": {
+            "sweetness": "당도 (Sweetness)",
+            "acidity": "산도 (Acidity)",
+            "tannin": "탄닌 (Tannin)",
+            "body": "바디 (Body)",
+            "alcohol": "알코올 (Alcohol)"
+        },
+        "finish": {
+            "label": "와인을 삼킨 후의 느낌이나 여운을 적어주세요",
+            "placeholder": "예: 깔끔한 산미가 오래 남음, 씁쓸한 끝맛"
+        },
+        "conclusion": {
+            "reviewLabel": "상세 리뷰 (선택)",
+            "reviewPlaceholder": "와인에 대한 전체적인 감상을 자유롭게 적어주세요."
+        },
+        "calendar": {
+            "title": "시음 날짜 선택"
+        },
+        "color": {
+            "title": "와인 색상"
+        },
+        "help": {
+            "confirm": "확인"
+        },
+        "tasteLevel": {
+            "weak": "약함",
+            "strong": "강함"
+        }
+    },
+    "tastingNoteDetail": {
+        "header": "테이스팅 노트",
+        "error": {
+            "fetchFailTitle": "오류",
+            "fetchFailMsg": "테이스팅 노트를 불러올 수 없습니다.",
+            "networkFailMsg": "네트워크 오류가 발생했습니다."
+        },
+        "delete": {
+            "title": "테이스팅 노트 삭제",
+            "message": "정말로 이 테이스팅 노트를\n삭제하시겠습니까?",
+            "confirm": "삭제",
+            "successTitle": "성공",
+            "successMsg": "테이스팅 노트가 삭제되었습니다.",
+            "failMsg": "삭제에 실패했습니다.",
+            "networkFailMsg": "서버 통신 중 문제가 발생했습니다."
+        },
+        "info": {
+            "vintage": "Vintage {{year}}",
+            "nv": "NV",
+            "color": "Color",
+            "palate": "Palate",
+            "nose": "Nose",
+            "finish": "Finish",
+            "review": "Review",
+            "emptyReview": "작성된 리뷰가 없습니다."
+        }
     }
 }

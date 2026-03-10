@@ -17,6 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
 import { colors } from '../constants/colors';
+import { useTranslation, Trans } from 'react-i18next';
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
@@ -32,14 +33,26 @@ const MyWineScreen = () => {
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const wineTypes = ['전체', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화', '기타'];
+  const { t } = useTranslation();
+
+  const wineTypes = [
+    { label: t('myWine.types.all'), value: '전체' },
+    { label: t('myWine.types.red'), value: '레드' },
+    { label: t('myWine.types.white'), value: '화이트' },
+    { label: t('myWine.types.sparkling'), value: '스파클링' },
+    { label: t('myWine.types.rose'), value: '로제' },
+    { label: t('myWine.types.dessert'), value: '디저트' },
+    { label: t('myWine.types.fortified'), value: '주정강화' },
+    { label: t('myWine.types.other'), value: '기타' }
+  ];
+
   const sortOptions = [
-    { label: '최근 등록 순', value: 'latest' },
-    { label: '보관 오래된 순', value: 'longest_period' },
-    { label: '빈티지 높은 순', value: 'vintage_high' },
-    { label: '빈티지 낮은 순', value: 'vintage_low' },
-    { label: '가격 높은 순', value: 'price_high' },
-    { label: '가격 낮은 순', value: 'price_low' },
+    { label: t('myWine.sort.latest'), value: 'latest' },
+    { label: t('myWine.sort.longestPeriod'), value: 'longest_period' },
+    { label: t('myWine.sort.vintageHigh'), value: 'vintage_high' },
+    { label: t('myWine.sort.vintageLow'), value: 'vintage_low' },
+    { label: t('myWine.sort.priceHigh'), value: 'price_high' },
+    { label: t('myWine.sort.priceLow'), value: 'price_low' },
   ];
 
   useEffect(() => {
@@ -179,7 +192,7 @@ const MyWineScreen = () => {
       {/* Relative 3D Pill Header (Safe) */}
       <View style={styles.headerContainer}>
         <View style={styles.headerPill}>
-          <Text style={styles.headerTitle}>내 와인 창고</Text>
+          <Text style={styles.headerTitle}>{t('myWine.headerTitle')}</Text>
           <TouchableOpacity style={styles.addButton} onPress={handleAddWine} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Icon name="add" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
@@ -193,21 +206,21 @@ const MyWineScreen = () => {
           data={wineTypes}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterChipsContainer}
-          keyExtractor={(item) => item}
+          keyExtractor={(item) => item.value}
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
                 styles.filterChip,
-                selectedType === item && styles.filterChipSelected
+                selectedType === item.value && styles.filterChipSelected
               ]}
-              onPress={() => setSelectedType(item)}
+              onPress={() => setSelectedType(item.value)}
               activeOpacity={0.7}
             >
               <Text style={[
                 styles.filterChipText,
-                selectedType === item && styles.filterChipTextSelected
+                selectedType === item.value && styles.filterChipTextSelected
               ]}>
-                {item}
+                {item.label}
               </Text>
             </TouchableOpacity>
           )}
@@ -217,7 +230,11 @@ const MyWineScreen = () => {
       {!isLoading && myWines.length > 0 && (
         <View style={styles.countAndSortContainer}>
           <Text style={styles.countText}>
-            총 <Text style={styles.countValue}>{sortedWines.length}</Text>병
+            <Trans
+              i18nKey="myWine.countText"
+              values={{ count: sortedWines.length }}
+              components={[<Text style={styles.countValue} />]}
+            />
           </Text>
 
           <TouchableOpacity
@@ -260,13 +277,13 @@ const MyWineScreen = () => {
                 />
                 {myWines.length > 0 ? (
                   <>
-                    <Text style={styles.emptyText}>해당 종류의 와인이 없어요</Text>
-                    <Text style={styles.subText}>다른 종류를 선택하거나{'\n'}새로운 와인을 기록해보세요!</Text>
+                    <Text style={styles.emptyText}>{t('myWine.emptyType.title')}</Text>
+                    <Text style={styles.subText}>{t('myWine.emptyType.desc')}</Text>
                   </>
                 ) : (
                   <>
-                    <Text style={styles.emptyText}>아직 기록된 와인이 없어요</Text>
-                    <Text style={styles.subText}>우측 상단의 + 버튼을 눌러{'\n'}첫 번째 와인을 기록해보세요!</Text>
+                    <Text style={styles.emptyText}>{t('myWine.empty.title')}</Text>
+                    <Text style={styles.subText}>{t('myWine.empty.desc')}</Text>
                   </>
                 )}
               </View>
@@ -284,7 +301,7 @@ const MyWineScreen = () => {
           >
             <View style={styles.sortModalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>정렬</Text>
+                <Text style={styles.modalTitle}>{t('myWine.sort.title')}</Text>
                 <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
                   <Icon name="close" size={24} color={colors.textPrimary} />
                 </TouchableOpacity>

@@ -20,13 +20,15 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RootStackParamList } from '../types';
 import { WineDBItem, VintageData } from '../types/Wine';
 import { MyWine } from '../context/WineContext';
-import { getWineDetailPublic, WineDetailDTO, addToWishlist, removeFromWishlist, getWineReviews } from '../api/wine';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import { useUser } from '../context/UserContext';
-
-
-
-
+import { useTranslation } from 'react-i18next';
+import {
+  getWineDetailPublic,
+  getWineReviews,
+  addToWishlist,
+  removeFromWishlist
+} from '../api/wine';
 import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
 import MyRecordTab from '../components/wine_detail/tabs/MyRecordTab';
 import InfoTab from '../components/wine_detail/tabs/InfoTab';
@@ -49,6 +51,7 @@ export default function WineDetailScreen() {
   const isFocused = useIsFocused();
   const { showAlert } = useGlobalUI();
   const { flavorProfile } = useUser();
+  const { t, i18n } = useTranslation();
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -449,7 +452,7 @@ export default function WineDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {isMyWineItem ? '내 와인 상세' : '와인 정보'}
+          {isMyWineItem ? t('wineDetail.myWineHeader') : t('wineDetail.infoHeader')}
         </Text>
 
 
@@ -498,13 +501,19 @@ export default function WineDetailScreen() {
                 })}
               >
                 <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />
-                <Text style={styles.compatibilityButtonText}>나와의 궁합 보기</Text>
+                <Text style={styles.compatibilityButtonText}>{t('wineDetail.compatibility')}</Text>
               </TouchableOpacity>
             )}
           </View>
           <View style={styles.infoContainer}>
-            <Text style={styles.wineNameKor}>{nameKor}</Text>
-            {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
+            {i18n.language === 'en' ? (
+              <Text style={styles.wineNameKor}>{nameEng || nameKor}</Text>
+            ) : (
+              <>
+                <Text style={styles.wineNameKor}>{nameKor}</Text>
+                {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
+              </>
+            )}
 
             <View style={styles.tagContainer}>
               <View style={styles.tag}>
@@ -529,10 +538,10 @@ export default function WineDetailScreen() {
               style={styles.vintageSelectButton}
               onPress={() => setVintageModalVisible(true)}
             >
-              <Text style={styles.vintageSelectLabel}>빈티지</Text>
+              <Text style={styles.vintageSelectLabel}>{t('wineDetail.vintage')}</Text>
               <View style={styles.vintageSelectValueContainer}>
                 <Text style={styles.vintageSelectValue}>
-                  {selectedVintage ? selectedVintage.year : '선택'}
+                  {selectedVintage ? selectedVintage.year : t('wineDetail.select')}
                 </Text>
                 <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
               </View>
@@ -555,7 +564,7 @@ export default function WineDetailScreen() {
                 style={[styles.tabButton, activeTab === 'my_record' && styles.activeTabButton]}
                 onPress={() => setActiveTab('my_record')}
               >
-                <Text style={[styles.tabText, activeTab === 'my_record' && styles.activeTabText]}>내 기록</Text>
+                <Text style={[styles.tabText, activeTab === 'my_record' && styles.activeTabText]}>{t('wineDetail.tabs.myRecord')}</Text>
               </TouchableOpacity>
             )}
 
@@ -563,19 +572,19 @@ export default function WineDetailScreen() {
               style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]}
               onPress={() => setActiveTab('info')}
             >
-              <Text style={[styles.tabText, activeTab === 'info' && styles.activeTabText]}>상세 정보</Text>
+              <Text style={[styles.tabText, activeTab === 'info' && styles.activeTabText]}>{t('wineDetail.tabs.info')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.tabButton, activeTab === 'review' && styles.activeTabButton]}
               onPress={() => setActiveTab('review')}
             >
-              <Text style={[styles.tabText, activeTab === 'review' && styles.activeTabText]}>리뷰</Text>
+              <Text style={[styles.tabText, activeTab === 'review' && styles.activeTabText]}>{t('wineDetail.tabs.review')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.tabButton, activeTab === 'price' && styles.activeTabButton]}
               onPress={() => setActiveTab('price')}
             >
-              <Text style={[styles.tabText, activeTab === 'price' && styles.activeTabText]}>가격</Text>
+              <Text style={[styles.tabText, activeTab === 'price' && styles.activeTabText]}>{t('wineDetail.tabs.price')}</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -596,7 +605,7 @@ export default function WineDetailScreen() {
           >
             <MaterialCommunityIcons name="pencil" size={20} color={colors.white} style={{ marginRight: 8 }} />
             <Text style={styles.recordButtonText}>
-              기록 수정하기
+              {t('wineDetail.fab.editRecord')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -629,7 +638,7 @@ export default function WineDetailScreen() {
                       style={styles.fabCombinedGradient}
                     >
                       <View style={styles.fabTextContainer}>
-                        <Text style={styles.fabCombinedLabel}>보유 와인 등록</Text>
+                        <Text style={styles.fabCombinedLabel}>{t('wineDetail.fab.addWine')}</Text>
                       </View>
                       <View style={styles.fabIconContainer}>
                         <MaterialCommunityIcons name="bottle-wine-outline" size={20} color={colors.white} />
@@ -657,7 +666,7 @@ export default function WineDetailScreen() {
                       style={styles.fabCombinedGradient}
                     >
                       <View style={styles.fabTextContainer}>
-                        <Text style={styles.fabCombinedLabel}>노트 작성</Text>
+                        <Text style={styles.fabCombinedLabel}>{t('wineDetail.fab.writeNote')}</Text>
                       </View>
                       <View style={styles.fabIconContainer}>
                         <MaterialCommunityIcons name="pencil-outline" size={20} color={colors.white} />

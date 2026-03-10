@@ -6,6 +6,7 @@ import PriceStats from '../PriceStats';
 import { getPriceHistory, PriceHistoryDTO } from '../../../api/wine';
 import { sendReportEmail } from '../../../utils/reportUtils';
 import { colors } from '../../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface PriceTabProps {
   wineId: number;
@@ -13,6 +14,7 @@ interface PriceTabProps {
 }
 
 export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps) {
+  const { t } = useTranslation();
   const [history, setHistory] = useState<PriceHistoryDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -60,7 +62,7 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
   if (history.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyStateText}>등록된 가격 정보가 없습니다.</Text>
+        <Text style={styles.emptyStateText}>{t('wineDetail.price.empty')}</Text>
       </View>
     );
   }
@@ -84,7 +86,7 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
         <View style={styles.shopContainer}>
           {item.purchaseType === 'DIRECT' && (
             <View style={styles.directBadge}>
-              <Text style={styles.directBadgeText}>직구</Text>
+              <Text style={styles.directBadgeText}>{t('wineDetail.price.directBadge')}</Text>
             </View>
           )}
           <Text style={styles.itemText} numberOfLines={1} ellipsizeMode="tail">
@@ -114,27 +116,27 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
       <View style={styles.sectionContainer}>
         <View style={styles.vintageInfoContainer}>
           <Text style={styles.subSectionTitle}>
-            구매가 통계 ({selectedVintageYear || '전체'})
+            {t('wineDetail.price.statsTitle')} ({selectedVintageYear || '전체'})
           </Text>
           <PriceStats prices={statsData} />
 
           <View style={styles.priceInfoNote}>
             <Ionicons name="information-circle-outline" size={14} color={colors.textSecondary} style={{ marginRight: 4 }} />
             <Text style={styles.priceInfoText}>
-              삭제된 기록을 포함하여 유저들이 등록한 정보를 집계했습니다.
+              {t('wineDetail.price.infoNote')}
             </Text>
           </View>
         </View>
 
         <View style={styles.listContainer}>
-          <Text style={styles.subSectionTitle}>구매 내역 리스트</Text>
+          <Text style={styles.subSectionTitle}>{t('wineDetail.price.listTitle')}</Text>
 
 
           <View style={styles.listHeader}>
-            <View style={styles.colVintage}><Text style={styles.headerText}>빈티지</Text></View>
-            <View style={styles.colDate}><Text style={styles.headerText}>구매일</Text></View>
-            <View style={styles.colShop}><Text style={styles.headerText}>구매처</Text></View>
-            <View style={styles.colPrice}><Text style={styles.headerText}>가격</Text></View>
+            <View style={styles.colVintage}><Text style={styles.headerText}>{t('wineDetail.vintage')}</Text></View>
+            <View style={styles.colDate}><Text style={styles.headerText}>{t('wineDetail.price.headerDate')}</Text></View>
+            <View style={styles.colShop}><Text style={styles.headerText}>{t('wineDetail.price.headerShop')}</Text></View>
+            <View style={styles.colPrice}><Text style={styles.headerText}>{t('wineDetail.price.headerPrice')}</Text></View>
           </View>
 
 

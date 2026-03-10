@@ -19,10 +19,12 @@ import { HeroSection } from '../components/home/HeroSection';
 import { BannerSection } from '../components/home/BannerSection';
 import { getMyWines, MyWineDTO } from '../api/wine';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
+  const { t } = useTranslation();
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
@@ -65,7 +67,7 @@ export default function HomeScreen() {
             activeOpacity={0.9}
           >
             <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-            <Text style={styles.searchPlaceholder}>와인 이름, 종류 등으로 검색</Text>
+            <Text style={styles.searchPlaceholder}>{t('home.searchPlaceholder')}</Text>
           </TouchableOpacity>
 
           <View style={styles.headerSeparator} />
@@ -112,8 +114,8 @@ export default function HomeScreen() {
             >
               <View style={styles.tastingNoteContent}>
                 <View>
-                  <Text style={[styles.menuLabel, { color: colors.textSecondary }]}>테이스팅 노트</Text>
-                  <Text style={styles.menuSubLabel}>기록하기</Text>
+                  <Text style={[styles.menuLabel, { color: colors.textSecondary }]}>{t('home.quickMenu.tastingNoteTitle')}</Text>
+                  <Text style={styles.menuSubLabel}>{t('home.quickMenu.tastingNoteSub')}</Text>
                 </View>
                 <View style={styles.arrowIconContainer}>
                   <Icon name="chevron-forward" size={20} color={colors.textTertiary} />
@@ -136,10 +138,10 @@ export default function HomeScreen() {
             >
               <View style={styles.tastingNoteContent}>
                 <View>
-                  <Text style={[styles.menuLabel, { color: colors.textSecondary }]}>내 와인 창고</Text>
+                  <Text style={[styles.menuLabel, { color: colors.textSecondary }]}>{t('home.quickMenu.myWineTitle')}</Text>
                   <View style={styles.statRow}>
                     <Text style={styles.statNumber}>{myWines.length}</Text>
-                    <Text style={[styles.statUnit, { color: colors.textSecondary }]}>병</Text>
+                    <Text style={[styles.statUnit, { color: colors.textSecondary }]}>{t('home.quickMenu.bottlesUnit')}</Text>
                   </View>
                 </View>
                 <View style={styles.arrowIconContainer}>

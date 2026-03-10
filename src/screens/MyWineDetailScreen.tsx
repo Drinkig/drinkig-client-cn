@@ -19,6 +19,7 @@ import { useGlobalUI } from '../context/GlobalUIContext';
 import MenuBottomSheet from '../components/common/MenuBottomSheet';
 import SelectionModal from '../components/common/SelectionModal';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
 
@@ -27,6 +28,7 @@ export default function MyWineDetailScreen() {
   const route = useRoute<MyWineDetailRouteProp>();
   const { wineId } = route.params;
   const { showAlert } = useGlobalUI();
+  const { t } = useTranslation();
 
   const [wine, setWine] = useState<MyWineDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -57,8 +59,8 @@ export default function MyWineDetailScreen() {
         setWine(wineData);
       } else {
         showAlert({
-          title: '오류',
-          message: '와인 정보를 불러오는데 실패했습니다.',
+          title: t('myWineDetail.error.fetchFailTitle'),
+          message: t('myWineDetail.error.fetchFailMsg'),
           singleButton: true,
           onConfirm: () => navigation.goBack(),
         });
@@ -66,8 +68,8 @@ export default function MyWineDetailScreen() {
     } catch (error) {
       console.error('Failed to fetch my wine detail:', error);
       showAlert({
-        title: '오류',
-        message: '서버 통신 중 문제가 발생했습니다.',
+        title: t('myWineDetail.error.fetchFailTitle'),
+        message: t('myWineDetail.error.networkFailMsg'),
         singleButton: true,
         onConfirm: () => navigation.goBack(),
       });
@@ -78,32 +80,32 @@ export default function MyWineDetailScreen() {
 
   const handleDelete = () => {
     showAlert({
-      title: '와인 삭제',
-      message: '정말로 이 와인을 삭제하시겠습니까?',
-      confirmText: '삭제',
+      title: t('myWineDetail.delete.title'),
+      message: t('myWineDetail.delete.message'),
+      confirmText: t('myWineDetail.delete.confirm'),
       singleButton: false,
       onConfirm: async () => {
         try {
           const response = await deleteMyWine(wineId);
           if (response.isSuccess) {
             showAlert({
-              title: '성공',
-              message: '와인이 삭제되었습니다.',
+              title: t('myWineDetail.delete.successTitle'),
+              message: t('myWineDetail.delete.successMsg'),
               singleButton: true,
               onConfirm: () => navigation.goBack(),
             });
           } else {
             showAlert({
-              title: '오류',
-              message: response.message || '와인 삭제에 실패했습니다.',
+              title: t('myWineDetail.error.fetchFailTitle'),
+              message: response.message || t('myWineDetail.delete.failMsg'),
               singleButton: true,
             });
           }
         } catch (error) {
           console.error('Failed to delete wine:', error);
           showAlert({
-            title: '오류',
-            message: '서버 통신 중 문제가 발생했습니다.',
+            title: t('myWineDetail.error.fetchFailTitle'),
+            message: t('myWineDetail.error.networkFailMsg'),
             singleButton: true,
           });
         }
@@ -172,7 +174,7 @@ export default function MyWineDetailScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>내 와인 상세</Text>
+        <Text style={styles.headerTitle}>{t('myWineDetail.header')}</Text>
         <TouchableOpacity onPress={() => setIsMenuVisible(true)} style={styles.deleteButton}>
           <Ionicons name="ellipsis-vertical" size={22} color={colors.white} />
         </TouchableOpacity>
@@ -216,25 +218,25 @@ export default function MyWineDetailScreen() {
 
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>구매 정보</Text>
+          <Text style={styles.sectionTitle}>{t('myWineDetail.section.purchaseInfo')}</Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('calendar', '빈티지', wine.vintageYear === 0 ? 'NV' : wine.vintageYear)}
+            {renderInfoRow('calendar', t('myWineDetail.info.vintage'), wine.vintageYear === 0 ? 'NV' : wine.vintageYear)}
             <View style={styles.divider} />
-            {renderInfoRow('cash', '구매가', wine.purchasePrice ? `₩${wine.purchasePrice.toLocaleString()}` : null)}
+            {renderInfoRow('cash', t('myWineDetail.info.price'), wine.purchasePrice ? `₩${wine.purchasePrice.toLocaleString()}` : null)}
             <View style={styles.divider} />
-            {renderInfoRow('store', '구매처', wine.purchaseShop ? `${wine.purchaseShop} (${wine.purchaseType === 'DIRECT' ? '직구' : '매장'})` : '-')}
+            {renderInfoRow('store', t('myWineDetail.info.shop'), wine.purchaseShop ? `${wine.purchaseShop} (${wine.purchaseType === 'DIRECT' ? t('myWineDetail.info.shopDirect') : t('myWineDetail.info.shopOffline')})` : '-')}
             <View style={styles.divider} />
-            {renderInfoRow('calendar-check', '구매일', wine.purchaseDate)}
+            {renderInfoRow('calendar-check', t('myWineDetail.info.date'), wine.purchaseDate)}
             <View style={styles.divider} />
-            {renderInfoRow('clock-outline', '보관 기간', `${wine.period}일`)}
+            {renderInfoRow('clock-outline', t('myWineDetail.info.storagePeriod'), t('myWineDetail.info.periodDays', { days: wine.period }))}
           </View>
         </View>
 
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>상세 정보</Text>
+          <Text style={styles.sectionTitle}>{t('myWineDetail.section.detailInfo')}</Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('map-marker', '지역', wine.wineRegion)}
+            {renderInfoRow('map-marker', t('myWineDetail.info.region'), wine.wineRegion)}
 
           </View>
         </View>
@@ -245,15 +247,15 @@ export default function MyWineDetailScreen() {
       <MenuBottomSheet
         visible={isMenuVisible}
         onClose={() => setIsMenuVisible(false)}
-        title="와인 관리"
+        title={t('myWineDetail.menu.title')}
         options={[
           {
-            label: '수정하기',
+            label: t('myWineDetail.menu.edit'),
             icon: 'create-outline',
             onPress: handleEdit,
           },
           {
-            label: '삭제하기',
+            label: t('myWineDetail.menu.delete'),
             icon: 'trash-outline',
             onPress: handleDelete,
             isDestructive: true,
@@ -263,10 +265,10 @@ export default function MyWineDetailScreen() {
 
       <SelectionModal
         visible={isFinishModalVisible}
-        title="다 마셨어요"
-        message={'테이스팅 노트를 작성하거나\n와인을 삭제할 수 있습니다.'}
+        title={t('myWineDetail.finishModal.title')}
+        message={t('myWineDetail.finishModal.message')}
         onClose={() => setIsFinishModalVisible(false)}
-        option1Text="테이스팅 노트 작성"
+        option1Text={t('myWineDetail.finishModal.writeNote')}
         onSelectOption1={() => {
           setIsFinishModalVisible(false);
           if (wine) {
@@ -279,7 +281,7 @@ export default function MyWineDetailScreen() {
             });
           }
         }}
-        option2Text="와인 삭제하기"
+        option2Text={t('myWineDetail.finishModal.delete')}
         onSelectOption2={() => {
           setIsFinishModalVisible(false);
           handleDelete();
@@ -289,7 +291,7 @@ export default function MyWineDetailScreen() {
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity style={styles.editButton} onPress={handleFinishedDrinking}>
           <MaterialCommunityIcons name="glass-wine" size={20} color={colors.white} style={{ marginRight: 8 }} />
-          <Text style={styles.editButtonText}>다 마셨어요</Text>
+          <Text style={styles.editButtonText}>{t('myWineDetail.button.finished')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

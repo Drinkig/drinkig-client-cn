@@ -16,6 +16,7 @@ import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { WineDBItem } from '../types/Wine';
 import { RootStackParamList } from '../types';
 import { colors } from '../constants/colors';
+import { useTranslation, Trans } from 'react-i18next';
 
 type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;
 
@@ -23,6 +24,7 @@ export default function SearchResultScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchResultScreenRouteProp>();
   const { searchKeyword, returnScreen } = route.params;
+  const { t } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
@@ -140,7 +142,7 @@ export default function SearchResultScreen() {
         >
           <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>'{searchKeyword}' 검색 결과</Text>
+        <Text style={styles.headerTitle}>{t('search.resultHeaderTitle', { keyword: searchKeyword })}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -164,7 +166,7 @@ export default function SearchResultScreen() {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
+                <Text style={styles.emptyText}>{t('search.emptyResult')}</Text>
               </View>
             }
           />
@@ -174,11 +176,20 @@ export default function SearchResultScreen() {
   );
 }
 
-const SearchResultHeader = ({ count }: { count: number }) => (
-  <View style={styles.resultCountContainer}>
-    <Text style={styles.resultCountText}>총 <Text style={styles.resultCountHighlight}>{count}개</Text>의 검색 결과</Text>
-  </View>
-);
+const SearchResultHeader = ({ count }: { count: number }) => {
+  const { t } = useTranslation();
+  return (
+    <View style={styles.resultCountContainer}>
+      <Text style={styles.resultCountText}>
+        <Trans
+          i18nKey="search.resultCount"
+          values={{ count }}
+          components={[<Text style={styles.resultCountHighlight} />]}
+        />
+      </Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface HelpModalProps {
   visible: boolean;
@@ -18,6 +19,8 @@ interface HelpModalProps {
 }
 
 export default function HelpModal({ visible, title, description, onClose }: HelpModalProps) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={visible}
@@ -36,12 +39,12 @@ export default function HelpModal({ visible, title, description, onClose }: Help
                 </TouchableOpacity>
               </View>
               <Text style={styles.modalDescription}>{description}</Text>
-              
-              <TouchableOpacity 
-                style={styles.modalConfirmButton} 
+
+              <TouchableOpacity
+                style={styles.modalConfirmButton}
                 onPress={onClose}
               >
-                <Text style={styles.modalConfirmButtonText}>확인</Text>
+                <Text style={styles.modalConfirmButtonText}>{t('tastingNoteWrite.help.confirm')}</Text>
               </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>

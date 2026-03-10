@@ -3,23 +3,28 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import Svg, { Polygon, Line, Text as SvgText, Circle, G } from 'react-native-svg';
 import { FlavorProfile } from '../onboarding/FlavorProfileStep';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface PentagonRadarChartProps {
   data: FlavorProfile;
   size?: number;
 }
 
-const LABELS = [
-  { key: 'acidity', label: '산도' },
-  { key: 'sweetness', label: '당도' },
-  { key: 'tannin', label: '타닌' },
-  { key: 'body', label: '바디' },
-  { key: 'alcohol', label: '알코올' },
-];
-
 const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
+  const { t, i18n } = useTranslation();
+  const isEn = i18n.language === 'en';
+
+  const LABELS = [
+    { key: 'acidity', label: t('taste.acidity') },
+    { key: 'sweetness', label: t('taste.sweetness') },
+    { key: 'tannin', label: t('taste.tannin') },
+    { key: 'body', label: t('taste.body') },
+    { key: 'alcohol', label: t('taste.alcohol') },
+  ];
+
   const center = size / 2;
-  const radius = (size / 2) * 0.6;
+  const radiusRatio = isEn ? 0.52 : 0.6; // Keep Korean large, shrink English slightly to fit labels
+  const radius = (size / 2) * radiusRatio;
   const angleStep = (Math.PI * 2) / 5;
 
   // 점수 매핑 (null/undefined는 0 또는 최소값 처리, 여기선 0으로 처리하여 중앙에 찍히게 하거나 1로 처리)
@@ -87,7 +92,8 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
   const renderLabels = () => {
     return LABELS.map((item, index) => {
       const angle = index * angleStep - Math.PI / 2;
-      const labelRadius = radius + 16; // 그래프보다 조금 더 바깥
+      const labelMargin = isEn ? 14 : 16;
+      const labelRadius = radius + labelMargin;
       const x = center + labelRadius * Math.cos(angle);
       const y = center + labelRadius * Math.sin(angle);
 
@@ -96,7 +102,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
           key={`label-${index}`}
           x={x}
           y={y}
-          fontSize="11"
+          fontSize={isEn ? "9" : "11"}
           fill="#aaa"
           textAnchor="middle"
           alignmentBaseline="middle"
@@ -110,7 +116,7 @@ const PentagonRadarChart = ({ data, size = 200 }: PentagonRadarChartProps) => {
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size}>
+      <Svg width={size} height={size} style={{ overflow: 'visible' }}>
 
         {renderGrid()}
 
@@ -137,6 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
+    overflow: 'visible',
   },
 });
 

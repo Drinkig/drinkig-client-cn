@@ -4,5 +4,340 @@
         "search": "Search",
         "myWine": "My Wine",
         "profile": "Profile"
+    },
+    "home": {
+        "searchPlaceholder": "Search by name, type, region...",
+        "hero": {
+            "title": "Looking for a wine?",
+            "subtitle": "Let us find your perfect match",
+            "button": "Get Recommendations"
+        },
+        "quickMenu": {
+            "tastingNoteTitle": "Tasting Notes",
+            "tastingNoteSub": "Write",
+            "myWineTitle": "My Cellar",
+            "bottlesUnit": "bottles"
+        },
+        "banner": {
+            "noticeTag": "NOTICE",
+            "noticeTitle": "How to use\nthe new Drinkig",
+            "noticeSub": "Check out our latest features",
+            "eventTag": "EVENT",
+            "eventTitle": "Drinkig Launch\nPartner Wanted",
+            "eventSub": "Get 1 month free advertising!"
+        }
+    },
+    "search": {
+        "placeholder": "Search wines...",
+        "emptyResult": "No results found.",
+        "recentSearch": "Recent Searches",
+        "emptyRecentSearch": "No recent search history.",
+        "recentWine": "Recently Viewed",
+        "emptyRecentWine": "No recently viewed wines.",
+        "resultHeaderTitle": "Results for '{{keyword}}'",
+        "resultCount": "<0>{{count}}</0> results found"
+    },
+    "myWine": {
+        "headerTitle": "My Cellar",
+        "types": {
+            "all": "All",
+            "red": "Red",
+            "white": "White",
+            "sparkling": "Sparkling",
+            "rose": "Rose",
+            "dessert": "Dessert",
+            "fortified": "Fortified",
+            "other": "Other"
+        },
+        "sort": {
+            "title": "Sort",
+            "latest": "Recently Added",
+            "longestPeriod": "Longest Kept",
+            "vintageHigh": "Highest Vintage",
+            "vintageLow": "Lowest Vintage",
+            "priceHigh": "Highest Price",
+            "priceLow": "Lowest Price"
+        },
+        "countText": "<0>{{count}}</0> bottles",
+        "emptyType": {
+            "title": "No wines in this category",
+            "desc": "Try switching categories or\nadd a new wine!"
+        },
+        "empty": {
+            "title": "Your cellar is empty",
+            "desc": "Tap the + button to\nadd your first wine!"
+        }
+    },
+    "profile": {
+        "headerTitle": "Profile",
+        "guest": "Guest",
+        "wineCountText": "{{count}} wines tasted",
+        "editBtn": "Edit",
+        "tasteTitle": "My Taste Profile",
+        "chartLinkTitle": "Recommended Styles",
+        "chartLinkSubtitle": "View",
+        "emptyFlavor": {
+            "title": "No taste profile available.",
+            "desc": "Complete onboarding to see your taste analysis!"
+        },
+        "historyTitle": "Tasting History",
+        "historyCountText": "<0>{{count}}</0> bottles",
+        "emptyNotes": {
+            "title": "No tasting notes yet.",
+            "desc": "Start recording the wines you drink!"
+        },
+        "sort": {
+            "title": "Sort",
+            "latest": "Recent",
+            "ratingHigh": "Highest Rating",
+            "ratingLow": "Lowest Rating"
+        }
+    },
+    "taste": {
+        "acidity": "Acidity",
+        "sweetness": "Sweetness",
+        "tannin": "Tannin",
+        "body": "Body",
+        "alcohol": "Alcohol"
+    },
+    "wineDetail": {
+        "myWineHeader": "My Cellar Detail",
+        "infoHeader": "Wine Info",
+        "compatibility": "See My Compatibility",
+        "vintage": "Vintage",
+        "select": "Select",
+        "tabs": {
+            "myRecord": "My Record",
+            "info": "Info",
+            "review": "Review",
+            "price": "Price"
+        },
+        "fab": {
+            "addWine": "Add to Cellar",
+            "writeNote": "Write Note",
+            "editRecord": "Edit Record"
+        },
+        "info": {
+            "empty": "No detailed info available.",
+            "descTitle": "Wine Description",
+            "noteTitle": "Tasting Notes",
+            "nose": "Nose",
+            "palate": "Palate",
+            "finish": "Finish"
+        },
+        "myRecord": {
+            "title": "My Tasting Record",
+            "noDate": "No date specified",
+            "purchaseInfo": "Purchase Info",
+            "purchasePrice": "Price",
+            "purchaseShop": "Shop",
+            "purchaseDate": "Date",
+            "myNote": "My Tasting Note",
+            "emptyNote": "No tasting note recorded."
+        },
+        "price": {
+            "empty": "No price information available.",
+            "statsTitle": "Price Statistics",
+            "infoNote": "Aggregated from user input, including deleted entries.",
+            "listTitle": "Purchase History",
+            "headerDate": "Date",
+            "headerShop": "Shop",
+            "headerPrice": "Price",
+            "directBadge": "Direct"
+        },
+        "review": {
+            "empty": "No reviews have been written yet.",
+            "allVintage": "All Reviews",
+            "vintageReview": "{{vintage}} Vintage Info",
+            "sort": {
+                "latest": "Recent",
+                "rating_high": "Highest Rated",
+                "rating_low": "Lowest Rated"
+            }
+        }
+    },
+    "wineAdd": {
+        "headerAdd": "Add to Cellar",
+        "headerEdit": "Edit Wine Info",
+        "step1": {
+            "title": "Which wine are you adding?",
+            "subtitle": "Please search by name",
+            "placeholder": "Search wine names",
+            "empty": "No search results."
+        },
+        "step2": {
+            "title": "Enter purchase details",
+            "subtitle": "Selected: {{name}}",
+            "quantity": "Quantity",
+            "unit": "btl",
+            "type": "Wine Type",
+            "vintage": "Vintage (Year)",
+            "vintagePlaceholder": "ex) 2019",
+            "price": "Price",
+            "shop": "Shop Name",
+            "shopOffline": "Offline",
+            "shopDirect": "Direct",
+            "shopPlaceholderOff": "Enter shop name",
+            "shopPlaceholderDir": "Enter direct purchase URL",
+            "date": "Purchase Date",
+            "datePlaceholder": "YYYY-MM-DD"
+        },
+        "button": {
+            "next": "Next",
+            "add": "Add to Cellar",
+            "edit": "Save Changes",
+            "saving": "Saving..."
+        },
+        "alert": {
+            "success": "Success",
+            "error": "Error",
+            "editSuccess": "Wine info successfully updated.",
+            "editFail": "Failed to update.",
+            "addSuccessPlural": "Added {{count}} bottles to your cellar.",
+            "addSuccessPluralFail": "Added {{count}} bottles to your cellar. (Failed: {{failCount}})",
+            "addSuccessSingular": "Added to your cellar.",
+            "addFail": "Failed to add wine.",
+            "networkError": "Network error occurred."
+        }
+    },
+    "myWineDetail": {
+        "header": "My Wine Detail",
+        "error": {
+            "fetchFailTitle": "Error",
+            "fetchFailMsg": "Failed to load wine information.",
+            "networkFailMsg": "Network error occurred."
+        },
+        "delete": {
+            "title": "Delete Wine",
+            "message": "Are you sure you want to delete this wine?",
+            "confirm": "Delete",
+            "successTitle": "Success",
+            "successMsg": "Wine has been deleted.",
+            "failMsg": "Failed to delete wine."
+        },
+        "section": {
+            "purchaseInfo": "Purchase Info",
+            "detailInfo": "Details"
+        },
+        "info": {
+            "vintage": "Vintage",
+            "price": "Price",
+            "shop": "Shop",
+            "shopDirect": "Direct",
+            "shopOffline": "Offline",
+            "date": "Date",
+            "storagePeriod": "Storage Period",
+            "periodDays": "{{days}} days",
+            "region": "Region"
+        },
+        "menu": {
+            "title": "Manage Wine",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "finishModal": {
+            "title": "Finished Drinking",
+            "message": "You can write a tasting note\nor delete the wine.",
+            "writeNote": "Write Tasting Note",
+            "delete": "Delete Wine"
+        },
+        "button": {
+            "finished": "Finished Drinking"
+        }
+    },
+    "tastingNoteWrite": {
+        "header": "Write Tasting Note",
+        "save": "Save",
+        "error": {
+            "noWine": "Please select a wine.",
+            "noDate": "Please enter a tasting date.",
+            "noColor": "Please select a wine color.",
+            "noTaste": "Please rate all taste attributes.",
+            "noRating": "Please give a rating.",
+            "saveFail": "Failed to save.",
+            "networkFail": "Network error occurred.",
+            "authExpired": "Session expired. Please log in again."
+        },
+        "success": {
+            "saveTitle": "Success",
+            "saveMsg": "Tasting note has been saved."
+        },
+        "section": {
+            "wineSelection": "Select Wine",
+            "basicInfo": "Basic Info",
+            "nose": "Nose",
+            "palate": "Palate",
+            "finish": "Finish",
+            "conclusion": "Conclusion"
+        },
+        "wineSearch": {
+            "changeButton": "Change Wine (Search)",
+            "placeholder": "Search for wine name"
+        },
+        "basicInfo": {
+            "vintage": "Vintage (Year)",
+            "vintagePlaceholder": "e.g., 2020",
+            "tasteDate": "Tasting Date",
+            "datePlaceholder": "Select Date"
+        },
+        "nose": {
+            "label": "Enter aromas separated by commas",
+            "placeholder": "e.g., Cherry, Oak, Vanilla, Leather"
+        },
+        "palate": {
+            "sweetness": "Sweetness",
+            "acidity": "Acidity",
+            "tannin": "Tannin",
+            "body": "Body",
+            "alcohol": "Alcohol"
+        },
+        "finish": {
+            "label": "Describe the aftertaste or finish",
+            "placeholder": "e.g., Clean lingering acidity, Bitter end"
+        },
+        "conclusion": {
+            "reviewLabel": "Detailed Review (Optional)",
+            "reviewPlaceholder": "Write your overall impression of the wine."
+        },
+        "calendar": {
+            "title": "Select Tasting Date"
+        },
+        "color": {
+            "title": "Wine Color"
+        },
+        "help": {
+            "confirm": "OK"
+        },
+        "tasteLevel": {
+            "weak": "Weak",
+            "strong": "Strong"
+        }
+    },
+    "tastingNoteDetail": {
+        "header": "Tasting Note",
+        "error": {
+            "fetchFailTitle": "Error",
+            "fetchFailMsg": "Failed to load tasting note.",
+            "networkFailMsg": "Network error occurred."
+        },
+        "delete": {
+            "title": "Delete Tasting Note",
+            "message": "Are you sure you want to\ndelete this tasting note?",
+            "confirm": "Delete",
+            "successTitle": "Success",
+            "successMsg": "Tasting note has been deleted.",
+            "failMsg": "Failed to delete.",
+            "networkFailMsg": "Network error occurred."
+        },
+        "info": {
+            "vintage": "Vintage {{year}}",
+            "nv": "NV",
+            "color": "Color",
+            "palate": "Palate",
+            "nose": "Nose",
+            "finish": "Finish",
+            "review": "Review",
+            "emptyReview": "No review written."
+        }
     }
 }

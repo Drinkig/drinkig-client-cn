@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { MyWine } from '../../../context/WineContext';
 import FeatureGauge from '../FeatureGauge';
 import { colors } from '../../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface MyRecordTabProps {
   wine: MyWine;
@@ -16,20 +17,22 @@ interface MyRecordTabProps {
 }
 
 export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.tabContent}>
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>나의 시음 기록</Text>
+        <Text style={styles.sectionTitle}>{t('wineDetail.myRecord.title')}</Text>
         <View style={styles.myRatingCard}>
           <View style={styles.myRatingHeader}>
-            <Text style={styles.myRatingDate}>{wine.purchaseDate || '날짜 미입력'}</Text>
+            <Text style={styles.myRatingDate}>{wine.purchaseDate || t('wineDetail.myRecord.noDate')}</Text>
             <View style={styles.ratingContainer}>
-               <Ionicons name="star" size={20} color="#f1c40f" />
-               <Ionicons name="star" size={20} color="#f1c40f" />
-               <Ionicons name="star" size={20} color="#f1c40f" />
-               <Ionicons name="star" size={20} color="#f1c40f" />
-               <Ionicons name="star-outline" size={20} color="#f1c40f" />
-               <Text style={[styles.ratingText, {fontSize: 18, marginLeft: 4}]}>4.0</Text>
+              <Ionicons name="star" size={20} color="#f1c40f" />
+              <Ionicons name="star" size={20} color="#f1c40f" />
+              <Ionicons name="star" size={20} color="#f1c40f" />
+              <Ionicons name="star" size={20} color="#f1c40f" />
+              <Ionicons name="star-outline" size={20} color="#f1c40f" />
+              <Text style={[styles.ratingText, { fontSize: 18, marginLeft: 4 }]}>4.0</Text>
             </View>
           </View>
           <Text style={styles.myComment}>
@@ -41,23 +44,23 @@ export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
       <View style={styles.divider} />
 
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>구매 정보</Text>
+        <Text style={styles.sectionTitle}>{t('wineDetail.myRecord.purchaseInfo')}</Text>
         <View style={styles.detailRow}>
-          <Text style={styles.label}>빈티지</Text>
+          <Text style={styles.label}>{t('wineDetail.vintage')}</Text>
           <Text style={styles.value}>{wine.vintage || '-'}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Text style={styles.label}>구매가</Text>
+          <Text style={styles.label}>{t('wineDetail.myRecord.purchasePrice')}</Text>
           <Text style={styles.value}>
             {wine.purchasePrice ? `₩${parseInt(wine.purchasePrice).toLocaleString()}` : '-'}
           </Text>
         </View>
         <View style={styles.detailRow}>
-          <Text style={styles.label}>구매처</Text>
+          <Text style={styles.label}>{t('wineDetail.myRecord.purchaseShop')}</Text>
           <Text style={styles.value}>{wine.purchaseLocation || '-'}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Text style={styles.label}>구매일</Text>
+          <Text style={styles.label}>{t('wineDetail.myRecord.purchaseDate')}</Text>
           <Text style={styles.value}>{wine.purchaseDate || '-'}</Text>
         </View>
       </View>
@@ -65,16 +68,16 @@ export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
       <View style={styles.divider} />
 
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>나의 테이스팅 노트</Text>
+        <Text style={styles.sectionTitle}>{t('wineDetail.myRecord.myNote')}</Text>
         {features ? (
           <View style={styles.featuresContainer}>
-            <FeatureGauge label="당도" value={features.sweetness} />
-            <FeatureGauge label="산도" value={features.acidity} />
-            <FeatureGauge label="바디" value={features.body} />
-            <FeatureGauge label="타닌" value={features.tannin} />
+            <FeatureGauge label={t('taste.sweetness')} value={features.sweetness} />
+            <FeatureGauge label={t('taste.acidity')} value={features.acidity} />
+            <FeatureGauge label={t('taste.body')} value={features.body} />
+            <FeatureGauge label={t('taste.tannin')} value={features.tannin} />
           </View>
         ) : (
-          <Text style={{ color: colors.textSecondary, fontStyle: 'italic' }}>테이스팅 노트가 기록되지 않았습니다.</Text>
+          <Text style={{ color: colors.textSecondary, fontStyle: 'italic' }}>{t('wineDetail.myRecord.emptyNote')}</Text>
         )}
       </View>
     </View>

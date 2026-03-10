@@ -18,6 +18,7 @@ import { useUser } from '../context/UserContext';
 import { getMyWines, getMyTastingNotes, TastingNotePreviewDTO } from '../api/wine';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { colors } from '../constants/colors';
+import { useTranslation, Trans } from 'react-i18next';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -31,11 +32,12 @@ const ProfileScreen = () => {
 
   const [sortType, setSortType] = React.useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
+  const { t } = useTranslation();
 
   const sortOptions = [
-    { label: '최근 등록 순', value: 'latest' },
-    { label: '별점 높은 순', value: 'rating_high' },
-    { label: '별점 낮은 순', value: 'rating_low' },
+    { label: t('profile.sort.latest'), value: 'latest' },
+    { label: t('profile.sort.ratingHigh'), value: 'rating_high' },
+    { label: t('profile.sort.ratingLow'), value: 'rating_low' },
   ];
 
   const fetchMyData = async () => {
@@ -79,7 +81,16 @@ const ProfileScreen = () => {
     }
   }, [isFocused]);
 
-  const wineTypes = ['전체', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화', '기타'];
+  const wineTypes = [
+    { label: t('myWine.types.all'), value: '전체' },
+    { label: t('myWine.types.red'), value: '레드' },
+    { label: t('myWine.types.white'), value: '화이트' },
+    { label: t('myWine.types.sparkling'), value: '스파클링' },
+    { label: t('myWine.types.rose'), value: '로제' },
+    { label: t('myWine.types.dessert'), value: '디저트' },
+    { label: t('myWine.types.fortified'), value: '주정강화' },
+    { label: t('myWine.types.other'), value: '기타' }
+  ];
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
@@ -185,7 +196,7 @@ const ProfileScreen = () => {
       {/* Relative 3D Pill Header (Safe) */}
       <View style={styles.headerContainer}>
         <View style={styles.headerPill}>
-          <Text style={styles.headerTitle}>마이페이지</Text>
+          <Text style={styles.headerTitle}>{t('profile.headerTitle')}</Text>
           <TouchableOpacity
             style={styles.settingsButton}
             onPress={() => navigation.navigate('Setting' as never)}
@@ -207,21 +218,23 @@ const ProfileScreen = () => {
             />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.nickname}>{userInfo?.nickname || '게스트'}</Text>
-            <Text style={styles.wineCountText}>마신 와인 {wineCount || 0}병</Text>
+            <Text style={styles.nickname}>{userInfo?.nickname || t('profile.guest')}</Text>
+            <Text style={styles.wineCountText}>
+              {t('profile.wineCountText', { count: wineCount || 0 })}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.editButton}
             onPress={() => navigation.navigate('ProfileEdit' as never)}
           >
-            <Text style={styles.editButtonText}>수정</Text>
+            <Text style={styles.editButtonText}>{t('profile.editBtn')}</Text>
           </TouchableOpacity>
         </View>
 
 
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>내 와인 취향</Text>
+            <Text style={styles.sectionTitle}>{t('profile.tasteTitle')}</Text>
           </View>
 
           {flavorProfile ? (
@@ -233,8 +246,8 @@ const ProfileScreen = () => {
               <View style={styles.chartContentWrapper}>
                 <PentagonRadarChart data={flavorProfile} size={150} />
                 <View style={styles.chartRightContent}>
-                  <Text style={styles.chartLinkTitle}>추천 와인 스타일</Text>
-                  <Text style={styles.chartLinkSubtitle}>보러가기</Text>
+                  <Text style={styles.chartLinkTitle}>{t('profile.chartLinkTitle')}</Text>
+                  <Text style={styles.chartLinkSubtitle}>{t('profile.chartLinkSubtitle')}</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -242,8 +255,8 @@ const ProfileScreen = () => {
 
             <View style={styles.emptyWrapper}>
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>아직 분석된 취향 정보가 없습니다.</Text>
-                <Text style={styles.emptySubText}>온보딩을 완료하거나 와인을 더 많이 즐겨보세요!</Text>
+                <Text style={styles.emptyText}>{t('profile.emptyFlavor.title')}</Text>
+                <Text style={styles.emptySubText}>{t('profile.emptyFlavor.desc')}</Text>
               </View>
             </View>
           )}
@@ -252,7 +265,7 @@ const ProfileScreen = () => {
 
         <View style={styles.sectionContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>내가 마신 와인</Text>
+            <Text style={styles.sectionTitle}>{t('profile.historyTitle')}</Text>
           </View>
 
 
@@ -263,19 +276,19 @@ const ProfileScreen = () => {
           >
             {wineTypes.map((type) => (
               <TouchableOpacity
-                key={type}
+                key={type.value}
                 style={[
                   styles.filterChip,
-                  selectedType === type && styles.filterChipSelected
+                  selectedType === type.value && styles.filterChipSelected
                 ]}
-                onPress={() => setSelectedType(type)}
+                onPress={() => setSelectedType(type.value)}
                 activeOpacity={0.7}
               >
                 <Text style={[
                   styles.filterChipText,
-                  selectedType === type && styles.filterChipTextSelected
+                  selectedType === type.value && styles.filterChipTextSelected
                 ]}>
-                  {type}
+                  {type.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -284,7 +297,11 @@ const ProfileScreen = () => {
 
           <View style={styles.countAndSortContainer}>
             <Text style={styles.countText}>
-              총 <Text style={styles.countValue}>{processedNotes.length}</Text>병
+              <Trans
+                i18nKey="profile.historyCountText"
+                values={{ count: processedNotes.length }}
+                components={[<Text style={styles.countValue} />]}
+              />
             </Text>
 
 
@@ -316,8 +333,8 @@ const ProfileScreen = () => {
             </View>
           ) : (
             <View style={styles.emptyWrapper}>
-              <Text style={styles.emptyText}>아직 기록된 와인이 없습니다.</Text>
-              <Text style={styles.emptySubText}>마신 와인을 기록해보세요!</Text>
+              <Text style={styles.emptyText}>{t('profile.emptyNotes.title')}</Text>
+              <Text style={styles.emptySubText}>{t('profile.emptyNotes.desc')}</Text>
             </View>
           )}
         </View>
@@ -335,7 +352,7 @@ const ProfileScreen = () => {
             <TouchableWithoutFeedback>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>정렬</Text>
+                  <Text style={styles.modalTitle}>{t('profile.sort.title')}</Text>
                   <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
                     <Icon name="close" size={24} color={colors.white} />
                   </TouchableOpacity>
@@ -525,11 +542,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
+    textAlign: 'right',
   },
   chartLinkSubtitle: {
     color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
+    textAlign: 'right',
   },
   filterChipsContainer: {
     paddingHorizontal: 24,

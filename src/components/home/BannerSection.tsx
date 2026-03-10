@@ -30,29 +30,34 @@ interface BannerData {
   iconImage?: any;
 }
 
-// [수동 관리] 배너 리스트 (2개)
-const BANNERS: BannerData[] = [
+// [수동 관리] 배너 리스트
+export const getBanners = (t: any): BannerData[] => [
   {
     id: 1,
-    tag: 'NOTICE',
-    title: '새롭게 단장한 드링키지\n사용법 정리',
-    subtitle: '확 바뀐 기능들을 확인해보세요',
+    tag: t('home.banner.noticeTag'),
+    title: t('home.banner.noticeTitle'),
+    subtitle: t('home.banner.noticeSub'),
     backgroundColor: colors.surface1, // 통일된 다크 그레이
     linkUrl: 'https://web.drinkig.com/notices/2',
     iconName: 'file-document-edit-outline',
   },
   {
     id: 2,
-    tag: 'EVENT',
-    title: '드링키지 런칭 기념\n광고주 무료 모집',
-    subtitle: '1개월 무료로 광고해드려요!',
+    tag: t('home.banner.eventTag'),
+    title: t('home.banner.eventTitle'),
+    subtitle: t('home.banner.eventSub'),
     backgroundColor: '#3a1a1a', // 프리미엄 다크 버건디
     linkUrl: 'https://web.drinkig.com/notices/3', // 가상의 링크 (사용자가 추후 수정 가능)
     iconImage: require('../../assets/wish_list.png'),
   },
 ];
 
+import { useTranslation } from 'react-i18next';
+
 export const BannerSection: React.FC = () => {
+  const { t } = useTranslation();
+  const activeBanners = getBanners(t);
+
   const [bannerIndex, setBannerIndex] = useState(0);
   const bannerScrollRef = useRef<ScrollView>(null);
   const autoScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -64,12 +69,12 @@ export const BannerSection: React.FC = () => {
   }, [bannerIndex]);
 
   const startAutoScroll = () => {
-    if (BANNERS.length <= 1) return; // 배너가 1개 이하면 자동 스크롤 안 함
+    if (activeBanners.length <= 1) return; // 배너가 1개 이하면 자동 스크롤 안 함
 
     stopAutoScroll();
     autoScrollTimerRef.current = setTimeout(() => {
       let nextIndex = bannerIndex + 1;
-      if (nextIndex >= BANNERS.length) {
+      if (nextIndex >= activeBanners.length) {
         nextIndex = 0;
       }
 
@@ -94,7 +99,7 @@ export const BannerSection: React.FC = () => {
     // 대략적인 인덱스 계산 (gap 포함)
     const index = Math.round(contentOffsetX / (BANNER_WIDTH + 12));
 
-    if (index !== bannerIndex && index >= 0 && index < BANNERS.length) {
+    if (index !== bannerIndex && index >= 0 && index < activeBanners.length) {
       setBannerIndex(index);
     }
   };
@@ -135,7 +140,7 @@ export const BannerSection: React.FC = () => {
         snapToInterval={BANNER_WIDTH + 12} // gap 포함
         decelerationRate="fast"
       >
-        {BANNERS.map((banner) => (
+        {activeBanners.map((banner) => (
           <TouchableOpacity
             key={banner.id}
             style={[styles.bannerItem, { backgroundColor: banner.backgroundColor }]}
@@ -197,7 +202,7 @@ export const BannerSection: React.FC = () => {
 
       {/* 페이지네이션 (점) */}
       <View style={styles.paginationContainer}>
-        {BANNERS.map((_, index) => (
+        {activeBanners.map((_, index) => (
           <View
             key={index}
             style={[

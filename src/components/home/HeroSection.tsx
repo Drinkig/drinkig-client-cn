@@ -10,11 +10,15 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
 import { colors } from '../../constants/colors';
 
+import { useTranslation } from 'react-i18next';
+
 interface HeroSectionProps {
   onPress: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.heroSectionShadow}>
       <View style={styles.heroSection}>
@@ -27,9 +31,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
 
         <View style={styles.heroTextContainer}>
           <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit>
-            지금 와인 고르는 중인가요?
+            {t('home.hero.title')}
           </Text>
-          <Text style={styles.heroSubtitle}>취향에 딱 맞는 와인을 추천해드려요</Text>
+          <Text style={styles.heroSubtitle}>{t('home.hero.subtitle')}</Text>
         </View>
 
         <TouchableOpacity
@@ -37,7 +41,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
           onPress={onPress}
           activeOpacity={0.9}
         >
-          <Text style={styles.recommendButtonText}>추천받기</Text>
+          <Text style={styles.recommendButtonText}>{t('home.hero.button')}</Text>
           <Icon name="arrow-forward" size={14} color={colors.primaryDark} />
         </TouchableOpacity>
 

@@ -32,6 +32,7 @@ import { TASTE_TIPS } from "../components/tasting_note/constants";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
 import { colors } from '../constants/colors';
+import { useTranslation } from "react-i18next";
 
 if (
   Platform.OS === "android" &&
@@ -49,6 +50,7 @@ export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
   const { showAlert } = useGlobalUI();
+  const { t } = useTranslation();
 
   const params = route.params || {};
   const [selectedWine, setSelectedWine] = useState<{
@@ -209,24 +211,24 @@ export default function TastingNoteWriteScreen() {
   const handleSubmit = async () => {
     if (!selectedWine.wineId) {
       showAlert({
-        title: "오류",
-        message: "와인을 선택해주세요.",
+        title: t('tastingNoteWrite.error.noWine'),
+        message: t('tastingNoteWrite.error.noWine'),
         singleButton: true,
       });
       return;
     }
     if (!tasteDate) {
       showAlert({
-        title: "오류",
-        message: "시음 날짜를 입력해주세요.",
+        title: t('tastingNoteWrite.error.noDate'),
+        message: t('tastingNoteWrite.error.noDate'),
         singleButton: true,
       });
       return;
     }
     if (!color) {
       showAlert({
-        title: "오류",
-        message: "와인 색상을 선택해주세요.",
+        title: t('tastingNoteWrite.error.noColor'),
+        message: t('tastingNoteWrite.error.noColor'),
         singleButton: true,
       });
       return;
@@ -239,16 +241,16 @@ export default function TastingNoteWriteScreen() {
       alcohol === 0
     ) {
       showAlert({
-        title: "오류",
-        message: "모든 맛 평가 항목을 선택해주세요.",
+        title: t('tastingNoteWrite.error.noTaste'),
+        message: t('tastingNoteWrite.error.noTaste'),
         singleButton: true,
       });
       return;
     }
     if (rating === 0) {
       showAlert({
-        title: "오류",
-        message: "별점을 선택해주세요.",
+        title: t('tastingNoteWrite.error.noRating'),
+        message: t('tastingNoteWrite.error.noRating'),
         singleButton: true,
       });
       return;
@@ -270,8 +272,8 @@ export default function TastingNoteWriteScreen() {
           vintageYear === "NV"
             ? 0
             : vintageYear
-            ? parseInt(vintageYear, 10)
-            : undefined,
+              ? parseInt(vintageYear, 10)
+              : undefined,
         color: color,
         tasteDate,
         sweetness: mapLevelToValue(sweetness),
@@ -292,15 +294,15 @@ export default function TastingNoteWriteScreen() {
       if (response.isSuccess) {
         logEvent("tasting_note_save_success");
         showAlert({
-          title: "성공",
-          message: "테이스팅 노트가 저장되었습니다.",
+          title: t('tastingNoteWrite.success.saveTitle'),
+          message: t('tastingNoteWrite.success.saveMsg'),
           singleButton: true,
           onConfirm: () => navigation.goBack(),
         });
       } else {
         showAlert({
-          title: "실패",
-          message: response.message || "저장에 실패했습니다.",
+          title: t('tastingNoteWrite.error.saveFail'),
+          message: response.message || t('tastingNoteWrite.error.saveFail'),
           singleButton: true,
         });
       }
@@ -308,10 +310,10 @@ export default function TastingNoteWriteScreen() {
       console.error("Tasting note submit error:", error);
       const isAuthError = (error as any).response?.status === 401;
       showAlert({
-        title: "오류",
+        title: t('tastingNoteWrite.error.saveFail'),
         message: isAuthError
-          ? "인증 세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요."
-          : "네트워크 오류가 발생했습니다.",
+          ? t('tastingNoteWrite.error.authExpired')
+          : t('tastingNoteWrite.error.networkFail'),
         singleButton: true,
       });
     } finally {
@@ -338,7 +340,7 @@ export default function TastingNoteWriteScreen() {
         >
           <Icon name="close" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>테이스팅 노트 작성</Text>
+        <Text style={styles.headerTitle}>{t('tastingNoteWrite.header')}</Text>
         <TouchableOpacity
           onPress={handleSubmit}
           disabled={isSubmitting || !isFormValid}
@@ -349,7 +351,7 @@ export default function TastingNoteWriteScreen() {
               (isSubmitting || !isFormValid) && { color: "#666" },
             ]}
           >
-            저장
+            {t('tastingNoteWrite.save')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -364,7 +366,7 @@ export default function TastingNoteWriteScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={[styles.section, { zIndex: 100 }]}>
-            <Text style={styles.sectionTitle}>와인 선택</Text>
+            <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.wineSelection')}</Text>
 
             {selectedWine.wineId ? (
               <View style={styles.selectedWineContainer}>
@@ -389,7 +391,7 @@ export default function TastingNoteWriteScreen() {
                   style={styles.changeButton}
                   onPress={resetSelection}
                 >
-                  <Text style={styles.changeButtonText}>와인 변경 (검색)</Text>
+                  <Text style={styles.changeButtonText}>{t('tastingNoteWrite.wineSearch.changeButton')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -400,7 +402,7 @@ export default function TastingNoteWriteScreen() {
                   </View>
                   <TextInput
                     style={styles.nameInput}
-                    placeholder="와인 이름을 검색하세요"
+                    placeholder={t('tastingNoteWrite.wineSearch.placeholder')}
                     placeholderTextColor="#666"
                     value={searchText}
                     onChangeText={handleSearch}
@@ -453,24 +455,24 @@ export default function TastingNoteWriteScreen() {
           {selectedWine.wineId && (
             <>
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>기본 정보</Text>
+                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.basicInfo')}</Text>
 
                 <View style={styles.row}>
                   <View
                     style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}
                   >
-                    <Text style={styles.label}>빈티지 (연도)</Text>
+                    <Text style={styles.label}>{t('tastingNoteWrite.basicInfo.vintage')}</Text>
                     <View
                       style={[
                         styles.vintageInputWrapper,
                         vintageYear.length === 4 &&
-                          vintageYear !== "NV" &&
-                          styles.vintageInputWrapperValid,
+                        vintageYear !== "NV" &&
+                        styles.vintageInputWrapperValid,
                       ]}
                     >
                       <TextInput
                         style={styles.vintageInput}
-                        placeholder="예: 2020"
+                        placeholder={t('tastingNoteWrite.basicInfo.vintagePlaceholder')}
                         placeholderTextColor="#666"
                         keyboardType="numeric"
                         value={vintageYear}
@@ -514,13 +516,13 @@ export default function TastingNoteWriteScreen() {
                   </View>
 
                   <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                    <Text style={styles.label}>시음 날짜</Text>
+                    <Text style={styles.label}>{t('tastingNoteWrite.basicInfo.tasteDate')}</Text>
                     <TouchableOpacity
                       style={styles.dateButton}
                       onPress={() => setCalendarVisible(true)}
                     >
                       <Text style={styles.dateButtonText}>
-                        {tasteDate || "날짜 선택"}
+                        {tasteDate || t('tastingNoteWrite.basicInfo.datePlaceholder')}
                       </Text>
                       <Icon name="calendar-outline" size={20} color={colors.primary} />
                     </TouchableOpacity>
@@ -535,14 +537,14 @@ export default function TastingNoteWriteScreen() {
               />
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>향 (Nose)</Text>
+                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.nose')}</Text>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>
-                    느껴지는 향을 쉼표(,)로 구분하여 적어주세요
+                    {t('tastingNoteWrite.nose.label')}
                   </Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="예: 체리, 오크, 바닐라, 가죽"
+                    placeholder={t('tastingNoteWrite.nose.placeholder')}
                     placeholderTextColor="#666"
                     value={nose}
                     onChangeText={setNose}
@@ -551,33 +553,33 @@ export default function TastingNoteWriteScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>맛 (Palate)</Text>
+                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.palate')}</Text>
                 <TasteLevelSelector
-                  label="당도 (Sweetness)"
+                  label={t('tastingNoteWrite.palate.sweetness')}
                   value={sweetness}
                   onChange={setSweetness}
                   onHelpPress={() => showTip("sweetness")}
                 />
                 <TasteLevelSelector
-                  label="산도 (Acidity)"
+                  label={t('tastingNoteWrite.palate.acidity')}
                   value={acidity}
                   onChange={setAcidity}
                   onHelpPress={() => showTip("acidity")}
                 />
                 <TasteLevelSelector
-                  label="탄닌 (Tannin)"
+                  label={t('tastingNoteWrite.palate.tannin')}
                   value={tannin}
                   onChange={setTannin}
                   onHelpPress={() => showTip("tannin")}
                 />
                 <TasteLevelSelector
-                  label="바디 (Body)"
+                  label={t('tastingNoteWrite.palate.body')}
                   value={body}
                   onChange={setBody}
                   onHelpPress={() => showTip("body")}
                 />
                 <TasteLevelSelector
-                  label="알코올 (Alcohol)"
+                  label={t('tastingNoteWrite.palate.alcohol')}
                   value={alcohol}
                   onChange={setAlcohol}
                   onHelpPress={() => showTip("alcohol")}
@@ -585,14 +587,14 @@ export default function TastingNoteWriteScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>피니쉬 (Finish)</Text>
+                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.finish')}</Text>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>
-                    와인을 삼킨 후의 느낌이나 여운을 적어주세요
+                    {t('tastingNoteWrite.finish.label')}
                   </Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="예: 깔끔한 산미가 오래 남음, 씁쓸한 끝맛"
+                    placeholder={t('tastingNoteWrite.finish.placeholder')}
                     placeholderTextColor="#666"
                     value={finish}
                     onChangeText={setFinish}
@@ -601,15 +603,15 @@ export default function TastingNoteWriteScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>총평 (Conclusion)</Text>
+                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.conclusion')}</Text>
 
                 <StarRating rating={rating} onRatingChange={handleRating} />
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>상세 리뷰 (선택)</Text>
+                  <Text style={styles.label}>{t('tastingNoteWrite.conclusion.reviewLabel')}</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder="와인에 대한 전체적인 감상을 자유롭게 적어주세요."
+                    placeholder={t('tastingNoteWrite.conclusion.reviewPlaceholder')}
                     placeholderTextColor="#666"
                     multiline
                     numberOfLines={4}
@@ -636,7 +638,7 @@ export default function TastingNoteWriteScreen() {
         onDateSelect={setTasteDate}
         onClose={() => setCalendarVisible(false)}
       />
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 

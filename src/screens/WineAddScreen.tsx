@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
-import { logEvent, logScreen } from "utils/analytics";
+import { logEvent, logScreen } from "../utils/analytics";
 import {
   addMyWine,
   MyWineAddRequest,
@@ -29,6 +29,7 @@ import {
 import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 import { colors } from '../constants/colors';
+import { useTranslation } from "react-i18next";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -38,6 +39,7 @@ const WineAddScreen = () => {
   const initialWine = route.params?.wine;
   const myWine = route.params?.myWine as MyWineDTO;
   const isEditMode = !!myWine;
+  const { t } = useTranslation();
 
   // Step management
   const [currentStep, setCurrentStep] = useState(initialWine || myWine ? 2 : 1);
@@ -259,11 +261,11 @@ const WineAddScreen = () => {
         const response = await updateMyWine(myWine.myWineId, requestData);
 
         if (response.isSuccess) {
-          handleShowAlert("성공", "와인 정보가 수정되었습니다.", () => {
+          handleShowAlert(t('wineAdd.alert.success'), t('wineAdd.alert.editSuccess'), () => {
             navigation.goBack();
           });
         } else {
-          handleShowAlert("오류", response.message || "수정에 실패했습니다.");
+          handleShowAlert(t('wineAdd.alert.error'), response.message || t('wineAdd.alert.editFail'));
         }
       } else {
         const requestData: MyWineAddRequest = {
@@ -297,21 +299,21 @@ const WineAddScreen = () => {
           logEvent("wine_add_success", { count: successCount });
           const message =
             quantity > 1
-              ? `${successCount}병이 내 와인 창고에 추가되었습니다.${
-                  failCount > 0 ? ` (${failCount}건 실패)` : ""
-                }`
-              : "내 와인 창고에 추가되었습니다.";
+              ? failCount > 0
+                ? t('wineAdd.alert.addSuccessPluralFail', { count: successCount, failCount })
+                : t('wineAdd.alert.addSuccessPlural', { count: successCount })
+              : t('wineAdd.alert.addSuccessSingular');
 
-          handleShowAlert("성공", message, () => {
+          handleShowAlert(t('wineAdd.alert.success'), message, () => {
             navigation.goBack();
           });
         } else {
-          handleShowAlert("오류", "와인 등록에 실패했습니다.");
+          handleShowAlert(t('wineAdd.alert.error'), t('wineAdd.alert.addFail'));
         }
       }
     } catch (error) {
       console.error("My wine add failed:", error);
-      handleShowAlert("오류", "서버 통신 중 문제가 발생했습니다.");
+      handleShowAlert(t('wineAdd.alert.error'), t('wineAdd.alert.networkError'));
     } finally {
       setIsSaving(false);
     }
@@ -384,14 +386,14 @@ const WineAddScreen = () => {
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>어떤 와인을 추가하시나요?</Text>
-      <Text style={styles.stepSubtitle}>와인 이름으로 검색해주세요</Text>
+      <Text style={styles.stepTitle}>{t('wineAdd.step1.title')}</Text>
+      <Text style={styles.stepSubtitle}>{t('wineAdd.step1.subtitle')}</Text>
 
       <View style={styles.searchBarContainer}>
         <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="와인 이름을 검색하세요"
+          placeholder={t('wineAdd.step1.placeholder')}
           placeholderTextColor="#666"
           value={searchQuery}
           onChangeText={handleSearch}
@@ -421,7 +423,7 @@ const WineAddScreen = () => {
         ListEmptyComponent={
           searchQuery.length > 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
+              <Text style={styles.emptyText}>{t('wineAdd.step1.empty')}</Text>
             </View>
           ) : null
         }
@@ -439,12 +441,12 @@ const WineAddScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.step2Content}
       >
-        <Text style={styles.stepTitle}>구매 정보를 입력해주세요</Text>
-        <Text style={styles.stepSubtitle}>선택한 와인: {selectedWineName}</Text>
+        <Text style={styles.stepTitle}>{t('wineAdd.step2.title')}</Text>
+        <Text style={styles.stepSubtitle}>{t('wineAdd.step2.subtitle', { name: selectedWineName })}</Text>
 
         {!isEditMode && (
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>수량</Text>
+            <Text style={styles.label}>{t('wineAdd.step2.quantity')}</Text>
             <View style={styles.quantityContainer}>
               <TouchableOpacity
                 style={styles.quantityButton}
@@ -456,7 +458,7 @@ const WineAddScreen = () => {
               </TouchableOpacity>
               <View style={styles.quantityValueContainer}>
                 <Text style={styles.quantityValue}>{quantity}</Text>
-                <Text style={styles.quantityUnit}>병</Text>
+                <Text style={styles.quantityUnit}>{t('wineAdd.step2.unit')}</Text>
               </View>
               <TouchableOpacity
                 style={styles.quantityButton}
@@ -469,7 +471,7 @@ const WineAddScreen = () => {
         )}
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>와인 종류</Text>
+          <Text style={styles.label}>{t('wineAdd.step2.type')}</Text>
           <View style={[styles.inputWrapper, { backgroundColor: colors.surface1 }]}>
             <Text style={[styles.textInput, { color: "#aaa" }]}>
               {type || "-"}
@@ -478,11 +480,11 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>빈티지 (년도)</Text>
+          <Text style={styles.label}>{t('wineAdd.step2.vintage')}</Text>
           <View style={styles.vintageInputWrapper}>
             <TextInput
               style={styles.vintageInput}
-              placeholder="ex) 2019"
+              placeholder={t('wineAdd.step2.vintagePlaceholder')}
               placeholderTextColor="#666"
               keyboardType="numeric"
               value={vintage}
@@ -498,13 +500,13 @@ const WineAddScreen = () => {
 
             {((vintage.length === 4 && !isNaN(Number(vintage))) ||
               vintage === "NV") && (
-              <Icon
-                name="checkmark-circle"
-                size={20}
-                color="#2ecc71"
-                style={{ marginRight: 8 }}
-              />
-            )}
+                <Icon
+                  name="checkmark-circle"
+                  size={20}
+                  color="#2ecc71"
+                  style={{ marginRight: 8 }}
+                />
+              )}
             <TouchableOpacity
               style={[
                 styles.nvButton,
@@ -525,7 +527,7 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>구매가</Text>
+          <Text style={styles.label}>{t('wineAdd.step2.price')}</Text>
           <View style={styles.priceInputWrapper}>
             <Text style={styles.currencySymbol}>₩</Text>
             <TextInput
@@ -555,7 +557,7 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>구매처</Text>
+          <Text style={styles.label}>{t('wineAdd.step2.shop')}</Text>
           <View style={styles.purchaseTypeContainer}>
             <TouchableOpacity
               style={[
@@ -570,7 +572,7 @@ const WineAddScreen = () => {
                   purchaseType === "offline" && styles.typeButtonTextActive,
                 ]}
               >
-                매장
+                {t('wineAdd.step2.shopOffline')}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -586,7 +588,7 @@ const WineAddScreen = () => {
                   purchaseType === "direct" && styles.typeButtonTextActive,
                 ]}
               >
-                직구
+                {t('wineAdd.step2.shopDirect')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -595,8 +597,8 @@ const WineAddScreen = () => {
               style={styles.textInput}
               placeholder={
                 purchaseType === "offline"
-                  ? "매장 이름을 입력하세요"
-                  : "직구 사이트 주소를 입력하세요"
+                  ? t('wineAdd.step2.shopPlaceholderOff')
+                  : t('wineAdd.step2.shopPlaceholderDir')
               }
               placeholderTextColor="#666"
               value={purchaseShop}
@@ -614,13 +616,13 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>구매일자</Text>
+          <Text style={styles.label}>{t('wineAdd.step2.date')}</Text>
           <TouchableOpacity
             style={styles.inputWrapper}
             onPress={() => setCalendarVisible(true)}
           >
             <Text style={[styles.textInput, { paddingVertical: 12 }]}>
-              {purchaseDate || "YYYY-MM-DD"}
+              {purchaseDate || t('wineAdd.step2.datePlaceholder')}
             </Text>
             {purchaseDate.length > 0 && (
               <Icon
@@ -657,7 +659,7 @@ const WineAddScreen = () => {
           <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {isEditMode ? "와인 정보 수정" : "보유 와인 추가"}
+          {isEditMode ? t('wineAdd.headerEdit') : t('wineAdd.headerAdd')}
         </Text>
         <View style={styles.headerRight} />
       </View>
@@ -683,7 +685,7 @@ const WineAddScreen = () => {
             ((currentStep === 1 && !isStep1Valid()) ||
               (currentStep === 2 && !isStep2Valid()) ||
               isSaving) &&
-              styles.disabledButton,
+            styles.disabledButton,
           ]}
           onPress={currentStep === 1 ? handleNext : handleSave}
           disabled={
@@ -694,12 +696,12 @@ const WineAddScreen = () => {
         >
           <Text style={styles.nextButtonText}>
             {isSaving
-              ? "저장 중..."
+              ? t('wineAdd.button.saving')
               : currentStep === 1
-              ? "다음"
-              : isEditMode
-              ? "수정 완료"
-              : "추가 완료"}
+                ? t('wineAdd.button.next')
+                : isEditMode
+                  ? t('wineAdd.button.edit')
+                  : t('wineAdd.button.add')}
           </Text>
         </TouchableOpacity>
       </View>

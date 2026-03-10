@@ -20,6 +20,7 @@ import { useGlobalUI } from '../context/GlobalUIContext';
 import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { COLOR_PALETTES } from '../components/tasting_note/constants';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 type TastingNoteDetailRouteProp = RouteProp<RootStackParamList, 'TastingNoteDetail'>;
 
@@ -30,6 +31,7 @@ export default function TastingNoteDetailScreen() {
   const route = useRoute<TastingNoteDetailRouteProp>();
   const { tastingNoteId } = route.params;
   const { showAlert } = useGlobalUI();
+  const { t } = useTranslation();
 
   const [note, setNote] = useState<TastingNoteDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,8 +52,8 @@ export default function TastingNoteDetailScreen() {
         setNote(noteData);
       } else {
         showAlert({
-          title: '오류',
-          message: response.message || '테이스팅 노트를 불러올 수 없습니다.',
+          title: t('tastingNoteDetail.error.fetchFailTitle'),
+          message: response.message || t('tastingNoteDetail.error.fetchFailMsg'),
           singleButton: true,
           onConfirm: () => navigation.goBack(),
         });
@@ -59,8 +61,8 @@ export default function TastingNoteDetailScreen() {
     } catch (error) {
       console.error('Failed to fetch tasting note detail:', error);
       showAlert({
-        title: '오류',
-        message: '네트워크 오류가 발생했습니다.',
+        title: t('tastingNoteDetail.error.fetchFailTitle'),
+        message: t('tastingNoteDetail.error.networkFailMsg'),
         singleButton: true,
         onConfirm: () => navigation.goBack(),
       });
@@ -71,32 +73,32 @@ export default function TastingNoteDetailScreen() {
 
   const handleDelete = () => {
     showAlert({
-      title: '테이스팅 노트 삭제',
-      message: '정말로 이 테이스팅 노트를\n삭제하시겠습니까?',
-      confirmText: '삭제',
+      title: t('tastingNoteDetail.delete.title'),
+      message: t('tastingNoteDetail.delete.message'),
+      confirmText: t('tastingNoteDetail.delete.confirm'),
       singleButton: false,
       onConfirm: async () => {
         try {
           const response = await deleteTastingNote(tastingNoteId);
           if (response.isSuccess) {
             showAlert({
-              title: '성공',
-              message: '테이스팅 노트가 삭제되었습니다.',
+              title: t('tastingNoteDetail.delete.successTitle'),
+              message: t('tastingNoteDetail.delete.successMsg'),
               singleButton: true,
               onConfirm: () => navigation.goBack(),
             });
           } else {
             showAlert({
-              title: '오류',
-              message: response.message || '삭제에 실패했습니다.',
+              title: t('tastingNoteDetail.error.fetchFailTitle'),
+              message: response.message || t('tastingNoteDetail.delete.failMsg'),
               singleButton: true,
             });
           }
         } catch (error) {
           console.error('Failed to delete tasting note:', error);
           showAlert({
-            title: '오류',
-            message: '서버 통신 중 문제가 발생했습니다.',
+            title: t('tastingNoteDetail.error.fetchFailTitle'),
+            message: t('tastingNoteDetail.delete.networkFailMsg'),
             singleButton: true,
           });
         }
@@ -141,7 +143,7 @@ export default function TastingNoteDetailScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>테이스팅 노트</Text>
+        <Text style={styles.headerTitle}>{t('tastingNoteDetail.header')}</Text>
         <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
           <Ionicons name="trash-outline" size={24} color={colors.error} />
         </TouchableOpacity>
@@ -171,11 +173,11 @@ export default function TastingNoteDetailScreen() {
             </View>
 
             <Text style={styles.wineName} numberOfLines={2}>{note.wineName}</Text>
-            <Text style={styles.vintageText}>{note.vintageYear === 0 ? 'NV' : `Vintage ${note.vintageYear}`}</Text>
+            <Text style={styles.vintageText}>{note.vintageYear === 0 ? t('tastingNoteDetail.info.nv') : t('tastingNoteDetail.info.vintage', { year: note.vintageYear })}</Text>
 
             <View style={styles.metaRow}>
               <View style={styles.colorWrapper}>
-                <Text style={styles.metaLabel}>Color</Text>
+                <Text style={styles.metaLabel}>{t('tastingNoteDetail.info.color')}</Text>
                 <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
               </View>
               <View style={styles.ratingWrapper}>
@@ -192,7 +194,7 @@ export default function TastingNoteDetailScreen() {
         <View style={styles.middleSection}>
 
           <View style={[styles.palateColumn, styles.infoBox]}>
-            <Text style={styles.boxTitle}>Palate</Text>
+            <Text style={styles.boxTitle}>{t('tastingNoteDetail.info.palate')}</Text>
             <View style={styles.chartContainer}>
               <PentagonRadarChart
                 data={{
@@ -211,7 +213,7 @@ export default function TastingNoteDetailScreen() {
           <View style={styles.rightColumn}>
 
             <View style={styles.infoBox}>
-              <Text style={styles.boxTitle}>Nose</Text>
+              <Text style={styles.boxTitle}>{t('tastingNoteDetail.info.nose')}</Text>
               <View>
                 <View style={styles.noseTagsContainer}>
                   {note.noseList && note.noseList.length > 0 ? (
@@ -229,7 +231,7 @@ export default function TastingNoteDetailScreen() {
 
 
             <View style={[styles.infoBox, { flex: 1 }]}>
-              <Text style={styles.boxTitle}>Finish</Text>
+              <Text style={styles.boxTitle}>{t('tastingNoteDetail.info.finish')}</Text>
               <View>
                 <View style={styles.noseTagsContainer}>
                   {finishTags.length > 0 ? (
@@ -251,10 +253,10 @@ export default function TastingNoteDetailScreen() {
 
 
         <View style={styles.bottomSectionWrapper}>
-          <Text style={styles.sectionHeader}>Review</Text>
+          <Text style={styles.sectionHeader}>{t('tastingNoteDetail.info.review')}</Text>
           <View style={styles.bottomContent}>
             <Text style={styles.bodyText}>
-              {reviewText || '작성된 리뷰가 없습니다.'}
+              {reviewText || t('tastingNoteDetail.info.emptyReview')}
             </Text>
           </View>
         </View>

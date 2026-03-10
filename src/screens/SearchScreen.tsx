@@ -19,13 +19,14 @@ import { WineDBItem } from '../types/Wine';
 import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
 import { colors } from '../constants/colors';
-
+import { useTranslation, Trans } from 'react-i18next';
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp<RootStackParamList, 'WineSearch'>;
 
 export default function SearchScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchScreenRouteProp>();
+  const { t } = useTranslation();
   const [returnScreen, setReturnScreen] = useState<keyof RootStackParamList | undefined>(undefined);
 
   useFocusEffect(
@@ -185,7 +186,7 @@ export default function SearchScreen() {
             <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="와인 이름, 종류 등으로 검색"
+              placeholder={t('search.placeholder')}
               placeholderTextColor={colors.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
@@ -215,14 +216,14 @@ export default function SearchScreen() {
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>검색 결과가 없습니다.</Text>
+                <Text style={styles.emptyText}>{t('search.emptyResult')}</Text>
               </View>
             }
           />
         ) : (
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             <View style={styles.recentSearchContainer}>
-              <Text style={styles.sectionTitle}>최근 검색어</Text>
+              <Text style={styles.sectionTitle}>{t('search.recentSearch')}</Text>
               {recentSearches.length > 0 ? (
                 <View style={styles.recentTags}>
                   {recentSearches.map((text, index) => (
@@ -242,12 +243,12 @@ export default function SearchScreen() {
                   ))}
                 </View>
               ) : (
-                <Text style={styles.emptyRecentText}>최근 검색 기록이 없습니다.</Text>
+                <Text style={styles.emptyRecentText}>{t('search.emptyRecentSearch')}</Text>
               )}
             </View>
 
             <View style={styles.recentWineContainer}>
-              <Text style={styles.sectionTitle}>최근 본 와인</Text>
+              <Text style={styles.sectionTitle}>{t('search.recentWine')}</Text>
               {recentWines.length > 0 ? (
                 <ScrollView
                   horizontal
@@ -277,7 +278,7 @@ export default function SearchScreen() {
                   ))}
                 </ScrollView>
               ) : (
-                <Text style={styles.emptyRecentText}>최근 본 와인이 없습니다.</Text>
+                <Text style={styles.emptyRecentText}>{t('search.emptyRecentWine')}</Text>
               )}
             </View>
           </ScrollView>

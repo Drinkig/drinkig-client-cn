@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FeatureGauge from '../FeatureGauge';
 import { colors } from '../../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface InfoTabProps {
   description: string | null;
@@ -26,6 +27,7 @@ export default function InfoTab({
   finish,
   showTastingNotes,
 }: InfoTabProps) {
+  const { t } = useTranslation();
 
   const hasAnyData = description || (showTastingNotes && (features || (nose && nose.length > 0) || (palate && palate.length > 0) || (finish && finish.length > 0)));
 
@@ -33,7 +35,7 @@ export default function InfoTab({
     return (
       <View style={styles.tabContent}>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>등록된 상세 정보가 없습니다.</Text>
+          <Text style={styles.emptyText}>{t('wineDetail.info.empty')}</Text>
         </View>
       </View>
     );
@@ -43,7 +45,7 @@ export default function InfoTab({
     <View style={styles.tabContent}>
       {description && (
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>와인 설명</Text>
+          <Text style={styles.sectionTitle}>{t('wineDetail.info.descTitle')}</Text>
           <Text style={styles.description}>{description}</Text>
         </View>
       )}
@@ -52,12 +54,12 @@ export default function InfoTab({
         <>
           {features && (
             <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>테이스팅 노트</Text>
+              <Text style={styles.sectionTitle}>{t('wineDetail.info.noteTitle')}</Text>
               <View style={styles.featuresContainer}>
-                <FeatureGauge label="당도" value={features.sweetness} />
-                <FeatureGauge label="산도" value={features.acidity} />
-                <FeatureGauge label="바디" value={features.body} />
-                <FeatureGauge label="타닌" value={features.tannin} />
+                <FeatureGauge label={t('taste.sweetness')} value={features.sweetness} />
+                <FeatureGauge label={t('taste.acidity')} value={features.acidity} />
+                <FeatureGauge label={t('taste.body')} value={features.body} />
+                <FeatureGauge label={t('taste.tannin')} value={features.tannin} />
               </View>
             </View>
           )}
@@ -65,7 +67,7 @@ export default function InfoTab({
           {nose && nose.length > 0 && (
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>
-                노즈 <Text style={styles.subTitleText}>(Nose)</Text>
+                {t('wineDetail.info.nose')} <Text style={styles.subTitleText}>(Nose)</Text>
               </Text>
               <Text style={styles.aromaListText}>{nose.join(', ')}</Text>
             </View>
@@ -74,7 +76,7 @@ export default function InfoTab({
           {palate && palate.length > 0 && (
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>
-                팔레트 <Text style={styles.subTitleText}>(Palate)</Text>
+                {t('wineDetail.info.palate')} <Text style={styles.subTitleText}>(Palate)</Text>
               </Text>
               <Text style={styles.aromaListText}>{palate.join(', ')}</Text>
             </View>
@@ -83,7 +85,7 @@ export default function InfoTab({
           {finish && finish.length > 0 && (
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>
-                피니시 <Text style={styles.subTitleText}>(Finish)</Text>
+                {t('wineDetail.info.finish')} <Text style={styles.subTitleText}>(Finish)</Text>
               </Text>
               <Text style={styles.aromaListText}>{finish.join(', ')}</Text>
             </View>

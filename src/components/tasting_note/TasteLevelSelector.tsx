@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface TasteLevelSelectorProps {
   label: string;
@@ -11,6 +12,8 @@ interface TasteLevelSelectorProps {
 }
 
 export default function TasteLevelSelector({ label, value, onChange, onHelpPress }: TasteLevelSelectorProps) {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.levelContainer}>
       <View style={styles.labelRow}>
@@ -38,10 +41,10 @@ export default function TasteLevelSelector({ label, value, onChange, onHelpPress
         </View>
         <View style={styles.levelRangeLabels}>
           <View style={styles.levelRangeLabelContainer}>
-            <Text style={styles.levelRangeText}>약함</Text>
+            <Text style={styles.levelRangeText}>{t('tastingNoteWrite.tasteLevel.weak')}</Text>
           </View>
           <View style={styles.levelRangeLabelContainer}>
-            <Text style={styles.levelRangeText}>강함</Text>
+            <Text style={styles.levelRangeText}>{t('tastingNoteWrite.tasteLevel.strong')}</Text>
           </View>
         </View>
       </View>
