@@ -445,8 +445,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 20,
-    maxHeight: '50%',
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+    maxHeight: '70%',
   },
   modalHeader: {
     flexDirection: 'row',
