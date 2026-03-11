@@ -50,12 +50,13 @@ export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
   const { showAlert } = useGlobalUI();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const params = route.params || {};
   const [selectedWine, setSelectedWine] = useState<{
     wineId?: number;
     wineName?: string;
+    wineNameEng?: string;
     wineImage?: string;
     wineType?: string;
   }>({
@@ -194,6 +195,7 @@ export default function TastingNoteWriteScreen() {
     setSelectedWine({
       wineId: wine.wineId,
       wineName: wine.name,
+      wineNameEng: wine.nameEng,
       wineImage: imageUrl,
       wineType: wine.sort,
     });
@@ -383,7 +385,9 @@ export default function TastingNoteWriteScreen() {
                     </View>
                   )}
                   <View style={styles.wineTextInfo}>
-                    <Text style={styles.wineName}>{selectedWine.wineName}</Text>
+                    <Text style={styles.wineName} numberOfLines={2}>
+                      {i18n.language === 'en' ? (selectedWine.wineNameEng || selectedWine.wineName) : selectedWine.wineName}
+                    </Text>
                     <Text style={styles.wineType}>{selectedWine.wineType}</Text>
                   </View>
                 </View>
@@ -423,12 +427,20 @@ export default function TastingNoteWriteScreen() {
                             onPress={() => handleSelectWine(item)}
                           >
                             <View style={styles.resultTextContainer}>
-                              <Text style={styles.resultNameKor}>
-                                {item.name}
-                              </Text>
-                              <Text style={styles.resultNameEng}>
-                                {item.nameEng}
-                              </Text>
+                              {i18n.language === 'en' ? (
+                                <Text style={styles.resultNameKor} numberOfLines={2}>
+                                  {item.nameEng || item.name}
+                                </Text>
+                              ) : (
+                                <>
+                                  <Text style={styles.resultNameKor}>
+                                    {item.name}
+                                  </Text>
+                                  <Text style={styles.resultNameEng}>
+                                    {item.nameEng}
+                                  </Text>
+                                </>
+                              )}
                             </View>
                             <View
                               style={[

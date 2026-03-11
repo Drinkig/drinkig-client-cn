@@ -17,10 +17,12 @@ import { WineDBItem } from '../types/Wine';
 
 import { getVintageLabel } from '../utils/wineUtils';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  const { t, i18n } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [wishlist, setWishlist] = useState<WishlistItemDTO[]>([]);
 
@@ -93,8 +95,10 @@ export default function WishlistScreen() {
         )}
       </View>
       <View style={styles.infoContainer}>
-        <Text style={styles.nameKor} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.nameEng} numberOfLines={1}>{item.nameEng}</Text>
+        <Text style={styles.nameKor} numberOfLines={1}>
+          {i18n.language === 'en' ? (item.nameEng || item.name) : item.name}
+        </Text>
+        {i18n.language !== 'en' && <Text style={styles.nameEng} numberOfLines={1}>{item.nameEng}</Text>}
         <View style={styles.detailRow}>
           <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
             <Text style={styles.typeChipText}>{item.sort}</Text>
@@ -125,7 +129,7 @@ export default function WishlistScreen() {
         >
           <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>위시리스트</Text>
+        <Text style={styles.headerTitle}>{t('wishlist.header')}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -145,7 +149,7 @@ export default function WishlistScreen() {
             ListHeaderComponent={
               wishlist.length > 0 ? (
                 <View style={styles.listHeader}>
-                  <Text style={styles.countText}>총 <Text style={styles.countHighlight}>{wishlist.length}</Text>개의 와인</Text>
+                  <Text style={styles.countText}>{t('wishlist.countPrefix')}<Text style={styles.countHighlight}>{wishlist.length}</Text>{t('wishlist.countSuffix')}</Text>
                 </View>
               ) : null
             }
@@ -156,8 +160,8 @@ export default function WishlistScreen() {
                   style={styles.emptyImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.emptyText}>위시리스트가 비어있습니다.</Text>
-                <Text style={styles.emptySubText}>마음에 드는 와인을 찜해보세요!</Text>
+                <Text style={styles.emptyText}>{t('wishlist.emptyTitle')}</Text>
+                <Text style={styles.emptySubText}>{t('wishlist.emptyDesc')}</Text>
               </View>
             }
           />

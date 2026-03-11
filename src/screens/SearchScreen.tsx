@@ -26,7 +26,7 @@ type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp
 export default function SearchScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchScreenRouteProp>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [returnScreen, setReturnScreen] = useState<keyof RootStackParamList | undefined>(undefined);
 
   useFocusEffect(
@@ -151,8 +151,14 @@ export default function SearchScreen() {
         )}
       </View>
       <View style={styles.resultTextContainer}>
-        <Text style={styles.resultNameKor}>{item.nameKor}</Text>
-        <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+        {i18n.language === 'en' ? (
+          <Text style={styles.resultNameKor} numberOfLines={2}>{item.nameEng || item.nameKor}</Text>
+        ) : (
+          <>
+            <Text style={styles.resultNameKor} numberOfLines={2}>{item.nameKor}</Text>
+            <Text style={styles.resultNameEng} numberOfLines={1}>{item.nameEng}</Text>
+          </>
+        )}
         <View style={styles.resultInfoContainer}>
           <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.type) }]}>
             <Text style={styles.typeChipText}>{item.type}</Text>
@@ -272,7 +278,9 @@ export default function SearchScreen() {
                           <Icon name="wine" size={30} color={colors.primary} />
                         )}
                       </View>
-                      <Text style={styles.recentWineName} numberOfLines={2}>{wine.nameKor}</Text>
+                      <Text style={styles.recentWineName} numberOfLines={2}>
+                        {i18n.language === 'en' ? (wine.nameEng || wine.nameKor) : wine.nameKor}
+                      </Text>
                       <Text style={styles.recentWineType}>{wine.type}</Text>
                     </TouchableOpacity>
                   ))}

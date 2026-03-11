@@ -174,6 +174,7 @@ export interface MyWineDTO {
   myWineId: number;
   wineId: number;
   wineName: string;
+  wineNameEng?: string;
   vintageYear: number;
   wineSort: string;
   wineCountry: string;
@@ -459,6 +460,7 @@ export interface TastingNotePreviewDTO {
   tastingNoteId: number; // API 응답: noteId일 수 있음 (확인 필요)
   wineId: number;
   wineName: string;
+  wineNameEng?: string;
   vintageYear: number;
   imageUrl?: string;
   tasteDate: string;
@@ -515,6 +517,7 @@ export interface TastingNoteDTO {
   noteId: number;
   wineId: number;
   wineName: string;
+  wineNameEng?: string;
   vintageYear: number;
   color: string;
   tasteDate: string;

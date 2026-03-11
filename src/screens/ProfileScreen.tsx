@@ -32,7 +32,7 @@ const ProfileScreen = () => {
 
   const [sortType, setSortType] = React.useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const sortOptions = [
     { label: t('profile.sort.latest'), value: 'latest' },
@@ -185,7 +185,9 @@ const ProfileScreen = () => {
       </View>
 
       <View style={styles.noteInfo}>
-        <Text style={styles.noteName} numberOfLines={1} ellipsizeMode="tail">{item.wineName}</Text>
+        <Text style={styles.noteName} numberOfLines={1} ellipsizeMode="tail">
+          {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
+        </Text>
         <Text style={styles.noteDate}>{item.tasteDate}</Text>
       </View>
     </TouchableOpacity>

@@ -339,5 +339,99 @@
             "review": "Review",
             "emptyReview": "작성된 리뷰가 없습니다."
         }
+    },
+    "setting": {
+        "header": "설정",
+        "section": {
+            "account": "내 계정",
+            "appInfo": "앱 정보",
+            "contact": "문의하기",
+            "management": "계정 관리"
+        },
+        "account": {
+            "loginMethod": "로그인 수단",
+            "email": "이메일"
+        },
+        "appInfo": {
+            "version": "버전 정보",
+            "language": "언어 설정",
+            "terms": "이용약관",
+            "privacy": "개인정보 처리방침"
+        },
+        "contact": {
+            "reportError": "오류 제보",
+            "suggestFeature": "기능 제안"
+        },
+        "management": {
+            "logout": "로그아웃",
+            "deleteAccount": "회원 탈퇴"
+        },
+        "language": {
+            "system": "기기 설정에 따름",
+            "ko": "한국어",
+            "en": "English",
+            "cancel": "취소",
+            "title": "언어 설정",
+            "message": "앱에서 사용할 언어를 선택해주세요."
+        },
+        "alert": {
+            "errorTitle": "오류",
+            "errorLink": "링크를 열 수 없습니다.",
+            "errorLinkOpen": "링크를 여는 중 문제가 발생했습니다.",
+            "mailErrorTitle": "메일 앱을 열 수 없습니다.",
+            "mailErrorMessage": "이메일 설정이 되어 있는지 확인해 주세요.\n(또는 drinkeasyy@gmail.com 으로 직접 보내주세요.)",
+            "confirm": "확인",
+            "logoutTitle": "로그아웃",
+            "logoutMessage": "정말로 로그아웃 하시겠습니까?",
+            "logoutConfirm": "로그아웃",
+            "deleteTitle": "회원 탈퇴",
+            "deleteMessage": "정말로 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.",
+            "deleteConfirm": "탈퇴하기",
+            "deleteError": "회원 탈퇴 처리에 실패했습니다. 잠시 후 다시 시도해주세요."
+        },
+        "mail": {
+            "reportSubject": "[오류 제보] ",
+            "reportBody": "오류를 제보해주셔서 감사합니다.\n발생한 문제에 대해 자세히 설명해 주세요. 관련 사진이나 스크린샷을 첨부해 주시면 문제 해결에 큰 도움이 됩니다.\n\n(여기에 내용을 작성해 주세요)\n\n",
+            "suggestSubject": "[기능 제안] ",
+            "suggestBody": "기능을 제안해주셔서 감사합니다.\n제안하고 싶은 기능에 대해 자세히 설명해 주세요.\n\n(여기에 내용을 작성해 주세요)\n\n"
+        }
+    },
+    "profileEdit": {
+        "header": "프로필 수정",
+        "nickname": {
+            "label": "닉네임",
+            "placeholder": "닉네임을 입력하세요",
+            "checking": "확인 중...",
+            "errorLength": "닉네임은 2글자 이상이어야 해요.",
+            "errorFormat": "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).",
+            "errorDuplicate": "이미 사용 중인 닉네임이에요",
+            "errorCheck": "닉네임 확인 중 오류가 발생했습니다.",
+            "success": "사용 가능한 닉네임입니다."
+        },
+        "button": {
+            "save": "저장하기",
+            "saving": "저장 중..."
+        },
+        "alert": {
+            "notice": "알림",
+            "needCheck": "닉네임 확인이 필요해요.",
+            "successTitle": "성공",
+            "successMessage": "프로필이 수정되었습니다.",
+            "errorTitle": "오류",
+            "errorMessage": "프로필 수정 중 문제가 발생했습니다."
+        }
+    },
+    "wishlist": {
+        "header": "위시리스트",
+        "countPrefix": "총 ",
+        "countSuffix": "개의 와인",
+        "emptyTitle": "위시리스트가 비어있습니다.",
+        "emptyDesc": "마음에 드는 와인을 찜해보세요!"
+    },
+    "recommendationList": {
+        "header": "추천 와인 스타일",
+        "title": "{{name}}님에게 추천드려요!",
+        "defaultName": "회원",
+        "empty": "추천된 와인 스타일이 없습니다."
     }
 }

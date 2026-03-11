@@ -39,7 +39,7 @@ const WineAddScreen = () => {
   const initialWine = route.params?.wine;
   const myWine = route.params?.myWine as MyWineDTO;
   const isEditMode = !!myWine;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Step management
   const [currentStep, setCurrentStep] = useState(initialWine || myWine ? 2 : 1);
@@ -53,6 +53,9 @@ const WineAddScreen = () => {
   );
   const [selectedWineName, setSelectedWineName] = useState(
     myWine?.wineName || initialWine?.nameKor || "",
+  );
+  const [selectedWineNameEng, setSelectedWineNameEng] = useState(
+    myWine?.wineNameEng || initialWine?.nameEng || "",
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [type, setType] = useState(myWine?.wineSort || initialWine?.type || "");
@@ -172,11 +175,13 @@ const WineAddScreen = () => {
     setSearchQuery(text);
     setSelectedWineId(null);
     setSelectedWineName("");
+    setSelectedWineNameEng("");
   };
 
   const handleSelectWine = (wine: WineUserDTO) => {
     setSelectedWineId(wine.wineId);
     setSelectedWineName(wine.name);
+    setSelectedWineNameEng(wine.nameEng);
     setType(wine.sort);
   };
 
@@ -358,10 +363,18 @@ const WineAddScreen = () => {
           )}
         </View>
         <View style={styles.resultTextContainer}>
-          <Text style={styles.resultNameKor} lineBreakStrategyIOS="hangul-word">
-            {item.name}
-          </Text>
-          <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+          {i18n.language === 'en' ? (
+            <Text style={styles.resultNameKor} numberOfLines={2} lineBreakStrategyIOS="hangul-word">
+              {item.nameEng || item.name}
+            </Text>
+          ) : (
+            <>
+              <Text style={styles.resultNameKor} lineBreakStrategyIOS="hangul-word">
+                {item.name}
+              </Text>
+              <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+            </>
+          )}
           <View style={styles.resultInfoContainer}>
             <View
               style={[
@@ -442,7 +455,11 @@ const WineAddScreen = () => {
         contentContainerStyle={styles.step2Content}
       >
         <Text style={styles.stepTitle}>{t('wineAdd.step2.title')}</Text>
-        <Text style={styles.stepSubtitle}>{t('wineAdd.step2.subtitle', { name: selectedWineName })}</Text>
+        <Text style={styles.stepSubtitle}>
+          {t('wineAdd.step2.subtitle', {
+            name: i18n.language === 'en' ? (selectedWineNameEng || selectedWineName) : selectedWineName
+          })}
+        </Text>
 
         {!isEditMode && (
           <View style={styles.inputGroup}>

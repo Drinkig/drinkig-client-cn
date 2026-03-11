@@ -24,7 +24,7 @@ export default function SearchResultScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchResultScreenRouteProp>();
   const { searchKeyword, returnScreen } = route.params;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [isLoading, setIsLoading] = useState(true);
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
@@ -112,8 +112,14 @@ export default function SearchResultScreen() {
         )}
       </View>
       <View style={styles.resultTextContainer}>
-        <Text style={styles.resultNameKor}>{item.nameKor}</Text>
-        <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+        {i18n.language === 'en' ? (
+          <Text style={styles.resultNameKor} numberOfLines={2}>{item.nameEng || item.nameKor}</Text>
+        ) : (
+          <>
+            <Text style={styles.resultNameKor} numberOfLines={2}>{item.nameKor}</Text>
+            {item.nameEng ? <Text style={styles.resultNameEng} numberOfLines={1}>{item.nameEng}</Text> : null}
+          </>
+        )}
         <View style={styles.resultInfoContainer}>
           <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.type) }]}>
             <Text style={styles.typeChipText}>{item.type}</Text>

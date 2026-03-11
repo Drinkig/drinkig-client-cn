@@ -33,7 +33,7 @@ const MyWineScreen = () => {
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const wineTypes = [
     { label: t('myWine.types.all'), value: '전체' },
@@ -175,7 +175,9 @@ const MyWineScreen = () => {
         </View>
       </View>
       <View style={styles.wineInfo}>
-        <Text style={styles.wineName} numberOfLines={1} ellipsizeMode="tail">{item.wineName}</Text>
+        <Text style={styles.wineName} numberOfLines={1} ellipsizeMode="tail">
+          {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
+        </Text>
         <Text style={styles.wineVintageText}>
           {item.vintageYear === 0 ? 'NV' : item.vintageYear}
         </Text>

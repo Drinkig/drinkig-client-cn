@@ -31,7 +31,7 @@ export default function TastingNoteDetailScreen() {
   const route = useRoute<TastingNoteDetailRouteProp>();
   const { tastingNoteId } = route.params;
   const { showAlert } = useGlobalUI();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [note, setNote] = useState<TastingNoteDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -172,7 +172,9 @@ export default function TastingNoteDetailScreen() {
               <Text style={styles.dateText}>{note.tasteDate}</Text>
             </View>
 
-            <Text style={styles.wineName} numberOfLines={2}>{note.wineName}</Text>
+            <Text style={styles.wineName} numberOfLines={2}>
+              {i18n.language === 'en' ? (note.wineNameEng || note.wineName) : note.wineName}
+            </Text>
             <Text style={styles.vintageText}>{note.vintageYear === 0 ? t('tastingNoteDetail.info.nv') : t('tastingNoteDetail.info.vintage', { year: note.vintageYear })}</Text>
 
             <View style={styles.metaRow}>

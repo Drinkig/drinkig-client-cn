@@ -339,5 +339,99 @@
             "review": "Review",
             "emptyReview": "No review written."
         }
+    },
+    "setting": {
+        "header": "Settings",
+        "section": {
+            "account": "My Account",
+            "appInfo": "App Info",
+            "contact": "Contact Us",
+            "management": "Account Management"
+        },
+        "account": {
+            "loginMethod": "Login Method",
+            "email": "Email"
+        },
+        "appInfo": {
+            "version": "Version Info",
+            "language": "Language",
+            "terms": "Terms of Service",
+            "privacy": "Privacy Policy"
+        },
+        "contact": {
+            "reportError": "Report an Error",
+            "suggestFeature": "Suggest a Feature"
+        },
+        "management": {
+            "logout": "Log Out",
+            "deleteAccount": "Delete Account"
+        },
+        "language": {
+            "system": "System Default",
+            "ko": "Korean",
+            "en": "English",
+            "cancel": "Cancel",
+            "title": "Language Setting",
+            "message": "Please select the language to use in the app."
+        },
+        "alert": {
+            "errorTitle": "Error",
+            "errorLink": "Cannot open the link.",
+            "errorLinkOpen": "A problem occurred while opening the link.",
+            "mailErrorTitle": "Cannot open Mail app.",
+            "mailErrorMessage": "Please check your email settings.\n(Or send directly to drinkeasyy@gmail.com)",
+            "confirm": "OK",
+            "logoutTitle": "Log Out",
+            "logoutMessage": "Are you sure you want to log out?",
+            "logoutConfirm": "Log Out",
+            "deleteTitle": "Delete Account",
+            "deleteMessage": "Are you sure you want to delete your account?\nAll data will be lost and cannot be recovered.",
+            "deleteConfirm": "Delete",
+            "deleteError": "Failed to delete account. Please try again later."
+        },
+        "mail": {
+            "reportSubject": "[Error Report] ",
+            "reportBody": "Thank you for reporting the error.\nPlease describe the issue in detail. Attaching photos or screenshots is greatly appreciated and helps us resolve the problem faster.\n\n(Write your message here)\n\n",
+            "suggestSubject": "[Feature Suggestion] ",
+            "suggestBody": "Thank you for the feature suggestion.\nPlease describe the feature you would like to see in detail.\n\n(Write your message here)\n\n"
+        }
+    },
+    "profileEdit": {
+        "header": "Edit Profile",
+        "nickname": {
+            "label": "Nickname",
+            "placeholder": "Enter your nickname",
+            "checking": "Checking...",
+            "errorLength": "Nickname must be at least 2 characters.",
+            "errorFormat": "Invalid format (cannot use standalone consonants/vowels).",
+            "errorDuplicate": "Nickname is already in use.",
+            "errorCheck": "Error occurred while checking nickname.",
+            "success": "Nickname is available."
+        },
+        "button": {
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "alert": {
+            "notice": "Notice",
+            "needCheck": "Please check your nickname.",
+            "successTitle": "Success",
+            "successMessage": "Profile has been updated.",
+            "errorTitle": "Error",
+            "errorMessage": "A problem occurred while updating the profile."
+        }
+    },
+    "wishlist": {
+        "header": "Wishlist",
+        "countPrefix": "Total ",
+        "countSuffix": " wines",
+        "emptyTitle": "Wishlist is empty.",
+        "emptyDesc": "Save your favorite wines!"
+    },
+    "recommendationList": {
+        "header": "Recommended Styles",
+        "title": "Recommended for you, {{name}}!",
+        "defaultName": "Member",
+        "empty": "No recommended wine styles available."
     }
 }

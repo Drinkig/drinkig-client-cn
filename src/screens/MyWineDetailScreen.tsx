@@ -28,7 +28,7 @@ export default function MyWineDetailScreen() {
   const route = useRoute<MyWineDetailRouteProp>();
   const { wineId } = route.params;
   const { showAlert } = useGlobalUI();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [wine, setWine] = useState<MyWineDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -188,7 +188,7 @@ export default function MyWineDetailScreen() {
             const wineParam = {
               id: wine.wineId,
               nameKor: wine.wineName,
-              nameEng: '',
+              nameEng: wine.wineNameEng || '',
               type: wine.wineSort,
               country: wine.wineCountry,
               grape: wine.wineVariety,
@@ -203,7 +203,9 @@ export default function MyWineDetailScreen() {
             {renderImage()}
           </View>
           <View style={styles.headerInfo}>
-            <Text style={styles.wineName}>{wine.wineName}</Text>
+            <Text style={styles.wineName}>
+              {i18n.language === 'en' ? (wine.wineNameEng || wine.wineName) : wine.wineName}
+            </Text>
             <View style={styles.badges}>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{wine.wineSort}</Text>

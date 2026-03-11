@@ -5,12 +5,14 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useUser } from '../context/UserContext';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 const RANK_BADGES = ['🥇', '🥈', '🥉'];
 
 const RecommendationListScreen = () => {
   const navigation = useNavigation();
   const { recommendations, user } = useUser();
+  const { t, i18n } = useTranslation();
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
@@ -40,13 +42,13 @@ const RecommendationListScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>추천 와인 스타일</Text>
+        <Text style={styles.headerTitle}>{t('recommendationList.header')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.introContainer}>
-          <Text style={styles.introTitle}>{user?.nickname || '회원'}님에게 추천드려요!</Text>
+          <Text style={styles.introTitle}>{t('recommendationList.title', { name: user?.nickname || t('recommendationList.defaultName') })}</Text>
         </View>
 
         {recommendations && recommendations.length > 0 ? (
@@ -70,8 +72,10 @@ const RecommendationListScreen = () => {
                     </View>
                   </View>
 
-                  <Text style={styles.wineVariety}>{item.variety}</Text>
-                  {item.varietyEng && <Text style={styles.wineVarietyEng}>{item.varietyEng}</Text>}
+                  <Text style={styles.wineVariety}>
+                    {i18n.language === 'en' ? (item.varietyEng || item.variety) : item.variety}
+                  </Text>
+                  {item.varietyEng && i18n.language !== 'en' && <Text style={styles.wineVarietyEng}>{item.varietyEng}</Text>}
 
                   <View style={{ height: 4 }} />
 
@@ -87,7 +91,7 @@ const RecommendationListScreen = () => {
           </View>
         ) : (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>추천된 와인 스타일이 없습니다.</Text>
+            <Text style={styles.emptyText}>{t('recommendationList.empty')}</Text>
           </View>
         )}
       </ScrollView>

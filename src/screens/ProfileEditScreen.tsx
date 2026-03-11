@@ -21,11 +21,13 @@ import PhotoOptionsBottomSheet from "../components/common/PhotoOptionsBottomShee
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useUser } from "../context/UserContext";
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const { user, refreshUserInfo } = useUser();
   const { showAlert, showLoading, hideLoading, closeAlert } = useGlobalUI();
+  const { t } = useTranslation();
 
   const [nickname, setNickname] = useState(user?.nickname || "");
   const [profileImage, setProfileImage] = useState<string | null>(
@@ -97,16 +99,14 @@ const ProfileEditScreen = () => {
 
     const timer = setTimeout(async () => {
       if (nickname.length < 2) {
-        setNicknameError("닉네임은 2글자 이상이어야 해요.");
+        setNicknameError(t('profileEdit.nickname.errorLength'));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
       }
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nickname)) {
-        setNicknameError(
-          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).",
-        );
+        setNicknameError(t('profileEdit.nickname.errorFormat'));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
@@ -119,11 +119,11 @@ const ProfileEditScreen = () => {
           setNicknameError(null);
         } else {
           setNicknameAvailable(false);
-          setNicknameError("이미 사용 중인 닉네임이에요");
+          setNicknameError(t('profileEdit.nickname.errorDuplicate'));
         }
       } catch (e) {
         console.error(e);
-        setNicknameError("닉네임 확인 중 오류가 발생했습니다.");
+        setNicknameError(t('profileEdit.nickname.errorCheck'));
         setNicknameAvailable(false);
       } finally {
         setIsCheckingNickname(false);
@@ -138,8 +138,8 @@ const ProfileEditScreen = () => {
 
     if (nicknameError || (nickname !== user?.nickname && !nicknameAvailable)) {
       showAlert({
-        title: "알림",
-        message: nicknameError || "닉네임 확인이 필요해요.",
+        title: t('profileEdit.alert.notice'),
+        message: nicknameError || t('profileEdit.alert.needCheck'),
         singleButton: true,
       });
       return;
@@ -175,8 +175,8 @@ const ProfileEditScreen = () => {
 
       setTimeout(() => {
         showAlert({
-          title: "성공",
-          message: "프로필이 수정되었습니다.",
+          title: t('profileEdit.alert.successTitle'),
+          message: t('profileEdit.alert.successMessage'),
           singleButton: true,
         });
       }, 500);
@@ -186,8 +186,8 @@ const ProfileEditScreen = () => {
       console.error("Profile update failed:", error);
       setTimeout(() => {
         showAlert({
-          title: "오류",
-          message: "프로필 수정 중 문제가 발생했습니다.",
+          title: t('profileEdit.alert.errorTitle'),
+          message: t('profileEdit.alert.errorMessage'),
           singleButton: true,
         });
       }, 500);
@@ -203,7 +203,7 @@ const ProfileEditScreen = () => {
         >
           <Icon name="chevron-back" size={28} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>프로필 수정</Text>
+        <Text style={styles.headerTitle}>{t('profileEdit.header')}</Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -230,7 +230,7 @@ const ProfileEditScreen = () => {
         </View>
 
         <View style={styles.inputSection}>
-          <Text style={styles.label}>닉네임</Text>
+          <Text style={styles.label}>{t('profileEdit.nickname.label')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={[
@@ -238,12 +238,12 @@ const ProfileEditScreen = () => {
                 nicknameError
                   ? styles.inputError
                   : nicknameAvailable && nickname !== user?.nickname
-                  ? styles.inputSuccess
-                  : null,
+                    ? styles.inputSuccess
+                    : null,
               ]}
               value={nickname}
               onChangeText={setNickname}
-              placeholder="닉네임을 입력하세요"
+              placeholder={t('profileEdit.nickname.placeholder')}
               placeholderTextColor="#666"
               maxLength={10}
             />
@@ -251,11 +251,11 @@ const ProfileEditScreen = () => {
 
           <View style={styles.helperRow}>
             {isCheckingNickname ? (
-              <Text style={styles.helperText}>확인 중...</Text>
+              <Text style={styles.helperText}>{t('profileEdit.nickname.checking')}</Text>
             ) : nicknameError ? (
               <Text style={styles.errorText}>{nicknameError}</Text>
             ) : nicknameAvailable && nickname !== user?.nickname ? (
-              <Text style={styles.successText}>사용 가능한 닉네임입니다.</Text>
+              <Text style={styles.successText}>{t('profileEdit.nickname.success')}</Text>
             ) : null}
           </View>
         </View>
@@ -274,7 +274,7 @@ const ProfileEditScreen = () => {
               (!canSave || isSaving) && styles.saveButtonTextDisabled,
             ]}
           >
-            {isSaving ? "저장 중..." : "저장하기"}
+            {isSaving ? t('profileEdit.button.saving') : t('profileEdit.button.save')}
           </Text>
         </TouchableOpacity>
       </View>

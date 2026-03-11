@@ -23,26 +23,6 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import { colors } from '../constants/colors';
 
-const MAIL_TEMPLATES = {
-  REPORT: {
-    subject: '[오류 제보] ',
-    body: `오류를 제보해주셔서 감사합니다.
-발생한 문제에 대해 자세히 설명해 주세요. 관련 사진이나 스크린샷을 첨부해 주시면 문제 해결에 큰 도움이 됩니다.
-
-(여기에 내용을 작성해 주세요)
-
-`,
-  },
-  SUGGESTION: {
-    subject: '[기능 제안] ',
-    body: `기능을 제안해주셔서 감사합니다.
-제안하고 싶은 기능에 대해 자세히 설명해 주세요.
-
-(여기에 내용을 작성해 주세요)
-
-`,
-  },
-};
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
@@ -53,7 +33,7 @@ const SettingScreen = () => {
   const navigation = useNavigation();
   const { logout } = useUser();
   const { showAlert, showLoading, hideLoading } = useGlobalUI();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const [authType, setAuthType] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>('');
@@ -85,7 +65,7 @@ const SettingScreen = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['취소', '기기 설정에 따름', '한국어', 'English'],
+          options: [t('setting.language.cancel'), t('setting.language.system'), t('setting.language.ko'), t('setting.language.en')],
           cancelButtonIndex: 0,
         },
         (buttonIndex) => {
@@ -100,13 +80,13 @@ const SettingScreen = () => {
       );
     } else {
       Alert.alert(
-        '언어 설정',
-        '앱에서 사용할 언어를 선택해주세요.',
+        t('setting.language.title'),
+        t('setting.language.message'),
         [
-          { text: '기기 설정에 따름', onPress: () => changeAppLanguage('system') },
-          { text: '한국어', onPress: () => changeAppLanguage('ko') },
-          { text: 'English', onPress: () => changeAppLanguage('en') },
-          { text: '취소', style: 'cancel' }
+          { text: t('setting.language.system'), onPress: () => changeAppLanguage('system') },
+          { text: t('setting.language.ko'), onPress: () => changeAppLanguage('ko') },
+          { text: t('setting.language.en'), onPress: () => changeAppLanguage('en') },
+          { text: t('setting.language.cancel'), style: 'cancel' }
         ]
       );
     }
@@ -136,16 +116,16 @@ const SettingScreen = () => {
         await Linking.openURL(url);
       } else {
         showAlert({
-          title: '오류',
-          message: '링크를 열 수 없습니다.',
+          title: t('setting.alert.errorTitle'),
+          message: t('setting.alert.errorLink'),
           singleButton: true,
         });
       }
     } catch (error) {
       console.error('An error occurred', error);
       showAlert({
-        title: '오류',
-        message: '링크를 여는 중 문제가 발생했습니다.',
+        title: t('setting.alert.errorTitle'),
+        message: t('setting.alert.errorLinkOpen'),
         singleButton: true,
       });
     }
@@ -166,9 +146,8 @@ App Version: ${DeviceInfo.getVersion()}
 -------------------
 `;
 
-    const template = MAIL_TEMPLATES[type];
-    subject = template.subject;
-    body = `${template.body}${deviceInfo}`;
+    subject = type === 'REPORT' ? t('setting.mail.reportSubject') : t('setting.mail.suggestSubject');
+    body = `${type === 'REPORT' ? t('setting.mail.reportBody') : t('setting.mail.suggestBody')}${deviceInfo}`;
 
     const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
@@ -177,8 +156,8 @@ App Version: ${DeviceInfo.getVersion()}
     } catch (error) {
       console.error('An error occurred', error);
       showAlert({
-        title: '오류',
-        message: '메일 앱을 열 수 없습니다.',
+        title: t('setting.alert.mailErrorTitle'),
+        message: t('setting.alert.mailErrorMessage'),
         singleButton: true,
       });
     }
@@ -187,9 +166,9 @@ App Version: ${DeviceInfo.getVersion()}
 
   const handleLogout = () => {
     showAlert({
-      title: '로그아웃',
-      message: '정말 로그아웃 하시겠습니까?',
-      confirmText: '로그아웃',
+      title: t('setting.alert.logoutTitle'),
+      message: t('setting.alert.logoutMessage'),
+      confirmText: t('setting.alert.logoutConfirm'),
       singleButton: false,
       onConfirm: async () => {
         showLoading();
@@ -204,9 +183,9 @@ App Version: ${DeviceInfo.getVersion()}
 
   const handleDeleteAccount = () => {
     showAlert({
-      title: '회원 탈퇴',
-      message: '정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제됩니다.',
-      confirmText: '탈퇴하기',
+      title: t('setting.alert.deleteTitle'),
+      message: t('setting.alert.deleteMessage'),
+      confirmText: t('setting.alert.deleteConfirm'),
       singleButton: false,
       onConfirm: async () => {
         if (authType === 'APPLE') {
@@ -228,8 +207,8 @@ App Version: ${DeviceInfo.getVersion()}
             } else {
               console.error('Apple delete member failed:', response.message);
               showAlert({
-                title: '오류',
-                message: `회원 탈퇴 실패: ${response.message}`,
+                title: t('setting.alert.errorTitle'),
+                message: `${t('setting.alert.deleteError')} ${response.message}`,
                 singleButton: true,
               });
             }
@@ -239,8 +218,8 @@ App Version: ${DeviceInfo.getVersion()}
             }
             console.error('Apple delete member error:', error);
             showAlert({
-              title: '오류',
-              message: `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`,
+              title: t('setting.alert.errorTitle'),
+              message: `${t('setting.alert.deleteError')} ${error.message || 'Error'}`,
               singleButton: true,
             });
           }
@@ -259,41 +238,41 @@ App Version: ${DeviceInfo.getVersion()}
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="chevron-back" size={28} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>설정</Text>
+        <Text style={styles.headerTitle}>{t('setting.header')}</Text>
         <View style={{ width: 28 }} />
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>내 계정</Text>
+          <Text style={styles.sectionTitle}>{t('setting.section.account')}</Text>
           <View style={styles.item}>
-            <Text style={styles.itemText}>로그인 수단</Text>
+            <Text style={styles.itemText}>{t('setting.account.loginMethod')}</Text>
             <Text style={styles.versionText}>
               {authType === 'KAKAO' ? '카카오' : authType === 'APPLE' ? 'Apple' : authType}
             </Text>
           </View>
           <View style={styles.item}>
-            <Text style={styles.itemText}>이메일</Text>
+            <Text style={styles.itemText}>{t('setting.account.email')}</Text>
             <Text style={styles.versionText}>{userEmail}</Text>
           </View>
         </View>
 
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>앱 정보</Text>
+          <Text style={styles.sectionTitle}>{t('setting.section.appInfo')}</Text>
           <View style={styles.item}>
-            <Text style={styles.itemText}>버전 정보</Text>
+            <Text style={styles.itemText}>{t('setting.appInfo.version')}</Text>
             <Text style={styles.versionText}>{DeviceInfo.getVersion()}</Text>
           </View>
           <TouchableOpacity
             style={styles.item}
             onPress={handleChangeLanguage}
           >
-            <Text style={styles.itemText}>언어 설정</Text>
+            <Text style={styles.itemText}>{t('setting.appInfo.language')}</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text style={[styles.versionText, { marginRight: 8 }]}>
-                {currentLanguageValue === 'ko' ? '한국어' : currentLanguageValue === 'en' ? 'English' : '기본 설정'}
+                {currentLanguageValue === 'ko' ? t('setting.language.ko') : currentLanguageValue === 'en' ? t('setting.language.en') : t('setting.language.system')}
               </Text>
               <Icon name="chevron-forward" size={20} color="#666" />
             </View>
@@ -302,46 +281,46 @@ App Version: ${DeviceInfo.getVersion()}
             style={styles.item}
             onPress={() => handleLinkPress('https://web.drinkig.com/terms')}
           >
-            <Text style={styles.itemText}>이용약관</Text>
+            <Text style={styles.itemText}>{t('setting.appInfo.terms')}</Text>
             <Icon name="chevron-forward" size={20} color="#666" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.item}
             onPress={() => handleLinkPress('https://web.drinkig.com/privacy')}
           >
-            <Text style={styles.itemText}>개인정보 처리방침</Text>
+            <Text style={styles.itemText}>{t('setting.appInfo.privacy')}</Text>
             <Icon name="chevron-forward" size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>문의하기</Text>
+          <Text style={styles.sectionTitle}>{t('setting.section.contact')}</Text>
           <TouchableOpacity
             style={styles.item}
             onPress={() => handleEmailPress('REPORT')}
           >
-            <Text style={styles.itemText}>오류 제보</Text>
+            <Text style={styles.itemText}>{t('setting.contact.reportError')}</Text>
             <Icon name="bug-outline" size={20} color={colors.white} />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.item}
             onPress={() => handleEmailPress('SUGGESTION')}
           >
-            <Text style={styles.itemText}>기능 제안</Text>
+            <Text style={styles.itemText}>{t('setting.contact.suggestFeature')}</Text>
             <Icon name="bulb-outline" size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
 
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>계정 관리</Text>
+          <Text style={styles.sectionTitle}>{t('setting.section.management')}</Text>
           <TouchableOpacity style={styles.item} onPress={handleLogout}>
-            <Text style={styles.itemText}>로그아웃</Text>
+            <Text style={styles.itemText}>{t('setting.management.logout')}</Text>
             <Icon name="log-out-outline" size={20} color="#ccc" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.item} onPress={handleDeleteAccount}>
-            <Text style={[styles.itemText, styles.deleteText]}>회원 탈퇴</Text>
+            <Text style={[styles.itemText, styles.deleteText]}>{t('setting.management.deleteAccount')}</Text>
             <Icon name="trash-outline" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
