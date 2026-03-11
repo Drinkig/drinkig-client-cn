@@ -36,6 +36,19 @@ const RecommendationListScreen = () => {
     }
   };
 
+  const getWineTypeLabel = (type: string, lang: string) => {
+    if (lang !== 'en') return type;
+    switch (type) {
+      case '레드': return 'Red';
+      case '화이트': return 'White';
+      case '스파클링': return 'Sparkling';
+      case '로제': return 'Rosé';
+      case '디저트': return 'Dessert';
+      case '주정강화': return 'Fortified';
+      default: return type;
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -68,7 +81,7 @@ const RecommendationListScreen = () => {
                 <View style={styles.infoSection}>
                   <View style={styles.infoHeader}>
                     <View style={[styles.typeBadge, { backgroundColor: getWineTypeColor(item.sort) }]}>
-                      <Text style={styles.typeText}>{item.sort}</Text>
+                      <Text style={styles.typeText}>{getWineTypeLabel(item.sort, i18n.language)}</Text>
                     </View>
                   </View>
 
@@ -79,11 +92,19 @@ const RecommendationListScreen = () => {
 
                   <View style={{ height: 4 }} />
 
-                  <Text style={styles.wineRegion}>{item.country} · {item.region}</Text>
-                  {(item.countryEng || item.regionEng) && (
+                  {i18n.language === 'en' ? (
                     <Text style={styles.wineRegionEng}>
-                      {item.countryEng || ''}{(item.countryEng && item.regionEng) ? ' · ' : ''}{item.regionEng || ''}
+                      {item.countryEng || item.country}{(item.countryEng || item.country) && (item.regionEng || item.region) ? ' · ' : ''}{item.regionEng || item.region}
                     </Text>
+                  ) : (
+                    <>
+                      <Text style={styles.wineRegion}>{item.country} · {item.region}</Text>
+                      {(item.countryEng || item.regionEng) && (
+                        <Text style={styles.wineRegionEng}>
+                          {item.countryEng || ''}{(item.countryEng && item.regionEng) ? ' · ' : ''}{item.regionEng || ''}
+                        </Text>
+                      )}
+                    </>
                   )}
                 </View>
               </View>
