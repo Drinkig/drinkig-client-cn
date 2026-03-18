@@ -111,13 +111,6 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     useEffect(() => {
         const scanMenu = async () => {
             try {
-                // DEBUG: 토큰 상태 확인
-                const { getAccessToken, getRefreshToken } = require('../utils/tokenStorage');
-                const accessToken = await getAccessToken();
-                const refreshToken = await getRefreshToken();
-                console.log('[MenuScan DEBUG] accessToken:', accessToken ? `${accessToken.slice(0, 20)}...` : 'NULL');
-                console.log('[MenuScan DEBUG] refreshToken:', refreshToken ? `${refreshToken.slice(0, 20)}...` : 'NULL');
-
                 const formData = new FormData();
                 formData.append('image', {
                     uri: imageUri,
@@ -125,16 +118,6 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     type: 'image/jpeg',
                 } as any);
 
-                // ====== 1. 단독 테스트: 이 토큰으로 다른 일반 API가 정상 동작하는지 증명 ======
-                try {
-                    const testRes = await client.get('/member/info');
-                    console.log('[MenuScan DEBUG] /member/info GET 테스트 성공 ✅ (토큰 100% 정상)');
-                } catch (testErr) {
-                    console.log('[MenuScan ERROR] /member/info GET 테스트 실패! ❌ (토큰 자체가 문제임)');
-                }
-                // ==============================================================
-
-                // ====== 2. 본 스캔 API 호출 (Axios multipart/form-data) ======
                 const response = await client.post<MenuScanResponse>('/wine/menu-scan', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -144,15 +127,6 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
 
                 setData(response.data.result);
             } catch (e: any) {
-                // ====== DEBUG: 정확한 실패 원인 로깅 ======
-                console.log('[MenuScan ERROR] ---- 에러 상세 ----');
-                console.log('[MenuScan ERROR] HTTP 상태코드:', e?.response?.status);
-                console.log('[MenuScan ERROR] 응답 데이터:', JSON.stringify(e?.response?.data));
-                console.log('[MenuScan ERROR] 에러 메세지:', e?.message);
-                console.log('[MenuScan ERROR] 요청 URL:', e?.config?.url);
-                console.log('[MenuScan ERROR] 요청 헤더:', JSON.stringify(e?.config?.headers));
-                console.log('[MenuScan ERROR] -----------------');
-                // ==========================================
                 const msg =
                     e?.response?.status === 429
                         ? '오늘 스캔 횟수를 모두 사용했습니다.\n내일 다시 시도해 주세요.'
