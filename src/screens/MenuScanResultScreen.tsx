@@ -176,9 +176,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                         <Text style={styles.wineMeta} numberOfLines={1}>
                             {[item.country, item.region, item.variety].filter(Boolean).join(' · ')}
                         </Text>
-                        {item.menuPrice && (
-                            <Text style={styles.winePrice}>{item.menuPrice}</Text>
-                        )}
+
                     </View>
 
                     <ScoreRing score={item.flavorMatchScore} />
@@ -255,16 +253,16 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                             <View style={styles.unmatchedSection}>
                                 <View style={styles.unmatchedDivider} />
                                 <Text style={styles.unmatchedTitle}>
-                                    😢 아직 DB에 없는 와인 ({data.unmatchedWines.length}개)
+                                    정보를 찾지 못한 와인 ({data.unmatchedWines.length}개)
                                 </Text>
                                 <Text style={styles.unmatchedSubtitle}>
-                                    메뉴판에서 인식됐지만 아직 등록되지 않은 와인이에요.
+                                    메뉴판에서 인식했지만 상세 정보를 찾지 못했어요.
                                 </Text>
                                 {data.unmatchedWines.map((w, i) => (
                                     <View key={i} style={styles.unmatchedItem}>
-                                        <Ionicons name="wine-outline" size={16} color={colors.textTertiary} style={{ marginRight: 8 }} />
+
                                         <Text style={styles.unmatchedText}>{w.rawText}</Text>
-                                        {w.menuPrice ? <Text style={styles.unmatchedPrice}>{w.menuPrice}</Text> : null}
+
                                     </View>
                                 ))}
                             </View>
