@@ -21,6 +21,7 @@ import TastingNoteWriteScreen from "../screens/TastingNoteWriteScreen";
 import WineAddScreen from "../screens/WineAddScreen";
 import WineDetailScreen from "../screens/WineDetailScreen";
 import WishlistScreen from "../screens/WishlistScreen";
+import MenuScanResultScreen from "../screens/MenuScanResultScreen";
 import MainTabNavigator from "./MainTabNavigator";
 
 const Stack = createNativeStackNavigator();
@@ -114,6 +115,14 @@ export default function RootNavigator() {
             <Stack.Screen
               name="WineCompatibility"
               component={require("../screens/WineCompatibilityScreen").default}
+            />
+            <Stack.Screen
+              name="MenuScanResult"
+              component={MenuScanResultScreen}
+              options={{
+                presentation: "containedModal",
+                animation: "slide_from_bottom",
+              }}
             />
           </>
         )

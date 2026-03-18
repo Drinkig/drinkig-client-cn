@@ -9,7 +9,8 @@
 		<dict>
 			<key>SKAdNetworkIdentifier</key>
 			<string>cstr6suwn9.skadnetwork</string>
-		</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Drinkig needs access to your camera to scan wine menus.</string>		</dict>
 	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
@@ -40,7 +41,8 @@
 			<array>
 				<string>kakaoc1e9194a32605f9a14361085898af1c9</string>
 			</array>
-		</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Drinkig needs access to your camera to scan wine menus.</string>		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
@@ -81,5 +83,6 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Drinkig needs access to your camera to scan wine menus.</string></dict>
 </plist>
