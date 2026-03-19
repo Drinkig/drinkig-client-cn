@@ -27,13 +27,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 type Step = 'WINE_SORT' | 'BUDGET' | 'FLAVOR_PROFILE';
 
 const WINE_SORTS = ['레드', '화이트', '스파클링', '로제', '주정강화', '디저트'];
-const BUDGET_OPTIONS = [
-  { label: '3만원 이하', value: 30000 },
-  { label: '3~5만원', value: 50000 },
-  { label: '5~9만원', value: 90000 },
-  { label: '9~15만원', value: 150000 },
-  { label: '15만원 이상', value: 200000 },
-];
 
 const STEPS: Step[] = ['WINE_SORT', 'BUDGET', 'FLAVOR_PROFILE'];
 
@@ -43,6 +36,14 @@ const TasteResetScreen = () => {
   const { t } = useTranslation();
   const { user, setFlavorProfile: saveFlavorProfile } = useUser();
   const { showAlert } = useGlobalUI();
+
+  const BUDGET_OPTIONS = [
+    { label: t('onboarding.budget.under30'), value: 30000 },
+    { label: t('onboarding.budget.30to50'), value: 50000 },
+    { label: t('onboarding.budget.50to90'), value: 90000 },
+    { label: t('onboarding.budget.90to150'), value: 150000 },
+    { label: t('onboarding.budget.over150'), value: 200000 },
+  ];
 
   const LOADING_MESSAGES = [
     t('tasteReset.analyzing.message1'),

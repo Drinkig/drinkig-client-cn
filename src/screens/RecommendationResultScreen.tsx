@@ -2,18 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation, useRoute } from '@react-navigation/native'; // useRoute 추가
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useUser } from '../context/UserContext';
 import { getOnboardingRecommendation, OnboardingRecommendationDTO } from '../api/wine';
-import PentagonRadarChart from '../components/common/PentagonRadarChart'; // 차트 컴포넌트 import
+import PentagonRadarChart from '../components/common/PentagonRadarChart';
 import { colors } from '../constants/colors';
-
-
-const RANK_TITLES = [
-  "가장 추천하는 스타일",
-  "이런 스타일도 좋아요",
-  "색다른 시도라면"
-];
 
 const getWineTypeColor = (type: string) => {
   switch (type) {
@@ -35,8 +29,9 @@ const getWineTypeColor = (type: string) => {
 
 const RecommendationResultScreen = () => {
   const navigation = useNavigation();
-  const route = useRoute(); // route 훅 사용
-  const { user, completeOnboarding, setRecommendations: saveRecommendations, setFlavorProfile: saveFlavorProfile } = useUser(); // user 추가
+  const route = useRoute();
+  const { t } = useTranslation();
+  const { user, completeOnboarding, setRecommendations: saveRecommendations, setFlavorProfile: saveFlavorProfile } = useUser();
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<OnboardingRecommendationDTO[]>([]);
 
@@ -103,7 +98,7 @@ const RecommendationResultScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>회원님의 취향을 분석 중입니다...</Text>
+        <Text style={styles.loadingText}>{t('recommendationResult.loading')}</Text>
       </View>
     );
   }
@@ -111,8 +106,8 @@ const RecommendationResultScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>취향 분석 결과</Text>
-        <Text style={styles.subtitle}>회원님께 딱 맞는 와인 스타일을 찾았어요!</Text>
+        <Text style={styles.title}>{t('recommendationResult.header')}</Text>
+        <Text style={styles.subtitle}>{t('recommendationResult.subtitle')}</Text>
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -132,12 +127,9 @@ const RecommendationResultScreen = () => {
               }
             ]}
           >
-            <Text style={styles.chartTitle}>{nickname || user?.nickname}님의 입맛 취향</Text>
+            <Text style={styles.chartTitle}>{t('recommendationResult.chartTitle', { nickname: nickname || user?.nickname })}</Text>
             <PentagonRadarChart data={flavorProfile} size={220} />
-            <Text style={styles.chartHelperText}>
-              와인 고를 때 고민된다면{'\n'}
-              소믈리에나 직원에게 보여주세요
-            </Text>
+            <Text style={styles.chartHelperText}>{t('recommendationResult.chartHelper')}</Text>
           </Animated.View>
         )}
 
@@ -163,7 +155,7 @@ const RecommendationResultScreen = () => {
             >
               <View style={styles.cardHeader}>
                 <View style={styles.headerTitleContainer}>
-                  <Text style={styles.cardTitle}>{RANK_TITLES[index]}</Text>
+                  <Text style={styles.cardTitle}>{t(`recommendationResult.rankTitle${index}`)}</Text>
                 </View>
               </View>
 
@@ -189,7 +181,7 @@ const RecommendationResultScreen = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleComplete}>
-          <Text style={styles.buttonText}>{fromReset ? '확인' : '드링키지 시작하기'}</Text>
+          <Text style={styles.buttonText}>{fromReset ? t('recommendationResult.buttonReset') : t('recommendationResult.button')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 interface NewbieCheckStepProps {
@@ -9,10 +10,12 @@ interface NewbieCheckStepProps {
 }
 
 const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.content}>
       <Text style={styles.stepTitle}>
-        {name}님은{'\n'}와인에 대해 얼마나 알고 계신가요?
+        {t('onboarding.newbieCheck.question', { name })}
       </Text>
 
       <TouchableOpacity
@@ -20,8 +23,8 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
         onPress={() => onSelect(true)}
       >
         <View style={styles.cardTextContainer}>
-          <Text style={styles.cardTitle}>아직 잘 모르겠어요</Text>
-          <Text style={styles.cardDesc}>내 취향을 알아가고 싶어요.</Text>
+          <Text style={styles.cardTitle}>{t('onboarding.newbieCheck.newbieTitle')}</Text>
+          <Text style={styles.cardDesc}>{t('onboarding.newbieCheck.newbieDesc')}</Text>
         </View>
         <Image
           source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')}
@@ -35,8 +38,8 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
         onPress={() => onSelect(false)}
       >
         <View style={styles.cardTextContainer}>
-          <Text style={styles.cardTitle}>즐겨 마시는 편이에요</Text>
-          <Text style={styles.cardDesc}>좋아하는 품종이나 국가가 확실해요.</Text>
+          <Text style={styles.cardTitle}>{t('onboarding.newbieCheck.expertTitle')}</Text>
+          <Text style={styles.cardDesc}>{t('onboarding.newbieCheck.expertDesc')}</Text>
         </View>
         <Image
           source={require('../../assets/onboarding/Drinky_onboarding_2.png')}

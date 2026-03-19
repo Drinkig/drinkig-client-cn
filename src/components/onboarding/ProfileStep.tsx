@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 interface ProfileStepProps {
@@ -20,9 +21,11 @@ const ProfileStep = ({
   errorMessage,
   isValid
 }: ProfileStepProps) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.content}>
-      <Text style={styles.stepTitle}>프로필 사진과{'\n'}닉네임을 입력해주세요</Text>
+      <Text style={styles.stepTitle}>{t('onboarding.profile.title')}</Text>
 
       <TouchableOpacity style={styles.profileImageBtn} onPress={onPickImage}>
         {profileImageUri ? (
@@ -30,13 +33,13 @@ const ProfileStep = ({
         ) : (
           <View style={styles.profilePlaceholder}>
             <Icon name="camera-outline" size={32} color="#666" />
-            <Text style={styles.profileImageText}>사진 선택</Text>
+            <Text style={styles.profileImageText}>{t('onboarding.profile.photoBtn')}</Text>
           </View>
         )}
       </TouchableOpacity>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>닉네임</Text>
+        <Text style={styles.label}>{t('onboarding.profile.nicknameLabel')}</Text>
         <TextInput
           style={[
             styles.input,
@@ -44,7 +47,7 @@ const ProfileStep = ({
           ]}
           value={name}
           onChangeText={onNameChange}
-          placeholder="닉네임을 입력하세요"
+          placeholder={t('onboarding.profile.nicknamePlaceholder')}
           placeholderTextColor="#666"
           autoCapitalize="none"
         />
@@ -52,9 +55,9 @@ const ProfileStep = ({
           {errorMessage ? (
             <Text style={styles.errorText}>{errorMessage}</Text>
           ) : isValid ? (
-            <Text style={styles.successText}>사용 가능한 닉네임입니다.</Text>
+            <Text style={styles.successText}>{t('onboarding.profile.nicknameAvailable')}</Text>
           ) : (
-            <Text style={styles.helperText}>2글자 이상 입력해주세요.</Text>
+            <Text style={styles.helperText}>{t('onboarding.profile.nicknameHelper')}</Text>
           )}
         </View>
       </View>
@@ -120,10 +123,10 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   inputError: {
-    borderColor: colors.error, // Red
+    borderColor: colors.error,
   },
   inputSuccess: {
-    borderColor: '#2ecc71', // Green
+    borderColor: '#2ecc71',
   },
   helperRow: {
     flexDirection: 'row',

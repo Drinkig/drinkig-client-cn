@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 interface TransitionStepProps {
@@ -8,6 +9,8 @@ interface TransitionStepProps {
 }
 
 const TransitionStep = ({ isNewbie, name }: TransitionStepProps) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.centerContent}>
       <Image
@@ -16,8 +19,8 @@ const TransitionStep = ({ isNewbie, name }: TransitionStepProps) => {
         resizeMode="contain"
       />
       <Text style={styles.title}>
-        좋아요 {name}님{'\n'}
-        {isNewbie ? '제가 취향을 찾아드릴게요!' : '취향을 등록해주세요!'}
+        {t('onboarding.transition.title', { name })}{'\n'}
+        {isNewbie ? t('onboarding.transition.newbieMessage') : t('onboarding.transition.expertMessage')}
       </Text>
     </View>
   );
@@ -40,7 +43,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     textAlign: 'center',
     marginBottom: 10,
-    lineHeight: 32, // 줄바꿈 시 간격 확보
+    lineHeight: 32,
   },
 });
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 interface BudgetOption {
@@ -14,18 +15,20 @@ interface BudgetStepProps {
 }
 
 const BudgetStep = ({ selectedPrice, onSelect, options }: BudgetStepProps) => {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.content}>
-      <Text style={styles.stepTitle}>월 평균 와인 구매 비용</Text>
-      <Text style={styles.stepDesc}>어느 정도의 가격대를 선호하시나요?</Text>
-      
+      <Text style={styles.stepTitle}>{t('onboarding.budget.title')}</Text>
+      <Text style={styles.stepDesc}>{t('onboarding.budget.subtitle')}</Text>
+
       {options.map((opt) => (
-        <TouchableOpacity 
+        <TouchableOpacity
           key={opt.value}
           style={[styles.selectionCard, selectedPrice === opt.value && styles.selectedCard]}
           onPress={() => onSelect(opt.value)}
         >
-            <Text style={[styles.cardTitle, {fontSize: 16}]}>{opt.label}</Text>
+          <Text style={[styles.cardTitle, { fontSize: 16 }]}>{opt.label}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -70,4 +73,3 @@ const styles = StyleSheet.create({
 });
 
 export default BudgetStep;
-

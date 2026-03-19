@@ -435,6 +435,148 @@
         "empty": "No recommended wine styles available.",
         "resetButton": "Get New Recommendations"
     },
+    "onboarding": {
+        "intro": {
+            "title": "Hello!\nI'm Drinky, your sommelier.",
+            "desc": "I'll analyze your wine preferences\nthrough a few questions."
+        },
+        "profile": {
+            "title": "Set your profile photo\nand nickname",
+            "photoBtn": "Choose Photo",
+            "nicknameLabel": "Nickname",
+            "nicknamePlaceholder": "Enter your nickname",
+            "nicknameAvailable": "Nickname is available.",
+            "nicknameHelper": "Please enter at least 2 characters."
+        },
+        "newbieCheck": {
+            "question": "{{name}},\nhow familiar are you with wine?",
+            "newbieTitle": "I'm still learning",
+            "newbieDesc": "I want to discover my own taste.",
+            "expertTitle": "I drink fairly often",
+            "expertDesc": "I know my favorite grape varieties and regions."
+        },
+        "transition": {
+            "title": "Great, {{name}}!",
+            "newbieMessage": "I'll help you find your taste!",
+            "expertMessage": "Let's register your preferences!"
+        },
+        "alcoholPrefTitle": "What types of alcohol do you enjoy?",
+        "foodPrefTitle": "What foods do you like to pair with wine?",
+        "wineSortTitle": "What wine types would you like recommended?",
+        "flavorProfile": {
+            "title": "My Palate Analysis",
+            "subtitle": "Choose your preferred intensity for each.",
+            "unknownBtn": "Not sure",
+            "weak": "Weak",
+            "medium": "Medium",
+            "strong": "Strong",
+            "low": "Low",
+            "high": "High",
+            "acidity": { "label": "Acidity", "desc": "Sharpness and sourness" },
+            "sweetness": { "label": "Sweetness", "desc": "Level of sweetness" },
+            "tannin": { "label": "Tannin", "desc": "Dryness and astringency" },
+            "body": { "label": "Body", "desc": "Weight and richness" },
+            "alcohol": { "label": "Alcohol", "desc": "Alcohol warmth" }
+        },
+        "budget": {
+            "title": "Monthly Wine Budget",
+            "subtitle": "What price range do you prefer?",
+            "under30": "Under ₩30,000",
+            "30to50": "₩30,000–50,000",
+            "50to90": "₩50,000–90,000",
+            "90to150": "₩90,000–150,000",
+            "over150": "₩150,000+"
+        },
+        "selection": {
+            "multiDesc": "You can select multiple.",
+            "customPlaceholder": "Enter custom"
+        },
+        "newbieFlavorProfile": {
+            "alcohol": {
+                "title": "Alcohol",
+                "question": "How much alcohol\ndo you prefer in wine?",
+                "opt1Label": "Light & refreshing", "opt1Desc": "e.g. Beer, light cider",
+                "opt2Label": "Enjoyably mild", "opt2Desc": "e.g. Highball, cocktails",
+                "opt3Label": "Moderate buzz", "opt3Desc": "e.g. Half a bottle of soju",
+                "opt4Label": "Strong buzz", "opt4Desc": "e.g. Makgeolli, 2+ bottles",
+                "opt5Label": "Intense & bold", "opt5Desc": "e.g. Whisky, baijiu"
+            },
+            "body": {
+                "title": "Body",
+                "question": "What weight do you prefer\nin your mouth?",
+                "opt1Label": "Light & watery", "opt1Desc": "e.g. Still water",
+                "opt2Label": "Lightly weighted", "opt2Desc": "e.g. Sports drink",
+                "opt3Label": "Medium weight", "opt3Desc": "e.g. Orange juice, milk",
+                "opt4Label": "Rich & full", "opt4Desc": "e.g. Thick soy milk",
+                "opt5Label": "Dense & velvety", "opt5Desc": "e.g. Yogurt, espresso"
+            },
+            "sweetness": {
+                "title": "Sweetness",
+                "question": "How sweet do you\nprefer your wine?",
+                "opt1Label": "Bone dry", "opt1Desc": "e.g. Black iced coffee",
+                "opt2Label": "Subtly sweet", "opt2Desc": "e.g. Café latte",
+                "opt3Label": "Pleasantly sweet", "opt3Desc": "e.g. Grapefruit ade",
+                "opt4Label": "Noticeably sweet", "opt4Desc": "e.g. Vanilla latte, cola",
+                "opt5Label": "Very sweet", "opt5Desc": "e.g. Caramel macchiato"
+            },
+            "acidity": {
+                "title": "Acidity",
+                "question": "How much acidity\ndo you prefer in wine?",
+                "opt1Label": "Almost no acidity", "opt1Desc": "e.g. Banana, melon",
+                "opt2Label": "Gentle freshness", "opt2Desc": "e.g. Peach, red apple",
+                "opt3Label": "Balanced sweet-sour", "opt3Desc": "e.g. Strawberry, grape",
+                "opt4Label": "Zesty & bright", "opt4Desc": "e.g. Pineapple, orange",
+                "opt5Label": "Sharp & intense", "opt5Desc": "e.g. Lemon, lime"
+            },
+            "tannin": {
+                "title": "Tannin",
+                "question": "How much tannin\ndo you prefer in wine?",
+                "opt1Label": "No tannin", "opt1Desc": "e.g. Grape juice",
+                "opt2Label": "Silky smooth", "opt2Desc": "e.g. Milk tea",
+                "opt3Label": "Slightly grippy", "opt3Desc": "e.g. Green tea",
+                "opt4Label": "Coating sensation", "opt4Desc": "e.g. Dark chocolate (72%)",
+                "opt5Label": "Strong & drying", "opt5Desc": "e.g. Espresso"
+            }
+        },
+        "loading": {
+            "message0": "Analyzing your preferences...",
+            "message1": "Reviewing your flavor profile...",
+            "message2": "Finding the perfect grape varieties...",
+            "message3": "Matching wine data from around the world...",
+            "message4": "Found the best match for {{nickname}}!"
+        },
+        "nicknameError": {
+            "minLength": "Nickname must be at least 2 characters.",
+            "format": "Invalid format (standalone consonants/vowels not allowed).",
+            "duplicate": "This nickname is already taken.",
+            "checkFail": "An error occurred while checking the nickname."
+        },
+        "error": {
+            "title": "Error",
+            "saveMessage": "A problem occurred while saving your information."
+        },
+        "button": {
+            "saving": "Saving...",
+            "ok": "Let's go",
+            "next": "Next",
+            "selectComplete": "Done",
+            "goFindTaste": "Find My Taste",
+            "goRegisterTaste": "Register My Taste",
+            "viewResult": "See Results"
+        }
+    },
+    "recommendationResult": {
+        "loading": "Analyzing your preferences...",
+        "header": "Taste Analysis",
+        "subtitle": "We found the perfect wine styles for you!",
+        "chartTitle": "{{nickname}}'s Palate Profile",
+        "chartHelper": "Feeling unsure about wine?\nShow this to a sommelier or staff.",
+        "rankTitle0": "Top Recommendation",
+        "rankTitle1": "You Might Also Like",
+        "rankTitle2": "Try Something Different",
+        "button": "Start Drinkig",
+        "buttonReset": "Done"
+    },
     "menuScanResult": {
         "header": "Menu Scan Result",
         "loading": {

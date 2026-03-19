@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { FlavorProfile } from './FlavorProfileStep';
 import { colors } from '../../constants/colors';
 
@@ -16,66 +17,26 @@ type FlavorOption = {
   description: string;
 };
 
-const NEWBIE_FLAVOR_DATA: Record<keyof FlavorProfile, { title: string; question: string; options: FlavorOption[] }> = {
-  alcohol: {
-    title: '알코올 (Alcohol)',
-    question: `와인에서 어느 정도의\n알코올(취기)을 원하시나요?`,
-    options: [
-      { score: 1, emoji: '🍺', label: '가벼운 음료수 같은 술', description: 'ex) 맥주, 이슬톡톡' },
-      { score: 2, emoji: '🍹', label: '맛있게 즐기는 정도', description: 'ex) 하이볼, 칵테일' },
-      { score: 3, emoji: '🍶', label: '적당한 취기', description: 'ex) 소주 반 병~한 병' },
-      { score: 4, emoji: '🥣', label: '확실한 취기', description: 'ex) 막걸리, 소주 2병 이상' },
-      { score: 5, emoji: '🥃', label: '강렬한 독주', description: 'ex) 위스키, 고량주' },
-    ],
-  },
-  body: {
-    title: '바디감 (Body)',
-    question: `입안에 머금었을 때\n어떤 느낌(무게감)을 원하시나요?`,
-    options: [
-      { score: 1, emoji: '💧', label: '가볍고 찰랑거리는 느낌', description: 'ex) 생수' },
-      { score: 2, emoji: '🍵', label: '가벼운 무게감', description: 'ex) 이온음료, 보리차' },
-      { score: 3, emoji: '🍊', label: '적당한 무게감', description: 'ex) 오렌지 주스, 우유' },
-      { score: 4, emoji: '🥛', label: '묵직하고 꽉 찬 느낌', description: 'ex) 진한 두유, 미숫가루' },
-      { score: 5, emoji: '☕', label: '아주 진한 밀도감', description: 'ex) 요거트, 에스프레소' },
-    ],
-  },
-  sweetness: {
-    title: '당도 (Sweetness)',
-    question: `와인에서 어느 정도의\n단맛(당도)을 원하시나요?`,
-    options: [
-      { score: 1, emoji: '☕', label: '단맛이 없는 깔끔함', description: 'ex) 아이스 아메리카노' },
-      { score: 2, emoji: '🥛', label: '아주 은은한 단맛', description: 'ex) 카페라떼의 고소한 단맛' },
-      { score: 3, emoji: '🍊', label: '적당한 단맛', description: 'ex) 자몽 에이드의 상큼달콤함' },
-      { score: 4, emoji: '🥤', label: '확실한 달콤함', description: 'ex) 바닐라 라떼, 콜라' },
-      { score: 5, emoji: '🍰', label: '진한 달콤함', description: 'ex) 카라멜 마끼아또, 초코 쉐이크' },
-    ],
-  },
-  acidity: {
-    title: '산도 (Acidity)',
-    question: `와인에서 어느 정도의\n신맛(산미)을 선호하시나요?`,
-    options: [
-      { score: 1, emoji: '🍈', label: '신맛이 거의 없는', description: 'ex) 바나나, 멜론' },
-      { score: 2, emoji: '🍑', label: '편안한 상큼함', description: 'ex) 복숭아, 적사과' },
-      { score: 3, emoji: '🍓', label: '적당한 새콤달콤함', description: 'ex) 딸기, 포도' },
-      { score: 4, emoji: '🍍', label: '짜릿한 신맛', description: 'ex) 파인애플, 오렌지' },
-      { score: 5, emoji: '🍋', label: '강렬한 신맛', description: 'ex) 레몬, 라임' },
-    ],
-  },
-  tannin: {
-    title: '타닌 (Tannin)',
-    question: `와인에서 어느 정도의\n떫은맛(타닌)을 원하시나요?`,
-    options: [
-      { score: 1, emoji: '🧃', label: '떫은맛이 없는', description: 'ex) 포도 주스' },
-      { score: 2, emoji: '🧋', label: '부드러운 정도', description: 'ex) 밀크티' },
-      { score: 3, emoji: '🍵', label: '살짝 쌉싸름한 정도', description: 'ex) 녹차' },
-      { score: 4, emoji: '🍫', label: '입안이 코팅되는 느낌', description: 'ex) 다크 초콜릿(72%)' },
-      { score: 5, emoji: '☕', label: '강한 떫은맛', description: 'ex) 진한 에스프레소' },
-    ],
-  },
+const NEWBIE_FLAVOR_EMOJIS: Record<keyof FlavorProfile, string[]> = {
+  alcohol: ['🍺', '🍹', '🍶', '🥣', '🥃'],
+  body: ['💧', '🍵', '🍊', '🥛', '☕'],
+  sweetness: ['☕', '🥛', '🍊', '🥤', '🍰'],
+  acidity: ['🍈', '🍑', '🍓', '🍍', '🍋'],
+  tannin: ['🧃', '🧋', '🍵', '🍫', '☕'],
 };
 
 const NewbieFlavorProfileStep = ({ attribute, value, onChange }: NewbieFlavorProfileStepProps) => {
-  const data = NEWBIE_FLAVOR_DATA[attribute];
+  const { t } = useTranslation();
+  const emojis = NEWBIE_FLAVOR_EMOJIS[attribute];
+  const data = {
+    question: t(`onboarding.newbieFlavorProfile.${attribute}.question`),
+    options: [1, 2, 3, 4, 5].map((score) => ({
+      score,
+      emoji: emojis[score - 1],
+      label: t(`onboarding.newbieFlavorProfile.${attribute}.opt${score}Label`),
+      description: t(`onboarding.newbieFlavorProfile.${attribute}.opt${score}Desc`),
+    })),
+  };
 
   if (!data) return null;
 

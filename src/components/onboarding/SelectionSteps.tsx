@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 interface SelectionStepProps {
@@ -43,6 +44,7 @@ export const SingleSelectionStep = ({ title, options, selected, onSelect }: Sele
 };
 
 export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, allowCustomInput }: MultiSelectionStepProps) => {
+  const { t } = useTranslation();
   const [isInputVisible, setIsInputVisible] = useState(false);
   const [inputText, setInputText] = useState('');
 
@@ -60,7 +62,7 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
   return (
     <View style={styles.content}>
       <Text style={styles.stepTitle}>{title}</Text>
-      <Text style={styles.stepDesc}>여러 개 선택 가능해요.</Text>
+      <Text style={styles.stepDesc}>{t('onboarding.selection.multiDesc')}</Text>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
           {options.map((opt) => {
@@ -84,7 +86,7 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
                       style={styles.textInput}
                       value={inputText}
                       onChangeText={setInputText}
-                      placeholder="직접 입력"
+                      placeholder={t('onboarding.selection.customPlaceholder')}
                       placeholderTextColor={colors.textSecondary}
                       autoFocus
                       onSubmitEditing={handleCustomSubmit}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 export interface FlavorProfile {
@@ -16,15 +17,18 @@ interface FlavorProfileStepProps {
   attribute?: keyof FlavorProfile;
 }
 
-const FLAVOR_ITEMS: { key: keyof FlavorProfile; label: string; description: string }[] = [
-  { key: 'acidity', label: '산도', description: '침이 고이는 신맛의 정도' },
-  { key: 'sweetness', label: '당도', description: '달콤함의 정도' },
-  { key: 'tannin', label: '타닌', description: '떫은 맛의 정도' },
-  { key: 'body', label: '바디', description: '입안에서의 무게감' },
-  { key: 'alcohol', label: '알코올', description: '알코올 도수감' },
-];
+type FlavorKey = keyof FlavorProfile;
 
 const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps) => {
+  const { t } = useTranslation();
+
+  const FLAVOR_ITEMS: { key: FlavorKey; label: string; description: string }[] = [
+    { key: 'acidity', label: t('onboarding.flavorProfile.acidity.label'), description: t('onboarding.flavorProfile.acidity.desc') },
+    { key: 'sweetness', label: t('onboarding.flavorProfile.sweetness.label'), description: t('onboarding.flavorProfile.sweetness.desc') },
+    { key: 'tannin', label: t('onboarding.flavorProfile.tannin.label'), description: t('onboarding.flavorProfile.tannin.desc') },
+    { key: 'body', label: t('onboarding.flavorProfile.body.label'), description: t('onboarding.flavorProfile.body.desc') },
+    { key: 'alcohol', label: t('onboarding.flavorProfile.alcohol.label'), description: t('onboarding.flavorProfile.alcohol.desc') },
+  ];
 
   const itemsToRender = attribute
     ? FLAVOR_ITEMS.filter(item => item.key === attribute)
@@ -52,15 +56,13 @@ const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps
               styles.unknownText,
               currentValue === 2.5 && styles.unknownTextSelected
             ]}>
-              모르겠어요
+              {t('onboarding.flavorProfile.unknownBtn')}
             </Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.sliderContainer}>
-
           <View style={styles.trackLine} />
-
 
           <View style={styles.dotsContainer}>
             {[1, 2, 3, 4, 5].map((score) => (
@@ -70,27 +72,27 @@ const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps
                 onPress={() => onChange(item.key, score)}
                 activeOpacity={0.8}
               >
-
                 <View style={[
                   styles.dot,
                   currentValue === score && styles.selectedDot,
                 ]} />
-
-
               </TouchableOpacity>
             ))}
           </View>
 
-
           <View style={styles.sliderLabels}>
             <View style={styles.labelWrapper}>
-              <Text style={styles.sliderLabelText}>{item.key === 'alcohol' ? '낮음' : '약함'}</Text>
+              <Text style={styles.sliderLabelText}>
+                {item.key === 'alcohol' ? t('onboarding.flavorProfile.low') : t('onboarding.flavorProfile.weak')}
+              </Text>
             </View>
             <View style={styles.labelWrapper}>
-              <Text style={styles.sliderLabelText}>보통</Text>
+              <Text style={styles.sliderLabelText}>{t('onboarding.flavorProfile.medium')}</Text>
             </View>
             <View style={styles.labelWrapper}>
-              <Text style={styles.sliderLabelText}>{item.key === 'alcohol' ? '높음' : '강함'}</Text>
+              <Text style={styles.sliderLabelText}>
+                {item.key === 'alcohol' ? t('onboarding.flavorProfile.high') : t('onboarding.flavorProfile.strong')}
+              </Text>
             </View>
           </View>
         </View>
@@ -100,8 +102,8 @@ const FlavorProfileStep = ({ data, onChange, attribute }: FlavorProfileStepProps
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>내 입맛 분석</Text>
-      <Text style={styles.subtitle}>선호하는 맛의 정도를 선택해주세요.</Text>
+      <Text style={styles.title}>{t('onboarding.flavorProfile.title')}</Text>
+      <Text style={styles.subtitle}>{t('onboarding.flavorProfile.subtitle')}</Text>
 
       <View style={[styles.content, attribute && styles.centeredContent]}>
         {itemsToRender.map(renderItem)}
@@ -198,7 +200,6 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-
   },
   dot: {
     width: 8,
@@ -243,4 +244,3 @@ const styles = StyleSheet.create({
 });
 
 export default FlavorProfileStep;
-

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 const IntroStep = () => {
-  const fullTitle = "안녕하세요!\n저는 소믈리에 드링키에요.";
-  const fullDesc = "몇 가지 질문을 통해 회원님의 와인 취향을\n분석하고 추천해드릴게요.";
+  const { t } = useTranslation();
+  const fullTitle = t('onboarding.intro.title');
+  const fullDesc = t('onboarding.intro.desc');
 
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
@@ -81,7 +83,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 32,
-
     minHeight: 64,
   },
   desc: {
@@ -89,7 +90,6 @@ const styles = StyleSheet.create({
     color: '#aaa',
     textAlign: 'center',
     lineHeight: 24,
-
     minHeight: 48,
   },
 });

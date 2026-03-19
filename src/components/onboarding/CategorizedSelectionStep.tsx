@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
 
 interface Category {
@@ -17,6 +18,7 @@ interface CategorizedSelectionStepProps {
 }
 
 export const CategorizedSelectionStep = ({ title, categories, selected, onSelect, allowCustomInput }: CategorizedSelectionStepProps) => {
+    const { t } = useTranslation();
     const [isInputVisible, setIsInputVisible] = useState(false);
     const [inputText, setInputText] = useState('');
 
@@ -35,7 +37,7 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
     return (
         <View style={styles.content}>
             <Text style={styles.stepTitle}>{title}</Text>
-            <Text style={styles.stepDesc}>여러 개 선택 가능해요.</Text>
+            <Text style={styles.stepDesc}>{t('onboarding.selection.multiDesc')}</Text>
 
             {/* ScrollView Container with Gradients */}
             <View style={{ flex: 1 }}>
@@ -64,7 +66,7 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
                                                         style={styles.textInput}
                                                         value={inputText}
                                                         onChangeText={setInputText}
-                                                        placeholder="직접 입력"
+                                                        placeholder={t('onboarding.selection.customPlaceholder')}
                                                         placeholderTextColor={colors.textSecondary}
                                                         autoFocus
                                                         onSubmitEditing={handleCustomSubmit}

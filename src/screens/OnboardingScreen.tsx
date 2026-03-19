@@ -23,6 +23,7 @@ import {
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useUser } from "../context/UserContext";
 
+import { useTranslation } from "react-i18next";
 import { logScreen } from "utils/analytics";
 import BudgetStep from "../components/onboarding/BudgetStep";
 import { CategorizedSelectionStep } from "../components/onboarding/CategorizedSelectionStep";
@@ -195,28 +196,30 @@ const WINE_VARIETIES = [
   "SYRAH",
   "RIESLING",
 ];
-const BUDGET_OPTIONS = [
-  { label: "3만원 이하", value: 30000 },
-  { label: "3~5만원", value: 50000 },
-  { label: "5~9만원", value: 90000 },
-  { label: "9~15만원", value: 150000 },
-  { label: "15만원 이상", value: 200000 },
-];
-
-const LOADING_MESSAGES = [
-  "작성해주신 취향을 분석하고 있어요...",
-  "좋아하는 맛과 향을 꼼꼼히 확인 중이에요...",
-  "입맛에 딱 맞는 품종을 찾는 중이에요...",
-  "전 세계 와인 품종 데이터를 매칭하고 있어요...",
-  "{nickname}님에게 가장 잘 어울리는 품종을 찾았어요!",
-];
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const OnboardingScreen = () => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const { completeOnboarding } = useUser();
   const { showAlert } = useGlobalUI();
+
+  const BUDGET_OPTIONS = [
+    { label: t('onboarding.budget.under30'), value: 30000 },
+    { label: t('onboarding.budget.30to50'), value: 50000 },
+    { label: t('onboarding.budget.50to90'), value: 90000 },
+    { label: t('onboarding.budget.90to150'), value: 150000 },
+    { label: t('onboarding.budget.over150'), value: 200000 },
+  ];
+
+  const LOADING_MESSAGES = [
+    t('onboarding.loading.message0'),
+    t('onboarding.loading.message1'),
+    t('onboarding.loading.message2'),
+    t('onboarding.loading.message3'),
+    t('onboarding.loading.message4'),
+  ];
 
   const [step, setStep] = useState<Step>("INTRO");
   const [formData, setFormData] = useState<OnboardingData>(INITIAL_DATA);
@@ -364,16 +367,14 @@ const OnboardingScreen = () => {
 
     const timer = setTimeout(async () => {
       if (formData.name.length < 2) {
-        setNicknameError("닉네임은 2글자 이상이어야 해요.");
+        setNicknameError(t('onboarding.nicknameError.minLength'));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
       }
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(formData.name)) {
-        setNicknameError(
-          "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가)."
-        );
+        setNicknameError(t('onboarding.nicknameError.format'));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
@@ -386,10 +387,10 @@ const OnboardingScreen = () => {
           setNicknameError(null);
         } else {
           setNicknameAvailable(false);
-          setNicknameError("이미 사용 중인 닉네임이에요");
+          setNicknameError(t('onboarding.nicknameError.duplicate'));
         }
       } catch (e) {
-        setNicknameError("닉네임 확인 중 오류가 발생했습니다.");
+        setNicknameError(t('onboarding.nicknameError.checkFail'));
         setNicknameAvailable(false);
       } finally {
         setIsCheckingNickname(false);
@@ -518,8 +519,8 @@ const OnboardingScreen = () => {
     } catch (error) {
       console.error("Onboarding Error:", error);
       showAlert({
-        title: "오류",
-        message: "정보 저장 중 문제가 발생했습니다.",
+        title: t('onboarding.error.title'),
+        message: t('onboarding.error.saveMessage'),
         singleButton: true,
       });
       setLoading(false);
@@ -749,7 +750,7 @@ const OnboardingScreen = () => {
       case "ALCOHOL_PREF":
         return (
           <CategorizedSelectionStep
-            title="평소에 어떤 술을 즐기시나요?"
+            title={t('onboarding.alcoholPrefTitle')}
             categories={ALCOHOL_CATEGORIES}
             selected={formData.preferredAlcohols}
             onSelect={(v: string) => toggleSelection("preferredAlcohols", v)}
@@ -759,7 +760,7 @@ const OnboardingScreen = () => {
       case "FOOD_PREF":
         return (
           <CategorizedSelectionStep
-            title="어떤 음식과 함께 즐기고 싶나요?"
+            title={t('onboarding.foodPrefTitle')}
             categories={FOOD_CATEGORIES}
             selected={formData.preferredFoods}
             onSelect={(v: string) => toggleSelection("preferredFoods", v)}
@@ -816,7 +817,7 @@ const OnboardingScreen = () => {
       case "WINE_INTEREST":
         return (
           <MultiSelectionStep
-            title="추천 받고 싶은 와인 종류는?"
+            title={t('onboarding.wineSortTitle')}
             options={WINE_SORTS}
             selected={formData.wineSort}
             onSelect={(v: string) => toggleSelection("wineSort", v)}
@@ -837,23 +838,23 @@ const OnboardingScreen = () => {
   };
 
   const getButtonText = () => {
-    if (loading) return "저장 중...";
+    if (loading) return t('onboarding.button.saving');
 
     switch (step) {
       case "INTRO":
-        return "좋아요";
+        return t('onboarding.button.ok');
       case "PROFILE":
-        return "다음";
+        return t('onboarding.button.next');
       case "NEWBIE_CHECK":
-        return "선택 완료";
+        return t('onboarding.button.selectComplete');
       case "NEWBIE_TRANSITION":
-        return "취향 찾으러 가기";
+        return t('onboarding.button.goFindTaste');
       case "EXPERT_TRANSITION":
-        return "취향 등록하러 가기";
+        return t('onboarding.button.goRegisterTaste');
       case "BUDGET":
-        return "결과 보기";
+        return t('onboarding.button.viewResult');
       default:
-        return "다음";
+        return t('onboarding.button.next');
     }
   };
 
@@ -937,10 +938,9 @@ const OnboardingScreen = () => {
           </View>
 
           <Text style={styles.analyzingText}>
-            {LOADING_MESSAGES[analyzingIndex].replace(
-              "{nickname}",
-              formData.name
-            )}
+            {analyzingIndex === 4
+              ? t('onboarding.loading.message4', { nickname: formData.name })
+              : LOADING_MESSAGES[analyzingIndex]}
           </Text>
         </View>
       )}
