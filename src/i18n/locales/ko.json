@@ -577,6 +577,23 @@
         "button": "드링키지 시작하기",
         "buttonReset": "확인"
     },
+    "camera": {
+        "permissionRequired": "카메라 접근 권한이 필요합니다",
+        "permissionAllow": "권한 허용",
+        "permissionAlertTitle": "카메라 권한 필요",
+        "permissionAlertMessage": "설정에서 카메라 접근을 허용해 주세요.",
+        "close": "닫기",
+        "scanTypeLabel": "와인 라벨",
+        "scanTypeList": "와인 리스트",
+        "guideLabel": "와인 라벨을 프레임에 맞춰주세요",
+        "guideList": "와인 리스트를 프레임에 맞춰주세요",
+        "captureError": "사진 촬영 중 오류가 발생했습니다.",
+        "errorTitle": "오류",
+        "simulatorTitle": "시뮬레이터",
+        "simulatorMessage": "촬영 모드: {{mode}}\n실제 기기에서 테스트해 주세요.",
+        "simulatorPreview": "시뮬레이터 미리보기",
+        "gallery": "갤러리"
+    },
     "menuScanResult": {
         "header": "메뉴판 스캔 결과",
         "loading": {

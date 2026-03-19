@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,11 +9,15 @@ import {
     StatusBar,
     Alert,
     ActivityIndicator,
+    Animated,
 } from 'react-native';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import ImageResizer from '@bam.tech/react-native-image-resizer';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { colors } from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -23,6 +27,8 @@ type ScanType = 'label' | 'list';
 type Props = NativeStackScreenProps<any, 'Camera'>;
 
 export default function CameraScreen({ navigation }: Props) {
+    const { t } = useTranslation();
+    const insets = useSafeAreaInsets();
     const { hasPermission, requestPermission } = useCameraPermission();
     const device = useCameraDevice('back');
     const cameraRef = useRef<Camera>(null);
@@ -31,12 +37,45 @@ export default function CameraScreen({ navigation }: Props) {
     const [scanType, setScanType] = useState<ScanType>('label');
     const [capturing, setCapturing] = useState(false);
 
+    // Toggle sliding animation
+    const toggleAnim = useRef(new Animated.Value(0)).current;
+    // Frame size animation (label vs list have different aspect ratios)
+    const frameHeightAnim = useRef(new Animated.Value(FRAME_LABEL_HEIGHT)).current;
+
+    useEffect(() => {
+        const toValue = scanType === 'label' ? 0 : 1;
+        const frameHeight = scanType === 'label' ? FRAME_LABEL_HEIGHT : FRAME_LIST_HEIGHT;
+        Animated.parallel([
+            Animated.spring(toggleAnim, {
+                toValue,
+                useNativeDriver: true,
+                friction: 8,
+                tension: 70,
+            }),
+            Animated.spring(frameHeightAnim, {
+                toValue: frameHeight,
+                useNativeDriver: false,
+                friction: 8,
+                tension: 70,
+            }),
+        ]).start();
+    }, [scanType]);
+
     const handleClose = useCallback(() => {
         navigation.goBack();
     }, [navigation]);
 
     const handleCapture = useCallback(async () => {
-        if (!cameraRef.current || capturing) return;
+        if (capturing) return;
+
+        // Simulator: no real camera, just show alert
+        if (__DEV__ && !cameraRef.current) {
+            const mode = scanType === 'label' ? t('camera.scanTypeLabel') : t('camera.scanTypeList');
+            Alert.alert(t('camera.simulatorTitle'), t('camera.simulatorMessage', { mode }));
+            return;
+        }
+
+        if (!cameraRef.current) return;
         try {
             setCapturing(true);
             const photo = await cameraRef.current.takePhoto({
@@ -60,16 +99,38 @@ export default function CameraScreen({ navigation }: Props) {
                 scanType,
             });
         } catch (e) {
-            Alert.alert('오류', '사진 촬영 중 오류가 발생했습니다.');
+            Alert.alert(t('camera.errorTitle'), t('camera.captureError'));
         } finally {
             setCapturing(false);
         }
     }, [capturing, flashOn, navigation, scanType]);
 
+    const handleGallery = useCallback(async () => {
+        const result = await launchImageLibrary({ mediaType: 'photo' });
+        if (result.assets && result.assets[0]?.uri) {
+            try {
+                const resized = await ImageResizer.createResizedImage(
+                    result.assets[0].uri,
+                    1920,
+                    1920,
+                    'JPEG',
+                    80,
+                    0,
+                );
+                navigation.replace('MenuScanResult', {
+                    imageUri: resized.uri,
+                    scanType,
+                });
+            } catch (e) {
+                Alert.alert(t('camera.errorTitle'), t('camera.captureError'));
+            }
+        }
+    }, [navigation, scanType, t]);
+
     const handleRequestPermission = useCallback(async () => {
         const granted = await requestPermission();
         if (!granted) {
-            Alert.alert('카메라 권한 필요', '설정에서 카메라 접근을 허용해 주세요.');
+            Alert.alert(t('camera.permissionAlertTitle'), t('camera.permissionAlertMessage'));
         }
     }, [requestPermission]);
 
@@ -78,18 +139,21 @@ export default function CameraScreen({ navigation }: Props) {
             <View style={styles.permissionContainer}>
                 <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
                 <Ionicons name="camera-outline" size={64} color={colors.textSecondary} />
-                <Text style={styles.permissionText}>카메라 접근 권한이 필요합니다</Text>
+                <Text style={styles.permissionText}>{t('camera.permissionRequired')}</Text>
                 <TouchableOpacity style={styles.permissionButton} onPress={handleRequestPermission}>
-                    <Text style={styles.permissionButtonText}>권한 허용</Text>
+                    <Text style={styles.permissionButtonText}>{t('camera.permissionAllow')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.permissionClose} onPress={handleClose}>
-                    <Text style={styles.permissionCloseText}>닫기</Text>
+                    <Text style={styles.permissionCloseText}>{t('camera.close')}</Text>
                 </TouchableOpacity>
             </View>
         );
     }
 
-    if (!device) {
+    // In dev mode without camera device (simulator), show mock UI
+    const isSimulator = __DEV__ && !device;
+
+    if (!device && !__DEV__) {
         return (
             <View style={styles.permissionContainer}>
                 <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
@@ -105,28 +169,48 @@ export default function CameraScreen({ navigation }: Props) {
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-            {/* Camera Preview */}
-            <Camera
-                ref={cameraRef}
-                style={StyleSheet.absoluteFill}
-                device={device}
-                isActive={true}
-                photo={true}
-                torch={flashOn ? 'on' : 'off'}
-            />
+            {/* Camera Preview (or mock background for simulator) */}
+            {isSimulator ? (
+                <View style={[StyleSheet.absoluteFill, styles.mockCamera]}>
+                    <Ionicons name="camera" size={48} color="rgba(255,255,255,0.15)" />
+                    <Text style={styles.mockText}>{t('camera.simulatorPreview')}</Text>
+                </View>
+            ) : (
+                <Camera
+                    ref={cameraRef}
+                    style={StyleSheet.absoluteFill}
+                    device={device!}
+                    isActive={true}
+                    photo={true}
+                    torch={flashOn ? 'on' : 'off'}
+                />
+            )}
 
-            {/* Grid Overlay */}
-            <View style={styles.gridOverlay} pointerEvents="none">
-                {/* Horizontal lines */}
-                <View style={[styles.gridLine, styles.gridLineHorizontal, { top: height / 3 }]} />
-                <View style={[styles.gridLine, styles.gridLineHorizontal, { top: (height / 3) * 2 }]} />
-                {/* Vertical lines */}
-                <View style={[styles.gridLine, styles.gridLineVertical, { left: width / 3 }]} />
-                <View style={[styles.gridLine, styles.gridLineVertical, { left: (width / 3) * 2 }]} />
+            {/* Dimmed overlay with cutout frame */}
+            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                {/* Semi-transparent background around the frame */}
+                <View style={styles.dimOverlay} />
+                {/* Center row: dim | frame | dim */}
+                <View style={styles.frameCenterRow}>
+                    <View style={styles.dimSide} />
+                    <Animated.View style={[styles.frameCutout, { width: FRAME_WIDTH, height: frameHeightAnim }]}>
+                        {/* Corner brackets */}
+                        <View style={[styles.corner, styles.cornerTL]} />
+                        <View style={[styles.corner, styles.cornerTR]} />
+                        <View style={[styles.corner, styles.cornerBL]} />
+                        <View style={[styles.corner, styles.cornerBR]} />
+                        {/* Guide text */}
+                        <Text style={styles.guideText}>
+                            {scanType === 'label' ? t('camera.guideLabel') : t('camera.guideList')}
+                        </Text>
+                    </Animated.View>
+                    <View style={styles.dimSide} />
+                </View>
+                <View style={styles.dimOverlay} />
             </View>
 
             {/* Top Controls */}
-            <View style={styles.topBar}>
+            <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
                 <TouchableOpacity style={styles.topButton} onPress={handleClose}>
                     <Ionicons name="close" size={28} color={colors.white} />
                 </TouchableOpacity>
@@ -144,28 +228,50 @@ export default function CameraScreen({ navigation }: Props) {
             <View style={styles.bottomBar}>
                 {/* Scan Type Toggle */}
                 <View style={styles.toggleContainer}>
+                    {/* Sliding pill indicator */}
+                    <Animated.View
+                        style={[
+                            styles.togglePill,
+                            {
+                                transform: [{
+                                    translateX: toggleAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0, TOGGLE_BTN_WIDTH],
+                                    }),
+                                }],
+                            },
+                        ]}
+                    />
                     <TouchableOpacity
-                        style={[styles.toggleButton, scanType === 'label' && styles.toggleButtonActive]}
+                        style={styles.toggleButton}
                         onPress={() => setScanType('label')}
                         activeOpacity={0.8}
                     >
                         <Text style={[styles.toggleText, scanType === 'label' && styles.toggleTextActive]}>
-                            와인 라벨
+                            {t('camera.scanTypeLabel')}
                         </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        style={[styles.toggleButton, scanType === 'list' && styles.toggleButtonActive]}
+                        style={styles.toggleButton}
                         onPress={() => setScanType('list')}
                         activeOpacity={0.8}
                     >
                         <Text style={[styles.toggleText, scanType === 'list' && styles.toggleTextActive]}>
-                            와인 리스트
+                            {t('camera.scanTypeList')}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Shutter */}
+                {/* Shutter row */}
                 <View style={styles.shutterRow}>
+                    <TouchableOpacity
+                        style={styles.galleryButton}
+                        onPress={handleGallery}
+                        activeOpacity={0.7}
+                    >
+                        <Ionicons name="images-outline" size={26} color={colors.white} />
+                    </TouchableOpacity>
+
                     <TouchableOpacity
                         style={[styles.shutterButton, capturing && styles.shutterButtonDisabled]}
                         onPress={handleCapture}
@@ -178,21 +284,43 @@ export default function CameraScreen({ navigation }: Props) {
                             <View style={styles.shutterInner} />
                         )}
                     </TouchableOpacity>
+
+                    <View style={styles.shutterSpacer} />
                 </View>
             </View>
         </View>
     );
 }
 
-const TOP_BAR_HEIGHT = Platform.OS === 'ios' ? 100 : 70;
 const BOTTOM_BAR_HEIGHT = Platform.OS === 'ios' ? 200 : 180;
 const SHUTTER_SIZE = 72;
 const SHUTTER_INNER_SIZE = 58;
+
+// Frame dimensions
+const FRAME_WIDTH = width * 0.78;
+const FRAME_LABEL_HEIGHT = FRAME_WIDTH * 1.1;  // label: slightly taller than wide
+const FRAME_LIST_HEIGHT = FRAME_WIDTH * 1.45;  // list: much taller for menus
+const CORNER_SIZE = 28;
+const CORNER_THICKNESS = 3;
+
+// Toggle dimensions
+const TOGGLE_BTN_WIDTH = 104;
+const TOGGLE_PADDING = 4;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
+    },
+    mockCamera: {
+        backgroundColor: '#1a1a2e',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 12,
+    },
+    mockText: {
+        color: 'rgba(255,255,255,0.25)',
+        fontSize: 14,
     },
     permissionContainer: {
         flex: 1,
@@ -227,21 +355,66 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         fontSize: 14,
     },
-    // Grid
-    gridOverlay: {
-        ...StyleSheet.absoluteFillObject,
+    // Frame overlay
+    dimOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.55)',
     },
-    gridLine: {
+    frameCenterRow: {
+        flexDirection: 'row',
+    },
+    dimSide: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+    },
+    frameCutout: {
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: 20,
+        borderRadius: 12,
+    },
+    guideText: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    // Corner brackets
+    corner: {
         position: 'absolute',
-        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+        width: CORNER_SIZE,
+        height: CORNER_SIZE,
     },
-    gridLineHorizontal: {
-        width: '100%',
-        height: 1,
+    cornerTL: {
+        top: 0,
+        left: 0,
+        borderTopWidth: CORNER_THICKNESS,
+        borderLeftWidth: CORNER_THICKNESS,
+        borderColor: colors.white,
+        borderTopLeftRadius: 12,
     },
-    gridLineVertical: {
-        height: '100%',
-        width: 1,
+    cornerTR: {
+        top: 0,
+        right: 0,
+        borderTopWidth: CORNER_THICKNESS,
+        borderRightWidth: CORNER_THICKNESS,
+        borderColor: colors.white,
+        borderTopRightRadius: 12,
+    },
+    cornerBL: {
+        bottom: 0,
+        left: 0,
+        borderBottomWidth: CORNER_THICKNESS,
+        borderLeftWidth: CORNER_THICKNESS,
+        borderColor: colors.white,
+        borderBottomLeftRadius: 12,
+    },
+    cornerBR: {
+        bottom: 0,
+        right: 0,
+        borderBottomWidth: CORNER_THICKNESS,
+        borderRightWidth: CORNER_THICKNESS,
+        borderColor: colors.white,
+        borderBottomRightRadius: 12,
     },
     // Top bar
     topBar: {
@@ -249,13 +422,11 @@ const styles = StyleSheet.create({
         top: 0,
         left: 0,
         right: 0,
-        height: TOP_BAR_HEIGHT,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-end',
+        alignItems: 'center',
         paddingHorizontal: 20,
         paddingBottom: 12,
-        backgroundColor: 'rgba(0,0,0,0.35)',
     },
     topButton: {
         width: 44,
@@ -291,17 +462,25 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         backgroundColor: 'rgba(255,255,255,0.12)',
         borderRadius: 24,
-        padding: 4,
+        padding: TOGGLE_PADDING,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
     },
+    togglePill: {
+        position: 'absolute',
+        top: TOGGLE_PADDING,
+        left: TOGGLE_PADDING,
+        width: TOGGLE_BTN_WIDTH,
+        height: 34,
+        borderRadius: 20,
+        backgroundColor: colors.primary,
+    },
     toggleButton: {
-        paddingHorizontal: 24,
+        width: TOGGLE_BTN_WIDTH,
         paddingVertical: 8,
         borderRadius: 20,
-    },
-    toggleButtonActive: {
-        backgroundColor: colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     toggleText: {
         fontSize: 14,
@@ -312,10 +491,24 @@ const styles = StyleSheet.create({
         color: colors.white,
         fontWeight: '600',
     },
-    // Shutter
+    // Shutter row
     shutterRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        paddingHorizontal: 48,
+    },
+    galleryButton: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: 'rgba(255,255,255,0.15)',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    shutterSpacer: {
+        width: 48,
     },
     shutterButton: {
         width: SHUTTER_SIZE,

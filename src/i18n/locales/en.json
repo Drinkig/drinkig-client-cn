@@ -577,6 +577,23 @@
         "button": "Start Drinkig",
         "buttonReset": "Done"
     },
+    "camera": {
+        "permissionRequired": "Camera access is required",
+        "permissionAllow": "Allow Access",
+        "permissionAlertTitle": "Camera Permission Required",
+        "permissionAlertMessage": "Please allow camera access in Settings.",
+        "close": "Close",
+        "scanTypeLabel": "Wine Label",
+        "scanTypeList": "Wine List",
+        "guideLabel": "Align the wine label within the frame",
+        "guideList": "Align the wine list within the frame",
+        "captureError": "An error occurred while capturing the photo.",
+        "errorTitle": "Error",
+        "simulatorTitle": "Simulator",
+        "simulatorMessage": "Capture mode: {{mode}}\nPlease test on a real device.",
+        "simulatorPreview": "Simulator Preview",
+        "gallery": "Gallery"
+    },
     "menuScanResult": {
         "header": "Menu Scan Result",
         "loading": {
