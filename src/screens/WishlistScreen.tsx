@@ -137,7 +137,7 @@ export default function WishlistScreen() {
       <View style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#E50914" />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
           <FlatList

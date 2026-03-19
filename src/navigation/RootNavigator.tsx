@@ -135,7 +135,7 @@ export default function RootNavigator() {
               name="MenuScanResult"
               component={MenuScanResultScreen}
               options={{
-                presentation: "containedModal",
+                presentation: "fullScreenModal",
                 animation: "slide_from_bottom",
               }}
             />
