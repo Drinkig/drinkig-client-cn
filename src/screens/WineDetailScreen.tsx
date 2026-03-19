@@ -472,19 +472,15 @@ export default function WineDetailScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} stickyHeaderIndices={[2]} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        <View>
+        {(isLoading && !apiWineDetail) || imageUri ? (
           <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
               <ActivityIndicator size="large" color={colors.primary} />
-            ) : (imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
             ) : (
-              <View style={styles.imagePlaceholder}>
-                <MaterialCommunityIcons name="bottle-wine" size={80} color="#ccc" />
-              </View>
-            ))}
+              <Image source={{ uri: imageUri! }} style={styles.wineImage} resizeMode="contain" />
+            )}
             {!isMyWineItem && (
               <TouchableOpacity
                 style={styles.compatibilityButton}
@@ -505,30 +501,52 @@ export default function WineDetailScreen() {
               </TouchableOpacity>
             )}
           </View>
-          <View style={styles.infoContainer}>
-            {i18n.language === 'en' ? (
-              <Text style={styles.wineNameKor}>{nameEng || nameKor}</Text>
-            ) : (
-              <>
-                <Text style={styles.wineNameKor}>{nameKor}</Text>
-                {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
-              </>
-            )}
-
-            <View style={styles.tagContainer}>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{type}</Text>
-              </View>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{country}</Text>
-              </View>
-              <View style={styles.tag}>
-                <Text style={styles.tagText}>{grape}</Text>
-              </View>
+        ) : (
+          !isMyWineItem && (
+            <View style={styles.compatibilityButtonContainer}>
+              <TouchableOpacity
+                style={styles.compatibilityButton}
+                onPress={() => navigation.navigate('WineCompatibility', {
+                  userProfile: flavorProfile,
+                  wineStats: {
+                    sweetness: features?.sweetness,
+                    acidity: features?.acidity,
+                    tannin: features?.tannin,
+                    body: features?.body,
+                    alcohol: 0,
+                  },
+                  wineName: nameKor
+                })}
+              >
+                <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />
+                <Text style={styles.compatibilityButtonText}>{t('wineDetail.compatibility')}</Text>
+              </TouchableOpacity>
             </View>
+          )
+        )}
+        <View style={styles.infoContainer}>
+          {i18n.language === 'en' ? (
+            <Text style={styles.wineNameKor}>{nameEng || nameKor}</Text>
+          ) : (
+            <>
+              <Text style={styles.wineNameKor}>{nameKor}</Text>
+              {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
+            </>
+          )}
 
-
+          <View style={styles.tagContainer}>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>{type}</Text>
+            </View>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>{country}</Text>
+            </View>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>{grape}</Text>
+            </View>
           </View>
+
+
         </View>
 
 
@@ -692,7 +710,8 @@ export default function WineDetailScreen() {
             </TouchableOpacity>
           </View>
         </>
-      )}
+      )
+      }
 
 
 
@@ -705,7 +724,7 @@ export default function WineDetailScreen() {
       />
 
 
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 
@@ -752,13 +771,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '90%',
   },
-  imagePlaceholder: {
-    width: 120,
-    height: 180,
-    backgroundColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
+  compatibilityButtonContainer: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   infoContainer: {
     padding: 24,

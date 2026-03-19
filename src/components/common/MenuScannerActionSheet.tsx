@@ -66,7 +66,7 @@ const MenuScannerActionSheet = ({
                 style={[styles.sheetContainer, { transform: [{ translateY }] }]}
             >
                 <View style={styles.header}>
-                    <Text style={styles.title}>와인 메뉴판 스캔하기</Text>
+                    <Text style={styles.title}>와인 · 메뉴판 스캔하기</Text>
                 </View>
 
                 <View style={styles.optionsContainer}>

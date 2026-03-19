@@ -185,7 +185,17 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             <TouchableOpacity
                 style={[styles.wineCard, isBest && styles.wineCardHighlight]}
                 activeOpacity={0.75}
-                onPress={() => navigation.navigate('WineDetail', { wineId: item.wineId })}
+                onPress={() => navigation.navigate('WineDetail', {
+                    wine: {
+                        id: item.wineId,
+                        nameKor: item.nameKor,
+                        nameEng: item.nameEng,
+                        type: item.sort,
+                        country: item.country,
+                        grape: item.variety,
+                        imageUri: item.imageUrl ?? undefined,
+                    },
+                })}
             >
                 {isBest && (
                     <View style={styles.bestBadge}>
@@ -195,14 +205,12 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                 )}
                 <View style={styles.wineCardRow}>
                     {/* Wine image + sort color bar */}
-                    <View style={styles.wineImageContainer}>
-                        {item.imageUrl ? (
+                    {item.imageUrl ? (
+                        <View style={styles.wineImageContainer}>
                             <Image source={{ uri: item.imageUrl }} style={styles.wineImage} resizeMode="contain" />
-                        ) : (
-                            <Ionicons name="wine" size={24} color={colors.primary} />
-                        )}
-                        <View style={[styles.sortBar, { backgroundColor: SORT_COLORS[item.sort] }]} />
-                    </View>
+                            <View style={[styles.sortBar, { backgroundColor: SORT_COLORS[item.sort] }]} />
+                        </View>
+                    ) : null}
 
                     {/* Wine info */}
                     <View style={styles.wineInfo}>
@@ -285,7 +293,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
 
                 <FlatList
                     data={sorted}
-                    keyExtractor={item => String(item.wineId)}
+                    keyExtractor={(item, index) => `${item.wineId}-${index}`}
                     renderItem={renderWineItem}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
