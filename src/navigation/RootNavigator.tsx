@@ -23,6 +23,7 @@ import WineAddScreen from "../screens/WineAddScreen";
 import WineDetailScreen from "../screens/WineDetailScreen";
 import WishlistScreen from "../screens/WishlistScreen";
 import MenuScanResultScreen from "../screens/MenuScanResultScreen";
+import CameraScreen from "../screens/CameraScreen";
 import MainTabNavigator from "./MainTabNavigator";
 
 const Stack = createNativeStackNavigator();
@@ -121,6 +122,14 @@ export default function RootNavigator() {
             <Stack.Screen
               name="WineCompatibility"
               component={require("../screens/WineCompatibilityScreen").default}
+            />
+            <Stack.Screen
+              name="Camera"
+              component={CameraScreen}
+              options={{
+                presentation: "fullScreenModal",
+                animation: "fade",
+              }}
             />
             <Stack.Screen
               name="MenuScanResult"

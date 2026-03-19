@@ -7,7 +7,6 @@ import {
     Animated,
     Platform,
     LayoutChangeEvent,
-    Alert,
 } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { BlurView } from '@react-native-community/blur';
@@ -15,9 +14,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import { colors } from '../../constants/colors';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
-import ImageResizer from '@bam.tech/react-native-image-resizer';
-import MenuScannerActionSheet from '../common/MenuScannerActionSheet';
 
 const { width } = Dimensions.get('window');
 
@@ -36,7 +32,6 @@ const ALL_TABS = [...LEFT_TABS, ...RIGHT_TABS];
 
 export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
     const [containerWidth, setContainerWidth] = useState(0);
-    const [showActionSheet, setShowActionSheet] = useState(false);
     const slideAnim = useRef(new Animated.Value(0)).current;
     const cameraScale = useRef(new Animated.Value(1)).current;
 
@@ -83,42 +78,7 @@ export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarPro
             Animated.timing(cameraScale, { toValue: 0.88, duration: 100, useNativeDriver: true }),
             Animated.spring(cameraScale, { toValue: 1, friction: 4, useNativeDriver: true }),
         ]).start();
-        setShowActionSheet(true);
-    };
-
-    const processAndNavigate = async (uri: string) => {
-        try {
-            const resized = await ImageResizer.createResizedImage(
-                uri,
-                1920, // maxWidth
-                1920, // maxHeight
-                'JPEG',
-                80,   // quality
-                0,    // rotation
-            );
-            (navigation as any).navigate('MenuScanResult', { imageUri: resized.uri });
-        } catch (e) {
-            Alert.alert('오류', '이미지 처리 중 오류가 발생했습니다.');
-        }
-    };
-
-    const handleSelectCamera = async () => {
-        const result: ImagePickerResponse = await launchCamera({
-            mediaType: 'photo',
-            saveToPhotos: false,
-        });
-        if (result.assets && result.assets[0]?.uri) {
-            await processAndNavigate(result.assets[0].uri);
-        }
-    };
-
-    const handleSelectLibrary = async () => {
-        const result: ImagePickerResponse = await launchImageLibrary({
-            mediaType: 'photo',
-        });
-        if (result.assets && result.assets[0]?.uri) {
-            await processAndNavigate(result.assets[0].uri);
-        }
+        (navigation as any).navigate('Camera');
     };
 
     const renderTab = (routeName: string) => {
@@ -172,9 +132,8 @@ export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarPro
     };
 
     return (
-        <>
-            <View style={styles.container}>
-                {/* Main pill tab bar */}
+        <View style={styles.container}>
+            {/* Main pill tab bar */}
                 <View style={styles.tabBarContainer}>
                     <View style={styles.glassContainer}>
                         <BlurView
@@ -234,16 +193,7 @@ export const CustomTabBar = ({ state, descriptors, navigation }: BottomTabBarPro
                         </LinearGradient>
                     </TouchableOpacity>
                 </Animated.View>
-            </View>
-
-            {/* Action sheet rendered outside the pill so it covers full screen */}
-            <MenuScannerActionSheet
-                visible={showActionSheet}
-                onClose={() => setShowActionSheet(false)}
-                onSelectCamera={handleSelectCamera}
-                onSelectLibrary={handleSelectLibrary}
-            />
-        </>
+        </View>
     );
 };
 
