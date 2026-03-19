@@ -28,7 +28,12 @@ const GlobalComponents = () => {
           if (alertConfig?.onConfirm) alertConfig.onConfirm();
           closeAlert();
         }}
+        onCancel={() => {
+          if (alertConfig?.onCancel) alertConfig.onCancel();
+          closeAlert();
+        }}
         confirmText={alertConfig?.confirmText}
+        cancelText={alertConfig?.cancelText}
         singleButton={alertConfig?.singleButton}
       />
     </>

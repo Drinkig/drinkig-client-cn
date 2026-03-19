@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -17,19 +17,87 @@ import { useTranslation } from 'react-i18next';
 import { MemberInitRequest, updateMemberInitInfo } from '../api/member';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
-import FlavorProfileStep, { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
+import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
+import NewbieFlavorProfileStep from '../components/onboarding/NewbieFlavorProfileStep';
 import { MultiSelectionStep } from '../components/onboarding/SelectionSteps';
+import { CategorizedSelectionStep } from '../components/onboarding/CategorizedSelectionStep';
 import BudgetStep from '../components/onboarding/BudgetStep';
 import { colors } from '../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-type Step = 'WINE_SORT' | 'BUDGET' | 'FLAVOR_PROFILE';
+type Step =
+  | 'ALCOHOL_PREF'
+  | 'FOOD_PREF'
+  | 'FLAVOR_ACIDITY'
+  | 'FLAVOR_SWEETNESS'
+  | 'FLAVOR_TANNIN'
+  | 'FLAVOR_BODY'
+  | 'FLAVOR_ALCOHOL'
+  | 'WINE_INTEREST'
+  | 'BUDGET';
 
 const WINE_SORTS = ['레드', '화이트', '스파클링', '로제', '주정강화', '디저트'];
 
-const STEPS: Step[] = ['WINE_SORT', 'BUDGET', 'FLAVOR_PROFILE'];
+const ALCOHOL_CATEGORIES = [
+  {
+    title: '맥주',
+    data: ['라거', '에일', 'IPA', '스타우트/흑맥주', '밀맥주', '사워'],
+  },
+  {
+    title: '위스키/브랜디',
+    data: ['싱글몰트', '블렌디드', '버번', '아이리시', '꼬냑/아르마냑'],
+  },
+  {
+    title: '소주/전통주',
+    data: ['소주', '증류식 소주', '약주/청주', '막걸리/탁주', '과실주'],
+  },
+  {
+    title: '와인',
+    data: ['레드 와인', '화이트 와인', '스파클링', '로제', '내추럴', '주정강화'],
+  },
+  {
+    title: '기타 주류',
+    data: ['사케', '진', '보드카', '럼', '데킬라', '하이볼', '칵테일', '기타'],
+  },
+];
 
+const FOOD_CATEGORIES = [
+  {
+    title: '국가 별',
+    data: [
+      '한식', '중식', '일식', '양식', '이탈리아', '프랑스', '스페인',
+      '아메리칸 차이니즈', '베트남', '태국', '인도', '멕시코', '남미', '퓨전',
+    ],
+  },
+  {
+    title: '육류',
+    data: [
+      '돼지고기', '소고기', '닭고기', '양고기', '스테이크', '바베큐',
+      '순대', '곱창', '족발/보쌈',
+    ],
+  },
+  {
+    title: '해산물',
+    data: ['갑각류', '조개류', '회', '숙성사시미', '찜/탕', '스시', '장어', '생선구이'],
+  },
+  {
+    title: '기타',
+    data: ['치즈', '샤퀴테리', '피자', '햄버거', '과일', '디저트', '스낵/과자'],
+  },
+];
+
+const STEPS: Step[] = [
+  'ALCOHOL_PREF',
+  'FOOD_PREF',
+  'FLAVOR_ACIDITY',
+  'FLAVOR_SWEETNESS',
+  'FLAVOR_TANNIN',
+  'FLAVOR_BODY',
+  'FLAVOR_ALCOHOL',
+  'WINE_INTEREST',
+  'BUDGET',
+];
 
 const TasteResetScreen = () => {
   const navigation = useNavigation();
@@ -46,12 +114,16 @@ const TasteResetScreen = () => {
   ];
 
   const LOADING_MESSAGES = [
-    t('tasteReset.analyzing.message1'),
-    t('tasteReset.analyzing.message2'),
-    t('tasteReset.analyzing.message3'),
+    t('onboarding.loading.message0'),
+    t('onboarding.loading.message1'),
+    t('onboarding.loading.message2'),
+    t('onboarding.loading.message3'),
+    t('onboarding.loading.message4', { nickname: user?.nickname }),
   ];
 
-  const [currentStep, setCurrentStep] = useState<Step>('WINE_SORT');
+  const [currentStep, setCurrentStep] = useState<Step>('ALCOHOL_PREF');
+  const [preferredAlcohols, setPreferredAlcohols] = useState<string[]>([]);
+  const [preferredFoods, setPreferredFoods] = useState<string[]>([]);
   const [wineSort, setWineSort] = useState<string[]>([]);
   const [monthPrice, setMonthPrice] = useState(0);
   const [flavorProfile, setFlavorProfile] = useState<FlavorProfile>({
@@ -64,12 +136,83 @@ const TasteResetScreen = () => {
 
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [analyzingIndex, setAnalyzingIndex] = useState(0);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(1 / STEPS.length)).current;
-  const circleProgress = useRef(new Animated.Value(0)).current;
+  const loadingBarAnim = useRef(new Animated.Value(0)).current;
+
+  const CIRCLE_SIZE = 120;
+  const STROKE_WIDTH = 8;
+  const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
+  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+  const strokeDashoffset = loadingBarAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [CIRCUMFERENCE, 0],
+  });
+
+  useEffect(() => {
+    if (analyzing) {
+      setAnalyzingIndex(0);
+      loadingBarAnim.setValue(0);
+
+      const times = [2000, 3000, 5000, 8000];
+
+      const timeout1 = setTimeout(() => setAnalyzingIndex(1), times[0]);
+      const timeout2 = setTimeout(() => setAnalyzingIndex(2), times[1]);
+      const timeout3 = setTimeout(() => setAnalyzingIndex(3), times[2]);
+      const timeout4 = setTimeout(() => setAnalyzingIndex(4), times[3]);
+
+      Animated.sequence([
+        Animated.timing(loadingBarAnim, {
+          toValue: 0.3,
+          duration: 2000,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(loadingBarAnim, {
+          toValue: 0.6,
+          duration: 4000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(loadingBarAnim, {
+          toValue: 0.85,
+          duration: 2000,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(loadingBarAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      return () => {
+        clearTimeout(timeout1);
+        clearTimeout(timeout2);
+        clearTimeout(timeout3);
+        clearTimeout(timeout4);
+        loadingBarAnim.stopAnimation();
+      };
+    }
+  }, [analyzing]);
+
+  const toggleAlcohol = (value: string) => {
+    setPreferredAlcohols((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
+
+  const toggleFood = (value: string) => {
+    setPreferredFoods((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    );
+  };
 
   const toggleWineSort = (value: string) => {
     setWineSort((prev) =>
@@ -83,18 +226,24 @@ const TasteResetScreen = () => {
 
   const isStepValid = (): boolean => {
     switch (currentStep) {
-      case 'WINE_SORT':
+      case 'ALCOHOL_PREF':
+        return preferredAlcohols.length > 0;
+      case 'FOOD_PREF':
+        return preferredFoods.length > 0;
+      case 'FLAVOR_ACIDITY':
+        return flavorProfile.acidity !== undefined;
+      case 'FLAVOR_SWEETNESS':
+        return flavorProfile.sweetness !== undefined;
+      case 'FLAVOR_TANNIN':
+        return flavorProfile.tannin !== undefined;
+      case 'FLAVOR_BODY':
+        return flavorProfile.body !== undefined;
+      case 'FLAVOR_ALCOHOL':
+        return flavorProfile.alcohol !== undefined;
+      case 'WINE_INTEREST':
         return wineSort.length > 0;
       case 'BUDGET':
         return monthPrice > 0;
-      case 'FLAVOR_PROFILE':
-        return (
-          flavorProfile.acidity !== undefined &&
-          flavorProfile.sweetness !== undefined &&
-          flavorProfile.tannin !== undefined &&
-          flavorProfile.body !== undefined &&
-          flavorProfile.alcohol !== undefined
-        );
       default:
         return false;
     }
@@ -144,7 +293,7 @@ const TasteResetScreen = () => {
     try {
       const requestData: MemberInitRequest = {
         name: user?.nickname || '',
-        isNewbie: false,
+        isNewbie: true,
         monthPrice,
         wineSort,
         acidity: flavorProfile.acidity ?? null,
@@ -154,41 +303,24 @@ const TasteResetScreen = () => {
         alcohol: flavorProfile.alcohol ?? null,
         wineArea: null,
         wineVariety: null,
-        preferredAlcohols: null,
-        preferredFoods: null,
+        preferredAlcohols,
+        preferredFoods,
       };
 
       await updateMemberInitInfo(requestData);
 
       setLoading(false);
       setAnalyzing(true);
-      setLoadingMessageIndex(0);
-
-      const messageInterval = setInterval(() => {
-        setLoadingMessageIndex((prev) => {
-          if (prev >= LOADING_MESSAGES.length - 1) {
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, 3000);
-
-      Animated.timing(circleProgress, {
-        toValue: 1,
-        duration: 8000,
-        easing: Easing.linear,
-        useNativeDriver: false,
-      }).start();
 
       setTimeout(() => {
-        clearInterval(messageInterval);
+        setAnalyzing(false);
         saveFlavorProfile(flavorProfile);
         (navigation as any).replace('RecommendationResult', {
           flavorProfile,
           nickname: user?.nickname,
           fromReset: true,
         });
-      }, 8000);
+      }, 10000);
     } catch (error) {
       console.error('Taste Reset Error:', error);
       showAlert({
@@ -220,10 +352,70 @@ const TasteResetScreen = () => {
 
   const renderStep = () => {
     switch (currentStep) {
-      case 'WINE_SORT':
+      case 'ALCOHOL_PREF':
+        return (
+          <CategorizedSelectionStep
+            title={t('onboarding.alcoholPrefTitle')}
+            categories={ALCOHOL_CATEGORIES}
+            selected={preferredAlcohols}
+            onSelect={toggleAlcohol}
+            allowCustomInput
+          />
+        );
+      case 'FOOD_PREF':
+        return (
+          <CategorizedSelectionStep
+            title={t('onboarding.foodPrefTitle')}
+            categories={FOOD_CATEGORIES}
+            selected={preferredFoods}
+            onSelect={toggleFood}
+            allowCustomInput
+          />
+        );
+      case 'FLAVOR_ACIDITY':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="acidity"
+            value={flavorProfile.acidity}
+            onChange={(val) => updateFlavorProfile('acidity', val)}
+          />
+        );
+      case 'FLAVOR_SWEETNESS':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="sweetness"
+            value={flavorProfile.sweetness}
+            onChange={(val) => updateFlavorProfile('sweetness', val)}
+          />
+        );
+      case 'FLAVOR_TANNIN':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="tannin"
+            value={flavorProfile.tannin}
+            onChange={(val) => updateFlavorProfile('tannin', val)}
+          />
+        );
+      case 'FLAVOR_BODY':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="body"
+            value={flavorProfile.body}
+            onChange={(val) => updateFlavorProfile('body', val)}
+          />
+        );
+      case 'FLAVOR_ALCOHOL':
+        return (
+          <NewbieFlavorProfileStep
+            attribute="alcohol"
+            value={flavorProfile.alcohol}
+            onChange={(val) => updateFlavorProfile('alcohol', val)}
+          />
+        );
+      case 'WINE_INTEREST':
         return (
           <MultiSelectionStep
-            title={t('tasteReset.wineSortTitle')}
+            title={t('onboarding.wineSortTitle')}
             options={WINE_SORTS}
             selected={wineSort}
             onSelect={toggleWineSort}
@@ -238,70 +430,10 @@ const TasteResetScreen = () => {
             options={BUDGET_OPTIONS}
           />
         );
-      case 'FLAVOR_PROFILE':
-        return (
-          <FlavorProfileStep
-            data={flavorProfile}
-            onChange={updateFlavorProfile}
-          />
-        );
       default:
         return null;
     }
   };
-
-  if (analyzing) {
-    const size = 120;
-    const strokeWidth = 4;
-    const radius = (size - strokeWidth) / 2;
-    const circumference = 2 * Math.PI * radius;
-
-    return (
-      <SafeAreaView style={styles.analyzingContainer}>
-        <View style={styles.analyzingContent}>
-          <View style={styles.circleContainer}>
-            <Svg width={size} height={size} style={{ transform: [{ rotate: '-90deg' }] }}>
-              <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke="#333"
-                strokeWidth={strokeWidth}
-                fill="none"
-              />
-              <AnimatedCircle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke={colors.primary}
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={circleProgress.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [circumference, 0],
-                })}
-              />
-            </Svg>
-            <Text style={styles.circleEmoji}>🍷</Text>
-          </View>
-          <Text style={styles.analyzingTitle}>{t('tasteReset.analyzing.title')}</Text>
-          <Text style={styles.analyzingMessage}>
-            {LOADING_MESSAGES[loadingMessageIndex]}
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -346,10 +478,60 @@ const TasteResetScreen = () => {
           disabled={!isStepValid()}
         >
           <Text style={[styles.nextButtonText, !isStepValid() && styles.nextButtonTextDisabled]}>
-            {currentStep === 'FLAVOR_PROFILE' ? t('tasteReset.button.complete') : t('tasteReset.button.next')}
+            {currentStep === 'BUDGET' ? t('tasteReset.button.complete') : t('tasteReset.button.next')}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {loading && (
+        <View style={[StyleSheet.absoluteFill, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      )}
+
+      {analyzing && (
+        <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
+          <View
+            style={{
+              width: CIRCLE_SIZE,
+              height: CIRCLE_SIZE,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginBottom: 10,
+            }}
+          >
+            <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
+              <Circle
+                cx={CIRCLE_SIZE / 2}
+                cy={CIRCLE_SIZE / 2}
+                r={RADIUS}
+                stroke={colors.border}
+                strokeWidth={STROKE_WIDTH}
+                fill="transparent"
+              />
+              <AnimatedCircle
+                cx={CIRCLE_SIZE / 2}
+                cy={CIRCLE_SIZE / 2}
+                r={RADIUS}
+                stroke={colors.primary}
+                strokeWidth={STROKE_WIDTH}
+                fill="transparent"
+                strokeDasharray={CIRCUMFERENCE}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                rotation="-90"
+                origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
+              />
+            </Svg>
+          </View>
+
+          <Text style={styles.analyzingText}>
+            {analyzingIndex === 4
+              ? t('onboarding.loading.message4', { nickname: user?.nickname })
+              : LOADING_MESSAGES[analyzingIndex]}
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -411,43 +593,27 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   loadingContainer: {
-    flex: 1,
+    backgroundColor: '#121212',
+    zIndex: 9999,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212',
   },
   analyzingContainer: {
-    flex: 1,
     backgroundColor: '#121212',
-  },
-  analyzingContent: {
-    flex: 1,
+    zIndex: 9999,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 40,
   },
-  circleContainer: {
-    width: 120,
-    height: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  circleEmoji: {
-    position: 'absolute',
-    fontSize: 40,
-  },
-  analyzingTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
+  analyzingText: {
     color: colors.white,
-    marginBottom: 12,
-  },
-  analyzingMessage: {
-    fontSize: 15,
-    color: colors.textSecondary,
+    fontSize: 16,
+    fontWeight: '500',
+    marginTop: 20,
+    marginBottom: 0,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
+    opacity: 0.9,
   },
 });
 

@@ -15,7 +15,9 @@ interface CustomAlertProps {
   message: string;
   onClose: () => void;
   onConfirm?: () => void;
+  onCancel?: () => void;
   confirmText?: string;
+  cancelText?: string;
   singleButton?: boolean;
 }
 
@@ -25,7 +27,9 @@ const CustomAlert = ({
   message,
   onClose,
   onConfirm,
+  onCancel,
   confirmText = '확인',
+  cancelText,
   singleButton = false,
 }: CustomAlertProps) => {
   return (
@@ -44,8 +48,8 @@ const CustomAlert = ({
 
               <View style={styles.buttonContainer}>
                 {!singleButton && (
-                  <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                    <Text style={styles.cancelText}>취소</Text>
+                  <TouchableOpacity style={styles.cancelButton} onPress={onCancel || onClose}>
+                    <Text style={styles.cancelText}>{cancelText || '취소'}</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity

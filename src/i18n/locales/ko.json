@@ -271,8 +271,9 @@
             "conclusion": "총평 (Conclusion)"
         },
         "wineSearch": {
-            "changeButton": "와인 변경 (검색)",
-            "placeholder": "와인 이름을 검색하세요"
+            "changeButton": "와인 변경",
+            "placeholder": "와인 이름을 검색하세요",
+            "noResult": "검색 결과가 없습니다."
         },
         "basicInfo": {
             "vintage": "빈티지 (연도)",
@@ -311,6 +312,18 @@
         "tasteLevel": {
             "weak": "약함",
             "strong": "강함"
+        },
+        "draft": {
+            "save": "임시저장",
+            "savedMsg": "임시 저장되었습니다",
+            "restoreTitle": "임시 저장된 노트",
+            "restoreMsg": "이전에 작성 중이던 테이스팅 노트가 있습니다. 불러올까요?",
+            "restoreConfirm": "불러오기",
+            "restoreCancel": "새로 작성",
+            "closeTitle": "작성 중인 노트",
+            "closeMsg": "작성 중인 내용을 임시 저장할까요?",
+            "closeSave": "임시 저장",
+            "closeDiscard": "저장 안 함"
         }
     },
     "tastingNoteDetail": {

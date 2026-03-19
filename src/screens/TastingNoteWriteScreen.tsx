@@ -1,5 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -33,6 +33,7 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
 import { colors } from '../constants/colors';
 import { useTranslation } from "react-i18next";
+import { saveDraft, loadDraft, clearDraft, TastingNoteDraft } from "../utils/tastingNoteDraftStorage";
 
 if (
   Platform.OS === "android" &&
@@ -68,11 +69,34 @@ export default function TastingNoteWriteScreen() {
 
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
-  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     logScreen("tasting_note_write");
   }, []);
+
+  // Debounced wine search (same as WineAddScreen)
+  useEffect(() => {
+    if (searchText.trim().length === 0) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const response = await searchWinesPublic({
+          searchName: searchText,
+        });
+        if (response.isSuccess) {
+          setSearchResults(response.result.content);
+        } else {
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error("Search failed:", error);
+        setSearchResults([]);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
   useEffect(() => {
     if (route.params?.wineId) {
@@ -139,6 +163,138 @@ export default function TastingNoteWriteScreen() {
     description: string;
   } | null>(null);
   const [calendarVisible, setCalendarVisible] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftSavedMessage, setDraftSavedMessage] = useState(false);
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load draft on mount
+  useEffect(() => {
+    if (params.wineId) {
+      // If opened with a specific wine, don't load draft
+      setDraftLoaded(true);
+      return;
+    }
+    (async () => {
+      const draft = await loadDraft();
+      if (draft) {
+        showAlert({
+          title: t('tastingNoteWrite.draft.restoreTitle'),
+          message: t('tastingNoteWrite.draft.restoreMsg'),
+          singleButton: false,
+          confirmText: t('tastingNoteWrite.draft.restoreConfirm'),
+          cancelText: t('tastingNoteWrite.draft.restoreCancel'),
+          onConfirm: () => {
+            if (draft.wineId) {
+              setSelectedWine({
+                wineId: draft.wineId,
+                wineName: draft.wineName,
+                wineNameEng: draft.wineNameEng,
+                wineImage: draft.wineImage,
+                wineType: draft.wineType,
+              });
+            }
+            setVintageYear(draft.vintageYear);
+            setColor(draft.color);
+            setTasteDate(draft.tasteDate);
+            setSweetness(draft.sweetness);
+            setAcidity(draft.acidity);
+            setTannin(draft.tannin);
+            setBody(draft.body);
+            setAlcohol(draft.alcohol);
+            setNose(draft.nose);
+            setFinish(draft.finish);
+            setRating(draft.rating);
+            setReview(draft.review);
+            setDraftLoaded(true);
+          },
+          onCancel: () => {
+            clearDraft();
+            setDraftLoaded(true);
+          },
+        });
+      } else {
+        setDraftLoaded(true);
+      }
+    })();
+  }, []);
+
+  // Build current draft data
+  const getCurrentDraft = useCallback((): TastingNoteDraft => ({
+    wineId: selectedWine.wineId,
+    wineName: selectedWine.wineName,
+    wineNameEng: selectedWine.wineNameEng,
+    wineImage: selectedWine.wineImage,
+    wineType: selectedWine.wineType,
+    vintageYear,
+    color,
+    tasteDate,
+    sweetness,
+    acidity,
+    tannin,
+    body,
+    alcohol,
+    nose,
+    finish,
+    rating,
+    review,
+    savedAt: new Date().toISOString(),
+  }), [selectedWine, vintageYear, color, tasteDate, sweetness, acidity, tannin, body, alcohol, nose, finish, rating, review]);
+
+  // Auto-save draft (debounced 3s)
+  useEffect(() => {
+    if (!draftLoaded) return;
+    // Only auto-save if user has started filling in data
+    const hasData = selectedWine.wineId || vintageYear || color || nose || finish || review ||
+      sweetness > 0 || acidity > 0 || tannin > 0 || body > 0 || alcohol > 0 || rating > 0;
+    if (!hasData) return;
+
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
+    autoSaveTimer.current = setTimeout(() => {
+      saveDraft(getCurrentDraft());
+    }, 3000);
+
+    return () => {
+      if (autoSaveTimer.current) {
+        clearTimeout(autoSaveTimer.current);
+      }
+    };
+  }, [draftLoaded, getCurrentDraft]);
+
+  // Manual draft save
+  const handleSaveDraft = useCallback(async () => {
+    await saveDraft(getCurrentDraft());
+    setDraftSavedMessage(true);
+    setTimeout(() => setDraftSavedMessage(false), 2000);
+    logEvent("tasting_note_draft_save");
+  }, [getCurrentDraft]);
+
+  // Close with confirmation if there's unsaved data
+  const handleClose = useCallback(() => {
+    const hasData = selectedWine.wineId || vintageYear || color || nose || finish || review ||
+      sweetness > 0 || acidity > 0 || tannin > 0 || body > 0 || alcohol > 0 || rating > 0;
+
+    if (hasData) {
+      showAlert({
+        title: t('tastingNoteWrite.draft.closeTitle'),
+        message: t('tastingNoteWrite.draft.closeMsg'),
+        singleButton: false,
+        confirmText: t('tastingNoteWrite.draft.closeSave'),
+        cancelText: t('tastingNoteWrite.draft.closeDiscard'),
+        onConfirm: async () => {
+          await saveDraft(getCurrentDraft());
+          navigation.goBack();
+        },
+        onCancel: async () => {
+          await clearDraft();
+          navigation.goBack();
+        },
+      });
+    } else {
+      navigation.goBack();
+    }
+  }, [selectedWine, vintageYear, color, nose, finish, review, sweetness, acidity, tannin, body, alcohol, rating, getCurrentDraft, navigation, showAlert, t]);
 
   const isFormValid =
     selectedWine.wineId &&
@@ -157,33 +313,6 @@ export default function TastingNoteWriteScreen() {
 
   const mapLevelToValue = (level: number) => level * 20;
 
-  const handleSearch = async (text: string) => {
-    setSearchText(text);
-    if (text.trim().length > 0) {
-      try {
-        const response = await searchWinesPublic({
-          searchName: text,
-          page: 0,
-          size: 5,
-        });
-
-        if (response.isSuccess) {
-          setSearchResults(response.result.content);
-          setShowSearchResults(true);
-        } else {
-          setSearchResults([]);
-          setShowSearchResults(false);
-        }
-      } catch (error) {
-        console.error("Search failed:", error);
-        setSearchResults([]);
-      }
-    } else {
-      setSearchResults([]);
-      setShowSearchResults(false);
-    }
-  };
-
   const handleSelectWine = (wine: WineUserDTO) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
@@ -201,7 +330,7 @@ export default function TastingNoteWriteScreen() {
     });
     setColor("");
     setSearchText("");
-    setShowSearchResults(false);
+    setSearchResults([]);
   };
 
   const resetSelection = () => {
@@ -294,6 +423,7 @@ export default function TastingNoteWriteScreen() {
       const response = await createTastingNote(requestData);
 
       if (response.isSuccess) {
+        await clearDraft();
         logEvent("tasting_note_save_success");
         showAlert({
           title: t('tastingNoteWrite.success.saveTitle'),
@@ -337,26 +467,37 @@ export default function TastingNoteWriteScreen() {
 
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
+          onPress={handleClose}
+          style={styles.headerSide}
         >
           <Icon name="close" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('tastingNoteWrite.header')}</Text>
         <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={isSubmitting || !isFormValid}
+          onPress={isFormValid ? handleSubmit : handleSaveDraft}
+          disabled={isSubmitting}
+          style={styles.headerSide}
         >
           <Text
             style={[
               styles.saveButton,
-              (isSubmitting || !isFormValid) && { color: "#666" },
+              !isFormValid && styles.draftSaveButton,
+              isSubmitting && { opacity: 0.4 },
             ]}
           >
-            {t('tastingNoteWrite.save')}
+            {isFormValid ? t('tastingNoteWrite.save') : t('tastingNoteWrite.draft.save')}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {draftSavedMessage && (
+        <View style={styles.draftSavedToast}>
+          <Icon name="checkmark-circle" size={16} color={colors.primary} />
+          <Text style={styles.draftSavedToastText}>
+            {t('tastingNoteWrite.draft.savedMsg')}
+          </Text>
+        </View>
+      )}
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -400,66 +541,79 @@ export default function TastingNoteWriteScreen() {
               </View>
             ) : (
               <View style={styles.searchSection}>
-                <View style={styles.nameInputContainer}>
-                  <View style={styles.searchIconContainer}>
-                    <Icon name="search" size={20} color={colors.textSecondary} />
-                  </View>
+                <View style={styles.searchBarContainer}>
+                  <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
                   <TextInput
-                    style={styles.nameInput}
+                    style={styles.searchInput}
                     placeholder={t('tastingNoteWrite.wineSearch.placeholder')}
                     placeholderTextColor="#666"
                     value={searchText}
-                    onChangeText={handleSearch}
+                    onChangeText={setSearchText}
                     returnKeyType="search"
                   />
-
-                  {showSearchResults && searchResults.length > 0 && (
-                    <View style={styles.searchResultsContainer}>
-                      <ScrollView
-                        keyboardShouldPersistTaps="handled"
-                        nestedScrollEnabled={true}
-                        showsVerticalScrollIndicator={false}
-                      >
-                        {searchResults.map((item) => (
-                          <TouchableOpacity
-                            key={item.wineId}
-                            style={styles.searchResultItem}
-                            onPress={() => handleSelectWine(item)}
-                          >
-                            <View style={styles.resultTextContainer}>
-                              {i18n.language === 'en' ? (
-                                <Text style={styles.resultNameKor} numberOfLines={2}>
-                                  {item.nameEng || item.name}
-                                </Text>
-                              ) : (
-                                <>
-                                  <Text style={styles.resultNameKor}>
-                                    {item.name}
-                                  </Text>
-                                  <Text style={styles.resultNameEng}>
-                                    {item.nameEng}
-                                  </Text>
-                                </>
-                              )}
-                            </View>
-                            <View
-                              style={[
-                                styles.typeChip,
-                                {
-                                  backgroundColor: getWineTypeColor(item.sort),
-                                },
-                              ]}
-                            >
-                              <Text style={styles.typeChipText}>
-                                {item.sort}
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
+                  {searchText.length > 0 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSearchText("");
+                        setSearchResults([]);
+                      }}
+                      style={styles.clearButton}
+                    >
+                      <Icon name="close-circle" size={18} color="#666" />
+                    </TouchableOpacity>
                   )}
                 </View>
+
+                {searchResults.length > 0 ? (
+                  searchResults.map((item) => (
+                    <TouchableOpacity
+                      key={item.wineId}
+                      style={styles.resultItem}
+                      onPress={() => handleSelectWine(item)}
+                    >
+                      <View style={styles.resultIconContainer}>
+                        {item.imageUrl ? (
+                          <Image
+                            source={{ uri: item.imageUrl }}
+                            style={styles.resultImage}
+                            resizeMode="contain"
+                          />
+                        ) : (
+                          <Icon name="wine" size={20} color={colors.primary} />
+                        )}
+                      </View>
+                      <View style={styles.resultTextContainer}>
+                        {i18n.language === 'en' ? (
+                          <Text style={styles.resultNameKor} numberOfLines={2}>
+                            {item.nameEng || item.name}
+                          </Text>
+                        ) : (
+                          <>
+                            <Text style={styles.resultNameKor} numberOfLines={2}>
+                              {item.name}
+                            </Text>
+                            <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+                          </>
+                        )}
+                        <View style={styles.resultInfoRow}>
+                          <View
+                            style={[
+                              styles.typeChip,
+                              { backgroundColor: getWineTypeColor(item.sort) },
+                            ]}
+                          >
+                            <Text style={styles.typeChipText}>{item.sort}</Text>
+                          </View>
+                          <Text style={styles.resultCountryText}>{item.country}</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                ) : searchText.length > 0 ? (
+                  <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>{t('tastingNoteWrite.wineSearch.noResult')}</Text>
+                  </View>
+                ) : null}
               </View>
             )}
           </View>
@@ -632,6 +786,7 @@ export default function TastingNoteWriteScreen() {
                   />
                 </View>
               </View>
+
             </>
           )}
         </ScrollView>
@@ -668,13 +823,46 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backButton: {
+  headerSide: {
+    width: 60,
+    alignItems: "center",
+    justifyContent: "center",
     padding: 4,
   },
   headerTitle: {
+    flex: 1,
     color: colors.white,
     fontSize: 18,
     fontWeight: "600",
+    textAlign: "center",
+  },
+  draftSaveButton: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "normal",
+  },
+  draftSavedToast: {
+    position: "absolute",
+    top: 100,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    zIndex: 999,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  draftSavedToastText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "500",
   },
   saveButton: {
     color: colors.primary,
@@ -701,75 +889,95 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
 
-  searchSection: {
-    position: "relative",
-    zIndex: 100,
-  },
-  nameInputContainer: {
-    position: "relative",
-    zIndex: 100,
-  },
-  searchIconContainer: {
-    position: "absolute",
-    left: 12,
-    top: 14,
-    zIndex: 1,
-  },
-  nameInput: {
+  searchSection: {},
+  searchBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.surface1,
     borderRadius: 8,
-    padding: 12,
-    paddingLeft: 40,
+    paddingHorizontal: 12,
+    height: 48,
+    marginBottom: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
     color: colors.white,
     fontSize: 16,
+    padding: 0,
+    height: "100%",
   },
-  searchResultsContainer: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    marginTop: 4,
-    backgroundColor: colors.surface1,
+  clearButton: {
+    padding: 4,
+  },
+  searchResultList: {
+    maxHeight: 320,
+  },
+  resultItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
     borderRadius: 8,
-    zIndex: 999,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: "#444",
-    maxHeight: 250,
+  },
+  resultIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    backgroundColor: colors.surface1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
     overflow: "hidden",
   },
-  searchResultItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#444",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  resultImage: {
+    width: "85%",
+    height: "85%",
   },
   resultTextContainer: {
     flex: 1,
-    marginRight: 16,
+    gap: 3,
   },
   resultNameKor: {
     color: colors.white,
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 2,
+    fontSize: 15,
+    fontWeight: "600",
   },
   resultNameEng: {
     color: colors.textSecondary,
+    fontSize: 13,
+  },
+  resultInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
+  },
+  resultCountryText: {
+    color: "#666",
     fontSize: 12,
   },
   typeChip: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-    flexShrink: 0,
   },
   typeChipText: {
     color: colors.white,
     fontSize: 10,
     fontWeight: "bold",
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: "center",
+  },
+  emptyText: {
+    color: "#666",
+    fontSize: 14,
   },
 
   selectedWineContainer: {

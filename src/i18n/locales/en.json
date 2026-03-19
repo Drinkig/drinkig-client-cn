@@ -271,8 +271,9 @@
             "conclusion": "Conclusion"
         },
         "wineSearch": {
-            "changeButton": "Change Wine (Search)",
-            "placeholder": "Search for wine name"
+            "changeButton": "Change Wine",
+            "placeholder": "Search for wine name",
+            "noResult": "No results found."
         },
         "basicInfo": {
             "vintage": "Vintage (Year)",
@@ -311,6 +312,18 @@
         "tasteLevel": {
             "weak": "Weak",
             "strong": "Strong"
+        },
+        "draft": {
+            "save": "Draft",
+            "savedMsg": "Draft saved",
+            "restoreTitle": "Saved Draft",
+            "restoreMsg": "You have a previously saved tasting note. Would you like to restore it?",
+            "restoreConfirm": "Restore",
+            "restoreCancel": "Start New",
+            "closeTitle": "Unsaved Note",
+            "closeMsg": "Would you like to save your progress as a draft?",
+            "closeSave": "Save Draft",
+            "closeDiscard": "Discard"
         }
     },
     "tastingNoteDetail": {
