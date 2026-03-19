@@ -6,13 +6,14 @@ import {
     Image,
     FlatList,
     TouchableOpacity,
-    SafeAreaView,
+    StatusBar,
     ActivityIndicator,
     Animated,
-    Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Svg, { Circle } from 'react-native-svg';
 import { colors } from '../constants/colors';
 import client from '../api/client';
 
@@ -49,9 +50,9 @@ export interface MenuScanResponse {
 
 const SORT_COLORS: Record<string, string> = {
     RED: '#C0392B',
-    WHITE: '#F1C40F',
-    SPARKLING: '#AED6F1',
-    ROSE: '#F1948A',
+    WHITE: '#C8A84B',
+    SPARKLING: '#5DADE2',
+    ROSE: '#D4748A',
     PORT: '#922B21',
     OTHER: '#7F8C8D',
 };
@@ -65,19 +66,68 @@ const SORT_LABELS: Record<string, string> = {
     OTHER: '기타',
 };
 
+// Animated SVG circle wrapper
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+const RING_SIZE = 54;
+const STROKE_WIDTH = 4;
+const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+function scoreColor(score: number) {
+    if (score >= 70) return '#4CAF50';   // 초록 — 좋음
+    if (score >= 55) return '#E67E22';   // 오렌지 — 준수
+    return colors.textTertiary;          // 회색 — 낮음
+}
+
 function ScoreRing({ score }: { score: number }) {
-    const anim = useRef(new Animated.Value(0)).current;
+    const progress = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        Animated.timing(anim, { toValue: score / 100, duration: 700, useNativeDriver: false }).start();
+        Animated.timing(progress, {
+            toValue: score / 100,
+            duration: 800,
+            useNativeDriver: false,
+        }).start();
     }, [score]);
 
-    const bg =
-        score >= 80 ? colors.primary : score >= 55 ? '#E67E22' : colors.textTertiary;
+    // dashoffset: 0 = full ring filled, CIRCUMFERENCE = empty
+    const strokeDashoffset = progress.interpolate({
+        inputRange: [0, 1],
+        outputRange: [CIRCUMFERENCE, 0],
+    });
+
+    const color = scoreColor(score);
 
     return (
-        <View style={[styles.scoreRing, { borderColor: bg }]}>
-            <Text style={[styles.scoreText, { color: bg }]}>{score}%</Text>
+        <View style={styles.scoreRingWrapper}>
+            <Svg width={RING_SIZE} height={RING_SIZE} style={styles.scoreSvg}>
+                {/* Track (background) */}
+                <Circle
+                    cx={RING_SIZE / 2}
+                    cy={RING_SIZE / 2}
+                    r={RADIUS}
+                    stroke={colors.surface2}
+                    strokeWidth={STROKE_WIDTH}
+                    fill="transparent"
+                />
+                {/* Progress arc */}
+                <AnimatedCircle
+                    cx={RING_SIZE / 2}
+                    cy={RING_SIZE / 2}
+                    r={RADIUS}
+                    stroke={color}
+                    strokeWidth={STROKE_WIDTH}
+                    fill="transparent"
+                    strokeDasharray={CIRCUMFERENCE}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                />
+            </Svg>
+            {/* Center label */}
+            <View style={styles.scoreCenter}>
+                <Text style={[styles.scorePercent, { color }]}>{score}<Text style={[styles.scoreLabel, { color }]}>%</Text></Text>
+            </View>
         </View>
     );
 }
@@ -93,19 +143,6 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     const [error, setError] = useState<string | null>(null);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
-    const dotsAnim = useRef(new Animated.Value(0)).current;
-
-    // Dots loading animation
-    useEffect(() => {
-        const loop = Animated.loop(
-            Animated.sequence([
-                Animated.timing(dotsAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-                Animated.timing(dotsAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
-            ]),
-        );
-        loop.start();
-        return () => loop.stop();
-    }, []);
 
     // Call the API
     useEffect(() => {
@@ -142,7 +179,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
 
     // ----- Render helpers -----
 
-    const renderWineItem = ({ item, index }: { item: ScannedWineItemDTO; index: number }) => {
+    const renderWineItem = ({ item }: { item: ScannedWineItemDTO }) => {
         const isBest = item.flavorMatchScore >= 80;
         return (
             <TouchableOpacity
@@ -152,33 +189,31 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             >
                 {isBest && (
                     <View style={styles.bestBadge}>
-                        <Ionicons name="star" size={11} color={colors.white} />
+                        <Ionicons name="star" size={10} color={colors.white} />
                         <Text style={styles.bestBadgeText}> 취향 저격</Text>
                     </View>
                 )}
                 <View style={styles.wineCardRow}>
-                    {item.imageUrl ? (
-                        <Image source={{ uri: item.imageUrl }} style={styles.wineImage} resizeMode="cover" />
-                    ) : (
-                        <View style={[styles.wineImage, styles.wineImagePlaceholder]}>
-                            <Ionicons name="wine-outline" size={28} color={colors.border} />
-                        </View>
-                    )}
+                    {/* Wine image + sort color bar */}
+                    <View style={styles.wineImageContainer}>
+                        {item.imageUrl ? (
+                            <Image source={{ uri: item.imageUrl }} style={styles.wineImage} resizeMode="contain" />
+                        ) : (
+                            <Ionicons name="wine" size={24} color={colors.primary} />
+                        )}
+                        <View style={[styles.sortBar, { backgroundColor: SORT_COLORS[item.sort] }]} />
+                    </View>
 
+                    {/* Wine info */}
                     <View style={styles.wineInfo}>
-                        <View style={styles.wineNameRow}>
-                            <View style={[styles.sortBadge, { backgroundColor: SORT_COLORS[item.sort] }]}>
-                                <Text style={styles.sortBadgeText}>{SORT_LABELS[item.sort]}</Text>
-                            </View>
-                        </View>
-                        <Text style={styles.wineNameEng} numberOfLines={1}>{item.nameEng}</Text>
+                        <Text style={styles.wineNameEng} numberOfLines={2}>{item.nameEng}</Text>
                         <Text style={styles.wineNameKor} numberOfLines={1}>{item.nameKor}</Text>
                         <Text style={styles.wineMeta} numberOfLines={1}>
                             {[item.country, item.region, item.variety].filter(Boolean).join(' · ')}
                         </Text>
-
                     </View>
 
+                    {/* Score */}
                     <ScoreRing score={item.flavorMatchScore} />
                 </View>
             </TouchableOpacity>
@@ -188,11 +223,19 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     // ----- Loading state -----
     if (loading) {
         return (
-            <SafeAreaView style={styles.safeArea}>
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 24 }} />
-                    <Text style={styles.loadingTitle}>AI가 메뉴판을 분석 중이에요</Text>
-                    <Text style={styles.loadingSubtitle}>취향에 맞는 와인을 찾고 있어요...</Text>
+            <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+                <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color={colors.white} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
+                    <View style={styles.headerPlaceholder} />
+                </View>
+                <View style={styles.stateContainer}>
+                    <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 20 }} />
+                    <Text style={styles.stateTitle}>AI가 메뉴판을 분석 중이에요</Text>
+                    <Text style={styles.stateSubtitle}>취향에 맞는 와인을 찾고 있어요...</Text>
                 </View>
             </SafeAreaView>
         );
@@ -201,13 +244,20 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     // ----- Error state -----
     if (error || !data) {
         return (
-            <SafeAreaView style={styles.safeArea}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <Ionicons name="arrow-back" size={24} color={colors.white} />
-                </TouchableOpacity>
-                <View style={styles.loadingContainer}>
-                    <Ionicons name="alert-circle-outline" size={56} color={colors.error} style={{ marginBottom: 16 }} />
-                    <Text style={[styles.loadingTitle, { textAlign: 'center' }]}>{error ?? '알 수 없는 오류가 발생했습니다.'}</Text>
+            <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+                <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <Ionicons name="arrow-back" size={24} color={colors.white} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
+                    <View style={styles.headerPlaceholder} />
+                </View>
+                <View style={styles.stateContainer}>
+                    <Ionicons name="alert-circle-outline" size={52} color={colors.error} style={{ marginBottom: 16 }} />
+                    <Text style={[styles.stateTitle, { textAlign: 'center' }]}>
+                        {error ?? '알 수 없는 오류가 발생했습니다.'}
+                    </Text>
                     <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()}>
                         <Text style={styles.retryButtonText}>돌아가기</Text>
                     </TouchableOpacity>
@@ -221,17 +271,16 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     const hasUnmatched = data.unmatchedWines && data.unmatchedWines.length > 0;
 
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+            <StatusBar barStyle="light-content" backgroundColor={colors.background} />
             <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color={colors.white} />
                     </TouchableOpacity>
-                    <View style={styles.headerCenter}>
-                        <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
-                        <Text style={styles.headerSubtitle}>{data.totalMatchedCount}개의 와인을 찾았어요</Text>
-                    </View>
+                    <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
+                    <View style={styles.headerPlaceholder} />
                 </View>
 
                 <FlatList
@@ -241,12 +290,17 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
                     ListHeaderComponent={
-                        sorted.length === 0 ? (
-                            <View style={styles.emptyContainer}>
-                                <Ionicons name="search-outline" size={48} color={colors.textTertiary} />
-                                <Text style={styles.emptyText}>DB에서 일치하는 와인을 찾지 못했어요</Text>
-                            </View>
-                        ) : null
+                        <View style={styles.resultCountContainer}>
+                            <Text style={styles.resultCountText}>
+                                <Text style={styles.resultCountHighlight}>{data.totalMatchedCount}개</Text>의 와인을 찾았어요
+                            </Text>
+                        </View>
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="search-outline" size={48} color={colors.textTertiary} />
+                            <Text style={styles.emptyText}>DB에서 일치하는 와인을 찾지 못했어요</Text>
+                        </View>
                     }
                     ListFooterComponent={
                         hasUnmatched ? (
@@ -260,9 +314,8 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                                 </Text>
                                 {data.unmatchedWines.map((w, i) => (
                                     <View key={i} style={styles.unmatchedItem}>
-
+                                        <Ionicons name="wine-outline" size={16} color={colors.textTertiary} style={{ marginRight: 10 }} />
                                         <Text style={styles.unmatchedText}>{w.rawText}</Text>
-
                                     </View>
                                 ))}
                             </View>
@@ -280,62 +333,83 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: colors.background,
-        paddingTop: Platform.OS === 'android' ? 24 : 0,
     },
+    // ── Header ──────────────────────────────────────────────────────────────
     header: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         paddingHorizontal: 16,
-        paddingVertical: 14,
+        paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
+        backgroundColor: colors.background,
     },
     backButton: {
-        width: 40,
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    headerCenter: {
-        flex: 1,
-        marginLeft: 8,
+        padding: 4,
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '700',
-        color: colors.textPrimary,
+        fontWeight: '600',
+        color: colors.white,
     },
-    headerSubtitle: {
-        fontSize: 13,
-        color: colors.textSecondary,
-        marginTop: 2,
+    headerPlaceholder: {
+        width: 32,
     },
-    listContent: {
-        padding: 16,
-        paddingBottom: 40,
-    },
-    loadingContainer: {
+    // ── Loading / Error states ───────────────────────────────────────────────
+    stateContainer: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         padding: 32,
     },
-    loadingTitle: {
-        fontSize: 18,
-        fontWeight: '700',
+    stateTitle: {
+        fontSize: 17,
+        fontWeight: '600',
         color: colors.textPrimary,
         marginBottom: 8,
+        lineHeight: 24,
     },
-    loadingSubtitle: {
+    stateSubtitle: {
+        fontSize: 14,
+        color: colors.textSecondary,
+        lineHeight: 20,
+    },
+    retryButton: {
+        marginTop: 28,
+        paddingHorizontal: 32,
+        paddingVertical: 12,
+        borderRadius: 24,
+        backgroundColor: colors.primary,
+    },
+    retryButtonText: {
+        color: colors.white,
+        fontWeight: '600',
+        fontSize: 15,
+    },
+    // ── List ────────────────────────────────────────────────────────────────
+    listContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 48,
+    },
+    resultCountContainer: {
+        paddingTop: 16,
+        paddingBottom: 12,
+    },
+    resultCountText: {
         fontSize: 14,
         color: colors.textSecondary,
     },
-    // Wine card
+    resultCountHighlight: {
+        color: colors.white,
+        fontWeight: 'bold',
+    },
+    // ── Wine card ────────────────────────────────────────────────────────────
     wineCard: {
         backgroundColor: colors.surface1,
         borderRadius: 14,
         padding: 14,
-        marginBottom: 12,
+        marginBottom: 10,
         borderWidth: 1,
         borderColor: colors.border,
     },
@@ -362,75 +436,82 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
-    wineImage: {
-        width: 60,
-        height: 80,
+    wineImageContainer: {
+        width: 56,
+        height: 64,
         borderRadius: 8,
-        marginRight: 12,
         backgroundColor: colors.surface2,
-    },
-    wineImagePlaceholder: {
-        alignItems: 'center',
         justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 14,
+        overflow: 'hidden',
+        flexShrink: 0,
+        alignSelf: 'center',
+    },
+    wineImage: {
+        width: '85%',
+        height: '90%',
     },
     wineInfo: {
         flex: 1,
+        gap: 3,
+        justifyContent: 'center',
     },
-    wineNameRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    sortBadge: {
-        borderRadius: 6,
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-    },
-    sortBadgeText: {
-        fontSize: 10,
-        fontWeight: '700',
-        color: colors.white,
+    sortBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 3,
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
     },
     wineNameEng: {
         fontSize: 15,
-        fontWeight: '700',
-        color: colors.textPrimary,
-        marginBottom: 2,
+        fontWeight: '600',
+        color: colors.white,
+        lineHeight: 20,
     },
     wineNameKor: {
         fontSize: 13,
         color: colors.textSecondary,
-        marginBottom: 4,
     },
     wineMeta: {
         fontSize: 11,
         color: colors.textTertiary,
     },
-    winePrice: {
-        fontSize: 12,
-        color: colors.textSecondary,
-        marginTop: 4,
-        fontWeight: '600',
-    },
-    // Score ring
-    scoreRing: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        borderWidth: 2.5,
+    // ── Score ring ───────────────────────────────────────────────────────────
+    scoreRingWrapper: {
+        width: 54,
+        height: 54,
+        marginLeft: 12,
+        flexShrink: 0,
+        alignSelf: 'center',
         alignItems: 'center',
         justifyContent: 'center',
-        marginLeft: 10,
-        flexShrink: 0,
     },
-    scoreText: {
-        fontSize: 12,
+    scoreSvg: {
+        position: 'absolute',
+        // rotate so the arc starts from the top (12 o'clock)
+        transform: [{ rotate: '-90deg' }],
+    },
+    scoreCenter: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    scorePercent: {
+        fontSize: 13,
         fontWeight: '800',
+        lineHeight: 16,
     },
-    // Empty
+    scoreLabel: {
+        fontSize: 9,
+        fontWeight: '700',
+    },
+    // ── Empty ────────────────────────────────────────────────────────────────
     emptyContainer: {
         alignItems: 'center',
-        paddingVertical: 48,
+        paddingVertical: 52,
     },
     emptyText: {
         marginTop: 12,
@@ -438,7 +519,7 @@ const styles = StyleSheet.create({
         color: colors.textSecondary,
         textAlign: 'center',
     },
-    // Unmatched section
+    // ── Unmatched section ────────────────────────────────────────────────────
     unmatchedSection: {
         marginTop: 8,
         paddingTop: 16,
@@ -449,8 +530,8 @@ const styles = StyleSheet.create({
         marginBottom: 16,
     },
     unmatchedTitle: {
-        fontSize: 15,
-        fontWeight: '700',
+        fontSize: 14,
+        fontWeight: '600',
         color: colors.textSecondary,
         marginBottom: 4,
     },
@@ -462,7 +543,7 @@ const styles = StyleSheet.create({
     unmatchedItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 8,
+        paddingVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
@@ -470,22 +551,5 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 13,
         color: colors.textSecondary,
-    },
-    unmatchedPrice: {
-        fontSize: 12,
-        color: colors.textTertiary,
-        marginLeft: 8,
-    },
-    retryButton: {
-        marginTop: 24,
-        paddingHorizontal: 28,
-        paddingVertical: 12,
-        borderRadius: 24,
-        backgroundColor: colors.primary,
-    },
-    retryButtonText: {
-        color: colors.white,
-        fontWeight: '700',
-        fontSize: 15,
     },
 });
