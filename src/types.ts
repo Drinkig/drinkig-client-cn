@@ -5,7 +5,8 @@ export type RootStackParamList = {
   Login: undefined;
 
   Onboarding: undefined;
-  RecommendationResult: undefined;
+  RecommendationResult: { flavorProfile?: any; nickname?: string; fromReset?: boolean } | undefined;
+  TasteReset: undefined;
   Main: undefined;
   ProfileEdit: undefined;
   Setting: undefined;

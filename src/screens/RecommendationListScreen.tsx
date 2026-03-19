@@ -116,6 +116,15 @@ const RecommendationListScreen = () => {
           </View>
         )}
       </ScrollView>
+
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={styles.resetCtaButton}
+          onPress={() => navigation.navigate('TasteReset' as never)}
+        >
+          <Text style={styles.resetCtaText}>취향 추천 다시 받기</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -144,6 +153,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 24,
+    paddingBottom: 90,
   },
   introContainer: {
     marginBottom: 32,
@@ -228,6 +238,29 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.textSecondary,
     fontSize: 16,
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 40,
+    left: 24,
+    right: 24,
+  },
+  resetCtaButton: {
+    backgroundColor: colors.primary,
+    height: 52,
+    borderRadius: 26,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  resetCtaText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

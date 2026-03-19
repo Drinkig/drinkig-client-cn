@@ -15,6 +15,7 @@ import RecommendationResultScreen from "../screens/RecommendationResultScreen";
 import SearchResultScreen from "../screens/SearchResultScreen";
 import SearchScreen from "../screens/SearchScreen";
 import SettingScreen from "../screens/SettingScreen";
+import TasteResetScreen from "../screens/TasteResetScreen";
 import SplashScreen from "../screens/SplashScreen";
 import TastingNoteDetailScreen from "../screens/TastingNoteDetailScreen";
 import TastingNoteWriteScreen from "../screens/TastingNoteWriteScreen";
@@ -71,6 +72,11 @@ export default function RootNavigator() {
             />
             <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
             <Stack.Screen name="Setting" component={SettingScreen} />
+            <Stack.Screen name="TasteReset" component={TasteResetScreen} />
+            <Stack.Screen
+              name="RecommendationResult"
+              component={RecommendationResultScreen}
+            />
             <Stack.Screen
               name="RecommendationList"
               component={RecommendationListScreen}

@@ -42,6 +42,7 @@ const RecommendationResultScreen = () => {
 
   const flavorProfile = (route.params as any)?.flavorProfile;
   const nickname = (route.params as any)?.nickname;
+  const fromReset = (route.params as any)?.fromReset ?? false;
 
   const [animations, setAnimations] = useState<Animated.Value[]>([]);
 
@@ -91,6 +92,10 @@ const RecommendationResultScreen = () => {
   };
 
   const handleComplete = () => {
+    if (fromReset) {
+      navigation.goBack();
+      return;
+    }
     completeOnboarding();
   };
 
@@ -184,7 +189,7 @@ const RecommendationResultScreen = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleComplete}>
-          <Text style={styles.buttonText}>드링키지 시작하기</Text>
+          <Text style={styles.buttonText}>{fromReset ? '확인' : '드링키지 시작하기'}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
