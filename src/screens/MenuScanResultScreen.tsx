@@ -130,7 +130,7 @@ function ScoreRing({ score }: { score: number }) {
 type Props = NativeStackScreenProps<any, 'MenuScanResult'>;
 
 export default function MenuScanResultScreen({ route, navigation }: Props) {
-    const { imageUri } = route.params as { imageUri: string };
+    const { imageUri, scanType = 'list' } = route.params as { imageUri: string; scanType?: 'label' | 'list' };
     const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<MenuScanResultDTO | null>(null);
@@ -148,6 +148,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     name: 'menu_scan.jpg',
                     type: 'image/jpeg',
                 } as any);
+                formData.append('scanType', scanType);
 
                 const response = await client.post<MenuScanResponse>('/wine/menu-scan', formData, {
                     headers: {
