@@ -122,7 +122,7 @@ const RecommendationListScreen = () => {
           style={styles.resetCtaButton}
           onPress={() => navigation.navigate('TasteReset' as never)}
         >
-          <Text style={styles.resetCtaText}>취향 추천 다시 받기</Text>
+          <Text style={styles.resetCtaText}>{t('recommendationList.resetButton')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

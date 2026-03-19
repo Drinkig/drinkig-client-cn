@@ -16,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Svg, { Circle } from 'react-native-svg';
 import { colors } from '../constants/colors';
 import client from '../api/client';
+import { useTranslation } from 'react-i18next';
 
 // --- Types ------------------------------------------------------------------
 
@@ -57,14 +58,6 @@ const SORT_COLORS: Record<string, string> = {
     OTHER: '#7F8C8D',
 };
 
-const SORT_LABELS: Record<string, string> = {
-    RED: '레드',
-    WHITE: '화이트',
-    SPARKLING: '스파클링',
-    ROSE: '로제',
-    PORT: '포트',
-    OTHER: '기타',
-};
 
 // Animated SVG circle wrapper
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -138,6 +131,7 @@ type Props = NativeStackScreenProps<any, 'MenuScanResult'>;
 
 export default function MenuScanResultScreen({ route, navigation }: Props) {
     const { imageUri } = route.params as { imageUri: string };
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<MenuScanResultDTO | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -166,8 +160,8 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             } catch (e: any) {
                 const msg =
                     e?.response?.status === 429
-                        ? '오늘 스캔 횟수를 모두 사용했습니다.\n내일 다시 시도해 주세요.'
-                        : '메뉴판을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.';
+                        ? t('menuScanResult.error.limitReached')
+                        : t('menuScanResult.error.recognition');
                 setError(msg);
             } finally {
                 setLoading(false);
@@ -200,7 +194,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                 {isBest && (
                     <View style={styles.bestBadge}>
                         <Ionicons name="star" size={10} color={colors.white} />
-                        <Text style={styles.bestBadgeText}> 취향 저격</Text>
+                        <Text style={styles.bestBadgeText}> {t('menuScanResult.bestBadge')}</Text>
                     </View>
                 )}
                 <View style={styles.wineCardRow}>
@@ -237,13 +231,13 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color={colors.white} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
+                    <Text style={styles.headerTitle}>{t('menuScanResult.header')}</Text>
                     <View style={styles.headerPlaceholder} />
                 </View>
                 <View style={styles.stateContainer}>
                     <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 20 }} />
-                    <Text style={styles.stateTitle}>AI가 메뉴판을 분석 중이에요</Text>
-                    <Text style={styles.stateSubtitle}>취향에 맞는 와인을 찾고 있어요...</Text>
+                    <Text style={styles.stateTitle}>{t('menuScanResult.loading.title')}</Text>
+                    <Text style={styles.stateSubtitle}>{t('menuScanResult.loading.subtitle')}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -258,16 +252,16 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                         <Ionicons name="arrow-back" size={24} color={colors.white} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
+                    <Text style={styles.headerTitle}>{t('menuScanResult.header')}</Text>
                     <View style={styles.headerPlaceholder} />
                 </View>
                 <View style={styles.stateContainer}>
                     <Ionicons name="alert-circle-outline" size={52} color={colors.error} style={{ marginBottom: 16 }} />
                     <Text style={[styles.stateTitle, { textAlign: 'center' }]}>
-                        {error ?? '알 수 없는 오류가 발생했습니다.'}
+                        {error ?? t('menuScanResult.error.unknown')}
                     </Text>
                     <TouchableOpacity style={styles.retryButton} onPress={() => navigation.goBack()}>
-                        <Text style={styles.retryButtonText}>돌아가기</Text>
+                        <Text style={styles.retryButtonText}>{t('menuScanResult.error.goBack')}</Text>
                     </TouchableOpacity>
                 </View>
             </SafeAreaView>
@@ -287,7 +281,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                         <Ionicons name="arrow-back" size={24} color={colors.white} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>메뉴판 스캔 결과</Text>
+                    <Text style={styles.headerTitle}>{t('menuScanResult.header')}</Text>
                     <View style={styles.headerPlaceholder} />
                 </View>
 
@@ -300,14 +294,14 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     ListHeaderComponent={
                         <View style={styles.resultCountContainer}>
                             <Text style={styles.resultCountText}>
-                                <Text style={styles.resultCountHighlight}>{data.totalMatchedCount}개</Text>의 와인을 찾았어요
+                                <Text style={styles.resultCountHighlight}>{t('menuScanResult.resultCountHighlight', { count: data.totalMatchedCount })}</Text>{t('menuScanResult.resultCountSuffix')}
                             </Text>
                         </View>
                     }
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Ionicons name="search-outline" size={48} color={colors.textTertiary} />
-                            <Text style={styles.emptyText}>DB에서 일치하는 와인을 찾지 못했어요</Text>
+                            <Text style={styles.emptyText}>{t('menuScanResult.empty')}</Text>
                         </View>
                     }
                     ListFooterComponent={
@@ -315,10 +309,10 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                             <View style={styles.unmatchedSection}>
                                 <View style={styles.unmatchedDivider} />
                                 <Text style={styles.unmatchedTitle}>
-                                    정보를 찾지 못한 와인 ({data.unmatchedWines.length}개)
+                                    {t('menuScanResult.unmatched.title', { count: data.unmatchedWines.length })}
                                 </Text>
                                 <Text style={styles.unmatchedSubtitle}>
-                                    메뉴판에서 인식했지만 상세 정보를 찾지 못했어요.
+                                    {t('menuScanResult.unmatched.subtitle')}
                                 </Text>
                                 {data.unmatchedWines.map((w, i) => (
                                     <View key={i} style={styles.unmatchedItem}>

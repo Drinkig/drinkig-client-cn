@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Svg, { Circle } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { MemberInitRequest, updateMemberInitInfo } from '../api/member';
 import { useUser } from '../context/UserContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
@@ -36,16 +37,18 @@ const BUDGET_OPTIONS = [
 
 const STEPS: Step[] = ['WINE_SORT', 'BUDGET', 'FLAVOR_PROFILE'];
 
-const LOADING_MESSAGES = [
-  '취향을 다시 분석하고 있어요...',
-  '새로운 와인 스타일을 탐색 중이에요...',
-  '회원님께 맞는 추천을 준비하고 있어요...',
-];
 
 const TasteResetScreen = () => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const { user, setFlavorProfile: saveFlavorProfile } = useUser();
   const { showAlert } = useGlobalUI();
+
+  const LOADING_MESSAGES = [
+    t('tasteReset.analyzing.message1'),
+    t('tasteReset.analyzing.message2'),
+    t('tasteReset.analyzing.message3'),
+  ];
 
   const [currentStep, setCurrentStep] = useState<Step>('WINE_SORT');
   const [wineSort, setWineSort] = useState<string[]>([]);
@@ -188,8 +191,8 @@ const TasteResetScreen = () => {
     } catch (error) {
       console.error('Taste Reset Error:', error);
       showAlert({
-        title: '오류',
-        message: '취향 저장 중 문제가 발생했습니다.',
+        title: t('tasteReset.error.title'),
+        message: t('tasteReset.error.message'),
         singleButton: true,
       });
       setLoading(false);
@@ -219,7 +222,7 @@ const TasteResetScreen = () => {
       case 'WINE_SORT':
         return (
           <MultiSelectionStep
-            title="추천 받고 싶은 와인 종류는?"
+            title={t('tasteReset.wineSortTitle')}
             options={WINE_SORTS}
             selected={wineSort}
             onSelect={toggleWineSort}
@@ -282,7 +285,7 @@ const TasteResetScreen = () => {
             </Svg>
             <Text style={styles.circleEmoji}>🍷</Text>
           </View>
-          <Text style={styles.analyzingTitle}>취향 재분석 중</Text>
+          <Text style={styles.analyzingTitle}>{t('tasteReset.analyzing.title')}</Text>
           <Text style={styles.analyzingMessage}>
             {LOADING_MESSAGES[loadingMessageIndex]}
           </Text>
@@ -342,7 +345,7 @@ const TasteResetScreen = () => {
           disabled={!isStepValid()}
         >
           <Text style={[styles.nextButtonText, !isStepValid() && styles.nextButtonTextDisabled]}>
-            {currentStep === 'FLAVOR_PROFILE' ? '취향 재설정 완료' : '다음'}
+            {currentStep === 'FLAVOR_PROFILE' ? t('tasteReset.button.complete') : t('tasteReset.button.next')}
           </Text>
         </TouchableOpacity>
       </View>

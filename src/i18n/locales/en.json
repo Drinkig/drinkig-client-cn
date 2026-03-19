@@ -432,6 +432,53 @@
         "header": "Recommended Styles",
         "title": "Recommended for you, {{name}}!",
         "defaultName": "Member",
-        "empty": "No recommended wine styles available."
+        "empty": "No recommended wine styles available.",
+        "resetButton": "Get New Recommendations"
+    },
+    "menuScanResult": {
+        "header": "Menu Scan Result",
+        "loading": {
+            "title": "Analyzing your menu...",
+            "subtitle": "Finding wines that match your taste..."
+        },
+        "error": {
+            "limitReached": "You've used all scans for today.\nPlease try again tomorrow.",
+            "recognition": "Failed to recognize the menu.\nPlease take a clearer photo and try again.",
+            "unknown": "An unknown error occurred.",
+            "goBack": "Go Back"
+        },
+        "bestBadge": "Perfect Match",
+        "resultCountHighlight": "{{count}}",
+        "resultCountSuffix": " wines found",
+        "empty": "No matching wines found in our database",
+        "unmatched": {
+            "title": "Wines without details ({{count}})",
+            "subtitle": "Recognized from the menu but details couldn't be found."
+        },
+        "sortLabels": {
+            "RED": "Red",
+            "WHITE": "White",
+            "SPARKLING": "Sparkling",
+            "ROSE": "Rosé",
+            "PORT": "Port",
+            "OTHER": "Other"
+        }
+    },
+    "tasteReset": {
+        "wineSortTitle": "What wine types would you like recommended?",
+        "analyzing": {
+            "title": "Re-analyzing your taste",
+            "message1": "Re-analyzing your preferences...",
+            "message2": "Exploring new wine styles for you...",
+            "message3": "Preparing recommendations just for you..."
+        },
+        "error": {
+            "title": "Error",
+            "message": "A problem occurred while saving your preferences."
+        },
+        "button": {
+            "next": "Next",
+            "complete": "Complete Taste Reset"
+        }
     }
 }

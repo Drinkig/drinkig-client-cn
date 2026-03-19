@@ -432,6 +432,53 @@
         "header": "추천 와인 스타일",
         "title": "{{name}}님에게 추천드려요!",
         "defaultName": "회원",
-        "empty": "추천된 와인 스타일이 없습니다."
+        "empty": "추천된 와인 스타일이 없습니다.",
+        "resetButton": "취향 추천 다시 받기"
+    },
+    "menuScanResult": {
+        "header": "메뉴판 스캔 결과",
+        "loading": {
+            "title": "AI가 메뉴판을 분석 중이에요",
+            "subtitle": "취향에 맞는 와인을 찾고 있어요..."
+        },
+        "error": {
+            "limitReached": "오늘 스캔 횟수를 모두 사용했습니다.\n내일 다시 시도해 주세요.",
+            "recognition": "메뉴판을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",
+            "unknown": "알 수 없는 오류가 발생했습니다.",
+            "goBack": "돌아가기"
+        },
+        "bestBadge": "취향 저격",
+        "resultCountHighlight": "{{count}}개",
+        "resultCountSuffix": "의 와인을 찾았어요",
+        "empty": "DB에서 일치하는 와인을 찾지 못했어요",
+        "unmatched": {
+            "title": "정보를 찾지 못한 와인 ({{count}}개)",
+            "subtitle": "메뉴판에서 인식했지만 상세 정보를 찾지 못했어요."
+        },
+        "sortLabels": {
+            "RED": "레드",
+            "WHITE": "화이트",
+            "SPARKLING": "스파클링",
+            "ROSE": "로제",
+            "PORT": "포트",
+            "OTHER": "기타"
+        }
+    },
+    "tasteReset": {
+        "wineSortTitle": "추천 받고 싶은 와인 종류는?",
+        "analyzing": {
+            "title": "취향 재분석 중",
+            "message1": "취향을 다시 분석하고 있어요...",
+            "message2": "새로운 와인 스타일을 탐색 중이에요...",
+            "message3": "회원님께 맞는 추천을 준비하고 있어요..."
+        },
+        "error": {
+            "title": "오류",
+            "message": "취향 저장 중 문제가 발생했습니다."
+        },
+        "button": {
+            "next": "다음",
+            "complete": "취향 재설정 완료"
+        }
     }
 }
