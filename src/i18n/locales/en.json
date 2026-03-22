@@ -446,7 +446,9 @@
         "title": "Recommended for you, {{name}}!",
         "defaultName": "Member",
         "empty": "No recommended wine styles available.",
-        "resetButton": "Get New Recommendations"
+        "resetButton": "Get New Recommendations",
+        "cooldown": "Available in {{days}}d {{hours}}h",
+        "cooldownHours": "Available in {{hours}}h"
     },
     "onboarding": {
         "intro": {

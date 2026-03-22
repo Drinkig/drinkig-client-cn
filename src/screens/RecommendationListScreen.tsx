@@ -1,18 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../context/UserContext';
 import { colors } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
 
+const COOLDOWN_DAYS = 7;
 const RANK_BADGES = ['🥇', '🥈', '🥉'];
 
 const RecommendationListScreen = () => {
   const navigation = useNavigation();
   const { recommendations, user } = useUser();
   const { t, i18n } = useTranslation();
+  const [cooldownRemaining, setCooldownRemaining] = useState<string | null>(null);
+
+  const checkCooldown = useCallback(async () => {
+    const lastReset = await AsyncStorage.getItem('lastTasteResetTime');
+    if (!lastReset) {
+      setCooldownRemaining(null);
+      return;
+    }
+    const elapsed = Date.now() - new Date(lastReset).getTime();
+    const cooldownMs = COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+    const remaining = cooldownMs - elapsed;
+    if (remaining <= 0) {
+      setCooldownRemaining(null);
+    } else {
+      const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
+      const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+      if (days > 0) {
+        setCooldownRemaining(t('recommendationList.cooldown', { days, hours }));
+      } else {
+        setCooldownRemaining(t('recommendationList.cooldownHours', { hours }));
+      }
+    }
+  }, [t]);
+
+  useFocusEffect(
+    useCallback(() => {
+      checkCooldown();
+      const interval = setInterval(checkCooldown, 60 * 1000);
+      return () => clearInterval(interval);
+    }, [checkCooldown])
+  );
 
   const getWineTypeColor = (type: string) => {
     switch (type) {
@@ -119,10 +152,13 @@ const RecommendationListScreen = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.resetCtaButton}
+          style={[styles.resetCtaButton, cooldownRemaining && styles.resetCtaButtonDisabled]}
           onPress={() => navigation.navigate('TasteReset' as never)}
+          disabled={!!cooldownRemaining}
         >
-          <Text style={styles.resetCtaText}>{t('recommendationList.resetButton')}</Text>
+          <Text style={[styles.resetCtaText, cooldownRemaining && styles.resetCtaTextDisabled]}>
+            {cooldownRemaining || t('recommendationList.resetButton')}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -261,6 +297,13 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  resetCtaButtonDisabled: {
+    backgroundColor: '#333',
+  },
+  resetCtaTextDisabled: {
+    color: '#888',
+    fontSize: 14,
   },
 });
 

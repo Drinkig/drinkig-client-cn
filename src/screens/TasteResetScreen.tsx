@@ -309,6 +309,9 @@ const TasteResetScreen = () => {
 
       await updateMemberInitInfo(requestData);
 
+      const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default;
+      await AsyncStorage.setItem('lastTasteResetTime', new Date().toISOString());
+
       setLoading(false);
       setAnalyzing(true);
 

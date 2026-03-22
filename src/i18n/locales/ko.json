@@ -446,7 +446,9 @@
         "title": "{{name}}님에게 추천드려요!",
         "defaultName": "회원",
         "empty": "추천된 와인 스타일이 없습니다.",
-        "resetButton": "취향 추천 다시 받기"
+        "resetButton": "취향 추천 다시 받기",
+        "cooldown": "{{days}}일 {{hours}}시간 후 다시 받을 수 있어요",
+        "cooldownHours": "{{hours}}시간 후 다시 받을 수 있어요"
     },
     "onboarding": {
         "intro": {
