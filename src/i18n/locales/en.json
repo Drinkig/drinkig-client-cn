@@ -641,6 +641,25 @@
             "OTHER": "Other"
         }
     },
+    "scanFeedback": {
+        "ratingTitle": "How were the results?",
+        "rating": {
+            "GOOD": "Great",
+            "NORMAL": "So-so",
+            "BAD": "Poor"
+        },
+        "issueTitle": "What went wrong?",
+        "issues": {
+            "WRONG_WINE": "Recognized as wrong wine",
+            "MISSING_WINE": "Some wines were missing",
+            "NO_RESULT": "Nothing was recognized",
+            "WRONG_INFO": "Wine info was incorrect",
+            "OTHER": "Other"
+        },
+        "commentPlaceholder": "Tell us more (optional)",
+        "submit": "Send Feedback",
+        "thankYou": "Thanks for your feedback!"
+    },
     "tasteReset": {
         "wineSortTitle": "What wine types would you like recommended?",
         "analyzing": {

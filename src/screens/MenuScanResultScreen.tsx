@@ -18,6 +18,7 @@ import { colors } from '../constants/colors';
 import client from '../api/client';
 import { useTranslation } from 'react-i18next';
 import { incrementScanCount } from './CameraScreen';
+import ScanFeedbackSheet from '../components/common/ScanFeedbackSheet';
 
 // --- Types ------------------------------------------------------------------
 
@@ -136,6 +137,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<MenuScanResultDTO | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [showFeedback, setShowFeedback] = useState(false);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -160,6 +162,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
 
                 setData(response.data.result);
                 await incrementScanCount();
+                setTimeout(() => setShowFeedback(true), 2000);
             } catch (e: any) {
                 const msg =
                     e?.response?.status === 429
@@ -328,6 +331,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                     }
                 />
             </Animated.View>
+            <ScanFeedbackSheet
+                visible={showFeedback}
+                onClose={() => setShowFeedback(false)}
+                scanType={scanType}
+            />
         </SafeAreaView>
     );
 }

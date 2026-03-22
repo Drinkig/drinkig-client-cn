@@ -251,7 +251,7 @@ export default function CameraScreen({ navigation }: Props) {
             {/* Dimmed overlay with cutout frame */}
             <View style={StyleSheet.absoluteFill} pointerEvents="none">
                 {/* Semi-transparent background around the frame */}
-                <View style={styles.dimOverlay} />
+                <View style={styles.dimOverlayTop} />
                 {/* Center row: dim | frame | dim */}
                 <View style={styles.frameCenterRow}>
                     <View style={styles.dimSide} />
@@ -268,7 +268,7 @@ export default function CameraScreen({ navigation }: Props) {
                     </Animated.View>
                     <View style={styles.dimSide} />
                 </View>
-                <View style={styles.dimOverlay} />
+                <View style={styles.dimOverlayBottom} />
             </View>
 
             {/* Top Controls */}
@@ -430,8 +430,12 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     // Frame overlay
-    dimOverlay: {
-        flex: 1,
+    dimOverlayTop: {
+        flex: 0.8,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+    },
+    dimOverlayBottom: {
+        flex: 1.2,
         backgroundColor: 'rgba(0,0,0,0.55)',
     },
     frameCenterRow: {
@@ -543,10 +547,11 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: BOTTOM_BAR_HEIGHT,
+        minHeight: BOTTOM_BAR_HEIGHT,
         alignItems: 'center',
         justifyContent: 'flex-end',
         paddingBottom: Platform.OS === 'ios' ? 44 : 24,
+        paddingTop: 16,
         backgroundColor: 'rgba(0,0,0,0.5)',
         gap: 20,
     },
@@ -633,5 +638,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '500',
         textAlign: 'center',
+        marginTop: -8,
     },
 });

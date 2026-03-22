@@ -641,6 +641,25 @@
             "OTHER": "기타"
         }
     },
+    "scanFeedback": {
+        "ratingTitle": "인식 결과가 어땠나요?",
+        "rating": {
+            "GOOD": "잘 됐어요",
+            "NORMAL": "보통이에요",
+            "BAD": "잘 안됐어요"
+        },
+        "issueTitle": "어떤 부분이 아쉬웠나요?",
+        "issues": {
+            "WRONG_WINE": "다른 와인으로 인식됐어요",
+            "MISSING_WINE": "일부 와인이 누락됐어요",
+            "NO_RESULT": "아예 인식이 안됐어요",
+            "WRONG_INFO": "와인 정보가 틀려요",
+            "OTHER": "기타"
+        },
+        "commentPlaceholder": "자세한 내용을 알려주세요 (선택)",
+        "submit": "의견 보내기",
+        "thankYou": "소중한 의견 감사합니다!"
+    },
     "tasteReset": {
         "wineSortTitle": "추천 받고 싶은 와인 종류는?",
         "analyzing": {
