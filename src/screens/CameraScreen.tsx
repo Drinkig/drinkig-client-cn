@@ -18,7 +18,30 @@ import ImageResizer from '@bam.tech/react-native-image-resizer';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/colors';
+
+const DAILY_SCAN_LIMIT = 3;
+const SCAN_USAGE_KEY = 'scanDailyUsage';
+
+async function getScanUsage(): Promise<{ date: string; count: number }> {
+    const raw = await AsyncStorage.getItem(SCAN_USAGE_KEY);
+    if (!raw) return { date: '', count: 0 };
+    return JSON.parse(raw);
+}
+
+async function getTodayScanCount(): Promise<number> {
+    const usage = await getScanUsage();
+    const today = new Date().toISOString().slice(0, 10);
+    return usage.date === today ? usage.count : 0;
+}
+
+export async function incrementScanCount(): Promise<void> {
+    const today = new Date().toISOString().slice(0, 10);
+    const usage = await getScanUsage();
+    const count = usage.date === today ? usage.count + 1 : 1;
+    await AsyncStorage.setItem(SCAN_USAGE_KEY, JSON.stringify({ date: today, count }));
+}
 
 const { width, height } = Dimensions.get('window');
 
@@ -36,6 +59,31 @@ export default function CameraScreen({ navigation }: Props) {
     const [flashOn, setFlashOn] = useState(false);
     const [scanType, setScanType] = useState<ScanType>('label');
     const [capturing, setCapturing] = useState(false);
+    const [remainingScans, setRemainingScans] = useState(DAILY_SCAN_LIMIT);
+    const [timeUntilReset, setTimeUntilReset] = useState('');
+
+    useEffect(() => {
+        getTodayScanCount().then(count => setRemainingScans(DAILY_SCAN_LIMIT - count));
+    }, []);
+
+    useEffect(() => {
+        if (remainingScans > 0) {
+            setTimeUntilReset('');
+            return;
+        }
+        const updateTime = () => {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const diff = midnight.getTime() - now.getTime();
+            const h = Math.floor(diff / (60 * 60 * 1000));
+            const m = Math.floor((diff % (60 * 60 * 1000)) / (60 * 1000));
+            setTimeUntilReset(t('camera.resetTimer', { hours: h, minutes: m }));
+        };
+        updateTime();
+        const interval = setInterval(updateTime, 60 * 1000);
+        return () => clearInterval(interval);
+    }, [remainingScans, t]);
 
     // Toggle sliding animation
     const toggleAnim = useRef(new Animated.Value(0)).current;
@@ -65,8 +113,21 @@ export default function CameraScreen({ navigation }: Props) {
         navigation.goBack();
     }, [navigation]);
 
+    const checkDailyLimit = useCallback(async (): Promise<boolean> => {
+        const count = await getTodayScanCount();
+        if (count >= DAILY_SCAN_LIMIT) {
+            Alert.alert(
+                t('camera.limitAlertTitle'),
+                t('camera.limitAlertMessage', { limit: DAILY_SCAN_LIMIT }),
+            );
+            return false;
+        }
+        return true;
+    }, [t]);
+
     const handleCapture = useCallback(async () => {
         if (capturing) return;
+        if (!(await checkDailyLimit())) return;
 
         // Simulator: no real camera, just show alert
         if (__DEV__ && !cameraRef.current) {
@@ -106,6 +167,7 @@ export default function CameraScreen({ navigation }: Props) {
     }, [capturing, flashOn, navigation, scanType]);
 
     const handleGallery = useCallback(async () => {
+        if (!(await checkDailyLimit())) return;
         const result = await launchImageLibrary({ mediaType: 'photo' });
         if (result.assets && result.assets[0]?.uri) {
             try {
@@ -215,13 +277,21 @@ export default function CameraScreen({ navigation }: Props) {
                     <Ionicons name="close" size={28} color={colors.white} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.topButton} onPress={() => setFlashOn(v => !v)}>
-                    <Ionicons
-                        name={flashOn ? 'flash' : 'flash-off'}
-                        size={26}
-                        color={flashOn ? '#FFD700' : colors.white}
-                    />
-                </TouchableOpacity>
+                <View style={styles.topRight}>
+                    <View style={styles.scanCountBadge}>
+                        <Ionicons name="scan-outline" size={14} color={remainingScans > 0 ? colors.white : '#888'} />
+                        <Text style={[styles.scanCountText, remainingScans === 0 && { color: '#888' }]}>
+                            {remainingScans}/{DAILY_SCAN_LIMIT}
+                        </Text>
+                    </View>
+                    <TouchableOpacity style={styles.topButton} onPress={() => setFlashOn(v => !v)}>
+                        <Ionicons
+                            name={flashOn ? 'flash' : 'flash-off'}
+                            size={26}
+                            color={flashOn ? '#FFD700' : colors.white}
+                        />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Bottom Controls */}
@@ -265,28 +335,32 @@ export default function CameraScreen({ navigation }: Props) {
                 {/* Shutter row */}
                 <View style={styles.shutterRow}>
                     <TouchableOpacity
-                        style={styles.galleryButton}
+                        style={[styles.galleryButton, remainingScans <= 0 && styles.galleryButtonDisabled]}
                         onPress={handleGallery}
                         activeOpacity={0.7}
+                        disabled={remainingScans <= 0}
                     >
-                        <Ionicons name="images-outline" size={26} color={colors.white} />
+                        <Ionicons name="images-outline" size={26} color={remainingScans <= 0 ? '#555' : colors.white} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.shutterButton, capturing && styles.shutterButtonDisabled]}
+                        style={[styles.shutterButton, (capturing || remainingScans <= 0) && styles.shutterButtonDisabled]}
                         onPress={handleCapture}
                         activeOpacity={0.8}
-                        disabled={capturing}
+                        disabled={capturing || remainingScans <= 0}
                     >
                         {capturing ? (
                             <ActivityIndicator color={colors.primary} size="small" />
                         ) : (
-                            <View style={styles.shutterInner} />
+                            <View style={[styles.shutterInner, remainingScans <= 0 && styles.shutterInnerDisabled]} />
                         )}
                     </TouchableOpacity>
 
                     <View style={styles.shutterSpacer} />
                 </View>
+                {timeUntilReset ? (
+                    <Text style={styles.resetTimerText}>{timeUntilReset}</Text>
+                ) : null}
             </View>
         </View>
     );
@@ -436,6 +510,25 @@ const styles = StyleSheet.create({
         borderRadius: 22,
         backgroundColor: 'rgba(0,0,0,0.4)',
     },
+    topRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    scanCountBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 16,
+    },
+    scanCountText: {
+        color: colors.white,
+        fontSize: 13,
+        fontWeight: '600',
+    },
     closeButton: {
         width: 44,
         height: 44,
@@ -520,12 +613,25 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     shutterButtonDisabled: {
-        opacity: 0.6,
+        opacity: 0.4,
+        borderColor: '#555',
     },
     shutterInner: {
         width: SHUTTER_INNER_SIZE,
         height: SHUTTER_INNER_SIZE,
         borderRadius: SHUTTER_INNER_SIZE / 2,
         backgroundColor: colors.white,
+    },
+    shutterInnerDisabled: {
+        backgroundColor: '#555',
+    },
+    galleryButtonDisabled: {
+        opacity: 0.4,
+    },
+    resetTimerText: {
+        color: '#aaa',
+        fontSize: 13,
+        fontWeight: '500',
+        textAlign: 'center',
     },
 });

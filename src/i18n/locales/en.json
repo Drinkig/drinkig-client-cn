@@ -607,7 +607,10 @@
         "simulatorTitle": "Simulator",
         "simulatorMessage": "Capture mode: {{mode}}\nPlease test on a real device.",
         "simulatorPreview": "Simulator Preview",
-        "gallery": "Gallery"
+        "gallery": "Gallery",
+        "limitAlertTitle": "Daily Scan Limit Reached",
+        "limitAlertMessage": "You can scan up to {{limit}} times per day.\nPlease try again tomorrow.",
+        "resetTimer": "Resets in {{hours}}h {{minutes}}m"
     },
     "menuScanResult": {
         "header": "Menu Scan Result",

@@ -17,6 +17,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { colors } from '../constants/colors';
 import client from '../api/client';
 import { useTranslation } from 'react-i18next';
+import { incrementScanCount } from './CameraScreen';
 
 // --- Types ------------------------------------------------------------------
 
@@ -158,6 +159,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                 });
 
                 setData(response.data.result);
+                await incrementScanCount();
             } catch (e: any) {
                 const msg =
                     e?.response?.status === 429
