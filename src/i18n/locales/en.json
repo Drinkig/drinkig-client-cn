@@ -594,7 +594,7 @@
     },
     "camera": {
         "permissionRequired": "Camera access is required",
-        "permissionAllow": "Allow Access",
+        "permissionAllow": "Continue",
         "permissionAlertTitle": "Camera Permission Required",
         "permissionAlertMessage": "Please allow camera access in Settings.",
         "close": "Close",

@@ -205,9 +205,6 @@ export default function CameraScreen({ navigation }: Props) {
                 <TouchableOpacity style={styles.permissionButton} onPress={handleRequestPermission}>
                     <Text style={styles.permissionButtonText}>{t('camera.permissionAllow')}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.permissionClose} onPress={handleClose}>
-                    <Text style={styles.permissionCloseText}>{t('camera.close')}</Text>
-                </TouchableOpacity>
             </View>
         );
     }
