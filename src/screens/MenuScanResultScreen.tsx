@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -19,6 +19,7 @@ import client from '../api/client';
 import { useTranslation } from 'react-i18next';
 import { incrementScanCount } from './CameraScreen';
 import ScanFeedbackSheet from '../components/common/ScanFeedbackSheet';
+import { addToWishlist, removeFromWishlist } from '../api/wine';
 
 // --- Types ------------------------------------------------------------------
 
@@ -138,8 +139,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     const [data, setData] = useState<MenuScanResultDTO | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
+    const [wishedIds, setWishedIds] = useState<Set<number>>(new Set());
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const toastAnim = useRef(new Animated.Value(0)).current;
 
     // Call the API
     useEffect(() => {
@@ -176,6 +180,46 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         };
         scanMenu();
     }, [imageUri]);
+
+    // ----- Wishlist toggle -----
+    const showToast = useCallback((message: string) => {
+        setToastMessage(message);
+        toastAnim.setValue(0);
+        Animated.sequence([
+            Animated.timing(toastAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
+            Animated.delay(1500),
+            Animated.timing(toastAnim, { toValue: 0, duration: 250, useNativeDriver: true }),
+        ]).start(() => setToastMessage(null));
+    }, []);
+
+    const handleToggleWishlist = useCallback(async (wine: ScannedWineItemDTO) => {
+        const wasWished = wishedIds.has(wine.wineId);
+        setWishedIds(prev => {
+            const next = new Set(prev);
+            if (wasWished) next.delete(wine.wineId);
+            else next.add(wine.wineId);
+            return next;
+        });
+
+        try {
+            const vintageYear = wine.vintageYear ?? undefined;
+            if (wasWished) {
+                await removeFromWishlist(wine.wineId, vintageYear);
+                showToast(t('menuScanResult.wishlist.removed'));
+            } else {
+                await addToWishlist(wine.wineId, vintageYear);
+                showToast(t('menuScanResult.wishlist.added'));
+            }
+        } catch {
+            // Rollback
+            setWishedIds(prev => {
+                const next = new Set(prev);
+                if (wasWished) next.add(wine.wineId);
+                else next.delete(wine.wineId);
+                return next;
+            });
+        }
+    }, [wishedIds, showToast, t]);
 
     // ----- Render helpers -----
 
@@ -220,6 +264,22 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                             {[item.country, item.region, item.variety].filter(Boolean).join(' · ')}
                         </Text>
                     </View>
+
+                    {/* Wishlist */}
+                    <TouchableOpacity
+                        style={styles.wishlistButton}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        onPress={(e) => {
+                            e.stopPropagation();
+                            handleToggleWishlist(item);
+                        }}
+                    >
+                        <Ionicons
+                            name={wishedIds.has(item.wineId) ? 'heart' : 'heart-outline'}
+                            size={22}
+                            color={wishedIds.has(item.wineId) ? colors.error : colors.textTertiary}
+                        />
+                    </TouchableOpacity>
 
                     {/* Score */}
                     <ScoreRing score={item.flavorMatchScore} />
@@ -336,6 +396,23 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                 onClose={() => setShowFeedback(false)}
                 scanType={scanType}
             />
+
+            {/* Wishlist toast */}
+            {toastMessage && (
+                <Animated.View
+                    style={[
+                        styles.toastContainer,
+                        {
+                            opacity: toastAnim,
+                            transform: [{ translateY: toastAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
+                        },
+                    ]}
+                    pointerEvents="none"
+                >
+                    <Ionicons name="heart" size={16} color={colors.primary} style={{ marginRight: 8 }} />
+                    <Text style={styles.toastText}>{toastMessage}</Text>
+                </Animated.View>
+            )}
         </SafeAreaView>
     );
 }
@@ -564,5 +641,34 @@ const styles = StyleSheet.create({
         flex: 1,
         fontSize: 13,
         color: colors.textSecondary,
+    },
+    // ── Wishlist button ─────────────────────────────────────────────────────
+    wishlistButton: {
+        marginLeft: 8,
+        padding: 4,
+        flexShrink: 0,
+        alignSelf: 'center',
+    },
+    // ── Toast ────────────────────────────────────────────────────────────────
+    toastContainer: {
+        position: 'absolute',
+        bottom: 48,
+        alignSelf: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.surface2,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 24,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    toastText: {
+        color: colors.white,
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

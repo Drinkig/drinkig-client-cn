@@ -632,6 +632,10 @@
             "title": "Wines without details ({{count}})",
             "subtitle": "Recognized from the menu but details couldn't be found."
         },
+        "wishlist": {
+            "added": "Added to wishlist",
+            "removed": "Removed from wishlist"
+        },
         "sortLabels": {
             "RED": "Red",
             "WHITE": "White",
