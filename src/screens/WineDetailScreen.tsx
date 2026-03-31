@@ -265,6 +265,18 @@ export default function WineDetailScreen() {
 
   const [vintageStats, setVintageStats] = useState<{ [key: string]: { rating: number; count: number; reviews: any[] } }>({});
 
+  const userRating = useMemo(() => {
+    const entries = Object.values(vintageStats);
+    if (entries.length === 0) return null;
+    let totalSum = 0;
+    let totalCount = 0;
+    entries.forEach(e => {
+      totalSum += e.rating * e.count;
+      totalCount += e.count;
+    });
+    return totalCount > 0 ? { avg: totalSum / totalCount, count: totalCount } : null;
+  }, [vintageStats]);
+
   useEffect(() => {
     const fetchVintageStats = async () => {
       if (!wine.id) return;
@@ -378,6 +390,9 @@ export default function WineDetailScreen() {
       case 'info':
         return (
           <InfoTab
+            type={type}
+            country={country}
+            grape={grape}
             description={description}
             features={features}
             nose={nose}
@@ -474,80 +489,60 @@ export default function WineDetailScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        {(isLoading && !apiWineDetail) || imageUri ? (
+        <View style={styles.wineHeaderSection}>
           <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
               <ActivityIndicator size="large" color={colors.primary} />
+            ) : imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
             ) : (
-              <Image source={{ uri: imageUri! }} style={styles.wineImage} resizeMode="contain" />
-            )}
-            {!isMyWineItem && (
-              <TouchableOpacity
-                style={styles.compatibilityButton}
-                onPress={() => navigation.navigate('WineCompatibility', {
-                  userProfile: flavorProfile,
-                  wineStats: {
-                    sweetness: features?.sweetness,
-                    acidity: features?.acidity,
-                    tannin: features?.tannin,
-                    body: features?.body,
-                    alcohol: 0,
-                  },
-                  wineName: i18n.language === 'en' ? (nameEng || nameKor) : nameKor
-                })}
-              >
-                <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />
-                <Text style={styles.compatibilityButtonText}>{t('wineDetail.compatibility')}</Text>
-              </TouchableOpacity>
+              <MaterialCommunityIcons name="image-off-outline" size={32} color={colors.textSecondary} />
             )}
           </View>
-        ) : (
-          !isMyWineItem && (
-            <View style={styles.compatibilityButtonContainer}>
-              <TouchableOpacity
-                style={styles.compatibilityButton}
-                onPress={() => navigation.navigate('WineCompatibility', {
-                  userProfile: flavorProfile,
-                  wineStats: {
-                    sweetness: features?.sweetness,
-                    acidity: features?.acidity,
-                    tannin: features?.tannin,
-                    body: features?.body,
-                    alcohol: 0,
-                  },
-                  wineName: i18n.language === 'en' ? (nameEng || nameKor) : nameKor
-                })}
-              >
-                <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />
-                <Text style={styles.compatibilityButtonText}>{t('wineDetail.compatibility')}</Text>
-              </TouchableOpacity>
-            </View>
-          )
-        )}
-        <View style={styles.infoContainer}>
-          {i18n.language === 'en' ? (
-            <Text style={styles.wineNameKor}>{nameEng || nameKor}</Text>
-          ) : (
-            <>
-              <Text style={styles.wineNameKor}>{nameKor}</Text>
-              {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
-            </>
-          )}
 
-          <View style={styles.tagContainer}>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{type}</Text>
+          <View style={styles.infoContainer}>
+            {i18n.language === 'en' ? (
+              <Text style={styles.wineNameKor}>{nameEng || nameKor}</Text>
+            ) : (
+              <>
+                <Text style={styles.wineNameKor}>{nameKor}</Text>
+                {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
+              </>
+            )}
+
+            <View style={styles.ratingRow}>
+              <MaterialCommunityIcons name="star" size={16} color={userRating ? '#E8C94A' : colors.textSecondary} />
+              <Text style={styles.ratingText}>
+                {userRating ? userRating.avg.toFixed(1) : '-'}
+              </Text>
+              {userRating && (
+                <Text style={styles.ratingCount}>({userRating.count})</Text>
+              )}
             </View>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{country}</Text>
-            </View>
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{grape}</Text>
-            </View>
+
           </View>
-
-
         </View>
+
+        {!isMyWineItem && (
+          <TouchableOpacity
+            style={styles.compatibilityBanner}
+            onPress={() => navigation.navigate('WineCompatibility', {
+              userProfile: flavorProfile,
+              wineStats: {
+                sweetness: features?.sweetness,
+                acidity: features?.acidity,
+                tannin: features?.tannin,
+                body: features?.body,
+                alcohol: 0,
+              },
+              wineName: i18n.language === 'en' ? (nameEng || nameKor) : nameKor
+            })}
+          >
+            <MaterialCommunityIcons name="heart-pulse" size={18} color={colors.white} style={{ marginRight: 8 }} />
+            <Text style={styles.compatibilityBannerText}>{t('wineDetail.compatibility')}</Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
 
 
         {!isMyWineItem && vintages && vintages.length > 0 && (
@@ -760,53 +755,56 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 100,
   },
-  imageContainer: {
+  wineHeaderSection: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    padding: 20,
+    gap: 16,
+  },
+  imageContainer: {
+    width: 110,
+    height: 140,
+    borderRadius: 10,
     backgroundColor: '#222',
-    height: 320,
     justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    flexShrink: 0,
   },
   wineImage: {
     width: '100%',
-    height: '90%',
-  },
-  compatibilityButtonContainer: {
-    alignItems: 'flex-end',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    height: '100%',
   },
   infoContainer: {
-    padding: 24,
-    paddingBottom: 12,
+    flex: 1,
+    gap: 6,
   },
   wineNameKor: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.white,
-    marginBottom: 8,
+    lineHeight: 24,
   },
   wineNameEng: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginBottom: 16,
-  },
-  tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: colors.surface1,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  tagText: {
-    color: '#ccc',
     fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  ratingText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.white,
+  },
+  ratingCount: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginLeft: 2,
   },
   divider: {
     height: 8,
@@ -844,8 +842,9 @@ const styles = StyleSheet.create({
     minHeight: 300,
   },
   vintageSelectContainer: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+    paddingHorizontal: 20,
     backgroundColor: colors.background,
   },
   vintageSelectButton: {
@@ -859,21 +858,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  compatibilityButton: {
-    position: 'absolute',
-    bottom: 16,
-    right: 16,
+  compatibilityBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    marginHorizontal: 20,
+    marginBottom: 0,
+    backgroundColor: colors.surface1,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
-  compatibilityButtonText: {
+  compatibilityBannerText: {
+    flex: 1,
     color: colors.white,
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '600',
   },
   vintageSelectLabel: {
     fontSize: 16,

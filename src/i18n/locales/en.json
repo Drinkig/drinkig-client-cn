@@ -104,6 +104,9 @@
         "myWineHeader": "My Cellar Detail",
         "infoHeader": "Wine Info",
         "compatibility": "See My Compatibility",
+        "type": "Type",
+        "country": "Country",
+        "grape": "Grape",
         "vintage": "Vintage",
         "select": "Select",
         "tabs": {

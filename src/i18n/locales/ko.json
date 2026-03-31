@@ -104,6 +104,9 @@
         "myWineHeader": "내 와인 상세",
         "infoHeader": "와인 정보",
         "compatibility": "나와의 궁합 보기",
+        "type": "종류",
+        "country": "국가",
+        "grape": "품종",
         "vintage": "빈티지",
         "select": "선택",
         "tabs": {

@@ -6,6 +6,9 @@ import { colors } from '../../../constants/colors';
 import { useTranslation } from 'react-i18next';
 
 interface InfoTabProps {
+  type: string;
+  country: string;
+  grape: string;
   description: string | null;
   features: {
     sweetness: number;
@@ -20,6 +23,9 @@ interface InfoTabProps {
 }
 
 export default function InfoTab({
+  type,
+  country,
+  grape,
   description,
   features,
   nose,
@@ -30,20 +36,25 @@ export default function InfoTab({
   const { t, i18n } = useTranslation();
   const isKorean = i18n.language === 'ko';
 
-  const hasAnyData = description || (showTastingNotes && (features || (nose && nose.length > 0) || (palate && palate.length > 0) || (finish && finish.length > 0)));
-
-  if (!hasAnyData) {
-    return (
-      <View style={styles.tabContent}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>{t('wineDetail.info.empty')}</Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.tabContent}>
+      <View style={styles.wineInfoCard}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{t('wineDetail.type')}</Text>
+          <Text style={styles.infoValue}>{type}</Text>
+        </View>
+        <View style={styles.infoSeparator} />
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{t('wineDetail.country')}</Text>
+          <Text style={styles.infoValue}>{country}</Text>
+        </View>
+        <View style={styles.infoSeparator} />
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>{t('wineDetail.grape')}</Text>
+          <Text style={styles.infoValue}>{grape}</Text>
+        </View>
+      </View>
+
       {description && (
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>{t('wineDetail.info.descTitle')}</Text>
@@ -109,6 +120,40 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#666',
     fontSize: 16,
+  },
+  wineInfoCard: {
+    marginHorizontal: 24,
+    marginBottom: 28,
+    backgroundColor: colors.surface1,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 4,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  infoLabel: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 15,
+    color: colors.white,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 16,
+  },
+  infoSeparator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: 16,
   },
   sectionContainer: {
     paddingHorizontal: 24,
