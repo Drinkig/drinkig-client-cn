@@ -143,7 +143,10 @@
             "headerDate": "구매일",
             "headerShop": "구매처",
             "headerPrice": "가격",
-            "directBadge": "직구"
+            "directBadge": "직구",
+            "avgPrice": "평균 구매가",
+            "lowest": "최저",
+            "highest": "최고"
         },
         "review": {
             "empty": "아직 작성된 리뷰가 없습니다.",

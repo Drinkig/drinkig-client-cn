@@ -27,7 +27,8 @@ export default function InfoTab({
   finish,
   showTastingNotes,
 }: InfoTabProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isKorean = i18n.language === 'ko';
 
   const hasAnyData = description || (showTastingNotes && (features || (nose && nose.length > 0) || (palate && palate.length > 0) || (finish && finish.length > 0)));
 
@@ -67,7 +68,7 @@ export default function InfoTab({
           {nose && nose.length > 0 && (
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>
-                {t('wineDetail.info.nose')} <Text style={styles.subTitleText}>(Nose)</Text>
+                {t('wineDetail.info.nose')}{isKorean && <Text style={styles.subTitleText}> (Nose)</Text>}
               </Text>
               <Text style={styles.aromaListText}>{nose.join(', ')}</Text>
             </View>
@@ -76,7 +77,7 @@ export default function InfoTab({
           {palate && palate.length > 0 && (
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>
-                {t('wineDetail.info.palate')} <Text style={styles.subTitleText}>(Palate)</Text>
+                {t('wineDetail.info.palate')}{isKorean && <Text style={styles.subTitleText}> (Palate)</Text>}
               </Text>
               <Text style={styles.aromaListText}>{palate.join(', ')}</Text>
             </View>
@@ -85,7 +86,7 @@ export default function InfoTab({
           {finish && finish.length > 0 && (
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionTitle}>
-                {t('wineDetail.info.finish')} <Text style={styles.subTitleText}>(Finish)</Text>
+                {t('wineDetail.info.finish')}{isKorean && <Text style={styles.subTitleText}> (Finish)</Text>}
               </Text>
               <Text style={styles.aromaListText}>{finish.join(', ')}</Text>
             </View>

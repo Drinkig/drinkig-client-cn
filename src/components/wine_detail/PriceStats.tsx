@@ -1,15 +1,18 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface PriceStatsProps {
   prices: { price: number }[];
 }
 
 export default function PriceStats({ prices }: PriceStatsProps) {
+  const { t } = useTranslation();
+
   if (!prices || prices.length === 0) return (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyStateText}>등록된 가격 정보가 없습니다.</Text>
+      <Text style={styles.emptyStateText}>{t('wineDetail.price.empty')}</Text>
     </View>
   );
 
@@ -22,20 +25,19 @@ export default function PriceStats({ prices }: PriceStatsProps) {
     <View style={styles.priceStatsContainer}>
 
       <View style={styles.avgPriceContainer}>
-        <Text style={styles.avgPriceLabel}>평균 구매가</Text>
+        <Text style={styles.avgPriceLabel}>{t('wineDetail.price.avgPrice')}</Text>
         <Text style={styles.avgPriceValue}>₩{avgPrice.toLocaleString()}</Text>
       </View>
 
       <View style={styles.divider} />
 
-
       <View style={styles.rangeContainer}>
         <View style={styles.rangeItem}>
-          <Text style={styles.rangeLabel}>최저</Text>
+          <Text style={styles.rangeLabel}>{t('wineDetail.price.lowest')}</Text>
           <Text style={styles.rangeValue}>₩{minPrice.toLocaleString()}</Text>
         </View>
         <View style={styles.rangeItem}>
-          <Text style={styles.rangeLabel}>최고</Text>
+          <Text style={styles.rangeLabel}>{t('wineDetail.price.highest')}</Text>
           <Text style={styles.rangeValue}>₩{maxPrice.toLocaleString()}</Text>
         </View>
       </View>

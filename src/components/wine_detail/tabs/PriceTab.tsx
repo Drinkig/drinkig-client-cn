@@ -226,15 +226,15 @@ const styles = StyleSheet.create({
   },
 
   colVintage: {
-    flex: 1,
+    flex: 1.5,
     alignItems: 'center',
   },
   colDate: {
-    flex: 2,
+    flex: 2.5,
     alignItems: 'center',
   },
   colShop: {
-    flex: 3,
+    flex: 2.5,
     paddingHorizontal: 4,
   },
   colPrice: {

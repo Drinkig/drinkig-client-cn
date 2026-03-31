@@ -143,7 +143,10 @@
             "headerDate": "Date",
             "headerShop": "Shop",
             "headerPrice": "Price",
-            "directBadge": "Direct"
+            "directBadge": "Direct",
+            "avgPrice": "Avg. Purchase Price",
+            "lowest": "Lowest",
+            "highest": "Highest"
         },
         "review": {
             "empty": "No reviews have been written yet.",
