@@ -73,7 +73,7 @@ export default function SearchScreen() {
           const response = await searchWinesPublic({
             searchName: searchText,
             page: 0,
-            size: 20
+            size: 50
           });
 
           if (response.isSuccess) {

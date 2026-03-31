@@ -30,29 +30,40 @@ export function rankByRelevance(items: WineDBItem[], query: string): WineDBItem[
 function getRelevanceScore(name: string, query: string): number {
   if (!name) return 100;
 
-  // Exact match
+  const words = name.split(/[\s,\-().]+/).filter(Boolean);
+
+  // Exact full match
   if (name === query) return 0;
 
-  // Starts with query
-  if (name.startsWith(query)) return 1;
+  // Name starts with query AND query matches a complete word
+  // e.g. "dom perignon" starts with "dom" and "dom" is a full word
+  if (name.startsWith(query) && words[0] === query) return 1;
 
-  // A word in the name starts with the query
-  const words = name.split(/[\s,\-().]+/);
+  // A word in the name exactly equals the query
+  // e.g. searching "dom" matches "Ch. dom ..." where "dom" is a standalone word
+  if (words.includes(query)) return 2;
+
+  // Name starts with query (prefix only, not a full word)
+  // e.g. "domaene" starts with "dom" but "dom" isn't a complete word
+  if (name.startsWith(query)) return 3;
+
+  // A word in the name starts with the query (prefix of a word)
   for (const word of words) {
-    if (word.startsWith(query)) return 2;
+    if (word === query) return 2;
+    if (word.startsWith(query)) return 4;
   }
 
   // Name contains query as substring
-  if (name.includes(query)) return 3;
+  if (name.includes(query)) return 5;
 
   // Query words all appear in name (for multi-word queries)
   const queryWords = query.split(/\s+/);
-  if (queryWords.length > 1 && queryWords.every(qw => name.includes(qw))) return 4;
+  if (queryWords.length > 1 && queryWords.every(qw => name.includes(qw))) return 6;
 
   // Partial: any query word starts a word in the name
   for (const qw of queryWords) {
     for (const word of words) {
-      if (word.startsWith(qw)) return 5;
+      if (word.startsWith(qw)) return 7;
     }
   }
 
