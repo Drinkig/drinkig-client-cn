@@ -493,7 +493,7 @@ export default function WineDetailScreen() {
                     body: features?.body,
                     alcohol: 0,
                   },
-                  wineName: nameKor
+                  wineName: i18n.language === 'en' ? (nameEng || nameKor) : nameKor
                 })}
               >
                 <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />
@@ -515,7 +515,7 @@ export default function WineDetailScreen() {
                     body: features?.body,
                     alcohol: 0,
                   },
-                  wineName: nameKor
+                  wineName: i18n.language === 'en' ? (nameEng || nameKor) : nameKor
                 })}
               >
                 <MaterialCommunityIcons name="heart-pulse" size={16} color={colors.white} style={{ marginRight: 6 }} />

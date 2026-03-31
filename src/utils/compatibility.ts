@@ -1,4 +1,5 @@
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
+import { TFunction } from 'i18next';
 
 export interface CompatibilityResult {
     score: number;
@@ -14,13 +15,6 @@ export interface CompatibilityDetail {
     diff: number;
 }
 
-const ATTRIBUTE_LABELS: Partial<Record<keyof FlavorProfile, string>> = {
-    acidity: '산미',
-    sweetness: '당도',
-    tannin: '타닌',
-    body: '바디감',
-};
-
 const getPenalty = (diff: number): number => {
     switch (diff) {
         case 0: return 0;
@@ -34,7 +28,8 @@ const getPenalty = (diff: number): number => {
 
 export const calculateCompatibilityScore = (
     userProfile: FlavorProfile | null,
-    wineStats: Partial<FlavorProfile> | null
+    wineStats: Partial<FlavorProfile> | null,
+    t?: TFunction
 ): CompatibilityResult | null => {
     if (!userProfile || !wineStats) return null;
 
@@ -55,14 +50,14 @@ export const calculateCompatibilityScore = (
 
         totalPenalty += getPenalty(absDiff);
 
-        const label = ATTRIBUTE_LABELS[key] || key;
+        const label = t ? t(`wineCompatibility.attribute.${key}`) : key;
 
         details.push({
             key,
             label,
             userValue: safeUserVal,
             wineValue: safeWineVal,
-            feedback: getFeedback(key, diff),
+            feedback: getFeedback(key, diff, t),
             diff,
         });
     });
@@ -72,32 +67,14 @@ export const calculateCompatibilityScore = (
     return { score, details };
 };
 
-const getFeedback = (key: keyof FlavorProfile, diff: number): string => {
-    if (diff === 0) return '취향에 딱 맞아요!';
+const getFeedback = (key: keyof FlavorProfile, diff: number, t?: TFunction): string => {
+    if (diff === 0) return t ? t('wineCompatibility.detailFeedback.perfect') : '취향에 딱 맞아요!';
 
     const isHigher = diff > 0;
     const absDiff = Math.abs(diff);
+    const intensity = absDiff >= 2 ? 'Much' : 'Little';
+    const direction = isHigher ? 'High' : 'Low';
 
-    const intensity = absDiff >= 2 ? '훨씬 ' : '조금 ';
-
-    switch (key) {
-        case 'sweetness':
-            return isHigher
-                ? `취향보다 ${intensity}달게 느껴질 수 있어요.`
-                : `취향보다 ${intensity}덜 달아요.`;
-        case 'acidity':
-            return isHigher
-                ? `취향보다 산미가 ${intensity}강해요.`
-                : `취향보다 산미가 ${intensity}약해요.`;
-        case 'tannin':
-            return isHigher
-                ? `취향보다 ${intensity}떫을 수 있어요.`
-                : `취향보다 ${intensity}덜 떫고 부드러워요.`;
-        case 'body':
-            return isHigher
-                ? `취향보다 ${intensity}묵직해요.`
-                : `취향보다 ${intensity}가벼워요.`;
-        default:
-            return '';
-    }
+    const feedbackKey = `wineCompatibility.detailFeedback.${key}${direction}${intensity}`;
+    return t ? t(feedbackKey) : feedbackKey;
 };

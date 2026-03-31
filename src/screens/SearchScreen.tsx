@@ -20,6 +20,7 @@ import { searchWinesPublic, WineUserDTO } from '../api/wine';
 import { RootStackParamList } from '../types';
 import { colors } from '../constants/colors';
 import { useTranslation, Trans } from 'react-i18next';
+import { rankByRelevance } from '../utils/searchRelevance';
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, 'Search'> | RouteProp<RootStackParamList, 'WineSearch'>;
 
@@ -85,9 +86,8 @@ export default function SearchScreen() {
               grape: item.variety,
               imageUri: item.imageUrl,
               vivinoRating: item.vivinoRating,
-
             }));
-            setSearchResults(mappedResults);
+            setSearchResults(rankByRelevance(mappedResults, searchText.trim()));
           }
         } catch (error) {
           console.error('Wine search failed:', error);

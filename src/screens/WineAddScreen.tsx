@@ -30,6 +30,7 @@ import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 import { colors } from '../constants/colors';
 import { useTranslation } from "react-i18next";
+import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -158,7 +159,7 @@ const WineAddScreen = () => {
           });
 
           if (response.isSuccess) {
-            setSearchResults(response.result.content);
+            setSearchResults(rankWineUserDTOByRelevance(response.result.content, searchQuery.trim()));
           } else {
             setSearchResults([]);
           }

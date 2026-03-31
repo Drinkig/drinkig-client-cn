@@ -15,20 +15,9 @@ import { calculateCompatibilityScore, CompatibilityResult } from '../utils/compa
 import { useUser } from '../context/UserContext';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { colors } from '../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 type WineCompatibilityRouteProp = RouteProp<RootStackParamList, 'WineCompatibility'>;
-
-const getOverallFeedback = (score: number, nickname: string) => {
-    if (score >= 90) {
-        return `${nickname}님, 이 와인은 운명일지도 몰라요. 취향저격 확률 200% 강력 추천합니다!`;
-    } else if (score >= 80) {
-        return `완벽하진 않지만 꽤 괜찮은 선택이 될 거예요. 새로운 발견이 될 수도? 😉`;
-    } else if (score >= 60) {
-        return `취향과는 조금 거리가 있어요. 하지만 의외의 매력을 발견할 수도 있으니 궁금하다면 도전! 🤔`;
-    } else {
-        return `음... ${nickname}님의 취향과는 거리가 좀 있어 보여요. 다른 와인을 찾아보시는 건 어떨까요? 😅`;
-    }
-};
 
 const getScoreColor = (score: number) => {
     if (score >= 90) return '#2ecc71';
@@ -38,14 +27,24 @@ const getScoreColor = (score: number) => {
 };
 
 const WineCompatibilityScreen = () => {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const route = useRoute<WineCompatibilityRouteProp>();
     const { userProfile, wineStats, wineName } = route.params;
     const { user } = useUser();
 
+    const nickname = user?.nickname || t('wineCompatibility.defaultNickname');
+
+    const getOverallFeedback = (score: number) => {
+        if (score >= 90) return t('wineCompatibility.feedback.excellent', { nickname });
+        if (score >= 80) return t('wineCompatibility.feedback.good');
+        if (score >= 60) return t('wineCompatibility.feedback.average');
+        return t('wineCompatibility.feedback.poor', { nickname });
+    };
+
     const result: CompatibilityResult | null = React.useMemo(() => {
-        return calculateCompatibilityScore(userProfile, wineStats);
-    }, [userProfile, wineStats]);
+        return calculateCompatibilityScore(userProfile, wineStats, t);
+    }, [userProfile, wineStats, t]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [loadingDots, setLoadingDots] = useState('');
@@ -69,7 +68,7 @@ const WineCompatibilityScreen = () => {
 
     useEffect(() => {
         if (!isLoading && isTypingStarted && result) {
-            const fullFeedback = getOverallFeedback(result.score, user?.nickname || '회원');
+            const fullFeedback = getOverallFeedback(result.score);
             const feedbackChars = Array.from(fullFeedback);
             setDisplayedFeedback('');
 
@@ -147,7 +146,7 @@ const WineCompatibilityScreen = () => {
                 />
                 <Text style={styles.loadingText}>
                     <Text style={styles.highlightText}>{wineName}</Text>{'\n'}
-                    <Text style={styles.highlightText}>{user?.nickname}님</Text>과의 취향을 분석 중이에요{loadingDots}
+                    {t('wineCompatibility.loading', { nickname })}{loadingDots}
                 </Text>
             </View>
         );
@@ -159,7 +158,7 @@ const WineCompatibilityScreen = () => {
             <View style={styles.content}>
                 <View style={styles.header}>
                     <View style={styles.headerRight} />
-                    <Text style={styles.headerTitle}>궁합 분석 결과</Text>
+                    <Text style={styles.headerTitle}>{t('wineCompatibility.headerTitle')}</Text>
                     <View style={styles.headerRight} />
                 </View>
 
@@ -167,7 +166,7 @@ const WineCompatibilityScreen = () => {
                     <Animated.View style={[styles.headerSection, { opacity: headerOpacity }]}>
                         <Text style={styles.reportTitle}>
                             <Text style={styles.highlightText}>{wineName}</Text>{'\n'}
-                            <Text style={styles.highlightText}>{user?.nickname}</Text>님과의 궁합은?
+                            <Text style={styles.highlightText}>{nickname}</Text>{t('wineCompatibility.questionTitle')}
                         </Text>
                     </Animated.View>
 
@@ -177,7 +176,7 @@ const WineCompatibilityScreen = () => {
                                 <Text style={[styles.scoreBigText, { color: getScoreColor(result?.score || 0) }]}>
                                     {Math.round(result?.score || 0)}
                                 </Text>
-                                <Text style={styles.scoreUnitText}>점</Text>
+                                <Text style={styles.scoreUnitText}>{t('wineCompatibility.scoreUnit')}</Text>
                             </Animated.View>
                             <Text style={styles.bubbleText}>
                                 {displayedFeedback}
@@ -232,7 +231,7 @@ const WineCompatibilityScreen = () => {
                         activeOpacity={0.8}
                         disabled={!isButtonEnabled}
                     >
-                        <Text style={styles.ctaButtonText}>확인했어요!</Text>
+                        <Text style={styles.ctaButtonText}>{t('wineCompatibility.confirmButton')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

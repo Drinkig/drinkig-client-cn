@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../constants/colors';
+import { useTranslation } from 'react-i18next';
 
 interface StarRatingProps {
   rating: number;
@@ -9,6 +10,7 @@ interface StarRatingProps {
 }
 
 export default function StarRating({ rating, onRatingChange }: StarRatingProps) {
+  const { t } = useTranslation();
   const renderStar = (index: number) => {
     let iconName = 'star-outline';
     if (rating >= index) {
@@ -47,7 +49,7 @@ export default function StarRating({ rating, onRatingChange }: StarRatingProps) 
         {[1, 2, 3, 4, 5].map((index) => renderStar(index))}
       </View>
       <Text style={styles.ratingText}>
-        {rating > 0 ? `${rating}점` : '별점을 선택해주세요'}
+        {rating > 0 ? t('tastingNoteWrite.starRating.score', { rating }) : t('tastingNoteWrite.starRating.placeholder')}
       </Text>
     </View>
   );

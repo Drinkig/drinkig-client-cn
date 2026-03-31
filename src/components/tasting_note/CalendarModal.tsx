@@ -21,47 +21,35 @@ interface CalendarModalProps {
 
 LocaleConfig.locales.ko = {
   monthNames: [
-    "01월",
-    "02월",
-    "03월",
-    "04월",
-    "05월",
-    "06월",
-    "07월",
-    "08월",
-    "09월",
-    "10월",
-    "11월",
-    "12월",
+    "01월", "02월", "03월", "04월", "05월", "06월",
+    "07월", "08월", "09월", "10월", "11월", "12월",
   ],
   monthNamesShort: [
-    "01월",
-    "02월",
-    "03월",
-    "04월",
-    "05월",
-    "06월",
-    "07월",
-    "08월",
-    "09월",
-    "10월",
-    "11월",
-    "12월",
+    "01월", "02월", "03월", "04월", "05월", "06월",
+    "07월", "08월", "09월", "10월", "11월", "12월",
   ],
   dayNames: [
-    "일요일",
-    "월요일",
-    "화요일",
-    "수요일",
-    "목요일",
-    "금요일",
-    "토요일",
+    "일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일",
   ],
   dayNamesShort: ["일", "월", "화", "수", "목", "금", "토"],
   today: "오늘",
 };
 
-LocaleConfig.defaultLocale = "ko";
+LocaleConfig.locales.en = {
+  monthNames: [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ],
+  monthNamesShort: [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ],
+  dayNames: [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+  ],
+  dayNamesShort: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  today: "Today",
+};
 
 export default function CalendarModal({
   visible,
@@ -69,7 +57,10 @@ export default function CalendarModal({
   onDateSelect,
   onClose,
 }: CalendarModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const isEn = i18n.language === 'en';
+  LocaleConfig.defaultLocale = isEn ? 'en' : 'ko';
 
   return (
     <Modal
@@ -92,13 +83,14 @@ export default function CalendarModal({
                 </TouchableOpacity>
               </View>
               <Calendar
+                key={i18n.language}
                 current={selectedDate}
                 onDayPress={(day) => {
                   onDateSelect(day.dateString);
                   onClose();
                 }}
                 maxDate={new Date().toISOString().split("T")[0]}
-                monthFormat={"yyyy년 MM월"}
+                monthFormat={isEn ? "yyyy MMMM" : "yyyy년 MM월"}
                 theme={{
                   backgroundColor: colors.surface1,
                   calendarBackground: colors.surface1,

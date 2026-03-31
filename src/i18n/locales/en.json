@@ -309,6 +309,10 @@
         "help": {
             "confirm": "OK"
         },
+        "starRating": {
+            "score": "{{rating}} pts",
+            "placeholder": "Please select a rating"
+        },
         "tasteLevel": {
             "weak": "Weak",
             "strong": "Strong"
@@ -701,6 +705,45 @@
         "defaultWine": "wine",
         "defaultFood": "food",
         "defaultNickname": "Member"
+    },
+    "wineCompatibility": {
+        "loading": "Analyzing compatibility with {{nickname}}",
+        "headerTitle": "Compatibility Results",
+        "questionTitle": "'s compatibility?",
+        "scoreUnit": "pts",
+        "defaultNickname": "Member",
+        "confirmButton": "Got it!",
+        "feedback": {
+            "excellent": "{{nickname}}, this wine might be your destiny! A 200% taste match — highly recommended!",
+            "good": "Not perfect, but a pretty solid choice. You might discover something new! 😉",
+            "average": "A bit far from your taste. But you might find unexpected charm — give it a try if you're curious! 🤔",
+            "poor": "Hmm... {{nickname}}, this seems a bit far from your taste. How about looking for a different wine? 😅"
+        },
+        "attribute": {
+            "acidity": "Acidity",
+            "sweetness": "Sweetness",
+            "tannin": "Tannin",
+            "body": "Body"
+        },
+        "detailFeedback": {
+            "perfect": "A perfect match for your taste!",
+            "sweetnessHighMuch": "Much sweeter than your preference.",
+            "sweetnessHighLittle": "Slightly sweeter than your preference.",
+            "sweetnessLowMuch": "Much less sweet than your preference.",
+            "sweetnessLowLittle": "Slightly less sweet than your preference.",
+            "acidityHighMuch": "Much more acidic than your preference.",
+            "acidityHighLittle": "Slightly more acidic than your preference.",
+            "acidityLowMuch": "Much less acidic than your preference.",
+            "acidityLowLittle": "Slightly less acidic than your preference.",
+            "tanninHighMuch": "Much more tannic than your preference.",
+            "tanninHighLittle": "Slightly more tannic than your preference.",
+            "tanninLowMuch": "Much smoother than your preference.",
+            "tanninLowLittle": "Slightly smoother than your preference.",
+            "bodyHighMuch": "Much fuller-bodied than your preference.",
+            "bodyHighLittle": "Slightly fuller-bodied than your preference.",
+            "bodyLowMuch": "Much lighter than your preference.",
+            "bodyLowLittle": "Slightly lighter than your preference."
+        }
     },
     "tasteReset": {
         "wineSortTitle": "What wine types would you like recommended?",

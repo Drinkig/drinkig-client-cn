@@ -23,6 +23,7 @@ import {
   TastingNoteRequest,
   WineUserDTO,
 } from "../api/wine";
+import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 import ColorSelector from "../components/tasting_note/ColorSelector";
 import HelpModal from "../components/tasting_note/HelpModal";
@@ -86,7 +87,7 @@ export default function TastingNoteWriteScreen() {
           searchName: searchText,
         });
         if (response.isSuccess) {
-          setSearchResults(response.result.content);
+          setSearchResults(rankWineUserDTOByRelevance(response.result.content, searchText.trim()));
         } else {
           setSearchResults([]);
         }

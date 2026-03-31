@@ -17,6 +17,7 @@ import { WineDBItem } from '../types/Wine';
 import { RootStackParamList } from '../types';
 import { colors } from '../constants/colors';
 import { useTranslation, Trans } from 'react-i18next';
+import { rankByRelevance } from '../utils/searchRelevance';
 
 type SearchResultScreenRouteProp = RouteProp<RootStackParamList, 'SearchResult'>;
 
@@ -57,7 +58,7 @@ export default function SearchResultScreen() {
           imageUri: item.imageUrl,
           vivinoRating: item.vivinoRating,
         }));
-        setSearchResults(mappedResults);
+        setSearchResults(rankByRelevance(mappedResults, searchKeyword));
       }
     } catch (error) {
       console.error('Search result fetch failed:', error);

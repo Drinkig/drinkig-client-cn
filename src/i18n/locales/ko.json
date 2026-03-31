@@ -309,6 +309,10 @@
         "help": {
             "confirm": "확인"
         },
+        "starRating": {
+            "score": "{{rating}}점",
+            "placeholder": "별점을 선택해주세요"
+        },
         "tasteLevel": {
             "weak": "약함",
             "strong": "강함"
@@ -701,6 +705,45 @@
         "defaultWine": "와인",
         "defaultFood": "음식",
         "defaultNickname": "회원"
+    },
+    "wineCompatibility": {
+        "loading": "{{nickname}}님과의 취향을 분석 중이에요",
+        "headerTitle": "궁합 분석 결과",
+        "questionTitle": "님과의 궁합은?",
+        "scoreUnit": "점",
+        "defaultNickname": "회원",
+        "confirmButton": "확인했어요!",
+        "feedback": {
+            "excellent": "{{nickname}}님, 이 와인은 운명일지도 몰라요. 취향저격 확률 200% 강력 추천합니다!",
+            "good": "완벽하진 않지만 꽤 괜찮은 선택이 될 거예요. 새로운 발견이 될 수도? 😉",
+            "average": "취향과는 조금 거리가 있어요. 하지만 의외의 매력을 발견할 수도 있으니 궁금하다면 도전! 🤔",
+            "poor": "음... {{nickname}}님의 취향과는 거리가 좀 있어 보여요. 다른 와인을 찾아보시는 건 어떨까요? 😅"
+        },
+        "attribute": {
+            "acidity": "산미",
+            "sweetness": "당도",
+            "tannin": "타닌",
+            "body": "바디감"
+        },
+        "detailFeedback": {
+            "perfect": "취향에 딱 맞아요!",
+            "sweetnessHighMuch": "취향보다 훨씬 달게 느껴질 수 있어요.",
+            "sweetnessHighLittle": "취향보다 조금 달게 느껴질 수 있어요.",
+            "sweetnessLowMuch": "취향보다 훨씬 덜 달아요.",
+            "sweetnessLowLittle": "취향보다 조금 덜 달아요.",
+            "acidityHighMuch": "취향보다 산미가 훨씬 강해요.",
+            "acidityHighLittle": "취향보다 산미가 조금 강해요.",
+            "acidityLowMuch": "취향보다 산미가 훨씬 약해요.",
+            "acidityLowLittle": "취향보다 산미가 조금 약해요.",
+            "tanninHighMuch": "취향보다 훨씬 떫을 수 있어요.",
+            "tanninHighLittle": "취향보다 조금 떫을 수 있어요.",
+            "tanninLowMuch": "취향보다 훨씬 덜 떫고 부드러워요.",
+            "tanninLowLittle": "취향보다 조금 덜 떫고 부드러워요.",
+            "bodyHighMuch": "취향보다 훨씬 묵직해요.",
+            "bodyHighLittle": "취향보다 조금 묵직해요.",
+            "bodyLowMuch": "취향보다 훨씬 가벼워요.",
+            "bodyLowLittle": "취향보다 조금 가벼워요."
+        }
     },
     "tasteReset": {
         "wineSortTitle": "추천 받고 싶은 와인 종류는?",
