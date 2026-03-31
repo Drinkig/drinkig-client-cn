@@ -91,7 +91,7 @@ export default function HomeScreen() {
 
         <HeroSection
           onPress={() => {
-            navigation.navigate('PlaceSelection');
+            navigation.navigate('FoodSelection');
           }}
         />
 

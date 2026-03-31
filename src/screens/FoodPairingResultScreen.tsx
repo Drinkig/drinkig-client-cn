@@ -18,10 +18,8 @@ const RANK_BADGES = ['🥇', '🥈', '🥉'];
 export default function FoodPairingResultScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute();
-    const { foodName, country, place } = route.params as {
+    const { foodName } = route.params as {
         foodName?: string,
-        country?: string,
-        place?: 'RESTAURANT' | 'SHOP'
     };
 
     const { user, flavorProfile } = useUser();
@@ -54,7 +52,7 @@ export default function FoodPairingResultScreen() {
     useEffect(() => {
         const fetchRecommendations = async () => {
             try {
-                const query = foodName || country;
+                const query = foodName;
                 if (query) {
                     const response = await getFoodPairingRecommendation(query);
                     if (response.isSuccess) {
@@ -73,7 +71,7 @@ export default function FoodPairingResultScreen() {
             }
         };
         fetchRecommendations();
-    }, [foodName, country]);
+    }, [foodName]);
 
     useEffect(() => {
         startAnalysisSequence();
@@ -133,9 +131,9 @@ export default function FoodPairingResultScreen() {
 
     const getAnalysisText = (step: number) => {
         switch (step) {
-            case 0: return `${foodName || country}와 가장 잘 어울리는\n와인 스타일을 분석 중이에요`;
+            case 0: return `${foodName}와 가장 잘 어울리는\n와인 스타일을 분석 중이에요`;
             case 1: return `${user?.nickname || '회원'}님의 취향을 확인 중이에요`;
-            case 2: return `${foodName || country}와 ${user?.nickname || '회원'}님의 취향을\n정밀하게 매칭하고 있어요`;
+            case 2: return `${foodName}와 ${user?.nickname || '회원'}님의 취향을\n정밀하게 매칭하고 있어요`;
             case 3: return "가장 잘 어울리는 와인을 찾는 중...";
             default: return "";
         }
@@ -143,7 +141,7 @@ export default function FoodPairingResultScreen() {
 
     // Derived values for result text
     const bestMatchSort = recommendations.length > 0 ? recommendations[0].sort : '와인';
-    const displayFoodName = foodName || country || '음식';
+    const displayFoodName = foodName || '음식';
     const userNickname = user?.nickname || '회원';
 
     if (showAnalysis) {
@@ -204,32 +202,18 @@ export default function FoodPairingResultScreen() {
 
                     {/* Step 1 Text */}
                     <Animated.View style={{ opacity: textStep1Anim, transform: [{ translateY: textStep1Y }], marginBottom: 16 }}>
-                        {place === 'RESTAURANT' ? (
-                            <Text style={styles.heroText}>
-                                오늘 드시는 <Text style={styles.highlight}>{displayFoodName}</Text>,{'\n'}
-                                <Text style={styles.highlight}>{bestMatchSort}</Text> 와인과 환상의 궁합인 거 아시나요?
-                            </Text>
-                        ) : (
-                            <Text style={styles.heroText}>
-                                <Text style={styles.highlight}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는 와인으로{'\n'}
-                                <Text style={styles.highlight}>{bestMatchSort}</Text> 와인을 추천해 드려요!
-                            </Text>
-                        )}
+                        <Text style={styles.heroText}>
+                            <Text style={styles.highlight}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는{'\n'}
+                            <Text style={styles.highlight}>{bestMatchSort}</Text> 와인을 추천해 드려요!
+                        </Text>
                     </Animated.View>
 
                     {/* Step 2 Text */}
                     <Animated.View style={{ opacity: textStep2Anim, transform: [{ translateY: textStep2Y }] }}>
-                        {place === 'RESTAURANT' ? (
-                            <Text style={styles.heroSubText}>
-                                <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향을 완벽하게 분석해,{'\n'}
-                                <Text style={styles.boldWhite}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는 와인 품종을 찾아냈어요.
-                            </Text>
-                        ) : (
-                            <Text style={styles.heroSubText}>
-                                <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향과 <Text style={styles.boldWhite}>{displayFoodName}</Text>의 맛을 분석해{'\n'}
-                                실패 없는 페어링을 준비했어요.
-                            </Text>
-                        )}
+                        <Text style={styles.heroSubText}>
+                            <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향과 <Text style={styles.boldWhite}>{displayFoodName}</Text>의 맛을 분석해{'\n'}
+                            실패 없는 페어링을 준비했어요.
+                        </Text>
                     </Animated.View>
 
                 </Animated.View>

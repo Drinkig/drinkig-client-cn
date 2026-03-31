@@ -2,34 +2,38 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
-import { FOOD_CATEGORIES } from '../data/mockFoodCategories';
 import { COUNTRY_FOODS } from '../data/mockCountryFoods';
+import { COUNTRIES } from '../data/mockCountries';
 import { colors } from '../constants/colors';
+
+const UNIFIED_CATEGORIES = [
+    ...COUNTRIES.filter(c => COUNTRY_FOODS[c.name]).map(c => ({
+        title: `${c.flag} ${c.name}`,
+        data: COUNTRY_FOODS[c.name],
+    })),
+    {
+        title: '🧀 간단안주/스낵',
+        data: ['모듬치즈', '제철과일', '하몽', '샤퀴테리', '나초', '감자칩', '견과류', '육포', '마른안주', '올리브'],
+    },
+    {
+        title: '🍰 디저트',
+        data: ['케이크', '타르트', '초콜릿', '마카롱', '아이스크림', '빵', '쿠키'],
+    },
+];
 
 export default function FoodSelectionScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const route = useRoute();
-    const { place, country } = route.params as { place: 'RESTAURANT' | 'SHOP'; country?: string };
 
-    // Determine categories based on place
-    const categories = React.useMemo(() => {
-        if (place === 'RESTAURANT' && country && COUNTRY_FOODS[country]) {
-            return [{
-                title: country,
-                data: COUNTRY_FOODS[country]
-            }]
-        }
-        return FOOD_CATEGORIES;
-    }, [place, country]);
+    const categories = UNIFIED_CATEGORIES;
 
     // Default to the first category
     const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
 
     const handleSelect = (foodName: string) => {
-        navigation.navigate('FoodPairingResult', { place, foodName, country });
+        navigation.navigate('FoodPairingResult', { foodName });
     };
 
     return (

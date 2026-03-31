@@ -1,14 +1,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
-import CountrySelectionScreen from "../screens/CountrySelectionScreen";
 import FoodPairingResultScreen from "../screens/FoodPairingResultScreen";
 import FoodSelectionScreen from "../screens/FoodSelectionScreen";
 import LoginScreen from "../screens/LoginScreen";
 import MyWineDetailScreen from "../screens/MyWineDetailScreen";
 import NotificationScreen from "../screens/NotificationScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
-import PlaceSelectionScreen from "../screens/PlaceSelectionScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen";
 import RecommendationListScreen from "../screens/RecommendationListScreen";
 import RecommendationResultScreen from "../screens/RecommendationResultScreen";
@@ -104,16 +102,8 @@ export default function RootNavigator() {
 
             {/* Food Pairing Flow */}
             <Stack.Screen
-              name="PlaceSelection"
-              component={PlaceSelectionScreen}
-            />
-            <Stack.Screen
               name="FoodSelection"
               component={FoodSelectionScreen}
-            />
-            <Stack.Screen
-              name="CountrySelection"
-              component={CountrySelectionScreen}
             />
             <Stack.Screen
               name="FoodPairingResult"
