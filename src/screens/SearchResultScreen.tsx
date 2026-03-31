@@ -128,12 +128,6 @@ export default function SearchResultScreen() {
           <Text style={styles.resultCountryText}>{item.country}</Text>
         </View>
       </View>
-      {item.vivinoRating && (
-        <View style={styles.rightRatingContainer}>
-          <Icon name="star" size={14} color={colors.error} />
-          <Text style={styles.rightRatingText}>{item.vivinoRating.toFixed(1)}</Text>
-        </View>
-      )}
     </TouchableOpacity>
   );
 
