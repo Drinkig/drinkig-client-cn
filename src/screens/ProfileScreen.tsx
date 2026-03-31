@@ -32,6 +32,7 @@ const ProfileScreen = () => {
 
   const [sortType, setSortType] = React.useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'list' | 'card'>('list');
   const { t, i18n } = useTranslation();
 
   const sortOptions = [
@@ -152,43 +153,70 @@ const ProfileScreen = () => {
 
 
   const { width } = Dimensions.get('window');
-  const numColumns = 3;
-  const gap = 12;
-  const padding = 24;
-  const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
+  const cardGap = 12;
+  const cardPadding = 20;
+  const cardItemWidth = (width - cardPadding * 2 - cardGap) / 2;
 
-  const renderNoteItem = ({ item }: { item: TastingNotePreviewDTO }) => (
+  const navigateToNote = (item: TastingNotePreviewDTO) => {
+    navigation.navigate('TastingNoteDetail', {
+      tastingNoteId: item.tastingNoteId || (item as any).noteId,
+    });
+  };
+
+  const renderListItem = (item: TastingNotePreviewDTO) => (
     <TouchableOpacity
       key={item.tastingNoteId || (item as any).noteId}
-      style={[styles.noteItem, { width: itemWidth }]}
-      onPress={() => navigation.navigate('TastingNoteDetail', {
-        tastingNoteId: item.tastingNoteId || (item as any).noteId
-      })}
+      style={styles.listItem}
+      onPress={() => navigateToNote(item)}
       activeOpacity={0.8}
     >
-      <View style={styles.imageWrapper}>
+      <View style={styles.listImageWrapper}>
         {item.imageUrl ? (
-          <Image
-            source={{ uri: item.imageUrl }}
-            style={styles.noteImage}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: item.imageUrl }} style={styles.noteImage} resizeMode="contain" />
         ) : (
           <View style={[styles.noteImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.border }]}>
-            <Icon name="wine" size={30} color="#666" />
+            <Icon name="wine" size={24} color="#666" />
           </View>
         )}
-        <View style={styles.ratingBadge}>
-          <Icon name="star" size={10} color="#f1c40f" />
-          <Text style={styles.ratingBadgeText}>{item.rating.toFixed(1)}</Text>
-        </View>
       </View>
-
-      <View style={styles.noteInfo}>
-        <Text style={styles.noteName} numberOfLines={1} ellipsizeMode="tail">
+      <View style={styles.listNoteInfo}>
+        <Text style={styles.listNoteName} numberOfLines={2}>
           {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
         </Text>
-        <Text style={styles.noteDate}>{item.tasteDate}</Text>
+        <Text style={styles.listNoteDate}>{item.tasteDate}</Text>
+      </View>
+      <View style={styles.listRatingBadge}>
+        <Icon name="star" size={12} color="#f1c40f" />
+        <Text style={styles.listRatingText}>{item.rating.toFixed(1)}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderCardItem = (item: TastingNotePreviewDTO) => (
+    <TouchableOpacity
+      key={item.tastingNoteId || (item as any).noteId}
+      style={[styles.cardItem, { width: cardItemWidth }]}
+      onPress={() => navigateToNote(item)}
+      activeOpacity={0.8}
+    >
+      <View style={styles.cardImageWrapper}>
+        {item.imageUrl ? (
+          <Image source={{ uri: item.imageUrl }} style={styles.noteImage} resizeMode="contain" />
+        ) : (
+          <View style={[styles.noteImage, { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.border }]}>
+            <Icon name="wine" size={28} color="#666" />
+          </View>
+        )}
+        <View style={styles.cardRatingBadge}>
+          <Icon name="star" size={10} color="#f1c40f" />
+          <Text style={styles.cardRatingText}>{item.rating.toFixed(1)}</Text>
+        </View>
+      </View>
+      <View style={styles.cardNoteInfo}>
+        <Text style={styles.cardNoteName} numberOfLines={2}>
+          {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
+        </Text>
+        <Text style={styles.cardNoteDate}>{item.tasteDate}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -308,31 +336,41 @@ const ProfileScreen = () => {
 
 
             {!Array.isArray(tastingNotes) || tastingNotes.length === 0 ? null : (
-              <TouchableOpacity
-                style={styles.sortButton}
-                onPress={() => setIsSortModalVisible(true)}
-              >
-                <Text style={styles.sortButtonText}>
-                  {sortOptions.find(opt => opt.value === sortType)?.label}
-                </Text>
-                <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
-              </TouchableOpacity>
+              <View style={styles.sortAndViewContainer}>
+                <TouchableOpacity
+                  style={styles.sortButton}
+                  onPress={() => setIsSortModalVisible(true)}
+                >
+                  <Text style={styles.sortButtonText}>
+                    {sortOptions.find(opt => opt.value === sortType)?.label}
+                  </Text>
+                  <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setViewMode(viewMode === 'list' ? 'card' : 'list')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <Icon
+                    name={viewMode === 'list' ? 'grid-outline' : 'list-outline'}
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+              </View>
             )}
           </View>
 
 
           {processedNotes.length > 0 ? (
-            <View style={styles.gridContainer}>
-              {processedNotes.map((item) => (
-                <View key={item.tastingNoteId || (item as any).noteId} style={{ marginBottom: 16 }}>
-                  {renderNoteItem({ item })}
-                </View>
-              ))}
-
-              {[...Array(numColumns - (processedNotes.length % numColumns || numColumns))].map((_, i) => (
-                <View key={`empty-${i}`} style={{ width: itemWidth }} />
-              ))}
-            </View>
+            viewMode === 'list' ? (
+              <View style={styles.listContainer}>
+                {processedNotes.map((item) => renderListItem(item))}
+              </View>
+            ) : (
+              <View style={styles.cardGrid}>
+                {processedNotes.map((item) => renderCardItem(item))}
+              </View>
+            )
           ) : (
             <View style={styles.emptyWrapper}>
               <Text style={styles.emptyText}>{t('profile.emptyNotes.title')}</Text>
@@ -499,7 +537,14 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    marginBottom: 12,
+    paddingBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    backgroundColor: colors.background,
+    zIndex: 1,
   },
   countText: {
     color: colors.textSecondary,
@@ -578,37 +623,100 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: 'bold',
   },
-  gridContainer: {
+  sortAndViewContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 24,
-    justifyContent: 'space-between',
-  },
-  noteItem: {
-    flexDirection: 'column',
-    marginBottom: 16,
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  imageWrapper: {
-    width: '100%',
-    aspectRatio: 1,
-    backgroundColor: colors.surface1,
-    position: 'relative',
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
+    gap: 12,
   },
+  // shared
   noteImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
   },
-  ratingBadge: {
+  // list view
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    backgroundColor: colors.surface1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 14,
+  },
+  listImageWrapper: {
+    width: 56,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    flexShrink: 0,
+  },
+  listNoteInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  listNoteName: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  listNoteDate: {
+    color: '#666',
+    fontSize: 12,
+  },
+  listRatingBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginLeft: 'auto',
+    flexShrink: 0,
+  },
+  listRatingText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  // card view
+  cardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    gap: 12,
+  },
+  cardItem: {
+    marginBottom: 0,
+    backgroundColor: colors.surface1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  cardImageWrapper: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  cardRatingBadge: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 8,
+    right: 8,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -619,23 +727,22 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  ratingBadgeText: {
+  cardRatingText: {
     color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
-  noteInfo: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+  cardNoteInfo: {
+    padding: 10,
   },
-  noteName: {
+  cardNoteName: {
     color: colors.white,
     fontSize: 13,
     fontWeight: 'bold',
-    marginBottom: 2,
+    marginBottom: 3,
+    lineHeight: 18,
   },
-  noteDate: {
+  cardNoteDate: {
     color: '#666',
     fontSize: 11,
   },

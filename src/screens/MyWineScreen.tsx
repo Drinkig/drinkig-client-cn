@@ -32,6 +32,7 @@ const MyWineScreen = () => {
   const [sortType, setSortType] = useState('latest');
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
 
   const { t, i18n } = useTranslation();
 
@@ -146,39 +147,69 @@ const MyWineScreen = () => {
   };
 
   const { width } = Dimensions.get('window');
-  const numColumns = 3;
-  const gap = 12;
-  const padding = 16;
+  const cardGap = 12;
+  const cardPadding = 16;
+  const cardItemWidth = (width - cardPadding * 2 - cardGap) / 2;
 
-  const itemWidth = (width - padding * 2 - gap * (numColumns - 1)) / numColumns;
+  const navigateToDetail = (item: MyWineDTO) => {
+    navigation.navigate('MyWineDetail', {
+      wineId: item.myWineId,
+      wineImageUrl: item.wineImageUrl,
+    });
+  };
 
-  const renderWineItem = ({ item }: { item: MyWineDTO }) => (
+  const renderListItem = ({ item }: { item: MyWineDTO }) => (
     <TouchableOpacity
-      style={[styles.wineItem, { width: itemWidth }]}
-      onPress={() => navigation.navigate('MyWineDetail', {
-        wineId: item.myWineId,
-        wineImageUrl: item.wineImageUrl
-      })}
+      style={styles.listItem}
+      onPress={() => navigateToDetail(item)}
       activeOpacity={0.8}
     >
-      <View style={styles.wineImageContainer}>
+      <View style={styles.listImageContainer}>
         {item.wineImageUrl ? (
           <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
         ) : (
           <View style={styles.placeholderImage}>
-            <Icon name="wine" size={30} color="#555" />
+            <Icon name="wine" size={24} color="#555" />
           </View>
         )}
-
-        <View style={styles.periodBadge}>
-          <Text style={styles.periodText}>D+{item.period}</Text>
-        </View>
       </View>
-      <View style={styles.wineInfo}>
-        <Text style={styles.wineName} numberOfLines={1} ellipsizeMode="tail">
+      <View style={styles.listInfo}>
+        <Text style={styles.listName} numberOfLines={2}>
           {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
         </Text>
-        <Text style={styles.wineVintageText}>
+        <Text style={styles.listVintage}>
+          {item.vintageYear === 0 ? 'NV' : item.vintageYear}
+        </Text>
+      </View>
+      <View style={styles.listBadge}>
+        <Text style={styles.listBadgeText}>D+{item.period}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderCardItem = ({ item }: { item: MyWineDTO }) => (
+    <TouchableOpacity
+      style={[styles.cardItem, { width: cardItemWidth }]}
+      onPress={() => navigateToDetail(item)}
+      activeOpacity={0.8}
+    >
+      <View style={styles.cardImageContainer}>
+        {item.wineImageUrl ? (
+          <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
+        ) : (
+          <View style={styles.placeholderImage}>
+            <Icon name="wine" size={28} color="#555" />
+          </View>
+        )}
+        <View style={styles.cardPeriodBadge}>
+          <Text style={styles.cardPeriodText}>D+{item.period}</Text>
+        </View>
+      </View>
+      <View style={styles.cardInfo}>
+        <Text style={styles.cardName} numberOfLines={2}>
+          {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
+        </Text>
+        <Text style={styles.cardVintage}>
           {item.vintageYear === 0 ? 'NV' : item.vintageYear}
         </Text>
       </View>
@@ -239,27 +270,38 @@ const MyWineScreen = () => {
             />
           </Text>
 
-          <TouchableOpacity
-            style={styles.sortButton}
-            onPress={() => setIsSortModalVisible(true)}
-          >
-            <Text style={styles.sortButtonText}>
-              {sortOptions.find(opt => opt.value === sortType)?.label}
-            </Text>
-            <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
-          </TouchableOpacity>
+          <View style={styles.sortAndViewContainer}>
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={() => setIsSortModalVisible(true)}
+            >
+              <Text style={styles.sortButtonText}>
+                {sortOptions.find(opt => opt.value === sortType)?.label}
+              </Text>
+              <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setViewMode(viewMode === 'list' ? 'card' : 'list')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Icon
+                name={viewMode === 'list' ? 'grid-outline' : 'list-outline'}
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
-      {/* Wine Grid */}
       <FlatList
+        key={viewMode}
         data={isLoading ? [] : sortedWines}
-        renderItem={renderWineItem}
+        renderItem={viewMode === 'list' ? renderListItem : renderCardItem}
         keyExtractor={(item) => item.myWineId.toString()}
-        contentContainerStyle={[styles.listContent, { paddingBottom: 20 }]}
+        contentContainerStyle={[styles.flatListContent, { paddingBottom: 20 }]}
         showsVerticalScrollIndicator={false}
-        numColumns={numColumns}
-        columnWrapperStyle={(!isLoading && sortedWines.length > 0) ? { gap: gap } : undefined}
+        {...(viewMode === 'card' ? { numColumns: 2, columnWrapperStyle: { gap: cardGap } } : {})}
         ListFooterComponent={null}
         ListEmptyComponent={() => {
           if (isLoading) {
@@ -410,7 +452,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 4,
+    paddingBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
+    backgroundColor: colors.background,
+    zIndex: 1,
   },
   countText: {
     color: colors.textSecondary,
@@ -477,8 +526,14 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
   },
-  listContent: {
+  sortAndViewContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  flatListContent: {
     paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 100,
   },
   centerContent: {
@@ -515,23 +570,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     lineHeight: 20,
   },
-  wineItem: {
-    flexDirection: 'column',
-    marginBottom: 16,
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
-    overflow: 'hidden',
-
-  },
-  wineImageContainer: {
-    width: '100%',
-    aspectRatio: 1,
-    backgroundColor: colors.surface1,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 10,
-  },
+  // shared
   wineImage: {
     width: '100%',
     height: '100%',
@@ -542,10 +581,75 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  periodBadge: {
+  // list view
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    backgroundColor: colors.surface1,
+    borderRadius: 12,
+    padding: 12,
+    gap: 14,
+  },
+  listImageContainer: {
+    width: 56,
+    height: 70,
+    borderRadius: 8,
+    backgroundColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    flexShrink: 0,
+  },
+  listInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  listName: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  listVintage: {
+    color: colors.textSecondary,
+    fontSize: 12,
+  },
+  listBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginLeft: 'auto',
+    flexShrink: 0,
+  },
+  listBadgeText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  // card view
+  cardItem: {
+    marginBottom: 12,
+    backgroundColor: colors.surface1,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  cardImageContainer: {
+    width: '100%',
+    aspectRatio: 1,
+    backgroundColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  cardPeriodBadge: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 8,
+    right: 8,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -553,27 +657,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },
-  periodText: {
+  cardPeriodText: {
     color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
-  wineInfo: {
-    padding: 8,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+  cardInfo: {
+    padding: 10,
   },
-  wineName: {
+  cardName: {
     color: colors.textPrimary,
     fontSize: 13,
     fontWeight: 'bold',
-    marginBottom: 2,
-    textAlign: 'left',
+    marginBottom: 3,
+    lineHeight: 18,
   },
-  wineVintageText: {
+  cardVintage: {
     color: colors.textSecondary,
     fontSize: 11,
-    textAlign: 'left',
   },
 
 });
