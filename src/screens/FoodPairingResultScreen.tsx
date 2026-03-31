@@ -5,6 +5,7 @@ import { getParticle } from '../utils/textUtils';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation, Trans } from 'react-i18next';
 import { RootStackParamList } from '../types';
 import { getFoodPairingRecommendation, FoodRecommendationDTO } from '../api/wine';
 import { useUser } from '../context/UserContext';
@@ -18,6 +19,7 @@ const RANK_BADGES = ['🥇', '🥈', '🥉'];
 export default function FoodPairingResultScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const route = useRoute();
+    const { t } = useTranslation();
     const { foodName } = route.params as {
         foodName?: string,
     };
@@ -129,20 +131,22 @@ export default function FoodPairingResultScreen() {
         });
     };
 
+    const nickname = user?.nickname || t('foodPairingResult.defaultNickname');
+
     const getAnalysisText = (step: number) => {
         switch (step) {
-            case 0: return `${foodName}와 가장 잘 어울리는\n와인 스타일을 분석 중이에요`;
-            case 1: return `${user?.nickname || '회원'}님의 취향을 확인 중이에요`;
-            case 2: return `${foodName}와 ${user?.nickname || '회원'}님의 취향을\n정밀하게 매칭하고 있어요`;
-            case 3: return "가장 잘 어울리는 와인을 찾는 중...";
+            case 0: return t('foodPairingResult.analysis.step0', { foodName });
+            case 1: return t('foodPairingResult.analysis.step1', { nickname });
+            case 2: return t('foodPairingResult.analysis.step2', { foodName, nickname });
+            case 3: return t('foodPairingResult.analysis.step3');
             default: return "";
         }
     };
 
     // Derived values for result text
-    const bestMatchSort = recommendations.length > 0 ? recommendations[0].sort : '와인';
-    const displayFoodName = foodName || '음식';
-    const userNickname = user?.nickname || '회원';
+    const bestMatchSort = recommendations.length > 0 ? recommendations[0].sort : t('foodPairingResult.defaultWine');
+    const displayFoodName = foodName || t('foodPairingResult.defaultFood');
+    const userNickname = nickname;
 
     if (showAnalysis) {
         const progressWidth = progressBarAnim.interpolate({
@@ -203,16 +207,28 @@ export default function FoodPairingResultScreen() {
                     {/* Step 1 Text */}
                     <Animated.View style={{ opacity: textStep1Anim, transform: [{ translateY: textStep1Y }], marginBottom: 16 }}>
                         <Text style={styles.heroText}>
-                            <Text style={styles.highlight}>{displayFoodName}</Text>{getParticle(displayFoodName, 'wa')} 가장 잘 어울리는{'\n'}
-                            <Text style={styles.highlight}>{bestMatchSort}</Text> 와인을 추천해 드려요!
+                            <Trans
+                                i18nKey="foodPairingResult.heroText"
+                                values={{ foodName: displayFoodName, particle: getParticle(displayFoodName, 'wa'), wineSort: bestMatchSort }}
+                                components={[
+                                    <Text style={styles.highlight} />,
+                                    <Text style={styles.highlight} />,
+                                ]}
+                            />
                         </Text>
                     </Animated.View>
 
                     {/* Step 2 Text */}
                     <Animated.View style={{ opacity: textStep2Anim, transform: [{ translateY: textStep2Y }] }}>
                         <Text style={styles.heroSubText}>
-                            <Text style={styles.boldWhite}>{userNickname}</Text>님의 취향과 <Text style={styles.boldWhite}>{displayFoodName}</Text>의 맛을 분석해{'\n'}
-                            실패 없는 페어링을 준비했어요.
+                            <Trans
+                                i18nKey="foodPairingResult.heroSubText"
+                                values={{ nickname: userNickname, foodName: displayFoodName }}
+                                components={[
+                                    <Text style={styles.boldWhite} />,
+                                    <Text style={styles.boldWhite} />,
+                                ]}
+                            />
                         </Text>
                     </Animated.View>
 
@@ -220,7 +236,7 @@ export default function FoodPairingResultScreen() {
 
                 {pairingProfile && (
                     <Animated.View style={[styles.chartContainer, { opacity: chartAnim, transform: [{ translateY: chartY }] }]}>
-                        <Text style={styles.chartTitle}>최종 매칭 결과 그래프</Text>
+                        <Text style={styles.chartTitle}>{t('foodPairingResult.chartTitle')}</Text>
                         <View style={styles.chartWrapper}>
                             <AnalyzingRadarChart
                                 data={pairingProfile}
@@ -229,8 +245,12 @@ export default function FoodPairingResultScreen() {
                             />
                         </View>
                         <Text style={styles.chartDescription}>
-                            추천된 품종이 없다면, 이 그래프를{'\n'}
-                            <Text style={{ color: colors.white, fontWeight: 'bold' }}>소믈리에나 샵 직원</Text>에게 보여주세요.
+                            <Trans
+                                i18nKey="foodPairingResult.chartDescription"
+                                components={[
+                                    <Text style={{ color: colors.white, fontWeight: 'bold' }} />,
+                                ]}
+                            />
                         </Text>
                     </Animated.View>
                 )}
@@ -270,7 +290,7 @@ export default function FoodPairingResultScreen() {
                         ))
                     ) : (
                         <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>추천 결과가 없습니다.</Text>
+                            <Text style={styles.emptyText}>{t('foodPairingResult.empty')}</Text>
                         </View>
                     )}
                 </Animated.View>
@@ -281,7 +301,7 @@ export default function FoodPairingResultScreen() {
                     style={styles.button}
                     onPress={() => navigation.navigate('Main')}
                 >
-                    <Text style={styles.buttonText}>홈으로 돌아가기</Text>
+                    <Text style={styles.buttonText}>{t('foodPairingResult.backButton')}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

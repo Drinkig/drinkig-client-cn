@@ -9,7 +9,7 @@
         "searchPlaceholder": "Search by name, type, region...",
         "hero": {
             "title": "Looking for a wine?",
-            "subtitle": "Let us find your perfect match",
+            "subtitle": "We'll recommend the perfect wine for your meal",
             "button": "Get Recommendations"
         },
         "quickMenu": {
@@ -659,6 +659,44 @@
         "commentPlaceholder": "Tell us more (optional)",
         "submit": "Send Feedback",
         "thankYou": "Thanks for your feedback!"
+    },
+    "foodSelection": {
+        "title": "What are you eating?",
+        "subtitle": "We'll recommend the perfect wine for your meal",
+        "cuisines": [
+            { "name": "Korean", "flag": "🇰🇷", "items": ["Samgyeopsal/Pork Belly", "Pork Ribs", "Grilled Beef", "Bulgogi", "Braised Short Ribs", "Korean Fine Dining", "Hanjeongsik", "Gopchang/Daechang", "Bossam/Boiled Pork", "Jokbal", "Dakgalbi", "Braised Chicken", "Kimchi Stew", "Doenjang Stew", "Korean Pancakes", "Yukhoe (Beef Tartare)", "Soy Crab", "Naengmyeon"] },
+            { "name": "Chinese", "flag": "🇨🇳", "items": ["Jajangmyeon", "Jjamppong", "Sweet & Sour Pork", "Crispy Fried Pork", "Dim Sum", "Lamb Skewers", "Malatang", "Mala Xiangguo", "Hot Pot", "Peking Duck", "Yusanseul", "Eight Treasure", "Mapo Tofu", "Dongpo Pork", "Kung Pao Chicken"] },
+            { "name": "Japanese", "flag": "🇯🇵", "items": ["Sushi", "Omakase", "Sashimi", "Ramen", "Udon", "Soba", "Tonkatsu", "Tendon", "Gyudon/Butadon", "Yakitori", "Sukiyaki", "Nabe/Shabu-shabu", "Okonomiyaki", "Unagi Don"] },
+            { "name": "Western", "flag": "🍝", "items": ["Steak", "Pasta", "Pizza", "Risotto", "Gourmet Burger", "Salad", "BBQ Ribs", "Fish & Chips", "Brunch", "Stew"] },
+            { "name": "Spanish", "flag": "🇪🇸", "items": ["Tapas", "Jamón", "Gambas al Ajillo", "Paella", "Grilled Ibérico", "Churros", "Gazpacho", "Pulpo (Octopus)"] },
+            { "name": "French", "flag": "🇫🇷", "items": ["Course Meal (Fine Dining)", "Steak", "Onion Soup", "Escargot", "Foie Gras", "Bouillabaisse", "Coq au Vin", "Tartare", "Jambon-Beurre/Sandwich", "Crêpe"] },
+            { "name": "Vietnamese", "flag": "🇻🇳", "items": ["Pho", "Bun Cha", "Banh Mi", "Spring Rolls", "Banh Xeo", "Cha Gio", "Fried Rice"] },
+            { "name": "Thai", "flag": "🇹🇭", "items": ["Pad Thai", "Tom Yum Goong", "Poo Pad Pong Curry", "Som Tam", "Green Curry", "Pad Krapao Moo Saap", "Yam Woon Sen"] },
+            { "name": "Indian", "flag": "🇮🇳", "items": ["Chicken Curry", "Lamb Curry", "Tandoori Chicken", "Naan", "Lassi", "Samosa", "Biryani"] },
+            { "name": "Mexican", "flag": "🇲🇽", "items": ["Taco", "Burrito", "Quesadilla", "Fajita", "Nachos", "Enchilada", "Guacamole"] },
+            { "name": "South American", "flag": "🌎", "items": ["Churrasco", "Asado", "Ceviche", "Empanada", "Taco (South American)"] },
+            { "name": "Italian", "flag": "🇮🇹", "items": ["Tomato Pasta", "Cream Pasta", "Aglio e Olio", "Wood-fired Pizza", "Risotto", "Gnocchi", "Lasagna", "T-bone Steak", "Carpaccio", "Tiramisu", "Gelato"] },
+            { "name": "American Chinese", "flag": "🥡", "items": ["Orange Chicken", "Mongolian Beef", "Chow Mein", "Kung Pao Chicken", "General Tso's Chicken", "Egg Roll", "Mapo Tofu (American)", "Wonton"] },
+            { "name": "Snacks & Appetizers", "flag": "🧀", "items": ["Cheese Platter", "Seasonal Fruits", "Jamón", "Charcuterie", "Nachos", "Potato Chips", "Mixed Nuts", "Jerky", "Dried Snacks", "Olives"] },
+            { "name": "Dessert", "flag": "🍰", "items": ["Cake", "Tart", "Chocolate", "Macaron", "Ice Cream", "Bread", "Cookie"] }
+        ]
+    },
+    "foodPairingResult": {
+        "analysis": {
+            "step0": "Analyzing the best wine style\nfor {{foodName}}",
+            "step1": "Checking {{nickname}}'s taste preferences",
+            "step2": "Precisely matching {{foodName}}\nwith {{nickname}}'s palate",
+            "step3": "Finding the best wine pairing..."
+        },
+        "heroText": "We recommend <1>{{wineSort}}</1> wine\nas the perfect match for <0>{{foodName}}</0>!",
+        "heroSubText": "We analyzed <0>{{nickname}}</0>'s taste and <1>{{foodName}}</1>'s flavors\nto prepare a fail-proof pairing.",
+        "chartTitle": "Final Matching Result",
+        "chartDescription": "If none of these varieties are available,\nshow this chart to a <0>sommelier or shop staff</0>.",
+        "empty": "No recommendations found.",
+        "backButton": "Back to Home",
+        "defaultWine": "wine",
+        "defaultFood": "food",
+        "defaultNickname": "Member"
     },
     "tasteReset": {
         "wineSortTitle": "What wine types would you like recommended?",
