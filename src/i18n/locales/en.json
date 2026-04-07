@@ -511,11 +511,26 @@
             "strong": "Strong",
             "low": "Low",
             "high": "High",
-            "acidity": { "label": "Acidity", "desc": "Sharpness and sourness" },
-            "sweetness": { "label": "Sweetness", "desc": "Level of sweetness" },
-            "tannin": { "label": "Tannin", "desc": "Dryness and astringency" },
-            "body": { "label": "Body", "desc": "Weight and richness" },
-            "alcohol": { "label": "Alcohol", "desc": "Alcohol warmth" }
+            "acidity": {
+                "label": "Acidity",
+                "desc": "Sharpness and sourness"
+            },
+            "sweetness": {
+                "label": "Sweetness",
+                "desc": "Level of sweetness"
+            },
+            "tannin": {
+                "label": "Tannin",
+                "desc": "Dryness and astringency"
+            },
+            "body": {
+                "label": "Body",
+                "desc": "Weight and richness"
+            },
+            "alcohol": {
+                "label": "Alcohol",
+                "desc": "Alcohol warmth"
+            }
         },
         "budget": {
             "title": "Monthly Wine Budget",
@@ -534,47 +549,72 @@
             "alcohol": {
                 "title": "Alcohol",
                 "question": "How much alcohol\ndo you prefer in wine?",
-                "opt1Label": "Light & refreshing", "opt1Desc": "e.g. Beer, light cider",
-                "opt2Label": "Enjoyably mild", "opt2Desc": "e.g. Highball, cocktails",
-                "opt3Label": "Moderate buzz", "opt3Desc": "e.g. Half a bottle of soju",
-                "opt4Label": "Strong buzz", "opt4Desc": "e.g. Makgeolli, 2+ bottles",
-                "opt5Label": "Intense & bold", "opt5Desc": "e.g. Whisky, baijiu"
+                "opt1Label": "Light & refreshing",
+                "opt1Desc": "e.g. Beer, light cider",
+                "opt2Label": "Enjoyably mild",
+                "opt2Desc": "e.g. Highball, cocktails",
+                "opt3Label": "Moderate buzz",
+                "opt3Desc": "e.g. Half a bottle of soju",
+                "opt4Label": "Strong buzz",
+                "opt4Desc": "e.g. Makgeolli, 2+ bottles",
+                "opt5Label": "Intense & bold",
+                "opt5Desc": "e.g. Whisky, baijiu"
             },
             "body": {
                 "title": "Body",
                 "question": "What weight do you prefer\nin your mouth?",
-                "opt1Label": "Light & watery", "opt1Desc": "e.g. Still water",
-                "opt2Label": "Lightly weighted", "opt2Desc": "e.g. Sports drink",
-                "opt3Label": "Medium weight", "opt3Desc": "e.g. Orange juice, milk",
-                "opt4Label": "Rich & full", "opt4Desc": "e.g. Thick soy milk",
-                "opt5Label": "Dense & velvety", "opt5Desc": "e.g. Yogurt, espresso"
+                "opt1Label": "Light & watery",
+                "opt1Desc": "e.g. Still water",
+                "opt2Label": "Lightly weighted",
+                "opt2Desc": "e.g. Sports drink",
+                "opt3Label": "Medium weight",
+                "opt3Desc": "e.g. Orange juice, milk",
+                "opt4Label": "Rich & full",
+                "opt4Desc": "e.g. Thick soy milk",
+                "opt5Label": "Dense & velvety",
+                "opt5Desc": "e.g. Yogurt, espresso"
             },
             "sweetness": {
                 "title": "Sweetness",
                 "question": "How sweet do you\nprefer your wine?",
-                "opt1Label": "Bone dry", "opt1Desc": "e.g. Black iced coffee",
-                "opt2Label": "Subtly sweet", "opt2Desc": "e.g. Café latte",
-                "opt3Label": "Pleasantly sweet", "opt3Desc": "e.g. Grapefruit ade",
-                "opt4Label": "Noticeably sweet", "opt4Desc": "e.g. Vanilla latte, cola",
-                "opt5Label": "Very sweet", "opt5Desc": "e.g. Caramel macchiato"
+                "opt1Label": "Bone dry",
+                "opt1Desc": "e.g. Black iced coffee",
+                "opt2Label": "Subtly sweet",
+                "opt2Desc": "e.g. Café latte",
+                "opt3Label": "Pleasantly sweet",
+                "opt3Desc": "e.g. Grapefruit ade",
+                "opt4Label": "Noticeably sweet",
+                "opt4Desc": "e.g. Vanilla latte, cola",
+                "opt5Label": "Very sweet",
+                "opt5Desc": "e.g. Caramel macchiato"
             },
             "acidity": {
                 "title": "Acidity",
                 "question": "How much acidity\ndo you prefer in wine?",
-                "opt1Label": "Almost no acidity", "opt1Desc": "e.g. Banana, melon",
-                "opt2Label": "Gentle freshness", "opt2Desc": "e.g. Peach, red apple",
-                "opt3Label": "Balanced sweet-sour", "opt3Desc": "e.g. Strawberry, grape",
-                "opt4Label": "Zesty & bright", "opt4Desc": "e.g. Pineapple, orange",
-                "opt5Label": "Sharp & intense", "opt5Desc": "e.g. Lemon, lime"
+                "opt1Label": "Almost no acidity",
+                "opt1Desc": "e.g. Banana, melon",
+                "opt2Label": "Gentle freshness",
+                "opt2Desc": "e.g. Peach, red apple",
+                "opt3Label": "Balanced sweet-sour",
+                "opt3Desc": "e.g. Strawberry, grape",
+                "opt4Label": "Zesty & bright",
+                "opt4Desc": "e.g. Pineapple, orange",
+                "opt5Label": "Sharp & intense",
+                "opt5Desc": "e.g. Lemon, lime"
             },
             "tannin": {
                 "title": "Tannin",
                 "question": "How much tannin\ndo you prefer in wine?",
-                "opt1Label": "No tannin", "opt1Desc": "e.g. Grape juice",
-                "opt2Label": "Silky smooth", "opt2Desc": "e.g. Milk tea",
-                "opt3Label": "Slightly grippy", "opt3Desc": "e.g. Green tea",
-                "opt4Label": "Coating sensation", "opt4Desc": "e.g. Dark chocolate (72%)",
-                "opt5Label": "Strong & drying", "opt5Desc": "e.g. Espresso"
+                "opt1Label": "No tannin",
+                "opt1Desc": "e.g. Grape juice",
+                "opt2Label": "Silky smooth",
+                "opt2Desc": "e.g. Milk tea",
+                "opt3Label": "Slightly grippy",
+                "opt3Desc": "e.g. Green tea",
+                "opt4Label": "Coating sensation",
+                "opt4Desc": "e.g. Dark chocolate (72%)",
+                "opt5Label": "Strong & drying",
+                "opt5Desc": "e.g. Espresso"
             }
         },
         "loading": {
@@ -692,21 +732,240 @@
         "title": "What are you eating?",
         "subtitle": "We'll recommend the perfect wine for your meal",
         "cuisines": [
-            { "name": "Korean", "flag": "🇰🇷", "items": ["Samgyeopsal/Pork Belly", "Pork Ribs", "Grilled Beef", "Bulgogi", "Braised Short Ribs", "Korean Fine Dining", "Hanjeongsik", "Gopchang/Daechang", "Bossam/Boiled Pork", "Jokbal", "Dakgalbi", "Braised Chicken", "Kimchi Stew", "Doenjang Stew", "Korean Pancakes", "Yukhoe (Beef Tartare)", "Soy Crab", "Naengmyeon"] },
-            { "name": "Chinese", "flag": "🇨🇳", "items": ["Jajangmyeon", "Jjamppong", "Sweet & Sour Pork", "Crispy Fried Pork", "Dim Sum", "Lamb Skewers", "Malatang", "Mala Xiangguo", "Hot Pot", "Peking Duck", "Yusanseul", "Eight Treasure", "Mapo Tofu", "Dongpo Pork", "Kung Pao Chicken"] },
-            { "name": "Japanese", "flag": "🇯🇵", "items": ["Sushi", "Omakase", "Sashimi", "Ramen", "Udon", "Soba", "Tonkatsu", "Tendon", "Gyudon/Butadon", "Yakitori", "Sukiyaki", "Nabe/Shabu-shabu", "Okonomiyaki", "Unagi Don"] },
-            { "name": "Western", "flag": "🍝", "items": ["Steak", "Pasta", "Pizza", "Risotto", "Gourmet Burger", "Salad", "BBQ Ribs", "Fish & Chips", "Brunch", "Stew"] },
-            { "name": "Spanish", "flag": "🇪🇸", "items": ["Tapas", "Jamón", "Gambas al Ajillo", "Paella", "Grilled Ibérico", "Churros", "Gazpacho", "Pulpo (Octopus)"] },
-            { "name": "French", "flag": "🇫🇷", "items": ["Course Meal (Fine Dining)", "Steak", "Onion Soup", "Escargot", "Foie Gras", "Bouillabaisse", "Coq au Vin", "Tartare", "Jambon-Beurre/Sandwich", "Crêpe"] },
-            { "name": "Vietnamese", "flag": "🇻🇳", "items": ["Pho", "Bun Cha", "Banh Mi", "Spring Rolls", "Banh Xeo", "Cha Gio", "Fried Rice"] },
-            { "name": "Thai", "flag": "🇹🇭", "items": ["Pad Thai", "Tom Yum Goong", "Poo Pad Pong Curry", "Som Tam", "Green Curry", "Pad Krapao Moo Saap", "Yam Woon Sen"] },
-            { "name": "Indian", "flag": "🇮🇳", "items": ["Chicken Curry", "Lamb Curry", "Tandoori Chicken", "Naan", "Lassi", "Samosa", "Biryani"] },
-            { "name": "Mexican", "flag": "🇲🇽", "items": ["Taco", "Burrito", "Quesadilla", "Fajita", "Nachos", "Enchilada", "Guacamole"] },
-            { "name": "South American", "flag": "🌎", "items": ["Churrasco", "Asado", "Ceviche", "Empanada", "Taco (South American)"] },
-            { "name": "Italian", "flag": "🇮🇹", "items": ["Tomato Pasta", "Cream Pasta", "Aglio e Olio", "Wood-fired Pizza", "Risotto", "Gnocchi", "Lasagna", "T-bone Steak", "Carpaccio", "Tiramisu", "Gelato"] },
-            { "name": "American Chinese", "flag": "🥡", "items": ["Orange Chicken", "Mongolian Beef", "Chow Mein", "Kung Pao Chicken", "General Tso's Chicken", "Egg Roll", "Mapo Tofu (American)", "Wonton"] },
-            { "name": "Snacks & Appetizers", "flag": "🧀", "items": ["Cheese Platter", "Seasonal Fruits", "Jamón", "Charcuterie", "Nachos", "Potato Chips", "Mixed Nuts", "Jerky", "Dried Snacks", "Olives"] },
-            { "name": "Dessert", "flag": "🍰", "items": ["Cake", "Tart", "Chocolate", "Macaron", "Ice Cream", "Bread", "Cookie"] }
+            {
+                "name": "Korean",
+                "flag": "🇰🇷",
+                "items": [
+                    "Samgyeopsal/Pork Belly",
+                    "Pork Ribs",
+                    "Grilled Beef",
+                    "Bulgogi",
+                    "Braised Short Ribs",
+                    "Korean Fine Dining",
+                    "Hanjeongsik",
+                    "Gopchang/Daechang",
+                    "Bossam/Boiled Pork",
+                    "Jokbal",
+                    "Dakgalbi",
+                    "Braised Chicken",
+                    "Kimchi Stew",
+                    "Doenjang Stew",
+                    "Korean Pancakes",
+                    "Yukhoe (Beef Tartare)",
+                    "Soy Crab",
+                    "Naengmyeon"
+                ]
+            },
+            {
+                "name": "Chinese",
+                "flag": "🇨🇳",
+                "items": [
+                    "Jajangmyeon",
+                    "Jjamppong",
+                    "Sweet & Sour Pork",
+                    "Crispy Fried Pork",
+                    "Dim Sum",
+                    "Lamb Skewers",
+                    "Malatang",
+                    "Mala Xiangguo",
+                    "Hot Pot",
+                    "Peking Duck",
+                    "Yusanseul",
+                    "Eight Treasure",
+                    "Mapo Tofu",
+                    "Dongpo Pork",
+                    "Kung Pao Chicken"
+                ]
+            },
+            {
+                "name": "Japanese",
+                "flag": "🇯🇵",
+                "items": [
+                    "Sushi",
+                    "Omakase",
+                    "Sashimi",
+                    "Ramen",
+                    "Udon",
+                    "Soba",
+                    "Tonkatsu",
+                    "Tendon",
+                    "Gyudon/Butadon",
+                    "Yakitori",
+                    "Sukiyaki",
+                    "Nabe/Shabu-shabu",
+                    "Okonomiyaki",
+                    "Unagi Don"
+                ]
+            },
+            {
+                "name": "Western",
+                "flag": "🍝",
+                "items": [
+                    "Steak",
+                    "Pasta",
+                    "Pizza",
+                    "Risotto",
+                    "Gourmet Burger",
+                    "Salad",
+                    "BBQ Ribs",
+                    "Fish & Chips",
+                    "Brunch",
+                    "Stew"
+                ]
+            },
+            {
+                "name": "Spanish",
+                "flag": "🇪🇸",
+                "items": [
+                    "Tapas",
+                    "Jamón",
+                    "Gambas al Ajillo",
+                    "Paella",
+                    "Grilled Ibérico",
+                    "Churros",
+                    "Gazpacho",
+                    "Pulpo (Octopus)"
+                ]
+            },
+            {
+                "name": "French",
+                "flag": "🇫🇷",
+                "items": [
+                    "Course Meal (Fine Dining)",
+                    "Steak",
+                    "Onion Soup",
+                    "Escargot",
+                    "Foie Gras",
+                    "Bouillabaisse",
+                    "Coq au Vin",
+                    "Tartare",
+                    "Jambon-Beurre/Sandwich",
+                    "Crêpe"
+                ]
+            },
+            {
+                "name": "Vietnamese",
+                "flag": "🇻🇳",
+                "items": [
+                    "Pho",
+                    "Bun Cha",
+                    "Banh Mi",
+                    "Spring Rolls",
+                    "Banh Xeo",
+                    "Cha Gio",
+                    "Fried Rice"
+                ]
+            },
+            {
+                "name": "Thai",
+                "flag": "🇹🇭",
+                "items": [
+                    "Pad Thai",
+                    "Tom Yum Goong",
+                    "Poo Pad Pong Curry",
+                    "Som Tam",
+                    "Green Curry",
+                    "Pad Krapao Moo Saap",
+                    "Yam Woon Sen"
+                ]
+            },
+            {
+                "name": "Indian",
+                "flag": "🇮🇳",
+                "items": [
+                    "Chicken Curry",
+                    "Lamb Curry",
+                    "Tandoori Chicken",
+                    "Naan",
+                    "Lassi",
+                    "Samosa",
+                    "Biryani"
+                ]
+            },
+            {
+                "name": "Mexican",
+                "flag": "🇲🇽",
+                "items": [
+                    "Taco",
+                    "Burrito",
+                    "Quesadilla",
+                    "Fajita",
+                    "Nachos",
+                    "Enchilada",
+                    "Guacamole"
+                ]
+            },
+            {
+                "name": "South American",
+                "flag": "🌎",
+                "items": [
+                    "Churrasco",
+                    "Asado",
+                    "Ceviche",
+                    "Empanada",
+                    "Taco (South American)"
+                ]
+            },
+            {
+                "name": "Italian",
+                "flag": "🇮🇹",
+                "items": [
+                    "Tomato Pasta",
+                    "Cream Pasta",
+                    "Aglio e Olio",
+                    "Wood-fired Pizza",
+                    "Risotto",
+                    "Gnocchi",
+                    "Lasagna",
+                    "T-bone Steak",
+                    "Carpaccio",
+                    "Tiramisu",
+                    "Gelato"
+                ]
+            },
+            {
+                "name": "American Chinese",
+                "flag": "🥡",
+                "items": [
+                    "Orange Chicken",
+                    "Mongolian Beef",
+                    "Chow Mein",
+                    "Kung Pao Chicken",
+                    "General Tso's Chicken",
+                    "Egg Roll",
+                    "Mapo Tofu (American)",
+                    "Wonton"
+                ]
+            },
+            {
+                "name": "Snacks & Appetizers",
+                "flag": "🧀",
+                "items": [
+                    "Cheese Platter",
+                    "Seasonal Fruits",
+                    "Jamón",
+                    "Charcuterie",
+                    "Nachos",
+                    "Potato Chips",
+                    "Mixed Nuts",
+                    "Jerky",
+                    "Dried Snacks",
+                    "Olives"
+                ]
+            },
+            {
+                "name": "Dessert",
+                "flag": "🍰",
+                "items": [
+                    "Cake",
+                    "Tart",
+                    "Chocolate",
+                    "Macaron",
+                    "Ice Cream",
+                    "Bread",
+                    "Cookie"
+                ]
+            }
         ]
     },
     "foodPairingResult": {
@@ -797,7 +1056,13 @@
             "yearlyPrice": "₩39,000/year",
             "yearlyPerMonth": "Only ₩3,250/month",
             "monthly": "Monthly",
-            "monthlyPrice": "₩5,900/month"
+            "monthlyPrice": "₩5,900/month",
+            "perMonth": "{{amount}}/mo",
+            "perMonthSuffix": "/mo",
+            "perYearSuffix": "/yr",
+            "bestValueShort": "BEST VALUE",
+            "savePercent": "{{percent}}% OFF",
+            "billedYearly": "{{amount}} billed yearly"
         },
         "subscribe": "Subscribe Now",
         "restore": "Restore Purchase",

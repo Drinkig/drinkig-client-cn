@@ -204,6 +204,47 @@ const PaywallScreen = () => {
     return (product as any).localizedPrice ?? null;
   };
 
+  // Fallback prices (KRW) matching the i18n defaults
+  const MONTHLY_FALLBACK_PRICE = 5900;
+  const YEARLY_FALLBACK_PRICE = 39000;
+
+  const getNumericPrice = (plan: PlanType): number => {
+    const productId = getProductId(plan);
+    const product = products.find(p => p.productId === productId);
+    const priceStr = (product as any)?.price;
+    const n = priceStr ? parseFloat(priceStr) : NaN;
+    if (!isNaN(n) && n > 0) return n;
+    return plan === 'YEARLY' ? YEARLY_FALLBACK_PRICE : MONTHLY_FALLBACK_PRICE;
+  };
+
+  const getCurrencyCode = (): string => {
+    const product =
+      products.find(p => p.productId === getProductId('YEARLY')) ||
+      products.find(p => p.productId === getProductId('MONTHLY'));
+    return (product as any)?.currency || 'KRW';
+  };
+
+  const formatPrice = (amount: number): string => {
+    const currency = getCurrencyCode();
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    } catch {
+      return `₩${Math.round(amount).toLocaleString('ko-KR')}`;
+    }
+  };
+
+  const monthlyNum = getNumericPrice('MONTHLY');
+  const yearlyNum = getNumericPrice('YEARLY');
+  const yearlyOriginal = monthlyNum * 12;
+  const saveAmount = Math.max(0, yearlyOriginal - yearlyNum);
+  const savePercent = yearlyOriginal > 0 ? Math.round((saveAmount / yearlyOriginal) * 100) : 0;
+  const monthlyEquivalent = yearlyNum / 12;
+  const hasDiscount = savePercent > 0;
+
   const features = [
     { icon: 'camera-outline', text: t('paywall.feature.unlimitedScan') },
     { icon: 'heart-pulse', text: t('paywall.feature.compatibility'), isMCI: true },
@@ -253,18 +294,27 @@ const PaywallScreen = () => {
                 style={StyleSheet.absoluteFillObject}
               />
             )}
-            <View style={styles.planHeader}>
-              <Text style={styles.planBadge}>{t('paywall.plan.bestValue')}</Text>
+            {hasDiscount && (
+              <Text style={styles.planBadgeFloat}>
+                {t('paywall.plan.savePercent', { percent: savePercent })}
+              </Text>
+            )}
+            <View style={styles.planRow}>
+              <Text style={styles.planName}>{t('paywall.plan.yearly')}</Text>
+              <View style={styles.planPriceCluster}>
+                {hasDiscount && (
+                  <Text style={styles.planPriceOriginal}>{formatPrice(yearlyOriginal)}</Text>
+                )}
+                <Text style={styles.planPrice}>
+                  {formatPrice(yearlyNum)}
+                  <Text style={styles.planPriceUnit}>{t('paywall.plan.perYearSuffix')}</Text>
+                </Text>
+              </View>
             </View>
-            <Text style={styles.planName}>{t('paywall.plan.yearly')}</Text>
-            <Text style={styles.planPrice}>
-              {getDisplayPrice('YEARLY') || t('paywall.plan.yearlyPrice')}
-            </Text>
-            <Text style={styles.planSubPrice}>{t('paywall.plan.yearlyPerMonth')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.planCard, selectedPlan === 'MONTHLY' && styles.planCardSelected]}
+            style={[styles.planCard, styles.planCardCompact, selectedPlan === 'MONTHLY' && styles.planCardSelected]}
             onPress={() => setSelectedPlan('MONTHLY')}
           >
             {selectedPlan === 'MONTHLY' && (
@@ -275,10 +325,15 @@ const PaywallScreen = () => {
                 style={StyleSheet.absoluteFillObject}
               />
             )}
-            <Text style={styles.planName}>{t('paywall.plan.monthly')}</Text>
-            <Text style={styles.planPrice}>
-              {getDisplayPrice('MONTHLY') || t('paywall.plan.monthlyPrice')}
-            </Text>
+            <View style={styles.planRow}>
+              <Text style={[styles.planName, styles.planNameCompact]}>{t('paywall.plan.monthly')}</Text>
+              <View style={styles.planPriceCluster}>
+                <Text style={[styles.planPrice, styles.planPriceCompact]}>
+                  {formatPrice(monthlyNum)}
+                  <Text style={[styles.planPriceUnit, styles.planPriceUnitCompact]}>{t('paywall.plan.perMonthSuffix')}</Text>
+                </Text>
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -397,7 +452,8 @@ const styles = StyleSheet.create({
   planCard: {
     backgroundColor: colors.surface1,
     borderRadius: 16,
-    padding: 20,
+    paddingVertical: 28,
+    paddingHorizontal: 22,
     borderWidth: 2,
     borderColor: colors.border,
     overflow: 'hidden',
@@ -405,35 +461,64 @@ const styles = StyleSheet.create({
   planCardSelected: {
     borderColor: colors.primary,
   },
-  planHeader: {
-    marginBottom: 8,
+  planCardCompact: {
+    paddingVertical: 18,
+    paddingHorizontal: 20,
   },
-  planBadge: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
+  planNameCompact: {
+    fontSize: 16,
+  },
+  planPriceCompact: {
+    fontSize: 20,
+  },
+  planPriceUnitCompact: {
+    fontSize: 13,
+  },
+  planBadgeFloat: {
+    position: 'absolute',
+    top: 0,
+    right: 16,
+    backgroundColor: colors.primary,
     color: colors.white,
     fontSize: 11,
     fontWeight: 'bold',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
     overflow: 'hidden',
   },
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   planName: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.white,
-    marginBottom: 4,
+  },
+  planPriceCluster: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 10,
+    flexShrink: 1,
+  },
+  planPriceOriginal: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.5)',
+    textDecorationLine: 'line-through',
+    fontWeight: '500',
   },
   planPrice: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.white,
   },
-  planSubPrice: {
-    fontSize: 13,
+  planPriceUnit: {
+    fontSize: 15,
+    fontWeight: '600',
     color: 'rgba(255,255,255,0.7)',
-    marginTop: 4,
   },
   promoSection: {
     marginBottom: 16,
