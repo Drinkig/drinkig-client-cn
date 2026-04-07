@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ReviewDTO } from '../../api/wine';
 import { sendReportEmail } from '../../utils/reportUtils';
+import { useGlobalUI } from '../../context/GlobalUIContext';
 import { colors } from '../../constants/colors';
 
 interface ReviewCardProps {
@@ -11,6 +12,7 @@ interface ReviewCardProps {
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
+  const { showToast } = useGlobalUI();
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -64,6 +66,13 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             writerName: review.name,
             reviewDate: displayDate,
             reviewContent: cleanReview
+          }, (reason) => {
+            showToast(
+              reason === 'UNSUPPORTED'
+                ? '메일 앱을 열 수 없습니다.'
+                : '메일 앱을 실행하는 중 문제가 발생했습니다.',
+              { type: 'error' }
+            );
           })}
         >
           <MaterialCommunityIcons name="alarm-light-outline" size={16} color="#666" />

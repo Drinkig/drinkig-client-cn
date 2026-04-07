@@ -11,6 +11,22 @@ export interface AlertConfig {
   singleButton?: boolean;
 }
 
+export type ToastType = 'info' | 'success' | 'error';
+
+export interface ToastConfig {
+  id: number;
+  message: string;
+  type: ToastType;
+  duration: number;
+  onHide?: () => void;
+}
+
+export interface ShowToastOptions {
+  type?: ToastType;
+  duration?: number;
+  onHide?: () => void;
+}
+
 interface GlobalUIContextType {
   isLoading: boolean;
   showLoading: () => void;
@@ -19,6 +35,10 @@ interface GlobalUIContextType {
   alertConfig: AlertConfig | null;
   showAlert: (config: AlertConfig) => void;
   closeAlert: () => void;
+
+  toast: ToastConfig | null;
+  showToast: (message: string, options?: ShowToastOptions) => void;
+  hideToast: () => void;
 }
 
 const GlobalUIContext = createContext<GlobalUIContextType | undefined>(undefined);
@@ -26,6 +46,7 @@ const GlobalUIContext = createContext<GlobalUIContextType | undefined>(undefined
 export const GlobalUIProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [alertConfig, setAlertConfig] = useState<AlertConfig | null>(null);
+  const [toast, setToast] = useState<ToastConfig | null>(null);
 
   const showLoading = useCallback(() => setIsLoading(true), []);
   const hideLoading = useCallback(() => setIsLoading(false), []);
@@ -38,6 +59,20 @@ export const GlobalUIProvider = ({ children }: { children: ReactNode }) => {
     setAlertConfig(null);
   }, []);
 
+  const showToast = useCallback((message: string, options?: ShowToastOptions) => {
+    setToast({
+      id: Date.now(),
+      message,
+      type: options?.type ?? 'info',
+      duration: options?.duration ?? 2000,
+      onHide: options?.onHide,
+    });
+  }, []);
+
+  const hideToast = useCallback(() => {
+    setToast(null);
+  }, []);
+
   return (
     <GlobalUIContext.Provider
       value={{
@@ -46,7 +81,10 @@ export const GlobalUIProvider = ({ children }: { children: ReactNode }) => {
         hideLoading,
         alertConfig,
         showAlert,
-        closeAlert
+        closeAlert,
+        toast,
+        showToast,
+        hideToast,
       }}
     >
       {children}
@@ -61,4 +99,3 @@ export const useGlobalUI = () => {
   }
   return context;
 };
-

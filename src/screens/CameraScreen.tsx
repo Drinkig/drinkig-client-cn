@@ -7,7 +7,6 @@ import {
     Dimensions,
     Platform,
     StatusBar,
-    Alert,
     ActivityIndicator,
     Animated,
 } from 'react-native';
@@ -20,6 +19,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/colors';
+import { useGlobalUI } from '../context/GlobalUIContext';
 import { useSubscription } from '../context/SubscriptionContext';
 import { getScanRemaining } from '../api/subscription';
 
@@ -54,6 +54,7 @@ type Props = NativeStackScreenProps<any, 'Camera'>;
 export default function CameraScreen({ navigation }: Props) {
     const { t } = useTranslation();
     const { isPremium } = useSubscription();
+    const { showToast } = useGlobalUI();
     const insets = useSafeAreaInsets();
     const { hasPermission, requestPermission } = useCameraPermission();
     const device = useCameraDevice('back');
@@ -132,14 +133,11 @@ export default function CameraScreen({ navigation }: Props) {
 
         const count = await getTodayScanCount();
         if (count >= DAILY_SCAN_LIMIT) {
-            Alert.alert(
-                t('camera.limitAlertTitle'),
-                t('camera.limitAlertMessage', { limit: DAILY_SCAN_LIMIT }),
-            );
+            showToast(t('camera.limitAlertMessage', { limit: DAILY_SCAN_LIMIT }), { type: 'error' });
             return false;
         }
         return true;
-    }, [t, isPremium]);
+    }, [t, isPremium, showToast]);
 
     const handleCapture = useCallback(async () => {
         if (capturing) return;
@@ -148,7 +146,7 @@ export default function CameraScreen({ navigation }: Props) {
         // Simulator: no real camera, just show alert
         if (__DEV__ && !cameraRef.current) {
             const mode = scanType === 'label' ? t('camera.scanTypeLabel') : t('camera.scanTypeList');
-            Alert.alert(t('camera.simulatorTitle'), t('camera.simulatorMessage', { mode }));
+            showToast(t('camera.simulatorMessage', { mode }), { type: 'info' });
             return;
         }
 
@@ -176,11 +174,11 @@ export default function CameraScreen({ navigation }: Props) {
                 scanType,
             });
         } catch (e) {
-            Alert.alert(t('camera.errorTitle'), t('camera.captureError'));
+            showToast(t('camera.captureError'), { type: 'error' });
         } finally {
             setCapturing(false);
         }
-    }, [capturing, flashOn, navigation, scanType]);
+    }, [capturing, flashOn, navigation, scanType, showToast, t]);
 
     const handleGallery = useCallback(async () => {
         if (!(await checkDailyLimit())) return;
@@ -200,17 +198,17 @@ export default function CameraScreen({ navigation }: Props) {
                     scanType,
                 });
             } catch (e) {
-                Alert.alert(t('camera.errorTitle'), t('camera.captureError'));
+                showToast(t('camera.captureError'), { type: 'error' });
             }
         }
-    }, [navigation, scanType, t]);
+    }, [navigation, scanType, t, showToast]);
 
     const handleRequestPermission = useCallback(async () => {
         const granted = await requestPermission();
         if (!granted) {
-            Alert.alert(t('camera.permissionAlertTitle'), t('camera.permissionAlertMessage'));
+            showToast(t('camera.permissionAlertMessage'), { type: 'error' });
         }
-    }, [requestPermission]);
+    }, [requestPermission, showToast, t]);
 
     if (!hasPermission) {
         return (

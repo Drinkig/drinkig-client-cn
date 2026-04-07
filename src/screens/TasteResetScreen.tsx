@@ -103,7 +103,7 @@ const TasteResetScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { user, setFlavorProfile: saveFlavorProfile } = useUser();
-  const { showAlert } = useGlobalUI();
+  const { showToast } = useGlobalUI();
 
   const BUDGET_OPTIONS = [
     { label: t('onboarding.budget.under30'), value: 30000 },
@@ -326,11 +326,7 @@ const TasteResetScreen = () => {
       }, 10000);
     } catch (error) {
       console.error('Taste Reset Error:', error);
-      showAlert({
-        title: t('tasteReset.error.title'),
-        message: t('tasteReset.error.message'),
-        singleButton: true,
-      });
+      showToast(t('tasteReset.error.message'), { type: 'error' });
       setLoading(false);
     }
   };

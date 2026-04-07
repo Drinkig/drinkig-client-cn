@@ -51,7 +51,7 @@ type TastingNoteWriteScreenRouteProp = RouteProp<
 export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
-  const { showAlert } = useGlobalUI();
+  const { showAlert, showToast } = useGlobalUI();
   const { t, i18n } = useTranslation();
 
   const params = route.params || {};
@@ -342,27 +342,15 @@ export default function TastingNoteWriteScreen() {
 
   const handleSubmit = async () => {
     if (!selectedWine.wineId) {
-      showAlert({
-        title: t('tastingNoteWrite.error.noWine'),
-        message: t('tastingNoteWrite.error.noWine'),
-        singleButton: true,
-      });
+      showToast(t('tastingNoteWrite.error.noWine'), { type: 'info' });
       return;
     }
     if (!tasteDate) {
-      showAlert({
-        title: t('tastingNoteWrite.error.noDate'),
-        message: t('tastingNoteWrite.error.noDate'),
-        singleButton: true,
-      });
+      showToast(t('tastingNoteWrite.error.noDate'), { type: 'info' });
       return;
     }
     if (!color) {
-      showAlert({
-        title: t('tastingNoteWrite.error.noColor'),
-        message: t('tastingNoteWrite.error.noColor'),
-        singleButton: true,
-      });
+      showToast(t('tastingNoteWrite.error.noColor'), { type: 'info' });
       return;
     }
     if (
@@ -372,19 +360,11 @@ export default function TastingNoteWriteScreen() {
       body === 0 ||
       alcohol === 0
     ) {
-      showAlert({
-        title: t('tastingNoteWrite.error.noTaste'),
-        message: t('tastingNoteWrite.error.noTaste'),
-        singleButton: true,
-      });
+      showToast(t('tastingNoteWrite.error.noTaste'), { type: 'info' });
       return;
     }
     if (rating === 0) {
-      showAlert({
-        title: t('tastingNoteWrite.error.noRating'),
-        message: t('tastingNoteWrite.error.noRating'),
-        singleButton: true,
-      });
+      showToast(t('tastingNoteWrite.error.noRating'), { type: 'info' });
       return;
     }
 
@@ -426,29 +406,22 @@ export default function TastingNoteWriteScreen() {
       if (response.isSuccess) {
         await clearDraft();
         logEvent("tasting_note_save_success");
-        showAlert({
-          title: t('tastingNoteWrite.success.saveTitle'),
-          message: t('tastingNoteWrite.success.saveMsg'),
-          singleButton: true,
-          onConfirm: () => navigation.goBack(),
+        showToast(t('tastingNoteWrite.success.saveMsg'), {
+          type: 'success',
+          onHide: () => navigation.goBack(),
         });
       } else {
-        showAlert({
-          title: t('tastingNoteWrite.error.saveFail'),
-          message: response.message || t('tastingNoteWrite.error.saveFail'),
-          singleButton: true,
-        });
+        showToast(response.message || t('tastingNoteWrite.error.saveFail'), { type: 'error' });
       }
     } catch (error) {
       console.error("Tasting note submit error:", error);
       const isAuthError = (error as any).response?.status === 401;
-      showAlert({
-        title: t('tastingNoteWrite.error.saveFail'),
-        message: isAuthError
+      showToast(
+        isAuthError
           ? t('tastingNoteWrite.error.authExpired')
           : t('tastingNoteWrite.error.networkFail'),
-        singleButton: true,
-      });
+        { type: 'error' }
+      );
     } finally {
       setIsSubmitting(false);
     }

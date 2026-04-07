@@ -30,7 +30,7 @@ export default function TastingNoteDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteDetailRouteProp>();
   const { tastingNoteId } = route.params;
-  const { showAlert } = useGlobalUI();
+  const { showAlert, showToast } = useGlobalUI();
   const { t, i18n } = useTranslation();
 
   const [note, setNote] = useState<TastingNoteDTO | null>(null);
@@ -51,20 +51,16 @@ export default function TastingNoteDetailScreen() {
         }
         setNote(noteData);
       } else {
-        showAlert({
-          title: t('tastingNoteDetail.error.fetchFailTitle'),
-          message: response.message || t('tastingNoteDetail.error.fetchFailMsg'),
-          singleButton: true,
-          onConfirm: () => navigation.goBack(),
+        showToast(response.message || t('tastingNoteDetail.error.fetchFailMsg'), {
+          type: 'error',
+          onHide: () => navigation.goBack(),
         });
       }
     } catch (error) {
       console.error('Failed to fetch tasting note detail:', error);
-      showAlert({
-        title: t('tastingNoteDetail.error.fetchFailTitle'),
-        message: t('tastingNoteDetail.error.networkFailMsg'),
-        singleButton: true,
-        onConfirm: () => navigation.goBack(),
+      showToast(t('tastingNoteDetail.error.networkFailMsg'), {
+        type: 'error',
+        onHide: () => navigation.goBack(),
       });
     } finally {
       setIsLoading(false);
@@ -81,26 +77,16 @@ export default function TastingNoteDetailScreen() {
         try {
           const response = await deleteTastingNote(tastingNoteId);
           if (response.isSuccess) {
-            showAlert({
-              title: t('tastingNoteDetail.delete.successTitle'),
-              message: t('tastingNoteDetail.delete.successMsg'),
-              singleButton: true,
-              onConfirm: () => navigation.goBack(),
+            showToast(t('tastingNoteDetail.delete.successMsg'), {
+              type: 'success',
+              onHide: () => navigation.goBack(),
             });
           } else {
-            showAlert({
-              title: t('tastingNoteDetail.error.fetchFailTitle'),
-              message: response.message || t('tastingNoteDetail.delete.failMsg'),
-              singleButton: true,
-            });
+            showToast(response.message || t('tastingNoteDetail.delete.failMsg'), { type: 'error' });
           }
         } catch (error) {
           console.error('Failed to delete tasting note:', error);
-          showAlert({
-            title: t('tastingNoteDetail.error.fetchFailTitle'),
-            message: t('tastingNoteDetail.delete.networkFailMsg'),
-            singleButton: true,
-          });
+          showToast(t('tastingNoteDetail.delete.networkFailMsg'), { type: 'error' });
         }
       }
     });

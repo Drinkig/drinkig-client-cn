@@ -26,7 +26,7 @@ const WithdrawReasonScreen = () => {
     const route = useRoute<WithdrawReasonRouteProp>();
     const { authType } = route.params;
     const { logout } = useUser();
-    const { showLoading, hideLoading, showAlert, closeAlert } = useGlobalUI();
+    const { showLoading, hideLoading, showAlert, showToast, closeAlert } = useGlobalUI();
 
     const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
     const [otherReason, setOtherReason] = useState<string>('');
@@ -52,20 +52,12 @@ const WithdrawReasonScreen = () => {
 
     const handleWithdraw = () => {
         if (selectedReasons.length === 0) {
-            showAlert({
-                title: '알림',
-                message: '탈퇴 사유를 하나 이상 선택해주세요.',
-                singleButton: true,
-            });
+            showToast('탈퇴 사유를 하나 이상 선택해주세요.', { type: 'info' });
             return;
         }
 
         if (selectedReasons.includes('기타') && !otherReason.trim()) {
-            showAlert({
-                title: '알림',
-                message: '기타 사유를 입력해주세요.',
-                singleButton: true,
-            });
+            showToast('기타 사유를 입력해주세요.', { type: 'info' });
             return;
         }
 
@@ -99,21 +91,13 @@ const WithdrawReasonScreen = () => {
                 if (response.isSuccess) {
                     logout(true);
                 } else {
-                    showAlert({
-                        title: '오류',
-                        message: `회원 탈퇴 실패: ${response.message}`,
-                        singleButton: true,
-                    });
+                    showToast(`회원 탈퇴 실패: ${response.message}`, { type: 'error' });
                 }
             }
         } catch (error: any) {
             hideLoading();
             console.error('Delete member error:', error);
-            showAlert({
-                title: '오류',
-                message: '회원 탈퇴 처리 중 문제가 발생했습니다.',
-                singleButton: true,
-            });
+            showToast('회원 탈퇴 처리 중 문제가 발생했습니다.', { type: 'error' });
         }
     };
 
@@ -134,21 +118,13 @@ const WithdrawReasonScreen = () => {
             if (response.isSuccess) {
                 logout(true);
             } else {
-                showAlert({
-                    title: '오류',
-                    message: `회원 탈퇴 실패: ${response.message}`,
-                    singleButton: true,
-                });
+                showToast(`회원 탈퇴 실패: ${response.message}`, { type: 'error' });
             }
         } catch (error: any) {
             hideLoading();
             if (error.code === appleAuth.Error.CANCELED) return;
             console.error('Apple delete member error:', error);
-            showAlert({
-                title: '오류',
-                message: `Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`,
-                singleButton: true,
-            });
+            showToast(`Apple 인증/탈퇴 실패: ${error.message || '알 수 없는 오류'}`, { type: 'error' });
             throw error;
         }
     };

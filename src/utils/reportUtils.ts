@@ -1,7 +1,9 @@
-import { Linking, Alert, Platform } from 'react-native';
+import { Linking } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 type ReportType = 'REVIEW' | 'PRICE';
+
+type ReportErrorReason = 'UNSUPPORTED' | 'FAILED';
 
 interface ReportData {
     // Review Report Data
@@ -18,7 +20,11 @@ interface ReportData {
     purchaseDate?: string;
 }
 
-export const sendReportEmail = async (type: ReportType, data: ReportData) => {
+export const sendReportEmail = async (
+    type: ReportType,
+    data: ReportData,
+    onError?: (reason: ReportErrorReason) => void,
+) => {
     const email = 'drinkeasyy@gmail.com';
     const subject = `[신고] ${type === 'REVIEW' ? '리뷰' : '가격 정보'} 신고`;
 
@@ -67,10 +73,10 @@ ${commonInfo}
         if (supported) {
             await Linking.openURL(url);
         } else {
-            Alert.alert('알림', '메일 앱을 열 수 없습니다.');
+            onError?.('UNSUPPORTED');
         }
     } catch (error) {
         console.error('Failed to open email:', error);
-        Alert.alert('오류', '메일 앱을 실행하는 중 문제가 발생했습니다.');
+        onError?.('FAILED');
     }
 };

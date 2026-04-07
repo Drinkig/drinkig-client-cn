@@ -34,7 +34,7 @@ const SettingScreen = () => {
   const navigation = useNavigation();
   const { logout } = useUser();
   const { isPremium, plan, expiresAt, platform } = useSubscription();
-  const { showAlert, showLoading, hideLoading } = useGlobalUI();
+  const { showAlert, showToast, showLoading, hideLoading } = useGlobalUI();
   const { i18n, t } = useTranslation();
 
   const [authType, setAuthType] = useState<string | null>(null);
@@ -117,19 +117,11 @@ const SettingScreen = () => {
       if (supported) {
         await Linking.openURL(url);
       } else {
-        showAlert({
-          title: t('setting.alert.errorTitle'),
-          message: t('setting.alert.errorLink'),
-          singleButton: true,
-        });
+        showToast(t('setting.alert.errorLink'), { type: 'error' });
       }
     } catch (error) {
       console.error('An error occurred', error);
-      showAlert({
-        title: t('setting.alert.errorTitle'),
-        message: t('setting.alert.errorLinkOpen'),
-        singleButton: true,
-      });
+      showToast(t('setting.alert.errorLinkOpen'), { type: 'error' });
     }
   };
 
@@ -157,11 +149,7 @@ App Version: ${DeviceInfo.getVersion()}
       await Linking.openURL(url);
     } catch (error) {
       console.error('An error occurred', error);
-      showAlert({
-        title: t('setting.alert.mailErrorTitle'),
-        message: t('setting.alert.mailErrorMessage'),
-        singleButton: true,
-      });
+      showToast(t('setting.alert.mailErrorMessage'), { type: 'error' });
     }
   };
 
@@ -208,22 +196,14 @@ App Version: ${DeviceInfo.getVersion()}
               await logout();
             } else {
               console.error('Apple delete member failed:', response.message);
-              showAlert({
-                title: t('setting.alert.errorTitle'),
-                message: `${t('setting.alert.deleteError')} ${response.message}`,
-                singleButton: true,
-              });
+              showToast(`${t('setting.alert.deleteError')} ${response.message}`, { type: 'error' });
             }
           } catch (error: any) {
             if (error.code === appleAuth.Error.CANCELED) {
               return;
             }
             console.error('Apple delete member error:', error);
-            showAlert({
-              title: t('setting.alert.errorTitle'),
-              message: `${t('setting.alert.deleteError')} ${error.message || 'Error'}`,
-              singleButton: true,
-            });
+            showToast(`${t('setting.alert.deleteError')} ${error.message || 'Error'}`, { type: 'error' });
           }
         } else {
           // General withdrawal (Email/Kakao)

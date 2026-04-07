@@ -5,6 +5,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import PriceStats from '../PriceStats';
 import { getPriceHistory, PriceHistoryDTO } from '../../../api/wine';
 import { sendReportEmail } from '../../../utils/reportUtils';
+import { useGlobalUI } from '../../../context/GlobalUIContext';
 import { colors } from '../../../constants/colors';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +16,7 @@ interface PriceTabProps {
 
 export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps) {
   const { t } = useTranslation();
+  const { showToast } = useGlobalUI();
   const [history, setHistory] = useState<PriceHistoryDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -103,6 +105,13 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
             shopName: item.shopName,
             price: item.price,
             purchaseDate: item.purchaseDate
+          }, (reason) => {
+            showToast(
+              reason === 'UNSUPPORTED'
+                ? '메일 앱을 열 수 없습니다.'
+                : '메일 앱을 실행하는 중 문제가 발생했습니다.',
+              { type: 'error' }
+            );
           })}
         >
           <MaterialCommunityIcons name="alarm-light-outline" size={16} color="#666" />

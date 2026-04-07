@@ -27,7 +27,7 @@ export default function MyWineDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<MyWineDetailRouteProp>();
   const { wineId } = route.params;
-  const { showAlert } = useGlobalUI();
+  const { showAlert, showToast } = useGlobalUI();
   const { t, i18n } = useTranslation();
 
   const [wine, setWine] = useState<MyWineDTO | null>(null);
@@ -58,20 +58,16 @@ export default function MyWineDetailScreen() {
 
         setWine(wineData);
       } else {
-        showAlert({
-          title: t('myWineDetail.error.fetchFailTitle'),
-          message: t('myWineDetail.error.fetchFailMsg'),
-          singleButton: true,
-          onConfirm: () => navigation.goBack(),
+        showToast(t('myWineDetail.error.fetchFailMsg'), {
+          type: 'error',
+          onHide: () => navigation.goBack(),
         });
       }
     } catch (error) {
       console.error('Failed to fetch my wine detail:', error);
-      showAlert({
-        title: t('myWineDetail.error.fetchFailTitle'),
-        message: t('myWineDetail.error.networkFailMsg'),
-        singleButton: true,
-        onConfirm: () => navigation.goBack(),
+      showToast(t('myWineDetail.error.networkFailMsg'), {
+        type: 'error',
+        onHide: () => navigation.goBack(),
       });
     } finally {
       setIsLoading(false);
@@ -88,26 +84,16 @@ export default function MyWineDetailScreen() {
         try {
           const response = await deleteMyWine(wineId);
           if (response.isSuccess) {
-            showAlert({
-              title: t('myWineDetail.delete.successTitle'),
-              message: t('myWineDetail.delete.successMsg'),
-              singleButton: true,
-              onConfirm: () => navigation.goBack(),
+            showToast(t('myWineDetail.delete.successMsg'), {
+              type: 'success',
+              onHide: () => navigation.goBack(),
             });
           } else {
-            showAlert({
-              title: t('myWineDetail.error.fetchFailTitle'),
-              message: response.message || t('myWineDetail.delete.failMsg'),
-              singleButton: true,
-            });
+            showToast(response.message || t('myWineDetail.delete.failMsg'), { type: 'error' });
           }
         } catch (error) {
           console.error('Failed to delete wine:', error);
-          showAlert({
-            title: t('myWineDetail.error.fetchFailTitle'),
-            message: t('myWineDetail.error.networkFailMsg'),
-            singleButton: true,
-          });
+          showToast(t('myWineDetail.error.networkFailMsg'), { type: 'error' });
         }
       }
     });

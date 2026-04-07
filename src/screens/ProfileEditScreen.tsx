@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const { user, refreshUserInfo } = useUser();
-  const { showAlert, showLoading, hideLoading, closeAlert } = useGlobalUI();
+  const { showLoading, hideLoading, showToast } = useGlobalUI();
   const { t } = useTranslation();
 
   const [nickname, setNickname] = useState(user?.nickname || "");
@@ -137,11 +137,7 @@ const ProfileEditScreen = () => {
     if (isSaving) return;
 
     if (nicknameError || (nickname !== user?.nickname && !nicknameAvailable)) {
-      showAlert({
-        title: t('profileEdit.alert.notice'),
-        message: nicknameError || t('profileEdit.alert.needCheck'),
-        singleButton: true,
-      });
+      showToast(nicknameError || t('profileEdit.alert.needCheck'), { type: 'info' });
       return;
     }
 
@@ -174,22 +170,14 @@ const ProfileEditScreen = () => {
       navigation.goBack();
 
       setTimeout(() => {
-        showAlert({
-          title: t('profileEdit.alert.successTitle'),
-          message: t('profileEdit.alert.successMessage'),
-          singleButton: true,
-        });
+        showToast(t('profileEdit.alert.successMessage'), { type: 'success' });
       }, 500);
     } catch (error) {
       hideLoading();
       setIsSaving(false);
       console.error("Profile update failed:", error);
       setTimeout(() => {
-        showAlert({
-          title: t('profileEdit.alert.errorTitle'),
-          message: t('profileEdit.alert.errorMessage'),
-          singleButton: true,
-        });
+        showToast(t('profileEdit.alert.errorMessage'), { type: 'error' });
       }, 500);
     }
   };

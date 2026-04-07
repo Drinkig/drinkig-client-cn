@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Modal } from 'react-native';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import CustomAlert from './CustomAlert';
+import GlobalToast from './GlobalToast';
 import { colors } from '../constants/colors';
 
 const GlobalComponents = () => {
@@ -36,6 +37,8 @@ const GlobalComponents = () => {
         cancelText={alertConfig?.cancelText}
         singleButton={alertConfig?.singleButton}
       />
+
+      <GlobalToast />
     </>
   );
 };

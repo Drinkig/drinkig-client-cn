@@ -67,7 +67,7 @@ const Slide = ({ item }: { item: typeof slides[0] }) => {
 const LoginScreen = () => {
   const navigation = useNavigation();
   const { login } = useUser();
-  const { showLoading, hideLoading, showAlert } = useGlobalUI();
+  const { showLoading, hideLoading, showToast } = useGlobalUI();
   const [loading, setLoading] = useState(false);
   const { width } = Dimensions.get('window');
 
@@ -110,11 +110,7 @@ const LoginScreen = () => {
       if (error.code === appleAuth.Error.CANCELED) {
       } else {
         console.error('Apple Login Error:', error);
-        showAlert({
-          title: '로그인 오류',
-          message: `Apple 로그인 실패: ${error.message || error.code || '알 수 없는 오류'}`,
-          singleButton: true,
-        });
+        showToast(`Apple 로그인 실패: ${error.message || error.code || '알 수 없는 오류'}`, { type: 'error' });
       }
     } finally {
       setLoading(false);
@@ -155,18 +151,10 @@ const LoginScreen = () => {
 
     } catch (error: any) {
       if (error.code === 'E_CANCELLED_OPERATION') {
-        showAlert({
-          title: '로그인 취소',
-          message: '카카오 로그인이 취소되었습니다.',
-          singleButton: true,
-        });
+        showToast('카카오 로그인이 취소되었습니다.', { type: 'info' });
       } else {
         console.error('Kakao Login Error:', error);
-        showAlert({
-          title: '오류',
-          message: '카카오 로그인에 실패했습니다. 관리자에게 문의하세요.',
-          singleButton: true,
-        });
+        showToast('카카오 로그인에 실패했습니다. 관리자에게 문의하세요.', { type: 'error' });
       }
     } finally {
       setLoading(false);

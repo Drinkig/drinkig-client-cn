@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Alert,
   ActivityIndicator,
   Platform,
 } from 'react-native';
@@ -30,6 +29,7 @@ import {
 } from 'react-native-iap';
 import { colors } from '../constants/colors';
 import { useSubscription } from '../context/SubscriptionContext';
+import { useGlobalUI } from '../context/GlobalUIContext';
 import { redeemPromoCode, verifyReceipt } from '../api/subscription';
 
 const PRODUCT_IDS = Platform.select({
@@ -43,6 +43,7 @@ const PaywallScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { refreshSubscription } = useSubscription();
+  const { showToast } = useGlobalUI();
   const insets = useSafeAreaInsets();
 
   const [selectedPlan, setSelectedPlan] = useState<PlanType>('YEARLY');
@@ -76,15 +77,14 @@ const PaywallScreen = () => {
               await refreshSubscription();
 
               setIsProcessing(false);
-              Alert.alert(
-                t('paywall.promoSuccess'),
-                t('paywall.subscribeSuccess'),
-                [{ text: 'OK', onPress: () => navigation.goBack() }],
-              );
+              showToast(t('paywall.subscribeSuccess'), {
+                type: 'success',
+                onHide: () => navigation.goBack(),
+              });
             } catch (error) {
               console.error('Purchase verification failed:', error);
               setIsProcessing(false);
-              Alert.alert(t('paywall.promoError'), t('paywall.verifyFailed'));
+              showToast(t('paywall.verifyFailed'), { type: 'error' });
             }
           },
         );
@@ -92,7 +92,7 @@ const PaywallScreen = () => {
         purchaseErrorSubscription = purchaseErrorListener((error: PurchaseError) => {
           setIsProcessing(false);
           if (error.code !== 'E_USER_CANCELLED') {
-            Alert.alert(t('paywall.promoError'), error.message || t('paywall.purchaseFailed'));
+            showToast(error.message || t('paywall.purchaseFailed'), { type: 'error' });
           }
         });
 
@@ -124,7 +124,7 @@ const PaywallScreen = () => {
     const product = products.find(p => p.productId === productId);
 
     if (!product) {
-      Alert.alert(t('paywall.promoError'), t('paywall.productNotFound'));
+      showToast(t('paywall.productNotFound'), { type: 'error' });
       return;
     }
 
@@ -142,7 +142,7 @@ const PaywallScreen = () => {
     try {
       const purchases = await getAvailablePurchases();
       if (purchases.length === 0) {
-        Alert.alert(t('paywall.restoreEmpty'), t('paywall.restoreEmptyMessage'));
+        showToast(t('paywall.restoreEmptyMessage'), { type: 'info' });
         setIsProcessing(false);
         return;
       }
@@ -159,17 +159,16 @@ const PaywallScreen = () => {
         await verifyReceipt(transactionId, originalTransactionId, latestPurchase.productId);
         await refreshSubscription();
 
-        Alert.alert(
-          t('paywall.promoSuccess'),
-          t('paywall.restoreSuccessMessage'),
-          [{ text: 'OK', onPress: () => navigation.goBack() }],
-        );
+        showToast(t('paywall.restoreSuccessMessage'), {
+          type: 'success',
+          onHide: () => navigation.goBack(),
+        });
       } else {
-        Alert.alert(t('paywall.restoreEmpty'), t('paywall.restoreEmptyMessage'));
+        showToast(t('paywall.restoreEmptyMessage'), { type: 'info' });
       }
     } catch (error) {
       console.error('Restore failed:', error);
-      Alert.alert(t('paywall.promoError'), t('paywall.restoreFailed'));
+      showToast(t('paywall.restoreFailed'), { type: 'error' });
     } finally {
       setIsProcessing(false);
     }
@@ -183,17 +182,16 @@ const PaywallScreen = () => {
       const response = await redeemPromoCode(promoCode.trim());
       if (response.isSuccess && response.result.success) {
         await refreshSubscription();
-        Alert.alert(
-          t('paywall.promoSuccess'),
-          t('paywall.promoSuccessMessage'),
-          [{ text: 'OK', onPress: () => navigation.goBack() }],
-        );
+        showToast(t('paywall.promoSuccessMessage'), {
+          type: 'success',
+          onHide: () => navigation.goBack(),
+        });
       } else {
-        Alert.alert(t('paywall.promoError'), response.message);
+        showToast(response.message, { type: 'error' });
       }
     } catch (error: any) {
       const message = error.response?.data?.message || t('paywall.promoErrorGeneric');
-      Alert.alert(t('paywall.promoError'), message);
+      showToast(message, { type: 'error' });
     } finally {
       setIsRedeemingPromo(false);
     }

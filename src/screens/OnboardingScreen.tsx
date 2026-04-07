@@ -203,7 +203,7 @@ const OnboardingScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { completeOnboarding } = useUser();
-  const { showAlert } = useGlobalUI();
+  const { showToast } = useGlobalUI();
 
   const BUDGET_OPTIONS = [
     { label: t('onboarding.budget.under30'), value: 30000 },
@@ -518,11 +518,7 @@ const OnboardingScreen = () => {
       }, 10000);
     } catch (error) {
       console.error("Onboarding Error:", error);
-      showAlert({
-        title: t('onboarding.error.title'),
-        message: t('onboarding.error.saveMessage'),
-        singleButton: true,
-      });
+      showToast(t('onboarding.error.saveMessage'), { type: 'error' });
       setLoading(false);
     }
   };

@@ -53,7 +53,7 @@ export default function WineDetailScreen() {
   const { wine } = route.params;
   const isMyWineItem = isMyWine(wine);
   const isFocused = useIsFocused();
-  const { showAlert } = useGlobalUI();
+  const { showToast } = useGlobalUI();
   const { flavorProfile } = useUser();
   const { checkFeature, isPremium } = useSubscription();
   const { t, i18n } = useTranslation();
@@ -216,11 +216,7 @@ export default function WineDetailScreen() {
     } catch (error) {
       console.error('Wishlist toggle failed:', error);
       setIsLiked(previousState);
-      showAlert({
-        title: '오류',
-        message: '위시리스트 변경에 실패했습니다.',
-        singleButton: true,
-      });
+      showToast('위시리스트 변경에 실패했습니다.', { type: 'error' });
     }
   };
 
