@@ -39,10 +39,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
         <TouchableOpacity
           style={styles.recommendButton}
           onPress={onPress}
-          activeOpacity={0.9}
+          activeOpacity={0.85}
         >
+          <Icon
+            name="chatbubble-ellipses"
+            size={16}
+            color={colors.primaryDark}
+          />
           <Text style={styles.recommendButtonText}>{t('home.hero.button')}</Text>
-          <Icon name="arrow-forward" size={14} color={colors.primaryDark} />
         </TouchableOpacity>
 
         <Image
@@ -104,24 +108,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: 24,
+    paddingVertical: 12,
+    paddingHorizontal: 22,
+    borderRadius: 26,
     zIndex: 2,
-    gap: 4,
-    shadowColor: colors.black,
+    gap: 7,
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
   },
   recommendButtonText: {
     color: colors.primaryDark,
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
   heroImage: {
     position: 'absolute',
