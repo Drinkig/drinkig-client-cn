@@ -32,8 +32,8 @@ import { getSystemLanguage } from '../i18n';
 
 const SettingScreen = () => {
   const navigation = useNavigation();
-  const { logout } = useUser();
-  const { isPremium, plan, expiresAt, platform } = useSubscription();
+  const { logout, resetToOnboarding } = useUser();
+  const { isPremium, plan, expiresAt, platform, devOverride, setDevOverride } = useSubscription();
   const { showAlert, showToast, showLoading, hideLoading } = useGlobalUI();
   const { i18n, t } = useTranslation();
 
@@ -332,6 +332,80 @@ App Version: ${DeviceInfo.getVersion()}
             <Icon name="trash-outline" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
+
+        {__DEV__ && (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, styles.devSectionTitle]}>개발자 모드 (DEV)</Text>
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => {
+                showAlert({
+                  title: '온보딩 다시 보기',
+                  message: '온보딩 화면으로 이동합니다. 계정은 유지돼요.',
+                  confirmText: '이동',
+                  singleButton: false,
+                  onConfirm: async () => {
+                    await resetToOnboarding();
+                  },
+                });
+              }}
+            >
+              <Text style={[styles.itemText, styles.devItemText]}>온보딩 다시 보기</Text>
+              <Icon name="refresh-outline" size={20} color={'#f5a623'} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.item}
+              onPress={async () => {
+                await AsyncStorage.removeItem('recommendations');
+                await AsyncStorage.removeItem('flavorProfile');
+                showToast('로컬 추천/취향 캐시 삭제됨', { type: 'success' });
+              }}
+            >
+              <Text style={[styles.itemText, styles.devItemText]}>로컬 캐시 삭제 (추천/취향)</Text>
+              <Icon name="trash-bin-outline" size={20} color={'#f5a623'} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => {
+                const options = ['취소', '서버 값 사용 (기본)', '강제 프리미엄', '강제 무료'];
+                const apply = async (idx: number) => {
+                  if (idx === 1) {
+                    await setDevOverride('none');
+                    showToast('구독 오버라이드 해제', { type: 'success' });
+                  } else if (idx === 2) {
+                    await setDevOverride('premium');
+                    showToast('강제 프리미엄 적용', { type: 'success' });
+                  } else if (idx === 3) {
+                    await setDevOverride('free');
+                    showToast('강제 무료 적용', { type: 'success' });
+                  }
+                };
+                if (Platform.OS === 'ios') {
+                  ActionSheetIOS.showActionSheetWithOptions(
+                    { options, cancelButtonIndex: 0 },
+                    apply,
+                  );
+                } else {
+                  Alert.alert('구독 상태 오버라이드', undefined, [
+                    { text: options[1], onPress: () => apply(1) },
+                    { text: options[2], onPress: () => apply(2) },
+                    { text: options[3], onPress: () => apply(3) },
+                    { text: options[0], style: 'cancel' },
+                  ]);
+                }
+              }}
+            >
+              <Text style={[styles.itemText, styles.devItemText]}>구독 상태 오버라이드</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={[styles.versionText, styles.devItemText, { marginRight: 8 }]}>
+                  {devOverride === 'premium' ? '강제 프리미엄' : devOverride === 'free' ? '강제 무료' : '기본'}
+                </Text>
+                <Icon name="chevron-forward" size={20} color={'#f5a623'} />
+              </View>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -391,6 +465,12 @@ const styles = StyleSheet.create({
   },
   deleteText: {
     color: colors.error,
+  },
+  devSectionTitle: {
+    color: '#f5a623',
+  },
+  devItemText: {
+    color: '#f5a623',
   },
 });
 

@@ -43,6 +43,7 @@ interface UserContextType {
   setFlavorProfile: (profile: FlavorProfile) => void;
   refreshUserInfo: () => Promise<void>;
   completeOnboarding: () => void;
+  resetToOnboarding: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -237,6 +238,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     refreshUserInfo();
   };
 
+  const resetToOnboarding = async () => {
+    await AsyncStorage.setItem('isNewUser', 'true');
+    await AsyncStorage.removeItem('recommendations');
+    await AsyncStorage.removeItem('flavorProfile');
+    setRecommendationsState([]);
+    setFlavorProfileState(null);
+    setIsNewUser(true);
+  };
+
   const updateUser = (updates: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...updates } : null));
   };
@@ -252,7 +262,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, recommendations, flavorProfile, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, setRecommendations, setFlavorProfile, refreshUserInfo, completeOnboarding }}>
+    <UserContext.Provider value={{ user, recommendations, flavorProfile, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, setRecommendations, setFlavorProfile, refreshUserInfo, completeOnboarding, resetToOnboarding }}>
       {children}
     </UserContext.Provider>
   );

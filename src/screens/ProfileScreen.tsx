@@ -325,7 +325,7 @@ const ProfileScreen = () => {
           </ScrollView>
 
 
-          <View style={styles.countAndSortContainer}>
+          <View style={[styles.countAndSortContainer, processedNotes.length === 0 && styles.countAndSortContainerFlat]}>
             <Text style={styles.countText}>
               <Trans
                 i18nKey="profile.historyCountText"
@@ -545,6 +545,12 @@ const styles = StyleSheet.create({
     elevation: 4,
     backgroundColor: colors.background,
     zIndex: 1,
+  },
+  countAndSortContainerFlat: {
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 0,
   },
   countText: {
     color: colors.textSecondary,

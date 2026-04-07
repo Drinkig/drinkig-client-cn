@@ -160,26 +160,21 @@ const RecommendationListScreen = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        {checkFeature('tasteReset') ? (
-          <TouchableOpacity
-            style={[styles.resetCtaButton, cooldownRemaining && styles.resetCtaButtonDisabled]}
-            onPress={() => navigation.navigate('TasteReset' as never)}
-            disabled={!!cooldownRemaining}
-          >
-            <Text style={[styles.resetCtaText, cooldownRemaining && styles.resetCtaTextDisabled]}>
-              {cooldownRemaining || t('recommendationList.resetButton')}
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.resetCtaButton, styles.resetCtaButtonDisabled]}
-            onPress={() => navigation.navigate('Paywall' as never)}
-          >
-            <Text style={styles.resetCtaTextDisabled}>
-              {t('paywall.upgrade')}
-            </Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.resetCtaButton, isPremium && cooldownRemaining && styles.resetCtaButtonDisabled]}
+          onPress={() => {
+            if (isPremium) {
+              navigation.navigate('TasteReset' as never);
+            } else {
+              navigation.navigate('Paywall' as never);
+            }
+          }}
+          disabled={isPremium && !!cooldownRemaining}
+        >
+          <Text style={[styles.resetCtaText, isPremium && cooldownRemaining && styles.resetCtaTextDisabled]}>
+            {isPremium && cooldownRemaining ? cooldownRemaining : t('recommendationList.resetButton')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
