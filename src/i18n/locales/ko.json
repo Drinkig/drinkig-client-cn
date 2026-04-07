@@ -35,7 +35,12 @@
         "recentWine": "최근 본 와인",
         "emptyRecentWine": "최근 본 와인이 없습니다.",
         "resultHeaderTitle": "'{{keyword}}' 검색 결과",
-        "resultCount": "총 <0>{{count}}개</0>의 검색 결과"
+        "resultCount": "총 <0>{{count}}개</0>의 검색 결과",
+        "compatibilityLabel": "나와의 궁합",
+        "compatibilityScore": "{{score}}점",
+        "compatibilityLoading": "분석 중...",
+        "compatibilityNoProfile": "취향 프로필을 먼저 설정해주세요",
+        "compatibilityNoData": "궁합 데이터가 없습니다"
     },
     "myWine": {
         "headerTitle": "내 와인 창고",
@@ -104,6 +109,15 @@
         "myWineHeader": "내 와인 상세",
         "infoHeader": "와인 정보",
         "compatibility": "나와의 궁합 보기",
+        "compatBannerTitle": "왜 이 점수일까?",
+        "compatBannerSubtitle": "당도·산도·탄닌·바디 분석",
+        "compatBannerLockedTitle": "나와의 궁합 확인하기",
+        "compatBannerQuotaRemaining": "오늘 무료 확인 {{remaining}}/{{total}}회 남음",
+        "compatBannerQuotaExhausted": "오늘 무료 확인 소진 · 구독하여 해제",
+        "compatBannerAnalyzing": "AI가 분석하고 있어요...",
+        "compatAnalyzeStep1": "취향 프로필 불러오는 중",
+        "compatAnalyzeStep2": "와인 특성 매칭하는 중",
+        "compatAnalyzeStep3": "궁합 점수 계산하는 중",
         "type": "종류",
         "country": "국가",
         "grape": "품종",
@@ -767,5 +781,51 @@
             "next": "다음",
             "complete": "취향 재설정 완료"
         }
+    },
+    "paywall": {
+        "title": "프리미엄으로 업그레이드",
+        "subtitle": "모든 기능을 잠금 해제하고 와인 경험을 극대화하세요",
+        "feature": {
+            "unlimitedScan": "카메라 스캔 무제한 이용",
+            "compatibility": "와인 궁합 점수 확인",
+            "foodPairing": "음식에 맞는 와인 추천 받기",
+            "tasteReset": "취향 추천 언제든 다시 받기"
+        },
+        "plan": {
+            "bestValue": "가장 합리적",
+            "yearly": "연간 구독",
+            "yearlyPrice": "₩39,000/년",
+            "yearlyPerMonth": "월 ₩3,250",
+            "monthly": "월간 구독",
+            "monthlyPrice": "₩5,900/월"
+        },
+        "subscribe": "구독하기",
+        "restore": "구매 복원",
+        "promoToggle": "프로모션 코드가 있으신가요?",
+        "promoPlaceholder": "프로모션 코드 입력",
+        "promoApply": "적용",
+        "promoSuccess": "성공",
+        "promoSuccessMessage": "프로모션이 적용되었습니다! 프리미엄을 즐겨보세요.",
+        "promoError": "오류",
+        "promoErrorGeneric": "프로모션 코드 적용에 실패했습니다.",
+        "subscribeSuccess": "프리미엄 회원이 되었습니다!",
+        "verifyFailed": "결제 확인에 실패했습니다. 다시 시도해주세요.",
+        "purchaseFailed": "결제에 실패했습니다. 다시 시도해주세요.",
+        "productNotFound": "상품을 불러올 수 없습니다. 나중에 다시 시도해주세요.",
+        "restoreEmpty": "구매 내역 없음",
+        "restoreEmptyMessage": "이 계정에 이전 구독 내역이 없습니다.",
+        "restoreSuccessMessage": "구독이 복원되었습니다!",
+        "restoreFailed": "구매 복원에 실패했습니다. 다시 시도해주세요.",
+        "premiumRequired": "프리미엄 기능",
+        "premiumRequiredMessage": "이 기능은 프리미엄 회원만 이용할 수 있습니다.",
+        "upgrade": "업그레이드"
+    },
+    "subscription": {
+        "title": "구독",
+        "premium": "프리미엄",
+        "free": "무료",
+        "manage": "구독 관리",
+        "expiresAt": "{{date}}까지",
+        "promoApplied": "프로모션 적용"
     }
 }

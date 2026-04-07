@@ -20,11 +20,13 @@ import { BannerSection } from '../components/home/BannerSection';
 import { getMyWines, MyWineDTO } from '../api/wine';
 import { colors } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
+import { useSubscription } from '../context/SubscriptionContext';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
   const { t } = useTranslation();
+  const { checkFeature, refreshSubscription } = useSubscription();
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
@@ -34,6 +36,10 @@ export default function HomeScreen() {
       fetchMyWines();
     }
   }, [isFocused]);
+
+  useEffect(() => {
+    refreshSubscription();
+  }, []);
 
   const fetchMyWines = async () => {
     try {
@@ -91,7 +97,11 @@ export default function HomeScreen() {
 
         <HeroSection
           onPress={() => {
-            navigation.navigate('FoodSelection');
+            if (checkFeature('foodPairing')) {
+              navigation.navigate('FoodSelection');
+            } else {
+              navigation.navigate('Paywall' as never);
+            }
           }}
         />
 

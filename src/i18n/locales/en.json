@@ -35,7 +35,12 @@
         "recentWine": "Recently Viewed",
         "emptyRecentWine": "No recently viewed wines.",
         "resultHeaderTitle": "Results for '{{keyword}}'",
-        "resultCount": "<0>{{count}}</0> results found"
+        "resultCount": "<0>{{count}}</0> results found",
+        "compatibilityLabel": "My Match",
+        "compatibilityScore": "{{score}}pts",
+        "compatibilityLoading": "Analyzing...",
+        "compatibilityNoProfile": "Set up your flavor profile first",
+        "compatibilityNoData": "No compatibility data"
     },
     "myWine": {
         "headerTitle": "My Cellar",
@@ -104,6 +109,15 @@
         "myWineHeader": "My Cellar Detail",
         "infoHeader": "Wine Info",
         "compatibility": "See My Compatibility",
+        "compatBannerTitle": "Why this score?",
+        "compatBannerSubtitle": "Sweetness · Acidity · Tannin · Body",
+        "compatBannerLockedTitle": "Reveal My Match",
+        "compatBannerQuotaRemaining": "{{remaining}}/{{total}} free reveals left today",
+        "compatBannerQuotaExhausted": "Free reveals used up · Subscribe to unlock",
+        "compatBannerAnalyzing": "AI is analyzing...",
+        "compatAnalyzeStep1": "Loading your taste profile",
+        "compatAnalyzeStep2": "Matching wine characteristics",
+        "compatAnalyzeStep3": "Calculating compatibility score",
         "type": "Type",
         "country": "Country",
         "grape": "Grape",
@@ -767,5 +781,51 @@
             "next": "Next",
             "complete": "Complete Taste Reset"
         }
+    },
+    "paywall": {
+        "title": "Upgrade to Premium",
+        "subtitle": "Unlock all features and get the most out of your wine experience",
+        "feature": {
+            "unlimitedScan": "Unlimited camera scans per day",
+            "compatibility": "See your wine compatibility score",
+            "foodPairing": "Get wine recommendations for any meal",
+            "tasteReset": "Refresh your taste recommendations anytime"
+        },
+        "plan": {
+            "bestValue": "BEST VALUE",
+            "yearly": "Annual",
+            "yearlyPrice": "₩39,000/year",
+            "yearlyPerMonth": "Only ₩3,250/month",
+            "monthly": "Monthly",
+            "monthlyPrice": "₩5,900/month"
+        },
+        "subscribe": "Subscribe Now",
+        "restore": "Restore Purchase",
+        "promoToggle": "Have a promo code?",
+        "promoPlaceholder": "Enter promo code",
+        "promoApply": "Apply",
+        "promoSuccess": "Success",
+        "promoSuccessMessage": "Promo code applied! Enjoy Premium.",
+        "promoError": "Error",
+        "promoErrorGeneric": "Failed to apply promo code.",
+        "subscribeSuccess": "You're now a Premium member!",
+        "verifyFailed": "Purchase verification failed. Please try again.",
+        "purchaseFailed": "Purchase failed. Please try again.",
+        "productNotFound": "Product not available. Please try again later.",
+        "restoreEmpty": "No Purchases Found",
+        "restoreEmptyMessage": "No previous subscriptions found for this account.",
+        "restoreSuccessMessage": "Your subscription has been restored!",
+        "restoreFailed": "Failed to restore purchase. Please try again.",
+        "premiumRequired": "Premium Feature",
+        "premiumRequiredMessage": "This feature is available for Premium members only.",
+        "upgrade": "Upgrade"
+    },
+    "subscription": {
+        "title": "Subscription",
+        "premium": "Premium",
+        "free": "Free",
+        "manage": "Manage Subscription",
+        "expiresAt": "Expires {{date}}",
+        "promoApplied": "Promo Applied"
     }
 }

@@ -2803,6 +2803,13 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNIap (12.15.5):
+    - RCT-Folly
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - ReactCommon/turbomodule/core
   - RNKeychain (10.0.0):
     - boost
     - DoubleConversion
@@ -3158,6 +3165,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - RNGoogleMobileAds (from `../node_modules/react-native-google-mobile-ads`)
+  - RNIap (from `../node_modules/react-native-iap`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
@@ -3373,6 +3381,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/auth"
   RNGoogleMobileAds:
     :path: "../node_modules/react-native-google-mobile-ads"
+  RNIap:
+    :path: "../node_modules/react-native-iap"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
@@ -3503,6 +3513,7 @@ SPEC CHECKSUMS:
   RNFBApp: 0c4cadae3900893d4631ea9a9effd14f853cd8e0
   RNFBAuth: be889383e505e37ae425054a1163c22f3de8c596
   RNGoogleMobileAds: 7be5fee5484400221c0248df2f317cafd3056f92
+  RNIap: 8c11402e75dafdc73e9255fa7f5daa91458f45b6
   RNKeychain: 76d042fc1dfba47f3945920bc82e0bce9ad1ff55
   RNLocalize: c46dd4008dc8990a098fcafd6ee051122a1ccfda
   RNPermissions: aaab489562f31af142c1c67e8a2f91d8ad3cd1ba

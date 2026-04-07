@@ -5,6 +5,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUser } from '../context/UserContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { colors } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
 
@@ -14,10 +15,18 @@ const RANK_BADGES = ['🥇', '🥈', '🥉'];
 const RecommendationListScreen = () => {
   const navigation = useNavigation();
   const { recommendations, user } = useUser();
+  const { checkFeature } = useSubscription();
   const { t, i18n } = useTranslation();
   const [cooldownRemaining, setCooldownRemaining] = useState<string | null>(null);
 
+  const isPremium = checkFeature('tasteReset');
+
   const checkCooldown = useCallback(async () => {
+    // Premium users have no cooldown
+    if (isPremium) {
+      setCooldownRemaining(null);
+      return;
+    }
     const lastReset = await AsyncStorage.getItem('lastTasteResetTime');
     if (!lastReset) {
       setCooldownRemaining(null);
@@ -37,7 +46,7 @@ const RecommendationListScreen = () => {
         setCooldownRemaining(t('recommendationList.cooldownHours', { hours }));
       }
     }
-  }, [t]);
+  }, [t, isPremium]);
 
   useFocusEffect(
     useCallback(() => {
@@ -151,15 +160,26 @@ const RecommendationListScreen = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.resetCtaButton, cooldownRemaining && styles.resetCtaButtonDisabled]}
-          onPress={() => navigation.navigate('TasteReset' as never)}
-          disabled={!!cooldownRemaining}
-        >
-          <Text style={[styles.resetCtaText, cooldownRemaining && styles.resetCtaTextDisabled]}>
-            {cooldownRemaining || t('recommendationList.resetButton')}
-          </Text>
-        </TouchableOpacity>
+        {checkFeature('tasteReset') ? (
+          <TouchableOpacity
+            style={[styles.resetCtaButton, cooldownRemaining && styles.resetCtaButtonDisabled]}
+            onPress={() => navigation.navigate('TasteReset' as never)}
+            disabled={!!cooldownRemaining}
+          >
+            <Text style={[styles.resetCtaText, cooldownRemaining && styles.resetCtaTextDisabled]}>
+              {cooldownRemaining || t('recommendationList.resetButton')}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.resetCtaButton, styles.resetCtaButtonDisabled]}
+            onPress={() => navigation.navigate('Paywall' as never)}
+          >
+            <Text style={styles.resetCtaTextDisabled}>
+              {t('paywall.upgrade')}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </SafeAreaView>
   );

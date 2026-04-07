@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import appleAuth from '@invertase/react-native-apple-authentication';
 import { useUser } from '../context/UserContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import {
   deleteMember,
@@ -32,6 +33,7 @@ import { getSystemLanguage } from '../i18n';
 const SettingScreen = () => {
   const navigation = useNavigation();
   const { logout } = useUser();
+  const { isPremium, plan, expiresAt, platform } = useSubscription();
   const { showAlert, showLoading, hideLoading } = useGlobalUI();
   const { i18n, t } = useTranslation();
 
@@ -258,6 +260,32 @@ App Version: ${DeviceInfo.getVersion()}
           </View>
         </View>
 
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('subscription.title')}</Text>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => {
+              if (isPremium) {
+                Linking.openURL('https://apps.apple.com/account/subscriptions');
+              } else {
+                navigation.navigate('Paywall' as never);
+              }
+            }}
+          >
+            <Text style={styles.itemText}>
+              {isPremium ? t('subscription.premium') : t('subscription.free')}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={[styles.versionText, { marginRight: 8 }]}>
+                {isPremium
+                  ? (expiresAt ? t('subscription.expiresAt', { date: new Date(expiresAt).toLocaleDateString() }) : t('subscription.manage'))
+                  : t('paywall.upgrade')}
+              </Text>
+              <Icon name="chevron-forward" size={20} color="#666" />
+            </View>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('setting.section.appInfo')}</Text>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
+  LayoutAnimation,
   Alert,
   Animated,
   TouchableWithoutFeedback,
@@ -22,6 +23,7 @@ import { WineDBItem, VintageData } from '../types/Wine';
 import { MyWine } from '../context/WineContext';
 import { useGlobalUI } from '../context/GlobalUIContext';
 import { useUser } from '../context/UserContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { useTranslation } from 'react-i18next';
 import {
   getWineDetailPublic,
@@ -34,6 +36,8 @@ import MyRecordTab from '../components/wine_detail/tabs/MyRecordTab';
 import InfoTab from '../components/wine_detail/tabs/InfoTab';
 import ReviewTab from '../components/wine_detail/tabs/ReviewTab';
 import PriceTab from '../components/wine_detail/tabs/PriceTab';
+import { calculateCompatibilityScore, CompatibilityResult, getScoreColor } from '../utils/compatibility';
+import { FREE_DAILY_COMPAT_LIMIT, getCompatRemaining, isWineCompatUnlocked, unlockWineCompat } from '../utils/compatQuota';
 import { colors } from '../constants/colors';
 
 type WineDetailRouteProp = RouteProp<RootStackParamList, 'WineDetail'>;
@@ -51,11 +55,17 @@ export default function WineDetailScreen() {
   const isFocused = useIsFocused();
   const { showAlert } = useGlobalUI();
   const { flavorProfile } = useUser();
+  const { checkFeature, isPremium } = useSubscription();
   const { t, i18n } = useTranslation();
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [showCompatBubble, setShowCompatBubble] = useState(false);
+  const [compatUnlocked, setCompatUnlocked] = useState<boolean>(false);
+  const [compatRemaining, setCompatRemaining] = useState<number>(FREE_DAILY_COMPAT_LIMIT);
+  const [isUnlockingCompat, setIsUnlockingCompat] = useState(false);
+  const [analyzeStep, setAnalyzeStep] = useState(0);
 
   const activeTabState = useState<string>(isMyWineItem ? 'my_record' : 'info');
   const [activeTab, setActiveTab] = activeTabState;
@@ -228,6 +238,79 @@ export default function WineDetailScreen() {
     body: apiWineDetail.officialBody,
     tannin: apiWineDetail.officialTannin,
   } : (!isMyWineItem && wine.features ? wine.features : null);
+
+  const compatResult = useMemo(() => {
+    if (!features || !flavorProfile) return null;
+    return calculateCompatibilityScore(flavorProfile, {
+      sweetness: features.sweetness,
+      acidity: features.acidity,
+      tannin: features.tannin,
+      body: features.body,
+    }, t);
+  }, [features, flavorProfile, t]);
+
+  // Load compatibility unlock state (premium bypasses; free users check daily quota)
+  useEffect(() => {
+    let cancelled = false;
+    if (isPremium) {
+      setCompatUnlocked(true);
+      setCompatRemaining(-1);
+      return;
+    }
+    setShowCompatBubble(false);
+    Promise.all([
+      isWineCompatUnlocked(wine.id),
+      getCompatRemaining(),
+    ]).then(([unlocked, remaining]) => {
+      if (cancelled) return;
+      setCompatUnlocked(unlocked);
+      setCompatRemaining(remaining);
+    });
+    return () => { cancelled = true; };
+  }, [wine.id, isPremium]);
+
+  const runUnlockAnalysis = () => {
+    setIsUnlockingCompat(true);
+    setShowCompatBubble(true);
+    setAnalyzeStep(0);
+    const stepDurations = [800, 900, 800];
+    let cancelled = false;
+    const advance = (step: number) => {
+      if (cancelled) return;
+      setAnalyzeStep(step);
+      if (step < stepDurations.length - 1) {
+        setTimeout(() => advance(step + 1), stepDurations[step]);
+      } else {
+        setTimeout(() => {
+          if (cancelled) return;
+          setIsUnlockingCompat(false);
+          setCompatUnlocked(true);
+        }, stepDurations[step]);
+      }
+    };
+    advance(0);
+    return () => { cancelled = true; };
+  };
+
+  const handleCompatBannerPress = async () => {
+    if (isUnlockingCompat) return;
+    if (!checkFeature('wineCompatibility') && !compatUnlocked) {
+      // Premium feature: free users use daily reveal quota
+      if (compatRemaining <= 0) {
+        navigation.navigate('Paywall' as never);
+        return;
+      }
+      const ok = await unlockWineCompat(wine.id);
+      if (!ok) {
+        navigation.navigate('Paywall' as never);
+        return;
+      }
+      setCompatRemaining(prev => Math.max(0, prev - 1));
+      runUnlockAnalysis();
+      return;
+    }
+    setShowCompatBubble(prev => !prev);
+  };
 
 
   const description = !isMyWineItem && apiWineDetail?.officialDescription
@@ -524,24 +607,104 @@ export default function WineDetailScreen() {
         </View>
 
         {!isMyWineItem && (
-          <TouchableOpacity
-            style={styles.compatibilityBanner}
-            onPress={() => navigation.navigate('WineCompatibility', {
-              userProfile: flavorProfile,
-              wineStats: {
-                sweetness: features?.sweetness,
-                acidity: features?.acidity,
-                tannin: features?.tannin,
-                body: features?.body,
-                alcohol: 0,
-              },
-              wineName: i18n.language === 'en' ? (nameEng || nameKor) : nameKor
-            })}
-          >
-            <MaterialCommunityIcons name="heart-pulse" size={18} color={colors.white} style={{ marginRight: 8 }} />
-            <Text style={styles.compatibilityBannerText}>{t('wineDetail.compatibility')}</Text>
-            <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
+          <View>
+            <TouchableOpacity
+              style={styles.compatibilityBanner}
+              onPress={handleCompatBannerPress}
+            >
+              <MaterialCommunityIcons
+                name={compatUnlocked ? 'heart-pulse' : 'lock-outline'}
+                size={20}
+                color={colors.primary}
+                style={{ marginRight: 10 }}
+              />
+              <View style={styles.compatibilityBannerTextContainer}>
+                <Text style={styles.compatibilityBannerTitle}>
+                  {compatUnlocked
+                    ? t('wineDetail.compatBannerTitle')
+                    : t('wineDetail.compatBannerLockedTitle')}
+                </Text>
+                <Text style={styles.compatibilityBannerSubtitle}>
+                  {isUnlockingCompat
+                    ? t('wineDetail.compatBannerAnalyzing')
+                    : compatUnlocked
+                      ? t('wineDetail.compatBannerSubtitle')
+                      : compatRemaining > 0
+                        ? t('wineDetail.compatBannerQuotaRemaining', { remaining: compatRemaining, total: FREE_DAILY_COMPAT_LIMIT })
+                        : t('wineDetail.compatBannerQuotaExhausted')}
+                </Text>
+              </View>
+              {isUnlockingCompat ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : compatUnlocked ? (
+                compatResult ? (
+                  <Text style={[styles.compatibilityScoreText, { color: getScoreColor(compatResult.score) }]}>
+                    {compatResult.score}{t('wineCompatibility.scoreUnit')}
+                  </Text>
+                ) : (
+                  <Text style={styles.compatibilityScoreText}>?{t('wineCompatibility.scoreUnit')}</Text>
+                )
+              ) : (
+                <Text style={[styles.compatibilityScoreText, styles.compatibilityScoreLocked]}>
+                  ??{t('wineCompatibility.scoreUnit')}
+                </Text>
+              )}
+              {!isUnlockingCompat && (
+                <Ionicons
+                  name={compatUnlocked ? (showCompatBubble ? 'chevron-up' : 'chevron-down') : 'chevron-forward'}
+                  size={18}
+                  color={colors.textSecondary}
+                  style={{ marginLeft: 8 }}
+                />
+              )}
+            </TouchableOpacity>
+            {isUnlockingCompat && (
+              <View style={styles.compatBubbleContainer}>
+                <View style={styles.compatBubbleArrow} />
+                <View style={styles.compatBubble}>
+                  {[
+                    t('wineDetail.compatAnalyzeStep1'),
+                    t('wineDetail.compatAnalyzeStep2'),
+                    t('wineDetail.compatAnalyzeStep3'),
+                  ].map((label, idx) => {
+                    const isDone = idx < analyzeStep;
+                    const isActive = idx === analyzeStep;
+                    return (
+                      <View key={idx} style={[styles.compatAnalyzeRow, idx < 2 && styles.compatBubbleRowBorder]}>
+                        {isDone ? (
+                          <Ionicons name="checkmark-circle" size={16} color={colors.primary} style={{ marginRight: 8 }} />
+                        ) : isActive ? (
+                          <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8, width: 16 }} />
+                        ) : (
+                          <Ionicons name="ellipse-outline" size={16} color={colors.textSecondary} style={{ marginRight: 8, opacity: 0.4 }} />
+                        )}
+                        <Text style={[
+                          styles.compatAnalyzeLabel,
+                          isDone && styles.compatAnalyzeLabelDone,
+                          !isDone && !isActive && styles.compatAnalyzeLabelPending,
+                        ]}>
+                          {label}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+            {!isUnlockingCompat && compatUnlocked && showCompatBubble && compatResult && (
+              <View style={styles.compatBubbleContainer}>
+                <View style={styles.compatBubbleArrow} />
+                <View style={styles.compatBubble}>
+                  {compatResult.details.map((detail, idx) => (
+                    <View key={detail.key} style={[styles.compatBubbleRow, idx < compatResult.details.length - 1 && styles.compatBubbleRowBorder]}>
+                      <Text style={styles.compatBubbleLabel}>{detail.label}</Text>
+                      <Text style={styles.compatBubbleFeedback}>{detail.feedback}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
         )}
 
 
@@ -870,11 +1033,84 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
-  compatibilityBannerText: {
+  compatibilityBannerTextContainer: {
     flex: 1,
+  },
+  compatibilityBannerTitle: {
     color: colors.white,
     fontSize: 15,
     fontWeight: '600',
+  },
+  compatibilityBannerSubtitle: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  compatibilityScoreText: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: colors.textSecondary,
+  },
+  compatibilityScoreLocked: {
+    color: colors.textSecondary,
+    opacity: 0.5,
+  },
+  compatBubbleContainer: {
+    marginHorizontal: 20,
+    marginTop: 4,
+  },
+  compatBubbleArrow: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 10,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: colors.surface2,
+    alignSelf: 'center',
+  },
+  compatBubble: {
+    backgroundColor: colors.surface2,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  compatBubbleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  compatBubbleRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  compatBubbleLabel: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  compatBubbleFeedback: {
+    color: colors.white,
+    fontSize: 13,
+  },
+  compatAnalyzeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  compatAnalyzeLabel: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  compatAnalyzeLabelDone: {
+    color: colors.textSecondary,
+  },
+  compatAnalyzeLabelPending: {
+    color: colors.textSecondary,
+    opacity: 0.5,
   },
   vintageSelectLabel: {
     fontSize: 16,

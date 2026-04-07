@@ -11,20 +11,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types';
-import { calculateCompatibilityScore, CompatibilityResult } from '../utils/compatibility';
+import { calculateCompatibilityScore, CompatibilityResult, getScoreColor } from '../utils/compatibility';
 import { useUser } from '../context/UserContext';
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { colors } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
 
 type WineCompatibilityRouteProp = RouteProp<RootStackParamList, 'WineCompatibility'>;
-
-const getScoreColor = (score: number) => {
-    if (score >= 90) return '#2ecc71';
-    if (score >= 80) return colors.primary;
-    if (score >= 60) return '#f39c12';
-    return '#95a5a6';
-};
 
 const WineCompatibilityScreen = () => {
     const { t } = useTranslation();

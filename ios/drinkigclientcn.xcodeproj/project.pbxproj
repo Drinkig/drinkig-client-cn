@@ -354,7 +354,7 @@
 				CODE_SIGN_ENTITLEMENTS = drinkigclientcn/drinkigclientcn.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9BA69P7457;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = drinkigclientcn/Info.plist;
@@ -363,7 +363,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.4;
+				MARKETING_VERSION = 2.0.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -387,7 +387,7 @@
 				CODE_SIGN_ENTITLEMENTS = drinkigclientcn/drinkigclientcn.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 9BA69P7457;
 				INFOPLIST_FILE = drinkigclientcn/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -395,7 +395,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.0.4;
+				MARKETING_VERSION = 2.0.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

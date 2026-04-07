@@ -20,6 +20,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/colors';
+import { useSubscription } from '../context/SubscriptionContext';
+import { getScanRemaining } from '../api/subscription';
 
 const DAILY_SCAN_LIMIT = 3;
 const SCAN_USAGE_KEY = 'scanDailyUsage';
@@ -51,6 +53,7 @@ type Props = NativeStackScreenProps<any, 'Camera'>;
 
 export default function CameraScreen({ navigation }: Props) {
     const { t } = useTranslation();
+    const { isPremium } = useSubscription();
     const insets = useSafeAreaInsets();
     const { hasPermission, requestPermission } = useCameraPermission();
     const device = useCameraDevice('back');
@@ -63,11 +66,22 @@ export default function CameraScreen({ navigation }: Props) {
     const [timeUntilReset, setTimeUntilReset] = useState('');
 
     useEffect(() => {
-        getTodayScanCount().then(count => setRemainingScans(DAILY_SCAN_LIMIT - count));
-    }, []);
+        if (isPremium) {
+            setRemainingScans(-1); // unlimited
+        } else {
+            getScanRemaining().then(res => {
+                if (res.isSuccess) {
+                    setRemainingScans(res.result.isUnlimited ? -1 : res.result.remaining);
+                }
+            }).catch(() => {
+                // Fallback to local count
+                getTodayScanCount().then(count => setRemainingScans(DAILY_SCAN_LIMIT - count));
+            });
+        }
+    }, [isPremium]);
 
     useEffect(() => {
-        if (remainingScans > 0) {
+        if (isPremium || remainingScans === -1 || remainingScans > 0) {
             setTimeUntilReset('');
             return;
         }
@@ -114,6 +128,8 @@ export default function CameraScreen({ navigation }: Props) {
     }, [navigation]);
 
     const checkDailyLimit = useCallback(async (): Promise<boolean> => {
+        if (isPremium) return true; // Premium users have unlimited scans
+
         const count = await getTodayScanCount();
         if (count >= DAILY_SCAN_LIMIT) {
             Alert.alert(
@@ -123,7 +139,7 @@ export default function CameraScreen({ navigation }: Props) {
             return false;
         }
         return true;
-    }, [t]);
+    }, [t, isPremium]);
 
     const handleCapture = useCallback(async () => {
         if (capturing) return;

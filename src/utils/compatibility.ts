@@ -67,6 +67,13 @@ export const calculateCompatibilityScore = (
     return { score, details };
 };
 
+export const getScoreColor = (score: number): string => {
+    if (score >= 90) return '#b06ad6';
+    if (score >= 80) return '#2ecc71';
+    if (score >= 60) return '#f39c12';
+    return '#95a5a6';
+};
+
 const getFeedback = (key: keyof FlavorProfile, diff: number, t?: TFunction): string => {
     if (diff === 0) return t ? t('wineCompatibility.detailFeedback.perfect') : '취향에 딱 맞아요!';
 
