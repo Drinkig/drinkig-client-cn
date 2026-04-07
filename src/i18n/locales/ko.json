@@ -8,9 +8,9 @@
     "home": {
         "searchPlaceholder": "와인 이름, 종류 등으로 검색",
         "hero": {
-            "title": "지금 와인 고르는 중인가요?",
-            "subtitle": "음식에 딱 맞는 와인을 추천해드려요",
-            "button": "추천받기"
+            "title": "오늘 어떤 음식 드세요?",
+            "subtitle": "취향까지 분석해서\n가장 잘 어울리는 와인을 골라드려요",
+            "button": "물어보러 가기"
         },
         "quickMenu": {
             "tastingNoteTitle": "테이스팅 노트",

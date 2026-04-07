@@ -30,7 +30,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
         />
 
         <View style={styles.heroTextContainer}>
-          <Text style={styles.heroTitle} numberOfLines={1} adjustsFontSizeToFit>
+          <Text style={styles.heroTitle} numberOfLines={2}>
             {t('home.hero.title')}
           </Text>
           <Text style={styles.heroSubtitle}>{t('home.hero.subtitle')}</Text>
@@ -46,7 +46,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
         </TouchableOpacity>
 
         <Image
-          source={require('../../assets/onboarding/Drinky_onboarding_2.1.png')}
+          source={require('../../assets/onboarding/Drinky_onboarding_3.png')}
           style={styles.heroImage}
           resizeMode="contain"
         />
@@ -73,28 +73,29 @@ const styles = StyleSheet.create({
     padding: 24,
     position: 'relative',
     overflow: 'hidden', // Contain gradient and image bounds
-    height: 210,
+    height: 188,
     flexShrink: 0,
     backgroundColor: colors.surface1, // Fallback
   },
   heroTextContainer: {
     zIndex: 2,
-    paddingRight: 100,
-    marginTop: 10,
+    paddingRight: 110,
+    marginTop: 4,
     width: '100%',
   },
   heroTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginBottom: 8,
-    lineHeight: 32,
+    lineHeight: 28,
     flexShrink: 1,
   },
   heroSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(244, 239, 249, 0.9)',
-    marginBottom: 16,
+    lineHeight: 19,
+    fontWeight: '500',
   },
   recommendButton: {
     position: 'absolute',
@@ -124,12 +125,11 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     position: 'absolute',
-    right: -20,
+    right: -18,
     bottom: -20,
-
-    width: 170,
-    height: 170,
-    opacity: 0.9,
+    width: 200,
+    height: 200,
+    opacity: 0.95,
     zIndex: 1,
   },
 });
