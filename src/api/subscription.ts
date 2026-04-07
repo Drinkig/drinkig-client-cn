@@ -113,3 +113,39 @@ export const useScan = async () => {
   const response = await client.post<ScanUseResponse>('/scan/use');
   return response.data;
 };
+
+export interface CompatQuotaResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    isUnlimited: boolean;
+    dailyLimit: number;
+    remaining: number;
+    unlockedWineIds: number[];
+  };
+}
+
+export interface CompatUnlockResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    remaining: number;
+    alreadyUnlocked: boolean;
+  };
+}
+
+export const COMPAT_QUOTA_EXCEEDED_CODE = 'COMPAT_QUOTA_EXCEEDED';
+
+export const getCompatQuota = async () => {
+  const response = await client.get<CompatQuotaResponse>('/subscription/compat-quota');
+  return response.data;
+};
+
+export const unlockCompat = async (wineId: number | string) => {
+  const response = await client.post<CompatUnlockResponse>('/subscription/compat-unlock', {
+    wineId: Number(wineId),
+  });
+  return response.data;
+};

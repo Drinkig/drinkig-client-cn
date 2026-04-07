@@ -37,7 +37,7 @@ import InfoTab from '../components/wine_detail/tabs/InfoTab';
 import ReviewTab from '../components/wine_detail/tabs/ReviewTab';
 import PriceTab from '../components/wine_detail/tabs/PriceTab';
 import { calculateCompatibilityScore, CompatibilityResult, getScoreColor } from '../utils/compatibility';
-import { FREE_DAILY_COMPAT_LIMIT, getCompatRemaining, isWineCompatUnlocked, unlockWineCompat } from '../utils/compatQuota';
+import { getCompatQuota, unlockCompat, COMPAT_QUOTA_EXCEEDED_CODE } from '../api/subscription';
 import { colors } from '../constants/colors';
 
 type WineDetailRouteProp = RouteProp<RootStackParamList, 'WineDetail'>;
@@ -63,7 +63,8 @@ export default function WineDetailScreen() {
   const [isLiked, setIsLiked] = useState(false);
   const [showCompatBubble, setShowCompatBubble] = useState(false);
   const [compatUnlocked, setCompatUnlocked] = useState<boolean>(false);
-  const [compatRemaining, setCompatRemaining] = useState<number>(FREE_DAILY_COMPAT_LIMIT);
+  const [compatRemaining, setCompatRemaining] = useState<number>(0);
+  const [compatDailyLimit, setCompatDailyLimit] = useState<number>(3);
   const [isUnlockingCompat, setIsUnlockingCompat] = useState(false);
   const [analyzeStep, setAnalyzeStep] = useState(0);
 
@@ -249,7 +250,7 @@ export default function WineDetailScreen() {
     }, t);
   }, [features, flavorProfile, t]);
 
-  // Load compatibility unlock state (premium bypasses; free users check daily quota)
+  // Load compatibility unlock state from server (premium bypasses; free users use daily quota)
   useEffect(() => {
     let cancelled = false;
     if (isPremium) {
@@ -258,13 +259,15 @@ export default function WineDetailScreen() {
       return;
     }
     setShowCompatBubble(false);
-    Promise.all([
-      isWineCompatUnlocked(wine.id),
-      getCompatRemaining(),
-    ]).then(([unlocked, remaining]) => {
-      if (cancelled) return;
-      setCompatUnlocked(unlocked);
-      setCompatRemaining(remaining);
+    setCompatUnlocked(false);
+    getCompatQuota().then(res => {
+      if (cancelled || !res.isSuccess) return;
+      const { isUnlimited, dailyLimit, remaining, unlockedWineIds } = res.result;
+      setCompatDailyLimit(dailyLimit);
+      setCompatRemaining(isUnlimited ? -1 : remaining);
+      setCompatUnlocked(isUnlimited || unlockedWineIds.includes(Number(wine.id)));
+    }).catch(err => {
+      console.warn('Failed to load compat quota:', err);
     });
     return () => { cancelled = true; };
   }, [wine.id, isPremium]);
@@ -296,17 +299,27 @@ export default function WineDetailScreen() {
     if (isUnlockingCompat) return;
     if (!checkFeature('wineCompatibility') && !compatUnlocked) {
       // Premium feature: free users use daily reveal quota
-      if (compatRemaining <= 0) {
+      if (compatRemaining === 0) {
         navigation.navigate('Paywall' as never);
         return;
       }
-      const ok = await unlockWineCompat(wine.id);
-      if (!ok) {
-        navigation.navigate('Paywall' as never);
-        return;
+      try {
+        const res = await unlockCompat(wine.id);
+        if (!res.isSuccess) {
+          navigation.navigate('Paywall' as never);
+          return;
+        }
+        setCompatRemaining(res.result.remaining);
+        runUnlockAnalysis();
+      } catch (err: any) {
+        const code = err?.response?.data?.code;
+        if (code === COMPAT_QUOTA_EXCEEDED_CODE) {
+          setCompatRemaining(0);
+          navigation.navigate('Paywall' as never);
+        } else {
+          console.warn('Failed to unlock compat:', err);
+        }
       }
-      setCompatRemaining(prev => Math.max(0, prev - 1));
-      runUnlockAnalysis();
       return;
     }
     setShowCompatBubble(prev => !prev);
@@ -630,7 +643,7 @@ export default function WineDetailScreen() {
                     : compatUnlocked
                       ? t('wineDetail.compatBannerSubtitle')
                       : compatRemaining > 0
-                        ? t('wineDetail.compatBannerQuotaRemaining', { remaining: compatRemaining, total: FREE_DAILY_COMPAT_LIMIT })
+                        ? t('wineDetail.compatBannerQuotaRemaining', { remaining: compatRemaining, total: compatDailyLimit })
                         : t('wineDetail.compatBannerQuotaExhausted')}
                 </Text>
               </View>
