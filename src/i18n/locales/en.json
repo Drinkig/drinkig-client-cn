@@ -27,6 +27,41 @@
             "eventSub": "Get 1 month free advertising!"
         }
     },
+    "sommelierChat": {
+        "headerTitle": "Sommelier Drinky",
+        "headerSubtitle": "Online",
+        "greeting": "Hi {{nickname}}! What are you planning to eat with your wine today?",
+        "askSub": "Which type sounds good?",
+        "askFood": "Nice choice! Which {{cuisine}} dish specifically?",
+        "userPickedCuisine": "I'll have {{cuisine}}",
+        "userPickedGroup": "I'll pick from {{cuisine}}",
+        "userPickedFood": "Let's go with {{food}}",
+        "finding": "Finding the perfect wine for {{food}}...",
+        "tasteBridge": "Let me also factor in {{nickname}}'s taste profile to pick the best grape variety 🍷",
+        "thinking": {
+            "checkingTaste": "Checking {{nickname}}'s taste profile...",
+            "analyzingFood": "Analyzing flavor of {{food}}...",
+            "comparing": "Comparing taste and food...",
+            "organizing": "Finalizing best grape varieties...",
+            "done": "Analysis complete!"
+        },
+        "analyzingTaste": "Comparing with {{nickname}}'s taste profile...",
+        "resultIntro": "Here's what I found about {{food}}!",
+        "resultMatch": "These should match {{nickname}}'s taste beautifully 🍷",
+        "resultChartTitle": "{{nickname}}'s taste × {{food}} match",
+        "resultOutro": "Curious about another dish?",
+        "resetButton": "🔄 Ask about another dish",
+        "errorFetch": "Oops, something went wrong. Want to try again?",
+        "retryButton": "Retry",
+        "backButton": "Back",
+        "changeCuisine": "← Start over",
+        "backOneStep": "← Go back",
+        "groups": {
+            "western": "Western",
+            "other": "Other",
+            "westernGeneric": "Other Western"
+        }
+    },
     "search": {
         "placeholder": "Search wines...",
         "emptyResult": "No results found.",

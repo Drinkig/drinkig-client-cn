@@ -23,6 +23,7 @@ export type RootStackParamList = {
   WithdrawRetention: { authType: string };
   WithdrawReason: { authType: string };
   FoodSelection: undefined;
+  SommelierChat: undefined;
   FoodPairingResult: { foodName?: string };
   WineCompatibility: { userProfile: any; wineStats: any; wineName?: string };
 };

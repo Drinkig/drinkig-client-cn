@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
 import FoodPairingResultScreen from "../screens/FoodPairingResultScreen";
 import FoodSelectionScreen from "../screens/FoodSelectionScreen";
+import SommelierChatScreen from "../screens/SommelierChatScreen";
 import LoginScreen from "../screens/LoginScreen";
 import MyWineDetailScreen from "../screens/MyWineDetailScreen";
 import NotificationScreen from "../screens/NotificationScreen";
@@ -105,6 +106,14 @@ export default function RootNavigator() {
             <Stack.Screen
               name="FoodSelection"
               component={FoodSelectionScreen}
+            />
+            <Stack.Screen
+              name="SommelierChat"
+              component={SommelierChatScreen}
+              options={{
+                animation: "fade",
+                animationDuration: 200,
+              }}
             />
             <Stack.Screen
               name="FoodPairingResult"

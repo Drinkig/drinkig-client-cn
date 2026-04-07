@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,11 @@ import {
   ScrollView,
   Image,
   ImageBackground,
+  Animated,
+  Easing,
+  Dimensions,
 } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -22,6 +26,9 @@ import { colors } from '../constants/colors';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../context/SubscriptionContext';
 
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+const FLIP_DURATION = 550;
+
 export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
@@ -30,6 +37,18 @@ export default function HomeScreen() {
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
+
+  // Flip transition state
+  const heroRef = useRef<View>(null);
+  const [flipping, setFlipping] = useState(false);
+  const [cardRect, setCardRect] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
+  const layoutAnim = useRef(new Animated.Value(0)).current;
+  const flipAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (isFocused) {
@@ -40,6 +59,48 @@ export default function HomeScreen() {
   useEffect(() => {
     refreshSubscription();
   }, []);
+
+  const handleHeroPress = () => {
+    if (!checkFeature('foodPairing')) {
+      navigation.navigate('Paywall' as never);
+      return;
+    }
+    if (flipping) return;
+    heroRef.current?.measureInWindow((x, y, w, h) => {
+      if (!w || !h) {
+        // Fallback if measurement fails
+        navigation.navigate('SommelierChat');
+        return;
+      }
+      setCardRect({ x, y, w, h });
+      setFlipping(true);
+      layoutAnim.setValue(0);
+      flipAnim.setValue(0);
+      Animated.parallel([
+        Animated.timing(layoutAnim, {
+          toValue: 1,
+          duration: FLIP_DURATION,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(flipAnim, {
+          toValue: 1,
+          duration: FLIP_DURATION,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        navigation.navigate('SommelierChat');
+        // Keep overlay visible briefly so the chat screen can fade in underneath
+        setTimeout(() => {
+          setFlipping(false);
+          setCardRect(null);
+          layoutAnim.setValue(0);
+          flipAnim.setValue(0);
+        }, 400);
+      });
+    });
+  };
 
   const fetchMyWines = async () => {
     try {
@@ -61,6 +122,7 @@ export default function HomeScreen() {
   };
 
   return (
+    <View style={styles.rootContainer}>
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
@@ -95,15 +157,13 @@ export default function HomeScreen() {
       >
 
 
-        <HeroSection
-          onPress={() => {
-            if (checkFeature('foodPairing')) {
-              navigation.navigate('FoodSelection');
-            } else {
-              navigation.navigate('Paywall' as never);
-            }
-          }}
-        />
+        <View
+          ref={heroRef}
+          collapsable={false}
+          style={{ opacity: flipping ? 0 : 1 }}
+        >
+          <HeroSection onPress={handleHeroPress} />
+        </View>
 
 
         <BannerSection />
@@ -164,10 +224,99 @@ export default function HomeScreen() {
 
       </ScrollView>
     </SafeAreaView>
+
+    {flipping && cardRect && (
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        <Animated.View
+          style={{
+            position: 'absolute',
+            left: layoutAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [cardRect.x, 0],
+            }),
+            top: layoutAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [cardRect.y, 0],
+            }),
+            width: layoutAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [cardRect.w, SCREEN_W],
+            }),
+            height: layoutAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [cardRect.h, SCREEN_H],
+            }),
+            borderRadius: layoutAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [20, 0],
+            }),
+            overflow: 'hidden',
+          }}
+        >
+          {/* Front face - hero card gradient */}
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                backfaceVisibility: 'hidden',
+                transform: [
+                  { perspective: 1200 },
+                  {
+                    rotateY: flipAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '180deg'],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[colors.primaryDark, '#4A086B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+          </Animated.View>
+
+          {/* Back face - chat screen gradient */}
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFillObject,
+              {
+                backfaceVisibility: 'hidden',
+                transform: [
+                  { perspective: 1200 },
+                  {
+                    rotateY: flipAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['180deg', '360deg'],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[colors.primaryDark, '#4A086B', colors.background]}
+              locations={[0, 0.35, 1]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+          </Animated.View>
+        </Animated.View>
+      </View>
+    )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,

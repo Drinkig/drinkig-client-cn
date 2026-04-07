@@ -27,6 +27,41 @@
             "eventSub": "1개월 무료로 광고해드려요!"
         }
     },
+    "sommelierChat": {
+        "headerTitle": "소믈리에 드링키",
+        "headerSubtitle": "온라인",
+        "greeting": "안녕하세요 {{nickname}}님! 오늘은 어떤 요리와 함께 와인을 드시나요?",
+        "askSub": "어떤 종류로 할까요?",
+        "askFood": "{{cuisine}} 중에서도 어떤 메뉴인가요?",
+        "userPickedCuisine": "{{cuisine}} 먹을 거예요",
+        "userPickedGroup": "{{cuisine}} 중에서 골라볼게요",
+        "userPickedFood": "{{food}}로 할게요",
+        "finding": "{{food}}에 어울리는 와인을 찾아볼게요...",
+        "tasteBridge": "그럼 {{nickname}}님의 와인 취향도 함께 확인해서, 가장 잘 어울리는 품종을 추천해드릴게요 🍷",
+        "thinking": {
+            "checkingTaste": "{{nickname}}님의 와인 취향 확인하는 중...",
+            "analyzingFood": "{{food}}의 맛 분석하는 중...",
+            "comparing": "취향과 음식을 비교하는 중...",
+            "organizing": "가장 잘 어울리는 품종 정리하는 중...",
+            "done": "분석 완료!"
+        },
+        "analyzingTaste": "{{nickname}}님의 취향과 비교 분석 중이에요...",
+        "resultIntro": "{{food}}의 맛을 분석해봤어요!",
+        "resultMatch": "{{nickname}}님 취향이랑 잘 어울릴 와인들이에요 🍷",
+        "resultChartTitle": "{{nickname}}님의 취향 × {{food}} 매칭 그래프",
+        "resultOutro": "다른 음식도 궁금하신가요?",
+        "resetButton": "🔄 다른 음식 물어보기",
+        "errorFetch": "아, 잠시 문제가 생겼어요. 다시 시도해볼까요?",
+        "retryButton": "다시 시도",
+        "backButton": "뒤로",
+        "changeCuisine": "← 처음으로",
+        "backOneStep": "← 이전으로",
+        "groups": {
+            "western": "양식",
+            "other": "기타",
+            "westernGeneric": "기타 서양식"
+        }
+    },
     "search": {
         "placeholder": "와인 이름, 종류 등으로 검색",
         "emptyResult": "검색 결과가 없습니다.",
