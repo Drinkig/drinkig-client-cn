@@ -30,10 +30,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
         />
 
         <View style={styles.heroTextContainer}>
-          <Text style={styles.heroTitle} numberOfLines={2}>
+          <Text
+            style={styles.heroTitle}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.75}
+          >
             {t('home.hero.title')}
           </Text>
-          <Text style={styles.heroSubtitle}>{t('home.hero.subtitle')}</Text>
+          <Text style={styles.heroSubtitle} numberOfLines={2}>
+            {t('home.hero.subtitle')}
+          </Text>
         </View>
 
         <TouchableOpacity

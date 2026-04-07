@@ -156,6 +156,12 @@ export default function SommelierChatScreen() {
     returnObjects: true,
   }) as Cuisine[];
 
+  // Korean cuisines used as canonical lookup for API calls (backend expects KO).
+  const koCuisines = t('foodSelection.cuisines', {
+    returnObjects: true,
+    lng: 'ko',
+  }) as Cuisine[];
+
   const topCategories = React.useMemo(
     () => buildTopCategories(cuisines, t),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -288,10 +294,16 @@ export default function SommelierChatScreen() {
   // Fetch + show wine result card. Coordinates with the thinking-steps bubble:
   // marks all steps as done once the API resolves and the minimum think time
   // has elapsed, then pushes the wines card.
-  const fetchAndShowResults = async (food: string, minThinkMs = 3400) => {
+  // `apiFood` is sent to the API (always Korean canonical).
+  // `displayFood` is what shows on UI / messages (localized).
+  const fetchAndShowResults = async (
+    apiFood: string,
+    displayFood: string = apiFood,
+    minThinkMs = 3400,
+  ) => {
     const startedAt = Date.now();
     try {
-      const response = await getFoodPairingRecommendation(food);
+      const response = await getFoodPairingRecommendation(apiFood);
       if (!response.isSuccess || !response.result) {
         throw new Error('Failed');
       }
@@ -318,7 +330,7 @@ export default function SommelierChatScreen() {
         id: nextId(),
         role: 'sommelier',
         kind: 'wines',
-        foodName: food,
+        foodName: displayFood,
         wines,
         foodFlavor: matchedProfile,
         nickname,
@@ -361,15 +373,20 @@ export default function SommelierChatScreen() {
   const handleFoodPick = (food: string, foodIdx: number) => {
     if (currentCuisineIndex === undefined) return;
 
-    // 1) User picks the food — show the food name as-is (some items contain
-    //    slashes like "스시/초밥" which read awkwardly with a suffix).
+    // Backend only knows Korean food names — resolve the canonical KO name
+    // by index, regardless of current UI language.
+    const canonicalFood =
+      koCuisines[currentCuisineIndex]?.items?.[foodIdx] ?? food;
+
+    // 1) User picks the food — show the localized name as-is (some items
+    //    contain slashes like "스시/초밥" which read awkwardly with a suffix).
     pushMessage({
       id: nextId(),
       role: 'user',
       kind: 'text',
       text: food,
     });
-    setLastFood(food);
+    setLastFood(canonicalFood);
     setStep('finding');
 
     // 2) Sommelier reacts with a food-specific line
@@ -440,7 +457,7 @@ export default function SommelierChatScreen() {
               }, cumulative);
             }
 
-            fetchAndShowResults(food, totalThinkMs);
+            fetchAndShowResults(canonicalFood, food, totalThinkMs);
           }, 600);
         }, 700); // fixed short typing for the bridge message
       }, 1200);

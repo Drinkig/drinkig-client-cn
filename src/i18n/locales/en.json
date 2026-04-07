@@ -8,9 +8,9 @@
     "home": {
         "searchPlaceholder": "Search by name, type, region...",
         "hero": {
-            "title": "What are you eating today?",
-            "subtitle": "Analyzed for your taste\nto find the best wine match",
-            "button": "Ask the sommelier"
+            "title": "Planning a meal?",
+            "subtitle": "Tailored to your taste\nfor the best wine match",
+            "button": "Chat now"
         },
         "quickMenu": {
             "tastingNoteTitle": "Tasting Notes",
