@@ -175,8 +175,17 @@ export default function SearchResultScreen() {
         </View>
         {isPremium && flavorProfile && score !== undefined && score !== null && (
           <View style={styles.scoreContainer}>
-            <Text style={[styles.scoreValue, { color: getScoreColor(score) }]}>{score}</Text>
-            <Text style={styles.scoreLabel}>{t('search.compatibilityLabel')}</Text>
+            <View
+              style={[
+                styles.scoreBadge,
+                {
+                  borderColor: getScoreColor(score),
+                  backgroundColor: `${getScoreColor(score)}1F`,
+                },
+              ]}
+            >
+              <Text style={[styles.scoreValue, { color: getScoreColor(score) }]}>{score}</Text>
+            </View>
           </View>
         )}
       </TouchableOpacity>
@@ -347,17 +356,21 @@ const styles = StyleSheet.create({
   },
   scoreContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     paddingLeft: 12,
-    minWidth: 40,
+  },
+  scoreBadge: {
+    minWidth: 34,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scoreValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  scoreLabel: {
-    fontSize: 9,
-    color: colors.textSecondary,
-    marginTop: 2,
+    fontSize: 13,
+    fontWeight: '700',
   },
   emptyContainer: {
     padding: 32,
