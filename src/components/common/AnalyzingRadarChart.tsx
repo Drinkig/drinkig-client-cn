@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Polygon, Line, Text as SvgText } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import { FlavorProfile } from '../onboarding/FlavorProfileStep';
 import { colors } from '../../constants/colors';
 
@@ -10,16 +11,22 @@ interface AnalyzingRadarChartProps {
     mode?: 'grow' | 'jitter' | 'fixed';
 }
 
-const LABELS = [
-    { key: 'acidity', label: '산도' },
-    { key: 'sweetness', label: '당도' },
-    { key: 'tannin', label: '타닌' },
-    { key: 'body', label: '바디' },
-    { key: 'alcohol', label: '알코올' },
-];
-
 const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRadarChartProps) => {
-    const center = size / 2;
+    const { t } = useTranslation();
+    const LABELS = [
+        { key: 'acidity', label: t('flavorAxes.acidity') },
+        { key: 'sweetness', label: t('flavorAxes.sweetness') },
+        { key: 'tannin', label: t('flavorAxes.tannin') },
+        { key: 'body', label: t('flavorAxes.body') },
+        { key: 'alcohol', label: t('flavorAxes.alcohol') },
+    ];
+    // Extra horizontal padding so long labels (e.g. "Sweetness") aren't clipped.
+    const PADDING_X = 24;
+    const PADDING_Y = 4;
+    const svgWidth = size + PADDING_X * 2;
+    const svgHeight = size + PADDING_Y * 2;
+    const center = PADDING_X + size / 2;
+    const centerY = PADDING_Y + size / 2;
     const radius = (size / 2) * 0.6;
     const angleStep = (Math.PI * 2) / 5;
 
@@ -122,7 +129,7 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
         const angle = index * angleStep - Math.PI / 2;
         const distance = (value / 5) * radius;
         const x = center + distance * Math.cos(angle);
-        const y = center + distance * Math.sin(angle);
+        const y = centerY + distance * Math.sin(angle);
         return { x, y };
     };
 
@@ -156,7 +163,7 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
                 <Line
                     key={`axis-${index}`}
                     x1={center}
-                    y1={center}
+                    y1={centerY}
                     x2={endPoint.x}
                     y2={endPoint.y}
                     stroke={colors.border}
@@ -172,7 +179,7 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
             const angle = index * angleStep - Math.PI / 2;
             const labelRadius = radius + 16;
             const x = center + labelRadius * Math.cos(angle);
-            const y = center + labelRadius * Math.sin(angle);
+            const y = centerY + labelRadius * Math.sin(angle);
 
             return (
                 <SvgText
@@ -193,7 +200,11 @@ const AnalyzingRadarChart = ({ data, size = 200, mode = 'jitter' }: AnalyzingRad
 
     return (
         <View style={[styles.container, { width: size, height: size }]}>
-            <Svg width={size} height={size}>
+            <Svg
+                width={svgWidth}
+                height={svgHeight}
+                style={{ position: 'absolute', left: -PADDING_X, top: -PADDING_Y }}
+            >
                 {renderGrid()}
                 {renderAxes()}
                 <Polygon

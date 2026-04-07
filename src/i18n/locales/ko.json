@@ -5,6 +5,13 @@
         "myWine": "내 와인",
         "profile": "프로필"
     },
+    "flavorAxes": {
+        "acidity": "산도",
+        "sweetness": "당도",
+        "tannin": "타닌",
+        "body": "바디",
+        "alcohol": "알코올"
+    },
     "home": {
         "searchPlaceholder": "와인 이름, 종류 등으로 검색",
         "hero": {

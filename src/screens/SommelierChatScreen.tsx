@@ -726,6 +726,17 @@ const getWineColor = (type: string) => {
   return colors.textSecondary;
 };
 
+const localizeSort = (sort: string, lang: 'ko' | 'en') => {
+  if (lang !== 'en') return sort;
+  if (sort.includes('레드')) return 'Red';
+  if (sort.includes('화이트')) return 'White';
+  if (sort.includes('스파클링')) return 'Sparkling';
+  if (sort.includes('로제')) return 'Rosé';
+  if (sort.includes('디저트')) return 'Dessert';
+  if (sort.includes('주정강화')) return 'Fortified';
+  return sort;
+};
+
 const useBubbleEnter = () => {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(10)).current;
@@ -796,7 +807,8 @@ const ThinkingStatus: React.FC<{ label: string }> = ({ label }) => {
 
 const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
   const { opacity, translateY } = useBubbleEnter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang: 'ko' | 'en' = i18n.language?.startsWith('en') ? 'en' : 'ko';
 
   if (message.kind === 'wines') {
     const { wines, foodFlavor, foodName, nickname: msgNickname } = message;
@@ -832,37 +844,46 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
 
           {wines.length > 0 ? (
             <View style={styles.wineList}>
-              {wines.map((w, idx) => (
-                <View
-                  key={`${w.variety}-${idx}`}
-                  style={[
-                    styles.wineRow,
-                    idx === wines.length - 1 && styles.wineRowLast,
-                  ]}
-                >
-                  <View style={styles.wineInfo}>
-                    <View style={styles.wineHeaderRow}>
-                      <View
-                        style={[
-                          styles.wineSortBadge,
-                          { backgroundColor: getWineColor(w.sort) },
-                        ]}
-                      >
-                        <Text style={styles.wineSortText}>{w.sort}</Text>
+              {wines.map((w, idx) => {
+                const variety =
+                  lang === 'en' && w.varietyEng ? w.varietyEng : w.variety;
+                const country =
+                  lang === 'en' && w.countryEng ? w.countryEng : w.country;
+                const region =
+                  lang === 'en' && w.regionEng ? w.regionEng : w.region;
+                const sortLabel = localizeSort(w.sort, lang);
+                return (
+                  <View
+                    key={`${variety}-${idx}`}
+                    style={[
+                      styles.wineRow,
+                      idx === wines.length - 1 && styles.wineRowLast,
+                    ]}
+                  >
+                    <View style={styles.wineInfo}>
+                      <View style={styles.wineHeaderRow}>
+                        <View
+                          style={[
+                            styles.wineSortBadge,
+                            { backgroundColor: getWineColor(w.sort) },
+                          ]}
+                        >
+                          <Text style={styles.wineSortText}>{sortLabel}</Text>
+                        </View>
+                        <Text style={styles.wineVariety} numberOfLines={1}>
+                          {variety}
+                        </Text>
                       </View>
-                      <Text style={styles.wineVariety} numberOfLines={1}>
-                        {w.variety}
-                      </Text>
+                      {(country || region) && (
+                        <Text style={styles.wineRegion} numberOfLines={1}>
+                          {country}
+                          {region ? ` · ${region}` : ''}
+                        </Text>
+                      )}
                     </View>
-                    {(w.country || w.region) && (
-                      <Text style={styles.wineRegion} numberOfLines={1}>
-                        {w.country}
-                        {w.region ? ` · ${w.region}` : ''}
-                      </Text>
-                    )}
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           ) : (
             <Text style={styles.winesEmpty}>추천 결과가 없어요 😢</Text>

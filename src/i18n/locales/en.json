@@ -5,6 +5,13 @@
         "myWine": "My Wine",
         "profile": "Profile"
     },
+    "flavorAxes": {
+        "acidity": "Acidity",
+        "sweetness": "Sweetness",
+        "tannin": "Tannin",
+        "body": "Body",
+        "alcohol": "Alcohol"
+    },
     "home": {
         "searchPlaceholder": "Search by name, type, region...",
         "hero": {
