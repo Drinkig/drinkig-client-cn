@@ -74,10 +74,12 @@
             "badge": "Drinky Premium",
             "cardTitle": "Wine curation,\njust for you ✨",
             "benefits": [
-                "Unlimited food–wine pairing for any dish",
-                "Unlimited wine label camera scans",
-                "See your personal wine compatibility score",
-                "Refresh your taste recommendations anytime"
+                "Unlimited wine label scans",
+                "Wine list scan & recommendations",
+                "Food-matched wine varietals",
+                "Unlimited compatibility score analysis",
+                "Detailed compatibility analysis report",
+                "Taste profile reset"
             ],
             "cta": "Subscribe & get recommendations"
         }
@@ -1101,10 +1103,12 @@
         "title": "Upgrade to Premium",
         "subtitle": "Unlock all features and get the most out of your wine experience",
         "feature": {
-            "unlimitedScan": "Unlimited camera scans per day",
-            "compatibility": "See your wine compatibility score",
-            "foodPairing": "Get wine recommendations for any meal",
-            "tasteReset": "Refresh your taste recommendations anytime"
+            "unlimitedLabelScan": "Unlimited wine label scans",
+            "wineListScan": "Wine list scan & recommendations",
+            "foodPairing": "Food-matched wine varietals",
+            "compatibility": "Unlimited compatibility score analysis",
+            "compatibilityReport": "Detailed compatibility analysis report",
+            "tasteReset": "Taste profile reset"
         },
         "plan": {
             "bestValue": "BEST VALUE",

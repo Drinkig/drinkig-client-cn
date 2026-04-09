@@ -74,10 +74,12 @@
             "badge": "Drinky Premium",
             "cardTitle": "당신만을 위한\n와인 큐레이션 ✨",
             "benefits": [
-                "어떤 요리든 무제한 음식-와인 페어링 추천",
-                "와인 라벨 카메라 스캔 무제한",
-                "나와의 와인 궁합 점수 확인",
-                "취향 추천 언제든 다시 받기"
+                "와인 라벨 스캔 무제한",
+                "와인 리스트 인식 및 추천",
+                "음식 맞춤 와인 품종 추천",
+                "와인 궁합 점수 분석 무제한",
+                "와인 궁합 상세 분석 리포트",
+                "취향 프로필 재설정"
             ],
             "cta": "지금 구독하고 추천 받기"
         }
@@ -1101,10 +1103,12 @@
         "title": "프리미엄으로 업그레이드",
         "subtitle": "모든 기능을 잠금 해제하고 와인 경험을 극대화하세요",
         "feature": {
-            "unlimitedScan": "카메라 스캔 무제한 이용",
-            "compatibility": "와인 궁합 점수 확인",
-            "foodPairing": "음식에 맞는 와인 추천 받기",
-            "tasteReset": "취향 추천 언제든 다시 받기"
+            "unlimitedLabelScan": "와인 라벨 스캔 무제한",
+            "wineListScan": "와인 리스트 인식 및 추천",
+            "foodPairing": "음식 맞춤 와인 품종 추천",
+            "compatibility": "와인 궁합 점수 분석 무제한",
+            "compatibilityReport": "와인 궁합 상세 분석 리포트",
+            "tasteReset": "취향 프로필 재설정"
         },
         "plan": {
             "bestValue": "가장 합리적",
