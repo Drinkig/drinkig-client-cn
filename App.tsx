@@ -1,9 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NavigationContainer } from "@react-navigation/native";
 import React from "react";
+import { Text, TextInput } from "react-native";
 import mobileAds from "react-native-google-mobile-ads";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { requestTrackingPermission } from "react-native-tracking-transparency";
+
+// OS 접근성 "더 큰 텍스트" 설정으로 인한 레이아웃 깨짐 방지.
+// 전역 Text/TextInput 기본 props를 덮어써서 동적 글자 크기 스케일을 차단한다.
+// (defaultProps는 RN에서 여전히 유효; 필요 시 개별 컴포넌트에서 override 가능)
+// @ts-expect-error - defaultProps는 런타임에만 존재
+Text.defaultProps = Text.defaultProps || {};
+// @ts-expect-error
+Text.defaultProps.allowFontScaling = false;
+// @ts-expect-error
+TextInput.defaultProps = TextInput.defaultProps || {};
+// @ts-expect-error
+TextInput.defaultProps.allowFontScaling = false;
 import GlobalComponents from "./src/components/GlobalComponents";
 import { GlobalUIProvider } from "./src/context/GlobalUIContext";
 import { UserProvider } from "./src/context/UserContext";
@@ -18,10 +31,10 @@ function App(): React.JSX.Element {
   React.useEffect(() => {
     const initializeApp = async () => {
       try {
-        const savedLanguage = await AsyncStorage.getItem('@app_language');
-        if (savedLanguage && savedLanguage !== 'system') {
+        const savedLanguage = await AsyncStorage.getItem("@app_language");
+        if (savedLanguage && savedLanguage !== "system") {
           i18n.changeLanguage(savedLanguage);
-        } else if (savedLanguage === 'system') {
+        } else if (savedLanguage === "system") {
           i18n.changeLanguage(getSystemLanguage());
         }
 

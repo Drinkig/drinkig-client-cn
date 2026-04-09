@@ -33,7 +33,19 @@ const SCAN_USAGE_KEY = "scanDailyUsage";
 async function getScanUsage(): Promise<{ date: string; count: number }> {
   const raw = await AsyncStorage.getItem(SCAN_USAGE_KEY);
   if (!raw) return { date: "", count: 0 };
-  return JSON.parse(raw);
+  try {
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed.date === "string" &&
+      typeof parsed.count === "number"
+    ) {
+      return parsed;
+    }
+    return { date: "", count: 0 };
+  } catch {
+    return { date: "", count: 0 };
+  }
 }
 
 async function getTodayScanCount(): Promise<number> {

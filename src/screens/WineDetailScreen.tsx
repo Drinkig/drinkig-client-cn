@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,39 +12,51 @@ import {
   Alert,
   Animated,
   TouchableWithoutFeedback,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, useRoute, useIsFocused, RouteProp } from '@react-navigation/native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { RootStackParamList } from '../types';
-import { WineDBItem, VintageData } from '../types/Wine';
-import { MyWine } from '../context/WineContext';
-import { useGlobalUI } from '../context/GlobalUIContext';
-import { useUser } from '../context/UserContext';
-import { useSubscription } from '../context/SubscriptionContext';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  useNavigation,
+  useRoute,
+  useIsFocused,
+  RouteProp,
+} from "@react-navigation/native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { RootStackParamList } from "../types";
+import { WineDBItem, VintageData } from "../types/Wine";
+import { MyWine } from "../context/WineContext";
+import { useGlobalUI } from "../context/GlobalUIContext";
+import { useUser } from "../context/UserContext";
+import { useSubscription } from "../context/SubscriptionContext";
+import { useTranslation } from "react-i18next";
 import {
   getWineDetailPublic,
   getWineReviews,
   addToWishlist,
-  removeFromWishlist
-} from '../api/wine';
-import VintageSelectionModal from '../components/wine_detail/VintageSelectionModal';
-import MyRecordTab from '../components/wine_detail/tabs/MyRecordTab';
-import InfoTab from '../components/wine_detail/tabs/InfoTab';
-import ReviewTab from '../components/wine_detail/tabs/ReviewTab';
-import PriceTab from '../components/wine_detail/tabs/PriceTab';
-import { calculateCompatibilityScore, CompatibilityResult, getScoreColor } from '../utils/compatibility';
-import { getCompatQuota, unlockCompat, COMPAT_QUOTA_EXCEEDED_CODE } from '../api/subscription';
-import { colors } from '../constants/colors';
+  removeFromWishlist,
+} from "../api/wine";
+import VintageSelectionModal from "../components/wine_detail/VintageSelectionModal";
+import MyRecordTab from "../components/wine_detail/tabs/MyRecordTab";
+import InfoTab from "../components/wine_detail/tabs/InfoTab";
+import ReviewTab from "../components/wine_detail/tabs/ReviewTab";
+import PriceTab from "../components/wine_detail/tabs/PriceTab";
+import {
+  calculateCompatibilityScore,
+  CompatibilityResult,
+  getScoreColor,
+} from "../utils/compatibility";
+import {
+  getCompatQuota,
+  unlockCompat,
+  COMPAT_QUOTA_EXCEEDED_CODE,
+} from "../api/subscription";
+import { colors } from "../constants/colors";
 
-type WineDetailRouteProp = RouteProp<RootStackParamList, 'WineDetail'>;
-
+type WineDetailRouteProp = RouteProp<RootStackParamList, "WineDetail">;
 
 function isMyWine(wine: WineDBItem | MyWine): wine is MyWine {
-  return 'purchasePrice' in wine;
+  return "purchasePrice" in wine;
 }
 
 export default function WineDetailScreen() {
@@ -68,9 +80,11 @@ export default function WineDetailScreen() {
   const [isUnlockingCompat, setIsUnlockingCompat] = useState(false);
   const [analyzeStep, setAnalyzeStep] = useState(0);
 
-  const activeTabState = useState<string>(isMyWineItem ? 'my_record' : 'info');
+  const activeTabState = useState<string>(isMyWineItem ? "my_record" : "info");
   const [activeTab, setActiveTab] = activeTabState;
-  const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(null);
+  const [selectedVintage, setSelectedVintage] = useState<VintageData | null>(
+    null
+  );
   const [isVintageModalVisible, setVintageModalVisible] = useState(false);
 
   const [isFabOpen, setIsFabOpen] = useState(false);
@@ -88,7 +102,7 @@ export default function WineDetailScreen() {
 
   const fabRotation = fabAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: ['0deg', '45deg'],
+    outputRange: ["0deg", "45deg"],
   });
 
   const option1TranslateY = fabAnimation.interpolate({
@@ -117,23 +131,27 @@ export default function WineDetailScreen() {
     }
   };
 
-
   useEffect(() => {
     const fetchDetail = async () => {
       if (!isMyWineItem && wine.id) {
-        const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL'
-          ? parseInt(selectedVintage.year)
-          : undefined;
+        const vintageYear =
+          selectedVintage &&
+          selectedVintage.year !== "NV" &&
+          selectedVintage.year !== "ALL"
+            ? parseInt(selectedVintage.year)
+            : undefined;
 
         try {
           setIsLoading(true);
 
-          const response = await getWineDetailPublic(wine.id as number, vintageYear);
+          const response = await getWineDetailPublic(
+            wine.id as number,
+            vintageYear
+          );
           if (response.isSuccess) {
             const detail = response.result.wineInfoResponse;
             setApiWineDetail(detail);
             setIsLiked(detail.liked);
-
 
             const wineToSave: WineDBItem = {
               ...wine,
@@ -150,22 +168,23 @@ export default function WineDetailScreen() {
         } catch (error: any) {
           if (error.response && error.response.status === 400) {
             console.log(
-              'Server detail not found (local/dummy data), using local data only.',
-              '\nCode:', error.response?.data?.code,
-              '\nMessage:', error.response?.data?.message,
-              '\nParams:', { wineId: wine.id, vintageYear }
+              "Server detail not found (local/dummy data), using local data only.",
+              "\nCode:",
+              error.response?.data?.code,
+              "\nMessage:",
+              error.response?.data?.message,
+              "\nParams:",
+              { wineId: wine.id, vintageYear }
             );
           } else {
-            console.error('Failed to fetch wine detail:', error);
+            console.error("Failed to fetch wine detail:", error);
           }
-
 
           saveToRecent(wine);
         } finally {
           setIsLoading(false);
         }
       } else if (!isMyWineItem && wine.id) {
-
         saveToRecent(wine);
       }
     };
@@ -175,26 +194,31 @@ export default function WineDetailScreen() {
     }
   }, [isMyWineItem, wine.id, selectedVintage, isFocused]);
 
-
   const saveToRecent = async (item: WineDBItem) => {
     try {
-      const jsonValue = await AsyncStorage.getItem('recent_wines');
-      let recentWines: WineDBItem[] = jsonValue != null ? JSON.parse(jsonValue) : [];
+      const jsonValue = await AsyncStorage.getItem("recent_wines");
+      let recentWines: WineDBItem[] = [];
+      if (jsonValue != null) {
+        try {
+          const parsed = JSON.parse(jsonValue);
+          if (Array.isArray(parsed)) recentWines = parsed;
+        } catch {
+          // corrupt entry — reset list
+          recentWines = [];
+        }
+      }
 
-
-      recentWines = recentWines.filter(w => w.id !== item.id);
-
+      recentWines = recentWines.filter((w) => w.id !== item.id);
 
       recentWines.unshift(item);
-
 
       if (recentWines.length > 10) {
         recentWines = recentWines.slice(0, 10);
       }
 
-      await AsyncStorage.setItem('recent_wines', JSON.stringify(recentWines));
+      await AsyncStorage.setItem("recent_wines", JSON.stringify(recentWines));
     } catch (e) {
-      console.error('Failed to save recent wine', e);
+      console.error("Failed to save recent wine", e);
     }
   };
 
@@ -204,9 +228,12 @@ export default function WineDetailScreen() {
     setIsLiked(!previousState);
 
     try {
-      const vintageYear = selectedVintage && selectedVintage.year !== 'NV' && selectedVintage.year !== 'ALL'
-        ? parseInt(selectedVintage.year)
-        : undefined;
+      const vintageYear =
+        selectedVintage &&
+        selectedVintage.year !== "NV" &&
+        selectedVintage.year !== "ALL"
+          ? parseInt(selectedVintage.year)
+          : undefined;
 
       if (previousState) {
         await removeFromWishlist(wine.id as number, vintageYear);
@@ -214,36 +241,48 @@ export default function WineDetailScreen() {
         await addToWishlist(wine.id as number, vintageYear);
       }
     } catch (error) {
-      console.error('Wishlist toggle failed:', error);
+      console.error("Wishlist toggle failed:", error);
       setIsLiked(previousState);
-      showToast('위시리스트 변경에 실패했습니다.', { type: 'error' });
+      showToast("위시리스트 변경에 실패했습니다.", { type: "error" });
     }
   };
 
-
-  const nameKor = isMyWineItem ? wine.name : (apiWineDetail?.name || wine.nameKor);
-  const nameEng = isMyWineItem ? '' : (apiWineDetail?.nameEng || wine.nameEng);
+  const nameKor = isMyWineItem
+    ? wine.name
+    : apiWineDetail?.name || wine.nameKor;
+  const nameEng = isMyWineItem ? "" : apiWineDetail?.nameEng || wine.nameEng;
   const type = apiWineDetail?.sort || wine.type;
   const country = apiWineDetail?.country || wine.country;
   const grape = apiWineDetail?.variety || wine.grape;
-  const imageUri = !isMyWineItem && apiWineDetail?.imageUrl ? apiWineDetail.imageUrl : wine.imageUri;
+  const imageUri =
+    !isMyWineItem && apiWineDetail?.imageUrl
+      ? apiWineDetail.imageUrl
+      : wine.imageUri;
 
-
-  const features = !isMyWineItem && apiWineDetail ? {
-    sweetness: apiWineDetail.officialSweetness,
-    acidity: apiWineDetail.officialAcidity,
-    body: apiWineDetail.officialBody,
-    tannin: apiWineDetail.officialTannin,
-  } : (!isMyWineItem && wine.features ? wine.features : null);
+  const features =
+    !isMyWineItem && apiWineDetail
+      ? {
+          sweetness: apiWineDetail.officialSweetness,
+          acidity: apiWineDetail.officialAcidity,
+          body: apiWineDetail.officialBody,
+          tannin: apiWineDetail.officialTannin,
+        }
+      : !isMyWineItem && wine.features
+      ? wine.features
+      : null;
 
   const compatResult = useMemo(() => {
     if (!features || !flavorProfile) return null;
-    return calculateCompatibilityScore(flavorProfile, {
-      sweetness: features.sweetness,
-      acidity: features.acidity,
-      tannin: features.tannin,
-      body: features.body,
-    }, t);
+    return calculateCompatibilityScore(
+      flavorProfile,
+      {
+        sweetness: features.sweetness,
+        acidity: features.acidity,
+        tannin: features.tannin,
+        body: features.body,
+      },
+      t
+    );
   }, [features, flavorProfile, t]);
 
   // Premium: gate the score reveal behind a fake analysis animation for trust
@@ -263,16 +302,23 @@ export default function WineDetailScreen() {
     }
     setShowCompatBubble(false);
     setCompatUnlocked(false);
-    getCompatQuota().then(res => {
-      if (cancelled || !res.isSuccess) return;
-      const { isUnlimited, dailyLimit, remaining, unlockedWineIds } = res.result;
-      setCompatDailyLimit(dailyLimit);
-      setCompatRemaining(isUnlimited ? -1 : remaining);
-      setCompatUnlocked(isUnlimited || unlockedWineIds.includes(Number(wine.id)));
-    }).catch(err => {
-      console.warn('Failed to load compat quota:', err);
-    });
-    return () => { cancelled = true; };
+    getCompatQuota()
+      .then((res) => {
+        if (cancelled || !res.isSuccess) return;
+        const { isUnlimited, dailyLimit, remaining, unlockedWineIds } =
+          res.result;
+        setCompatDailyLimit(dailyLimit);
+        setCompatRemaining(isUnlimited ? -1 : remaining);
+        setCompatUnlocked(
+          isUnlimited || unlockedWineIds.includes(Number(wine.id))
+        );
+      })
+      .catch((err) => {
+        console.warn("Failed to load compat quota:", err);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [wine.id, isPremium]);
 
   // Auto-run premium analysis animation when data is ready.
@@ -304,11 +350,13 @@ export default function WineDetailScreen() {
       if (step < stepDurations.length - 1) {
         timeouts.push(setTimeout(() => advance(step + 1), stepDurations[step]));
       } else {
-        timeouts.push(setTimeout(() => {
-          if (cancelled) return;
-          setIsUnlockingCompat(false);
-          setPremiumAnalyzed(true);
-        }, stepDurations[step]));
+        timeouts.push(
+          setTimeout(() => {
+            if (cancelled) return;
+            setIsUnlockingCompat(false);
+            setPremiumAnalyzed(true);
+          }, stepDurations[step])
+        );
       }
     };
     advance(0);
@@ -325,35 +373,41 @@ export default function WineDetailScreen() {
     setAnalyzeStep(0);
     const stepDurations = [800, 900, 800];
     let cancelled = false;
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
     const advance = (step: number) => {
       if (cancelled) return;
       setAnalyzeStep(step);
       if (step < stepDurations.length - 1) {
-        setTimeout(() => advance(step + 1), stepDurations[step]);
+        timeouts.push(setTimeout(() => advance(step + 1), stepDurations[step]));
       } else {
-        setTimeout(() => {
-          if (cancelled) return;
-          setIsUnlockingCompat(false);
-          setCompatUnlocked(true);
-        }, stepDurations[step]);
+        timeouts.push(
+          setTimeout(() => {
+            if (cancelled) return;
+            setIsUnlockingCompat(false);
+            setCompatUnlocked(true);
+          }, stepDurations[step])
+        );
       }
     };
     advance(0);
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      timeouts.forEach(clearTimeout);
+    };
   };
 
   const handleCompatBannerPress = async () => {
     if (isUnlockingCompat) return;
-    if (!checkFeature('wineCompatibility') && !compatUnlocked) {
+    if (!checkFeature("wineCompatibility") && !compatUnlocked) {
       // Premium feature: free users use daily reveal quota
       if (compatRemaining === 0) {
-        navigation.navigate('Paywall' as never);
+        navigation.navigate("Paywall" as never);
         return;
       }
       try {
         const res = await unlockCompat(wine.id);
         if (!res.isSuccess) {
-          navigation.navigate('Paywall' as never);
+          navigation.navigate("Paywall" as never);
           return;
         }
         setCompatRemaining(res.result.remaining);
@@ -362,62 +416,66 @@ export default function WineDetailScreen() {
         const code = err?.response?.data?.code;
         if (code === COMPAT_QUOTA_EXCEEDED_CODE) {
           setCompatRemaining(0);
-          navigation.navigate('Paywall' as never);
+          navigation.navigate("Paywall" as never);
         } else {
-          console.warn('Failed to unlock compat:', err);
+          console.warn("Failed to unlock compat:", err);
         }
       }
       return;
     }
-    setShowCompatBubble(prev => !prev);
+    setShowCompatBubble((prev) => !prev);
   };
 
+  const description =
+    !isMyWineItem && apiWineDetail?.officialDescription
+      ? apiWineDetail.officialDescription
+      : null;
 
-  const description = !isMyWineItem && apiWineDetail?.officialDescription
-    ? apiWineDetail.officialDescription
-    : null;
+  const nose =
+    !isMyWineItem && apiWineDetail
+      ? [
+          apiWineDetail.officialNose1,
+          apiWineDetail.officialNose2,
+          apiWineDetail.officialNose3,
+        ].filter(Boolean)
+      : null;
 
+  const palate =
+    !isMyWineItem && apiWineDetail
+      ? [
+          apiWineDetail.officialPalate1,
+          apiWineDetail.officialPalate2,
+          apiWineDetail.officialPalate3,
+        ].filter(Boolean)
+      : null;
 
-  const nose = !isMyWineItem && apiWineDetail ?
-    [
-      apiWineDetail.officialNose1,
-      apiWineDetail.officialNose2,
-      apiWineDetail.officialNose3
-    ].filter(Boolean) :
-    null;
-
-
-  const palate = !isMyWineItem && apiWineDetail ?
-    [
-      apiWineDetail.officialPalate1,
-      apiWineDetail.officialPalate2,
-      apiWineDetail.officialPalate3
-    ].filter(Boolean) :
-    null;
-
-
-  const finish = !isMyWineItem && apiWineDetail ?
-    [
-      apiWineDetail.officialFinish1,
-      apiWineDetail.officialFinish2,
-      apiWineDetail.officialFinish3
-    ].filter(Boolean) :
-    null;
+  const finish =
+    !isMyWineItem && apiWineDetail
+      ? [
+          apiWineDetail.officialFinish1,
+          apiWineDetail.officialFinish2,
+          apiWineDetail.officialFinish3,
+        ].filter(Boolean)
+      : null;
 
   const rawVintages = !isMyWineItem ? wine.vintages : undefined;
 
-  const [vintageStats, setVintageStats] = useState<{ [key: string]: { rating: number; count: number; reviews: any[] } }>({});
+  const [vintageStats, setVintageStats] = useState<{
+    [key: string]: { rating: number; count: number; reviews: any[] };
+  }>({});
 
   const userRating = useMemo(() => {
     const entries = Object.values(vintageStats);
     if (entries.length === 0) return null;
     let totalSum = 0;
     let totalCount = 0;
-    entries.forEach(e => {
+    entries.forEach((e) => {
       totalSum += e.rating * e.count;
       totalCount += e.count;
     });
-    return totalCount > 0 ? { avg: totalSum / totalCount, count: totalCount } : null;
+    return totalCount > 0
+      ? { avg: totalSum / totalCount, count: totalCount }
+      : null;
   }, [vintageStats]);
 
   useEffect(() => {
@@ -425,13 +483,15 @@ export default function WineDetailScreen() {
       if (!wine.id) return;
       try {
         const response = await getWineReviews(wine.id as number, {
-          sortType: '최신순',
+          sortType: "최신순",
           page: 0,
           size: 100,
         });
 
         if (response.isSuccess) {
-          const stats: { [key: string]: { sum: number; count: number; reviews: any[] } } = {};
+          const stats: {
+            [key: string]: { sum: number; count: number; reviews: any[] };
+          } = {};
 
           response.result.content.forEach((review) => {
             if (review.vintageYear) {
@@ -445,19 +505,21 @@ export default function WineDetailScreen() {
             }
           });
 
-          const finalStats: { [key: string]: { rating: number; count: number; reviews: any[] } } = {};
-          Object.keys(stats).forEach(key => {
+          const finalStats: {
+            [key: string]: { rating: number; count: number; reviews: any[] };
+          } = {};
+          Object.keys(stats).forEach((key) => {
             finalStats[key] = {
               rating: stats[key].sum / stats[key].count,
               count: stats[key].count,
-              reviews: stats[key].reviews
+              reviews: stats[key].reviews,
             };
           });
 
           setVintageStats(finalStats);
         }
       } catch (error) {
-        console.error('Failed to fetch reviews for stats:', error);
+        console.error("Failed to fetch reviews for stats:", error);
       }
     };
 
@@ -467,18 +529,20 @@ export default function WineDetailScreen() {
   }, [wine.id, isFocused]);
 
   const vintages = useMemo(() => {
-    const list: VintageData[] = [{
-      year: 'ALL',
-      rating: 0,
-      reviews: [],
-      prices: []
-    }];
+    const list: VintageData[] = [
+      {
+        year: "ALL",
+        rating: 0,
+        reviews: [],
+        prices: [],
+      },
+    ];
 
     list.push({
-      year: 'NV',
+      year: "NV",
       rating: 0,
       reviews: [],
-      prices: []
+      prices: [],
     });
 
     for (let year = 2025; year >= 1950; year--) {
@@ -486,20 +550,20 @@ export default function WineDetailScreen() {
         year: year.toString(),
         rating: 0,
         reviews: [],
-        prices: []
+        prices: [],
       });
     }
 
     let mergedList = list;
     if (rawVintages) {
-      mergedList = list.map(vItem => {
-        if (vItem.year === 'ALL') return vItem;
-        const realData = rawVintages.find(rv => rv.year === vItem.year);
+      mergedList = list.map((vItem) => {
+        if (vItem.year === "ALL") return vItem;
+        const realData = rawVintages.find((rv) => rv.year === vItem.year);
         return realData ? realData : vItem;
       });
     }
 
-    return mergedList.map(vItem => {
+    return mergedList.map((vItem) => {
       if (vintageStats[vItem.year]) {
         return {
           ...vItem,
@@ -511,26 +575,20 @@ export default function WineDetailScreen() {
     });
   }, [rawVintages, vintageStats]);
 
-
-
-
   useEffect(() => {
     if (vintages && vintages.length > 0 && !selectedVintage) {
       setSelectedVintage(vintages[0]);
     }
   }, [vintages, selectedVintage]);
 
-
-
-
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'my_record':
+      case "my_record":
         if (isMyWineItem) {
           return <MyRecordTab wine={wine} features={features} />;
         }
         return null;
-      case 'info':
+      case "info":
         return (
           <InfoTab
             type={type}
@@ -544,14 +602,14 @@ export default function WineDetailScreen() {
             showTastingNotes={!isMyWineItem}
           />
         );
-      case 'review':
+      case "review":
         return (
           <ReviewTab
             wineId={wine.id as number}
             selectedVintageYear={selectedVintage?.year}
           />
         );
-      case 'price':
+      case "price":
         return (
           <PriceTab
             wineId={wine.id as number}
@@ -564,11 +622,13 @@ export default function WineDetailScreen() {
   };
 
   const handleAddRecord = () => {
-    navigation.navigate('WineAdd', { wine: { ...wine, nameKor, nameEng, type, country, grape, id: wine.id } });
+    navigation.navigate("WineAdd", {
+      wine: { ...wine, nameKor, nameEng, type, country, grape, id: wine.id },
+    });
   };
 
   const handleWriteNote = () => {
-    navigation.navigate('TastingNoteWrite', {
+    navigation.navigate("TastingNoteWrite", {
       wineId: wine.id as number,
       wineName: nameKor,
       wineImage: imageUri,
@@ -588,7 +648,7 @@ export default function WineDetailScreen() {
       id: wine.id,
     };
     // @ts-ignore
-    navigation.navigate('WineAdd', { wine: wineToPass });
+    navigation.navigate("WineAdd", { wine: wineToPass });
     closeFab();
   };
 
@@ -601,7 +661,6 @@ export default function WineDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -610,9 +669,10 @@ export default function WineDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {isMyWineItem ? t('wineDetail.myWineHeader') : t('wineDetail.infoHeader')}
+          {isMyWineItem
+            ? t("wineDetail.myWineHeader")
+            : t("wineDetail.infoHeader")}
         </Text>
-
 
         {!isMyWineItem ? (
           <TouchableOpacity
@@ -630,39 +690,54 @@ export default function WineDetailScreen() {
         )}
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.wineHeaderSection}>
           <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
               <ActivityIndicator size="large" color={colors.primary} />
             ) : imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.wineImage} resizeMode="contain" />
+              <Image
+                source={{ uri: imageUri }}
+                style={styles.wineImage}
+                resizeMode="contain"
+              />
             ) : (
-              <MaterialCommunityIcons name="image-off-outline" size={32} color={colors.textSecondary} />
+              <MaterialCommunityIcons
+                name="image-off-outline"
+                size={32}
+                color={colors.textSecondary}
+              />
             )}
           </View>
 
           <View style={styles.infoContainer}>
-            {i18n.language === 'en' ? (
+            {i18n.language === "en" ? (
               <Text style={styles.wineNameKor}>{nameEng || nameKor}</Text>
             ) : (
               <>
                 <Text style={styles.wineNameKor}>{nameKor}</Text>
-                {nameEng ? <Text style={styles.wineNameEng}>{nameEng}</Text> : null}
+                {nameEng ? (
+                  <Text style={styles.wineNameEng}>{nameEng}</Text>
+                ) : null}
               </>
             )}
 
             <View style={styles.ratingRow}>
-              <MaterialCommunityIcons name="star" size={16} color={userRating ? '#E8C94A' : colors.textSecondary} />
+              <MaterialCommunityIcons
+                name="star"
+                size={16}
+                color={userRating ? "#E8C94A" : colors.textSecondary}
+              />
               <Text style={styles.ratingText}>
-                {userRating ? userRating.avg.toFixed(1) : '-'}
+                {userRating ? userRating.avg.toFixed(1) : "-"}
               </Text>
               {userRating && (
                 <Text style={styles.ratingCount}>({userRating.count})</Text>
               )}
             </View>
-
           </View>
         </View>
 
@@ -673,7 +748,7 @@ export default function WineDetailScreen() {
               onPress={handleCompatBannerPress}
             >
               <MaterialCommunityIcons
-                name={compatUnlocked ? 'heart-pulse' : 'lock-outline'}
+                name={compatUnlocked ? "heart-pulse" : "lock-outline"}
                 size={20}
                 color={colors.primary}
                 style={{ marginRight: 10 }}
@@ -681,37 +756,59 @@ export default function WineDetailScreen() {
               <View style={styles.compatibilityBannerTextContainer}>
                 <Text style={styles.compatibilityBannerTitle}>
                   {compatUnlocked
-                    ? t('wineDetail.compatBannerTitle')
-                    : t('wineDetail.compatBannerLockedTitle')}
+                    ? t("wineDetail.compatBannerTitle")
+                    : t("wineDetail.compatBannerLockedTitle")}
                 </Text>
                 <Text style={styles.compatibilityBannerSubtitle}>
                   {isUnlockingCompat
-                    ? t('wineDetail.compatBannerAnalyzing')
+                    ? t("wineDetail.compatBannerAnalyzing")
                     : compatUnlocked
-                      ? t('wineDetail.compatBannerSubtitle')
-                      : compatRemaining > 0
-                        ? t('wineDetail.compatBannerQuotaRemaining', { remaining: compatRemaining, total: compatDailyLimit })
-                        : t('wineDetail.compatBannerQuotaExhausted')}
+                    ? t("wineDetail.compatBannerSubtitle")
+                    : compatRemaining > 0
+                    ? t("wineDetail.compatBannerQuotaRemaining", {
+                        remaining: compatRemaining,
+                        total: compatDailyLimit,
+                      })
+                    : t("wineDetail.compatBannerQuotaExhausted")}
                 </Text>
               </View>
-              {(isUnlockingCompat || (isPremium && !premiumAnalyzed)) ? (
+              {isUnlockingCompat || (isPremium && !premiumAnalyzed) ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : compatUnlocked ? (
                 compatResult ? (
-                  <Text style={[styles.compatibilityScoreText, { color: getScoreColor(compatResult.score) }]}>
-                    {compatResult.score}{t('wineCompatibility.scoreUnit')}
+                  <Text
+                    style={[
+                      styles.compatibilityScoreText,
+                      { color: getScoreColor(compatResult.score) },
+                    ]}
+                  >
+                    {compatResult.score}
+                    {t("wineCompatibility.scoreUnit")}
                   </Text>
                 ) : (
-                  <Text style={styles.compatibilityScoreText}>?{t('wineCompatibility.scoreUnit')}</Text>
+                  <Text style={styles.compatibilityScoreText}>
+                    ?{t("wineCompatibility.scoreUnit")}
+                  </Text>
                 )
               ) : (
-                <Text style={[styles.compatibilityScoreText, styles.compatibilityScoreLocked]}>
-                  ??{t('wineCompatibility.scoreUnit')}
+                <Text
+                  style={[
+                    styles.compatibilityScoreText,
+                    styles.compatibilityScoreLocked,
+                  ]}
+                >
+                  ??{t("wineCompatibility.scoreUnit")}
                 </Text>
               )}
               {!isUnlockingCompat && !(isPremium && !premiumAnalyzed) && (
                 <Ionicons
-                  name={compatUnlocked ? (showCompatBubble ? 'chevron-up' : 'chevron-down') : 'chevron-forward'}
+                  name={
+                    compatUnlocked
+                      ? showCompatBubble
+                        ? "chevron-up"
+                        : "chevron-down"
+                      : "chevron-forward"
+                  }
                   size={18}
                   color={colors.textSecondary}
                   style={{ marginLeft: 8 }}
@@ -723,26 +820,50 @@ export default function WineDetailScreen() {
                 <View style={styles.compatBubbleArrow} />
                 <View style={styles.compatBubble}>
                   {[
-                    t('wineDetail.compatAnalyzeStep1'),
-                    t('wineDetail.compatAnalyzeStep2'),
-                    t('wineDetail.compatAnalyzeStep3'),
+                    t("wineDetail.compatAnalyzeStep1"),
+                    t("wineDetail.compatAnalyzeStep2"),
+                    t("wineDetail.compatAnalyzeStep3"),
                   ].map((label, idx) => {
                     const isDone = idx < analyzeStep;
                     const isActive = idx === analyzeStep;
                     return (
-                      <View key={idx} style={[styles.compatAnalyzeRow, idx < 2 && styles.compatBubbleRowBorder]}>
+                      <View
+                        key={idx}
+                        style={[
+                          styles.compatAnalyzeRow,
+                          idx < 2 && styles.compatBubbleRowBorder,
+                        ]}
+                      >
                         {isDone ? (
-                          <Ionicons name="checkmark-circle" size={16} color={colors.primary} style={{ marginRight: 8 }} />
+                          <Ionicons
+                            name="checkmark-circle"
+                            size={16}
+                            color={colors.primary}
+                            style={{ marginRight: 8 }}
+                          />
                         ) : isActive ? (
-                          <ActivityIndicator size="small" color={colors.primary} style={{ marginRight: 8, width: 16 }} />
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary}
+                            style={{ marginRight: 8, width: 16 }}
+                          />
                         ) : (
-                          <Ionicons name="ellipse-outline" size={16} color={colors.textSecondary} style={{ marginRight: 8, opacity: 0.4 }} />
+                          <Ionicons
+                            name="ellipse-outline"
+                            size={16}
+                            color={colors.textSecondary}
+                            style={{ marginRight: 8, opacity: 0.4 }}
+                          />
                         )}
-                        <Text style={[
-                          styles.compatAnalyzeLabel,
-                          isDone && styles.compatAnalyzeLabelDone,
-                          !isDone && !isActive && styles.compatAnalyzeLabelPending,
-                        ]}>
+                        <Text
+                          style={[
+                            styles.compatAnalyzeLabel,
+                            isDone && styles.compatAnalyzeLabelDone,
+                            !isDone &&
+                              !isActive &&
+                              styles.compatAnalyzeLabelPending,
+                          ]}
+                        >
                           {label}
                         </Text>
                       </View>
@@ -751,31 +872,46 @@ export default function WineDetailScreen() {
                 </View>
               </View>
             )}
-            {!isUnlockingCompat && compatUnlocked && showCompatBubble && compatResult && (
-              <View style={styles.compatBubbleContainer}>
-                <View style={styles.compatBubbleArrow} />
-                <View style={styles.compatBubble}>
-                  {compatResult.details.map((detail, idx) => {
-                    const absDiff = Math.abs(detail.diff);
-                    const feedbackStyle =
-                      absDiff === 0
-                        ? styles.compatBubbleFeedbackPerfect
-                        : absDiff >= 2
+            {!isUnlockingCompat &&
+              compatUnlocked &&
+              showCompatBubble &&
+              compatResult && (
+                <View style={styles.compatBubbleContainer}>
+                  <View style={styles.compatBubbleArrow} />
+                  <View style={styles.compatBubble}>
+                    {compatResult.details.map((detail, idx) => {
+                      const absDiff = Math.abs(detail.diff);
+                      const feedbackStyle =
+                        absDiff === 0
+                          ? styles.compatBubbleFeedbackPerfect
+                          : absDiff >= 2
                           ? styles.compatBubbleFeedbackStrong
                           : null;
-                    return (
-                      <View key={detail.key} style={[styles.compatBubbleRow, idx < compatResult.details.length - 1 && styles.compatBubbleRowBorder]}>
-                        <Text style={styles.compatBubbleLabel}>{detail.label}</Text>
-                        <Text style={[styles.compatBubbleFeedback, feedbackStyle]}>{detail.feedback}</Text>
-                      </View>
-                    );
-                  })}
+                      return (
+                        <View
+                          key={detail.key}
+                          style={[
+                            styles.compatBubbleRow,
+                            idx < compatResult.details.length - 1 &&
+                              styles.compatBubbleRowBorder,
+                          ]}
+                        >
+                          <Text style={styles.compatBubbleLabel}>
+                            {detail.label}
+                          </Text>
+                          <Text
+                            style={[styles.compatBubbleFeedback, feedbackStyle]}
+                          >
+                            {detail.feedback}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
           </View>
         )}
-
 
         {!isMyWineItem && vintages && vintages.length > 0 && (
           <View style={styles.vintageSelectContainer}>
@@ -783,12 +919,20 @@ export default function WineDetailScreen() {
               style={styles.vintageSelectButton}
               onPress={() => setVintageModalVisible(true)}
             >
-              <Text style={styles.vintageSelectLabel}>{t('wineDetail.vintage')}</Text>
+              <Text style={styles.vintageSelectLabel}>
+                {t("wineDetail.vintage")}
+              </Text>
               <View style={styles.vintageSelectValueContainer}>
                 <Text style={styles.vintageSelectValue}>
-                  {selectedVintage ? selectedVintage.year : t('wineDetail.select')}
+                  {selectedVintage
+                    ? selectedVintage.year
+                    : t("wineDetail.select")}
                 </Text>
-                <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={colors.textSecondary}
+                />
               </View>
             </TouchableOpacity>
           </View>
@@ -796,51 +940,84 @@ export default function WineDetailScreen() {
 
         <View style={styles.divider} />
 
-
         <View style={styles.tabHeaderContainer}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.tabHeaderContent}
           >
-
             {isMyWineItem && (
               <TouchableOpacity
-                style={[styles.tabButton, activeTab === 'my_record' && styles.activeTabButton]}
-                onPress={() => setActiveTab('my_record')}
+                style={[
+                  styles.tabButton,
+                  activeTab === "my_record" && styles.activeTabButton,
+                ]}
+                onPress={() => setActiveTab("my_record")}
               >
-                <Text style={[styles.tabText, activeTab === 'my_record' && styles.activeTabText]}>{t('wineDetail.tabs.myRecord')}</Text>
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === "my_record" && styles.activeTabText,
+                  ]}
+                >
+                  {t("wineDetail.tabs.myRecord")}
+                </Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity
-              style={[styles.tabButton, activeTab === 'info' && styles.activeTabButton]}
-              onPress={() => setActiveTab('info')}
+              style={[
+                styles.tabButton,
+                activeTab === "info" && styles.activeTabButton,
+              ]}
+              onPress={() => setActiveTab("info")}
             >
-              <Text style={[styles.tabText, activeTab === 'info' && styles.activeTabText]}>{t('wineDetail.tabs.info')}</Text>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "info" && styles.activeTabText,
+                ]}
+              >
+                {t("wineDetail.tabs.info")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.tabButton, activeTab === 'review' && styles.activeTabButton]}
-              onPress={() => setActiveTab('review')}
+              style={[
+                styles.tabButton,
+                activeTab === "review" && styles.activeTabButton,
+              ]}
+              onPress={() => setActiveTab("review")}
             >
-              <Text style={[styles.tabText, activeTab === 'review' && styles.activeTabText]}>{t('wineDetail.tabs.review')}</Text>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "review" && styles.activeTabText,
+                ]}
+              >
+                {t("wineDetail.tabs.review")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.tabButton, activeTab === 'price' && styles.activeTabButton]}
-              onPress={() => setActiveTab('price')}
+              style={[
+                styles.tabButton,
+                activeTab === "price" && styles.activeTabButton,
+              ]}
+              onPress={() => setActiveTab("price")}
             >
-              <Text style={[styles.tabText, activeTab === 'price' && styles.activeTabText]}>{t('wineDetail.tabs.price')}</Text>
+              <Text
+                style={[
+                  styles.tabText,
+                  activeTab === "price" && styles.activeTabText,
+                ]}
+              >
+                {t("wineDetail.tabs.price")}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
 
-
-        <View style={styles.tabBody}>
-          {renderTabContent()}
-        </View>
-
+        <View style={styles.tabBody}>{renderTabContent()}</View>
       </ScrollView>
-
 
       {isMyWineItem ? (
         <View style={styles.bottomButtonContainer}>
@@ -848,9 +1025,14 @@ export default function WineDetailScreen() {
             style={styles.recordButton}
             onPress={handleAddRecord}
           >
-            <MaterialCommunityIcons name="pencil" size={20} color={colors.white} style={{ marginRight: 8 }} />
+            <MaterialCommunityIcons
+              name="pencil"
+              size={20}
+              color={colors.white}
+              style={{ marginRight: 8 }}
+            />
             <Text style={styles.recordButtonText}>
-              {t('wineDetail.fab.editRecord')}
+              {t("wineDetail.fab.editRecord")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -870,8 +1052,8 @@ export default function WineDetailScreen() {
                     {
                       opacity: option1Opacity,
                       transform: [{ translateY: option1TranslateY }],
-                      marginBottom: 16
-                    }
+                      marginBottom: 16,
+                    },
                   ]}
                 >
                   <TouchableOpacity
@@ -879,14 +1061,18 @@ export default function WineDetailScreen() {
                     onPress={handleAddToMyWine}
                     activeOpacity={0.8}
                   >
-                    <View
-                      style={styles.fabCombinedGradient}
-                    >
+                    <View style={styles.fabCombinedGradient}>
                       <View style={styles.fabTextContainer}>
-                        <Text style={styles.fabCombinedLabel}>{t('wineDetail.fab.addWine')}</Text>
+                        <Text style={styles.fabCombinedLabel}>
+                          {t("wineDetail.fab.addWine")}
+                        </Text>
                       </View>
                       <View style={styles.fabIconContainer}>
-                        <MaterialCommunityIcons name="bottle-wine-outline" size={20} color={colors.white} />
+                        <MaterialCommunityIcons
+                          name="bottle-wine-outline"
+                          size={20}
+                          color={colors.white}
+                        />
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -898,8 +1084,8 @@ export default function WineDetailScreen() {
                     {
                       opacity: option2Opacity,
                       transform: [{ translateY: option2TranslateY }],
-                      marginBottom: 0
-                    }
+                      marginBottom: 0,
+                    },
                   ]}
                 >
                   <TouchableOpacity
@@ -907,14 +1093,18 @@ export default function WineDetailScreen() {
                     onPress={handleWriteNoteWithClose}
                     activeOpacity={0.8}
                   >
-                    <View
-                      style={styles.fabCombinedGradient}
-                    >
+                    <View style={styles.fabCombinedGradient}>
                       <View style={styles.fabTextContainer}>
-                        <Text style={styles.fabCombinedLabel}>{t('wineDetail.fab.writeNote')}</Text>
+                        <Text style={styles.fabCombinedLabel}>
+                          {t("wineDetail.fab.writeNote")}
+                        </Text>
                       </View>
                       <View style={styles.fabIconContainer}>
-                        <MaterialCommunityIcons name="pencil-outline" size={20} color={colors.white} />
+                        <MaterialCommunityIcons
+                          name="pencil-outline"
+                          size={20}
+                          color={colors.white}
+                        />
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -928,19 +1118,23 @@ export default function WineDetailScreen() {
               activeOpacity={0.9}
             >
               <View
-                style={[styles.fabMainGradient, { backgroundColor: isFabOpen ? '#555' : colors.border }]}
+                style={[
+                  styles.fabMainGradient,
+                  { backgroundColor: isFabOpen ? "#555" : colors.border },
+                ]}
               >
                 <Animated.View style={{ transform: [{ rotate: fabRotation }] }}>
-                  <MaterialCommunityIcons name="plus" size={32} color={colors.white} />
+                  <MaterialCommunityIcons
+                    name="plus"
+                    size={32}
+                    color={colors.white}
+                  />
                 </Animated.View>
               </View>
             </TouchableOpacity>
           </View>
         </>
-      )
-      }
-
-
+      )}
 
       <VintageSelectionModal
         visible={isVintageModalVisible}
@@ -949,9 +1143,7 @@ export default function WineDetailScreen() {
         selectedVintage={selectedVintage}
         onSelect={setSelectedVintage}
       />
-
-
-    </SafeAreaView >
+    </SafeAreaView>
   );
 }
 
@@ -961,9 +1153,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -975,7 +1167,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.white,
   },
   wishlistButton: {
@@ -988,8 +1180,8 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   wineHeaderSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 20,
     gap: 16,
   },
@@ -997,15 +1189,15 @@ const styles = StyleSheet.create({
     width: 110,
     height: 140,
     borderRadius: 10,
-    backgroundColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    backgroundColor: "#222",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
     flexShrink: 0,
   },
   wineImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   infoContainer: {
     flex: 1,
@@ -1013,7 +1205,7 @@ const styles = StyleSheet.create({
   },
   wineNameKor: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
     lineHeight: 24,
   },
@@ -1023,14 +1215,14 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginTop: 2,
   },
   ratingText: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
   },
   ratingCount: {
@@ -1040,7 +1232,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 8,
-    backgroundColor: '#111',
+    backgroundColor: "#111",
   },
 
   tabHeaderContainer: {
@@ -1054,9 +1246,9 @@ const styles = StyleSheet.create({
   tabButton: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+    borderBottomColor: "transparent",
   },
   activeTabButton: {
     borderBottomColor: colors.primary,
@@ -1064,11 +1256,11 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 16,
     color: colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   activeTabText: {
     color: colors.white,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   tabBody: {
     minHeight: 300,
@@ -1080,9 +1272,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   vintageSelectButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: colors.surface1,
@@ -1091,8 +1283,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   compatibilityBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginHorizontal: 20,
     marginBottom: 0,
     backgroundColor: colors.surface1,
@@ -1108,7 +1300,7 @@ const styles = StyleSheet.create({
   compatibilityBannerTitle: {
     color: colors.white,
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   compatibilityBannerSubtitle: {
     color: colors.textSecondary,
@@ -1117,7 +1309,7 @@ const styles = StyleSheet.create({
   },
   compatibilityScoreText: {
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textSecondary,
   },
   compatibilityScoreLocked: {
@@ -1134,10 +1326,10 @@ const styles = StyleSheet.create({
     borderLeftWidth: 8,
     borderRightWidth: 8,
     borderBottomWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
     borderBottomColor: colors.surface2,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   compatBubble: {
     backgroundColor: colors.surface2,
@@ -1146,9 +1338,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   compatBubbleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 10,
   },
   compatBubbleRowBorder: {
@@ -1158,32 +1350,32 @@ const styles = StyleSheet.create({
   compatBubbleLabel: {
     color: colors.textSecondary,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   compatBubbleFeedback: {
     color: colors.white,
     fontSize: 13,
     flexShrink: 1,
-    textAlign: 'right',
+    textAlign: "right",
     marginLeft: 12,
   },
   compatBubbleFeedbackPerfect: {
-    color: '#2ecc71',
-    fontWeight: '600',
+    color: "#2ecc71",
+    fontWeight: "600",
   },
   compatBubbleFeedbackStrong: {
-    color: '#f39c12',
-    fontWeight: '700',
+    color: "#f39c12",
+    fontWeight: "700",
   },
   compatAnalyzeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 12,
   },
   compatAnalyzeLabel: {
     color: colors.white,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   compatAnalyzeLabelDone: {
     color: colors.textSecondary,
@@ -1194,21 +1386,21 @@ const styles = StyleSheet.create({
   },
   vintageSelectLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.white,
   },
   vintageSelectValueContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   vintageSelectValue: {
     fontSize: 16,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   bottomButtonContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -1222,25 +1414,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error,
     borderRadius: 12,
     height: 50,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   recordButtonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   fabContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 30,
     right: 24,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 1000,
   },
   fabOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: "rgba(0,0,0,0.4)",
     zIndex: 999,
   },
   fabMainButtonShadow: {
@@ -1254,26 +1446,26 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   fabMainGradient: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.border,
   },
   fabOptionsContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 50,
     right: 0,
     minWidth: 300,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     marginBottom: 0,
     zIndex: 2000,
   },
   fabOptionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
     marginBottom: 16,
     paddingRight: 0,
   },
@@ -1287,34 +1479,34 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 8,
     marginRight: 0,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   fabCombinedGradient: {
-    width: '100%',
-    height: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
+    width: "100%",
+    height: "100%",
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 24,
     backgroundColor: colors.border,
     paddingRight: 6,
   },
   fabTextContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingLeft: 12,
   },
   fabIconContainer: {
     width: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   fabCombinedLabel: {
     color: colors.white,
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     includeFontPadding: false,
-    textAlignVertical: 'center',
+    textAlignVertical: "center",
   },
   fabIcon: {
     marginLeft: 0,
