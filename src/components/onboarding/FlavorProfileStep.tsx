@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   subtitle: {
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
   itemLabel: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.textPrimary,
     marginRight: 8,
   },
   itemDesc: {
     fontSize: 13,
-    color: '#aaa',
+    color: colors.textSecondary,
   },
   sliderContainer: {
     height: 40,
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sliderLabelText: {
-    color: '#666',
+    color: colors.textTertiary,
     fontSize: 10,
     textAlign: 'center',
   },
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#444',
+    backgroundColor: colors.border,
   },
   activeDot: {
     backgroundColor: colors.primary,
@@ -225,12 +225,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
-    backgroundColor: '#1e1e1e',
+    backgroundColor: colors.surface1,
     borderWidth: 1,
     borderColor: colors.border,
   },
   unknownButtonSelected: {
-    backgroundColor: '#2a1a2a',
+    backgroundColor: colors.surface2,
     borderColor: colors.primary,
   },
   unknownText: {

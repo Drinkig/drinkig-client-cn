@@ -32,7 +32,7 @@ const ProfileStep = ({
           <Image source={{ uri: profileImageUri }} style={styles.profileImage} />
         ) : (
           <View style={styles.profilePlaceholder}>
-            <Icon name="camera-outline" size={32} color="#666" />
+            <Icon name="camera-outline" size={32} color={colors.textSecondary} />
             <Text style={styles.profileImageText}>{t('onboarding.profile.photoBtn')}</Text>
           </View>
         )}
@@ -48,7 +48,7 @@ const ProfileStep = ({
           value={name}
           onChangeText={onNameChange}
           placeholder={t('onboarding.profile.nicknamePlaceholder')}
-          placeholderTextColor="#666"
+          placeholderTextColor={colors.textTertiary}
           autoCapitalize="none"
         />
         <View style={styles.helperRow}>
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 40,
   },
   stepDesc: {
@@ -84,6 +84,11 @@ const styles = StyleSheet.create({
   profileImageBtn: {
     alignSelf: 'center',
     marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   profileImage: {
     width: 100,
@@ -98,10 +103,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: colors.border,
   },
   profileImageText: {
-    color: '#666',
+    color: colors.textSecondary,
     fontSize: 12,
     marginTop: 4,
   },
@@ -109,18 +114,24 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 8,
     fontSize: 14,
+    fontWeight: '600',
   },
   input: {
-    height: 50,
-    backgroundColor: '#1e1e1e',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    color: colors.white,
+    height: 52,
+    backgroundColor: colors.surface1,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    color: colors.textPrimary,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
   inputError: {
     borderColor: colors.error,
@@ -143,7 +154,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   helperText: {
-    color: '#666',
+    color: colors.textSecondary,
     fontSize: 12,
   },
 });

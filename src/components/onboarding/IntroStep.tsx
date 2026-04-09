@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 32,
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   },
   desc: {
     fontSize: 16,
-    color: '#aaa',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     minHeight: 48,

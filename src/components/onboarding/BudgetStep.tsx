@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
+import SelectableCard from '../common/SelectableCard';
 
 interface BudgetOption {
   label: string;
@@ -23,13 +24,14 @@ const BudgetStep = ({ selectedPrice, onSelect, options }: BudgetStepProps) => {
       <Text style={styles.stepDesc}>{t('onboarding.budget.subtitle')}</Text>
 
       {options.map((opt) => (
-        <TouchableOpacity
+        <SelectableCard
           key={opt.value}
-          style={[styles.selectionCard, selectedPrice === opt.value && styles.selectedCard]}
+          selected={selectedPrice === opt.value}
           onPress={() => onSelect(opt.value)}
+          style={styles.card}
         >
-          <Text style={[styles.cardTitle, { fontSize: 16 }]}>{opt.label}</Text>
-        </TouchableOpacity>
+          <Text style={styles.cardTitle}>{opt.label}</Text>
+        </SelectableCard>
       ))}
     </View>
   );
@@ -43,7 +45,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   stepDesc: {
@@ -51,24 +53,14 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 24,
   },
-  selectionCard: {
-    width: '100%',
+  card: {
     padding: 20,
-    backgroundColor: '#1e1e1e',
-    borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: '#2a1a2a',
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.white,
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.textPrimary,
   },
 });
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
+import GlassChip from '../common/GlassChip';
 
 interface SelectionStepProps {
   title: string;
@@ -22,20 +23,18 @@ interface MultiSelectionStepProps {
 
 
 export const SingleSelectionStep = ({ title, options, selected, onSelect }: SelectionStepProps) => {
-  // ... (SingleSelectionStep 유지)
   return (
     <View style={styles.content}>
       <Text style={styles.stepTitle}>{title}</Text>
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.grid}>
           {options.map((opt) => (
-            <TouchableOpacity
+            <GlassChip
               key={opt}
-              style={[styles.chip, selected === opt && styles.selectedChip]}
+              label={opt}
+              selected={selected === opt}
               onPress={() => onSelect(opt)}
-            >
-              <Text style={[styles.chipText, selected === opt && styles.selectedChipText]}>{opt}</Text>
-            </TouchableOpacity>
+            />
           ))}
         </View>
       </ScrollView>
@@ -69,19 +68,18 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
             if (allowCustomInput && opt === '기타') {
               if (customValue) {
                 return (
-                  <TouchableOpacity
+                  <GlassChip
                     key="custom-value"
-                    style={[styles.chip, styles.selectedChip]}
+                    label={customValue}
+                    selected
                     onPress={() => onSelect(customValue)}
-                  >
-                    <Text style={[styles.chipText, styles.selectedChipText]}>{customValue}</Text>
-                  </TouchableOpacity>
+                  />
                 );
               }
 
               if (isInputVisible) {
                 return (
-                  <View key="custom-input" style={[styles.chip, styles.inputChip]}>
+                  <View key="custom-input" style={styles.inputChip}>
                     <TextInput
                       style={styles.textInput}
                       value={inputText}
@@ -99,25 +97,22 @@ export const MultiSelectionStep = ({ title, options, selected, onSelect, multi, 
 
 
               return (
-                <TouchableOpacity
+                <GlassChip
                   key={opt}
-                  style={styles.chip}
+                  label={opt}
                   onPress={() => setIsInputVisible(true)}
-                >
-                  <Text style={styles.chipText}>{opt}</Text>
-                </TouchableOpacity>
+                />
               );
             }
 
 
             return (
-              <TouchableOpacity
+              <GlassChip
                 key={opt}
-                style={[styles.chip, selected.includes(opt) && styles.selectedChip]}
+                label={opt}
+                selected={selected.includes(opt)}
                 onPress={() => onSelect(opt)}
-              >
-                <Text style={[styles.chipText, selected.includes(opt) && styles.selectedChipText]}>{opt}</Text>
-              </TouchableOpacity>
+              />
             );
           })}
         </View>
@@ -134,7 +129,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   stepDesc: {
@@ -147,54 +142,19 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8,
   },
-  chip: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    marginBottom: 4,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectedChip: {
-    backgroundColor: '#3e204a',
-    borderColor: colors.primary,
-  },
-  chipText: {
-    color: '#bbb',
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-    includeFontPadding: false,
-  },
-  selectedChipText: {
-    color: '#d4acfb',
-    fontWeight: '700',
-  },
   inputChip: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: colors.surface1,
     borderColor: colors.primary,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    minWidth: 80,
+    borderWidth: 1,
     borderRadius: 12,
+    minWidth: 80,
+    justifyContent: 'center',
   },
   textInput: {
-    color: colors.white,
+    color: colors.textPrimary,
     fontSize: 14,
     paddingVertical: 10,
     paddingHorizontal: 14,
     minWidth: 60,
   },
 });
-

@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
+import SelectableCard from '../common/SelectableCard';
 
 interface NewbieCheckStepProps {
   isNewbie: boolean | null;
@@ -18,9 +19,10 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
         {t('onboarding.newbieCheck.question', { name })}
       </Text>
 
-      <TouchableOpacity
-        style={[styles.selectionCard, isNewbie === true && styles.selectedCard]}
+      <SelectableCard
+        selected={isNewbie === true}
         onPress={() => onSelect(true)}
+        style={styles.card}
       >
         <View style={styles.cardTextContainer}>
           <Text style={styles.cardTitle}>{t('onboarding.newbieCheck.newbieTitle')}</Text>
@@ -31,11 +33,12 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
           style={styles.cardImage}
           resizeMode="contain"
         />
-      </TouchableOpacity>
+      </SelectableCard>
 
-      <TouchableOpacity
-        style={[styles.selectionCard, isNewbie === false && styles.selectedCard]}
+      <SelectableCard
+        selected={isNewbie === false}
         onPress={() => onSelect(false)}
+        style={styles.card}
       >
         <View style={styles.cardTextContainer}>
           <Text style={styles.cardTitle}>{t('onboarding.newbieCheck.expertTitle')}</Text>
@@ -46,7 +49,7 @@ const NewbieCheckStep = ({ isNewbie, onSelect, name }: NewbieCheckStepProps) => 
           style={styles.cardImage}
           resizeMode="contain"
         />
-      </TouchableOpacity>
+      </SelectableCard>
     </View>
   );
 };
@@ -59,27 +62,16 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 24,
     lineHeight: 32,
   },
-  selectionCard: {
-    width: '100%',
+  card: {
     height: 110,
     padding: 20,
-    backgroundColor: '#1e1e1e',
-    borderRadius: 16,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  selectedCard: {
-    borderColor: colors.primary,
-    backgroundColor: '#2a1a2a',
   },
   cardTextContainer: {
     flex: 1,
@@ -89,12 +81,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   cardDesc: {
     fontSize: 13,
-    color: '#aaa',
+    color: colors.textSecondary,
     lineHeight: 18,
   },
   cardImage: {

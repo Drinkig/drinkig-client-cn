@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 
 import LinearGradient from 'react-native-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../../constants/colors';
+import GlassChip from '../common/GlassChip';
 
 interface Category {
     title: string;
@@ -42,7 +43,7 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
             {/* ScrollView Container with Gradients */}
             <View style={{ flex: 1 }}>
                 <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 20 }}>
-                    {categories.map((category, index) => (
+                    {categories.map((category) => (
                         <View key={category.title} style={styles.section}>
                             <Text style={styles.sectionTitle}>{category.title}</Text>
                             <View style={styles.grid}>
@@ -50,18 +51,17 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
                                     if (allowCustomInput && opt === '기타') {
                                         if (customValue) {
                                             return (
-                                                <TouchableOpacity
+                                                <GlassChip
                                                     key="custom-value"
-                                                    style={[styles.chip, styles.selectedChip]}
+                                                    label={customValue}
+                                                    selected
                                                     onPress={() => onSelect(customValue)}
-                                                >
-                                                    <Text style={[styles.chipText, styles.selectedChipText]}>{customValue}</Text>
-                                                </TouchableOpacity>
+                                                />
                                             );
                                         }
                                         if (isInputVisible) {
                                             return (
-                                                <View key="custom-input" style={[styles.chip, styles.inputChip]}>
+                                                <View key="custom-input" style={styles.inputChip}>
                                                     <TextInput
                                                         style={styles.textInput}
                                                         value={inputText}
@@ -77,24 +77,21 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
                                             );
                                         }
                                         return (
-                                            <TouchableOpacity
+                                            <GlassChip
                                                 key={opt}
-                                                style={styles.chip}
+                                                label={opt}
                                                 onPress={() => setIsInputVisible(true)}
-                                            >
-                                                <Text style={styles.chipText}>{opt}</Text>
-                                            </TouchableOpacity>
+                                            />
                                         );
                                     }
 
                                     return (
-                                        <TouchableOpacity
+                                        <GlassChip
                                             key={opt}
-                                            style={[styles.chip, selected.includes(opt) && styles.selectedChip]}
+                                            label={opt}
+                                            selected={selected.includes(opt)}
                                             onPress={() => onSelect(opt)}
-                                        >
-                                            <Text style={[styles.chipText, selected.includes(opt) && styles.selectedChipText]}>{opt}</Text>
-                                        </TouchableOpacity>
+                                        />
                                     );
                                 })}
                             </View>
@@ -105,14 +102,14 @@ export const CategorizedSelectionStep = ({ title, categories, selected, onSelect
 
 
                 <LinearGradient
-                    colors={['#121212', '#12121200']}
+                    colors={[colors.background, `${colors.background}00`]}
                     style={styles.topGradient}
                     pointerEvents="none"
                 />
 
 
                 <LinearGradient
-                    colors={['#12121200', '#121212']}
+                    colors={[`${colors.background}00`, colors.background]}
                     style={styles.bottomGradient}
                     pointerEvents="none"
                 />
@@ -125,12 +122,12 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingTop: 20,
-        backgroundColor: '#121212',
+        backgroundColor: colors.background,
     },
     stepTitle: {
         fontSize: 22,
         fontWeight: 'bold',
-        color: colors.white,
+        color: colors.textPrimary,
         marginBottom: 8,
     },
     stepDesc: {
@@ -161,7 +158,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#ddd',
+        color: colors.textPrimary,
         marginBottom: 12,
         marginTop: 4,
     },
@@ -170,50 +167,16 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 8,
     },
-    chip: {
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        backgroundColor: colors.background,
-        borderRadius: 12,
-        marginBottom: 4,
-        borderWidth: 1.5,
-        borderColor: colors.border,
-        shadowColor: colors.black,
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 3,
-        elevation: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    selectedChip: {
-        backgroundColor: '#3e204a',
-        borderColor: colors.primary,
-    },
-    chipText: {
-        color: '#bbb',
-        fontSize: 14,
-        fontWeight: '500',
-        textAlign: 'center',
-        includeFontPadding: false,
-    },
-    selectedChipText: {
-        color: '#d4acfb',
-        fontWeight: '700',
-    },
     inputChip: {
-        backgroundColor: '#1e1e1e',
+        backgroundColor: colors.surface1,
         borderColor: colors.primary,
-        paddingVertical: 0,
-        paddingHorizontal: 0,
-        minWidth: 80,
+        borderWidth: 1,
         borderRadius: 12,
+        minWidth: 80,
+        justifyContent: 'center',
     },
     textInput: {
-        color: colors.white,
+        color: colors.textPrimary,
         fontSize: 14,
         paddingVertical: 10,
         paddingHorizontal: 14,

@@ -1,21 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FlavorProfile } from './FlavorProfileStep';
 import { colors } from '../../constants/colors';
+import SelectableCard from '../common/SelectableCard';
 
 interface NewbieFlavorProfileStepProps {
   attribute: keyof FlavorProfile;
   value: number | null | undefined;
   onChange: (value: number) => void;
 }
-
-type FlavorOption = {
-  score: number;
-  emoji: string;
-  label: string;
-  description: string;
-};
 
 const NEWBIE_FLAVOR_EMOJIS: Record<keyof FlavorProfile, string[]> = {
   alcohol: ['🍺', '🍹', '🍶', '🥣', '🥃'],
@@ -45,30 +39,30 @@ const NewbieFlavorProfileStep = ({ attribute, value, onChange }: NewbieFlavorPro
       <Text style={styles.title}>{data.question}</Text>
 
       <View style={styles.optionsContainer}>
-        {data.options.map((option) => (
-          <TouchableOpacity
-            key={option.score}
-            style={[
-              styles.optionButton,
-              value === option.score && styles.selectedOptionButton
-            ]}
-            onPress={() => onChange(option.score)}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.emoji}>{option.emoji}</Text>
-            <View style={styles.textContainer}>
-              <Text style={[
-                styles.optionLabel,
-                value === option.score && styles.selectedOptionText
-              ]}>
-                {option.label}
-              </Text>
-              <Text style={styles.optionDesc}>
-                {option.description}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {data.options.map((option) => {
+          const isSelected = value === option.score;
+          return (
+            <SelectableCard
+              key={option.score}
+              selected={isSelected}
+              onPress={() => onChange(option.score)}
+              style={styles.optionButton}
+            >
+              <Text style={styles.emoji}>{option.emoji}</Text>
+              <View style={styles.textContainer}>
+                <Text style={[
+                  styles.optionLabel,
+                  isSelected && styles.selectedOptionText,
+                ]}>
+                  {option.label}
+                </Text>
+                <Text style={styles.optionDesc}>
+                  {option.description}
+                </Text>
+              </View>
+            </SelectableCard>
+          );
+        })}
       </View>
     </ScrollView>
   );
@@ -85,15 +79,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 30,
     lineHeight: 32,
-  },
-  question: {
-    fontSize: 16,
-    color: '#aaa',
-    marginBottom: 30,
-    lineHeight: 24,
   },
   optionsContainer: {
     gap: 12,
@@ -101,15 +89,7 @@ const styles = StyleSheet.create({
   optionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e1e1e',
     padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  selectedOptionButton: {
-    borderColor: colors.primary,
-    backgroundColor: '#2a1a2a',
   },
   emoji: {
     fontSize: 24,
@@ -121,7 +101,7 @@ const styles = StyleSheet.create({
   optionLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.textPrimary,
     marginBottom: 4,
   },
   selectedOptionText: {
@@ -129,10 +109,9 @@ const styles = StyleSheet.create({
   },
   optionDesc: {
     fontSize: 13,
-    color: '#ccc',
+    color: colors.textSecondary,
     marginTop: 2,
   },
 });
 
 export default NewbieFlavorProfileStep;
-

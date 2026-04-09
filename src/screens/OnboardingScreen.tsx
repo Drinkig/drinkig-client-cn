@@ -37,6 +37,7 @@ import ProfileStep from "../components/onboarding/ProfileStep";
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import TransitionStep from "../components/onboarding/TransitionStep";
 import { colors } from '../constants/colors';
+import { generateRandomNickname } from "../utils/nicknameGenerator";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -222,7 +223,10 @@ const OnboardingScreen = () => {
   ];
 
   const [step, setStep] = useState<Step>("INTRO");
-  const [formData, setFormData] = useState<OnboardingData>(INITIAL_DATA);
+  const [formData, setFormData] = useState<OnboardingData>(() => ({
+    ...INITIAL_DATA,
+    name: generateRandomNickname(),
+  }));
   const [loading, setLoading] = useState(false);
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(
     null
@@ -862,6 +866,14 @@ const OnboardingScreen = () => {
             <Icon name="arrow-back" size={24} color={colors.white} />
           </TouchableOpacity>
         )}
+        {__DEV__ && (
+          <TouchableOpacity
+            onPress={() => completeOnboarding()}
+            style={styles.devSkipButton}
+          >
+            <Text style={styles.devSkipText}>DEV Skip</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {renderProgressBar()}
@@ -947,15 +959,31 @@ const OnboardingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
   },
   header: {
     height: 50,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
   },
   backButton: {
     padding: 8,
+  },
+  devSkipButton: {
+    marginLeft: "auto",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
+  devSkipText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "600",
   },
   progressContainer: {
     paddingHorizontal: 24,
@@ -979,18 +1007,25 @@ const styles = StyleSheet.create({
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: "#222",
+    borderTopColor: colors.border,
   },
   nextButton: {
     width: "100%",
     height: 56,
     backgroundColor: colors.primary,
-    borderRadius: 12,
+    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 10,
   },
   disabledButton: {
     opacity: 0.3,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   nextButtonText: {
     color: colors.white,
@@ -998,7 +1033,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   analyzingContainer: {
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
     zIndex: 9999,
     justifyContent: "center",
     alignItems: "center",

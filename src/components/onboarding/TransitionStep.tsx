@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.white,
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 10,
     lineHeight: 32,
