@@ -47,7 +47,6 @@ type Step =
   | "NEWBIE_CHECK"
   | "NEWBIE_TRANSITION"
   | "ALCOHOL_PREF"
-  | "FOOD_PREF"
   | "FLAVOR_PROFILE"
   | "FLAVOR_ACIDITY"
   | "FLAVOR_SWEETNESS"
@@ -70,7 +69,6 @@ interface OnboardingData {
   wineVariety: string[];
 
   preferredAlcohols: string[];
-  preferredFoods: string[];
   flavorProfile: FlavorProfile;
 }
 
@@ -84,7 +82,6 @@ const INITIAL_DATA: OnboardingData = {
   wineArea: [],
   wineVariety: [],
   preferredAlcohols: [],
-  preferredFoods: [],
   flavorProfile: {
     acidity: undefined,
     sweetness: undefined,
@@ -121,59 +118,6 @@ const ALCOHOL_CATEGORIES = [
   {
     title: "기타 주류",
     data: ["사케", "진", "보드카", "럼", "데킬라", "하이볼", "칵테일", "기타"],
-  },
-];
-
-const FOOD_CATEGORIES = [
-  {
-    title: "국가 별",
-    data: [
-      "한식",
-      "중식",
-      "일식",
-      "양식",
-      "이탈리아",
-      "프랑스",
-      "스페인",
-      "아메리칸 차이니즈",
-      "베트남",
-      "태국",
-      "인도",
-      "멕시코",
-      "남미",
-      "퓨전",
-    ],
-  },
-  {
-    title: "육류",
-    data: [
-      "돼지고기",
-      "소고기",
-      "닭고기",
-      "양고기",
-      "스테이크",
-      "바베큐",
-      "순대",
-      "곱창",
-      "족발/보쌈",
-    ],
-  },
-  {
-    title: "해산물",
-    data: [
-      "갑각류",
-      "조개류",
-      "회",
-      "숙성사시미",
-      "찜/탕",
-      "스시",
-      "장어",
-      "생선구이",
-    ],
-  },
-  {
-    title: "기타",
-    data: ["치즈", "샤퀴테리", "피자", "햄버거", "과일", "디저트", "스낵/과자"],
   },
 ];
 
@@ -249,7 +193,6 @@ const OnboardingScreen = () => {
       NEWBIE_TRANSITION: "onboarding_newbie_transition",
       EXPERT_TRANSITION: "onboarding_expert_transition",
       ALCOHOL_PREF: "onboarding_alcohol_preference",
-      FOOD_PREF: "onboarding_food_preference",
       FLAVOR_PROFILE: "onboarding_flavor_profile",
       FLAVOR_ACIDITY: "onboarding_flavor_acidity",
       FLAVOR_SWEETNESS: "onboarding_flavor_sweetness",
@@ -276,8 +219,6 @@ const OnboardingScreen = () => {
         return true;
       case "ALCOHOL_PREF":
         return formData.preferredAlcohols.length > 0;
-      case "FOOD_PREF":
-        return formData.preferredFoods.length > 0;
       case "FLAVOR_PROFILE":
         const { acidity, sweetness, tannin, body, alcohol } =
           formData.flavorProfile;
@@ -316,8 +257,7 @@ const OnboardingScreen = () => {
       | "wineSort"
       | "wineArea"
       | "wineVariety"
-      | "preferredAlcohols"
-      | "preferredFoods",
+      | "preferredAlcohols",
     value: string
   ) => {
     setFormData((prev) => {
@@ -492,7 +432,6 @@ const OnboardingScreen = () => {
       };
 
       requestData.preferredAlcohols = formData.preferredAlcohols;
-      requestData.preferredFoods = formData.preferredFoods;
       requestData.acidity = formData.flavorProfile.acidity ?? null;
       requestData.sweetness = formData.flavorProfile.sweetness ?? null;
       requestData.tannin = formData.flavorProfile.tannin ?? null;
@@ -584,9 +523,6 @@ const OnboardingScreen = () => {
         break;
 
       case "ALCOHOL_PREF":
-        next = "FOOD_PREF";
-        break;
-      case "FOOD_PREF":
         if (formData.isNewbie) {
           next = "FLAVOR_ACIDITY";
         } else {
@@ -636,11 +572,9 @@ const OnboardingScreen = () => {
     if (step === "ALCOHOL_PREF") {
       prev = formData.isNewbie ? "NEWBIE_TRANSITION" : "EXPERT_TRANSITION";
     }
-    if (step === "FOOD_PREF") prev = "ALCOHOL_PREF";
+    if (step === "FLAVOR_PROFILE") prev = "ALCOHOL_PREF";
 
-    if (step === "FLAVOR_PROFILE") prev = "FOOD_PREF";
-
-    if (step === "FLAVOR_ACIDITY") prev = "FOOD_PREF";
+    if (step === "FLAVOR_ACIDITY") prev = "ALCOHOL_PREF";
     if (step === "FLAVOR_SWEETNESS") prev = "FLAVOR_ACIDITY";
     if (step === "FLAVOR_TANNIN") prev = "FLAVOR_SWEETNESS";
     if (step === "FLAVOR_BODY") prev = "FLAVOR_TANNIN";
@@ -667,8 +601,7 @@ const OnboardingScreen = () => {
     if (step === "NEWBIE_TRANSITION" || step === "EXPERT_TRANSITION")
       return 0.4;
 
-    if (step === "ALCOHOL_PREF") return 0.5;
-    if (step === "FOOD_PREF") return 0.6;
+    if (step === "ALCOHOL_PREF") return 0.55;
 
     if (isNewbieMode) {
       if (step === "FLAVOR_ACIDITY") return 0.65;
@@ -754,16 +687,6 @@ const OnboardingScreen = () => {
             categories={ALCOHOL_CATEGORIES}
             selected={formData.preferredAlcohols}
             onSelect={(v: string) => toggleSelection("preferredAlcohols", v)}
-            allowCustomInput
-          />
-        );
-      case "FOOD_PREF":
-        return (
-          <CategorizedSelectionStep
-            title={t('onboarding.foodPrefTitle')}
-            categories={FOOD_CATEGORIES}
-            selected={formData.preferredFoods}
-            onSelect={(v: string) => toggleSelection("preferredFoods", v)}
             allowCustomInput
           />
         );
