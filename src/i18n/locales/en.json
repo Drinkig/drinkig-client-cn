@@ -1100,16 +1100,17 @@
         }
     },
     "paywall": {
-        "title": "Upgrade to Premium",
-        "subtitle": "Unlock all features and get the most out of your wine experience",
+        "title": "Find the wine\nthat fits your taste",
+        "subtitle": "From taste analysis to food pairing — pick with confidence, even as a beginner",
         "feature": {
-            "unlimitedLabelScan": "Unlimited wine label scans",
-            "wineListScan": "Wine list scan & recommendations",
-            "foodPairing": "Food-matched wine varietals",
-            "compatibility": "Unlimited compatibility score analysis",
-            "compatibilityReport": "Detailed compatibility analysis report",
-            "tasteReset": "Taste profile reset"
+            "unlimitedLabelScan": "Snap any label, get the full story instantly",
+            "wineListScan": "Photograph any restaurant menu, get the perfect pick",
+            "foodPairing": "Grape variety recommendations for any meal",
+            "compatibility": "A taste-match score for every wine, unlimited",
+            "compatibilityReport": "A full report on why this wine fits your taste",
+            "tasteReset": "Reset your taste profile anytime"
         },
+        "moreBenefitsTitle": "And more",
         "plan": {
             "bestValue": "BEST VALUE",
             "yearly": "Annual",
@@ -1124,7 +1125,10 @@
             "savePercent": "{{percent}}% OFF",
             "billedYearly": "{{amount}} billed yearly"
         },
-        "subscribe": "Subscribe Now",
+        "subscribe": "Start Now",
+        "ctaMicrocopy": "Cancel anytime · No fees",
+        "bestBadge": "MOST POPULAR",
+        "monthlyEquivalent": "Only {{amount}}/mo",
         "restore": "Restore Purchase",
         "promoToggle": "Have a promo code?",
         "promoPlaceholder": "Enter promo code",

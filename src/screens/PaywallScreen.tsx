@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   TextInput,
   ActivityIndicator,
   Platform,
+  Animated,
+  Easing,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -264,7 +266,7 @@ const PaywallScreen = () => {
   const monthlyEquivalent = yearlyNum / 12;
   const hasDiscount = savePercent > 0;
 
-  const features = [
+  const coreFeatures = [
     { icon: "scan-outline", text: t("paywall.feature.unlimitedLabelScan") },
     { icon: "list-outline", text: t("paywall.feature.wineListScan") },
     { icon: "restaurant-outline", text: t("paywall.feature.foodPairing") },
@@ -273,12 +275,89 @@ const PaywallScreen = () => {
       text: t("paywall.feature.compatibility"),
       isMCI: true,
     },
+  ];
+
+  const extraFeatures = [
     {
       icon: "document-text-outline",
       text: t("paywall.feature.compatibilityReport"),
     },
     { icon: "refresh-outline", text: t("paywall.feature.tasteReset") },
   ];
+
+  // Sequential fade-in animations for feature rows (100ms stagger)
+  const featureAnimsRef = useRef(
+    [...coreFeatures, ...extraFeatures].map(() => new Animated.Value(0))
+  );
+  useEffect(() => {
+    const anims = featureAnimsRef.current.map((v, i) =>
+      Animated.timing(v, {
+        toValue: 1,
+        duration: 320,
+        delay: 120 + i * 100,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      })
+    );
+    Animated.stagger(0, anims).start();
+  }, []);
+
+  // Diagonal shimmer sweep across CTA button
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const [ctaWidth, setCtaWidth] = useState(0);
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 1400,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.delay(1600),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [shimmerAnim]);
+
+  const shimmerTranslate = shimmerAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-ctaWidth * 0.6, ctaWidth],
+  });
+
+  const renderFeatureRow = (
+    feature: { icon: string; text: string; isMCI?: boolean },
+    index: number
+  ) => {
+    const anim = featureAnimsRef.current[index];
+    const translateY = anim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [8, 0],
+    });
+    return (
+      <Animated.View
+        key={index}
+        style={[
+          styles.featureRow,
+          { opacity: anim, transform: [{ translateY }] },
+        ]}
+      >
+        <View style={styles.featureIconContainer}>
+          {feature.isMCI ? (
+            <MaterialCommunityIcons
+              name={feature.icon}
+              size={20}
+              color={colors.primary}
+            />
+          ) : (
+            <Icon name={feature.icon} size={20} color={colors.primary} />
+          )}
+        </View>
+        <Text style={styles.featureText}>{feature.text}</Text>
+      </Animated.View>
+    );
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -301,22 +380,18 @@ const PaywallScreen = () => {
         </View>
 
         <View style={styles.featuresSection}>
-          {features.map((feature, index) => (
-            <View key={index} style={styles.featureRow}>
-              <View style={styles.featureIconContainer}>
-                {feature.isMCI ? (
-                  <MaterialCommunityIcons
-                    name={feature.icon}
-                    size={20}
-                    color={colors.primary}
-                  />
-                ) : (
-                  <Icon name={feature.icon} size={20} color={colors.primary} />
-                )}
-              </View>
-              <Text style={styles.featureText}>{feature.text}</Text>
-            </View>
-          ))}
+          {coreFeatures.map((feature, index) =>
+            renderFeatureRow(feature, index)
+          )}
+        </View>
+
+        <View style={styles.extraFeaturesSection}>
+          <Text style={styles.extraFeaturesTitle}>
+            {t("paywall.moreBenefitsTitle")}
+          </Text>
+          {extraFeatures.map((feature, index) =>
+            renderFeatureRow(feature, coreFeatures.length + index)
+          )}
         </View>
 
         <View style={styles.planSection}>
@@ -335,14 +410,17 @@ const PaywallScreen = () => {
                 style={StyleSheet.absoluteFillObject}
               />
             )}
-            {hasDiscount && (
-              <Text style={styles.planBadgeFloat}>
-                {t("paywall.plan.savePercent", { percent: savePercent })}
-              </Text>
-            )}
+            <View style={styles.planBadgeRow}>
+              <Text style={styles.planBestBadge}>{t("paywall.bestBadge")}</Text>
+              {hasDiscount && (
+                <Text style={styles.planBadgeFloat}>
+                  {t("paywall.plan.savePercent", { percent: savePercent })}
+                </Text>
+              )}
+            </View>
             <View style={styles.planRow}>
               <Text style={styles.planName}>{t("paywall.plan.yearly")}</Text>
-              <View style={styles.planPriceCluster}>
+              <View style={styles.planPriceColumn}>
                 {hasDiscount && (
                   <Text style={styles.planPriceOriginal}>
                     {formatPrice(yearlyOriginal)}
@@ -353,6 +431,11 @@ const PaywallScreen = () => {
                   <Text style={styles.planPriceUnit}>
                     {t("paywall.plan.perYearSuffix")}
                   </Text>
+                </Text>
+                <Text style={styles.planMonthlyEquivalent}>
+                  {t("paywall.monthlyEquivalent", {
+                    amount: formatPrice(monthlyEquivalent),
+                  })}
                 </Text>
               </View>
             </View>
@@ -431,6 +514,7 @@ const PaywallScreen = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity
+          activeOpacity={0.9}
           style={[
             styles.purchaseButton,
             (isProcessing || isLoadingProducts) &&
@@ -438,7 +522,40 @@ const PaywallScreen = () => {
           ]}
           onPress={handlePurchase}
           disabled={isProcessing || isLoadingProducts}
+          onLayout={(e) => setCtaWidth(e.nativeEvent.layout.width)}
         >
+          <LinearGradient
+            colors={[colors.primary, colors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+          {ctaWidth > 0 && !isProcessing && (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.ctaShimmer,
+                {
+                  width: ctaWidth * 0.35,
+                  transform: [
+                    { translateX: shimmerTranslate },
+                    { rotate: "18deg" },
+                  ],
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={[
+                  "rgba(255,255,255,0)",
+                  "rgba(255,255,255,0.28)",
+                  "rgba(255,255,255,0)",
+                ]}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={StyleSheet.absoluteFillObject}
+              />
+            </Animated.View>
+          )}
           {isProcessing ? (
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
@@ -447,6 +564,7 @@ const PaywallScreen = () => {
             </Text>
           )}
         </TouchableOpacity>
+        <Text style={styles.ctaMicrocopy}>{t("paywall.ctaMicrocopy")}</Text>
 
         <TouchableOpacity
           onPress={handleRestore}
@@ -486,7 +604,8 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: colors.white,
-    marginBottom: 8,
+    lineHeight: 38,
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
@@ -494,8 +613,23 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   featuresSection: {
-    marginBottom: 32,
+    marginBottom: 20,
     gap: 16,
+  },
+  extraFeaturesSection: {
+    marginBottom: 32,
+    paddingTop: 18,
+    gap: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  extraFeaturesTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: colors.textSecondary,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginBottom: 4,
   },
   featureRow: {
     flexDirection: "row",
@@ -544,10 +678,16 @@ const styles = StyleSheet.create({
   planPriceUnitCompact: {
     fontSize: 13,
   },
-  planBadgeFloat: {
+  planBadgeRow: {
     position: "absolute",
     top: 0,
-    right: 16,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  planBestBadge: {
     backgroundColor: colors.primary,
     color: colors.white,
     fontSize: 11,
@@ -557,11 +697,30 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
     overflow: "hidden",
+    letterSpacing: 0.3,
+  },
+  planBadgeFloat: {
+    backgroundColor: "rgba(255,255,255,0.14)",
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "bold",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    overflow: "hidden",
+  },
+  planMonthlyEquivalent: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "rgba(255,255,255,0.7)",
+    fontWeight: "500",
   },
   planRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
   },
   planName: {
     fontSize: 20,
@@ -574,11 +733,16 @@ const styles = StyleSheet.create({
     gap: 10,
     flexShrink: 1,
   },
+  planPriceColumn: {
+    alignItems: "flex-end",
+    flexShrink: 1,
+  },
   planPriceOriginal: {
-    fontSize: 15,
+    fontSize: 14,
     color: "rgba(255,255,255,0.5)",
     textDecorationLine: "line-through",
     fontWeight: "500",
+    marginBottom: 2,
   },
   planPrice: {
     fontSize: 26,
@@ -641,16 +805,28 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   purchaseButton: {
-    backgroundColor: colors.primary,
     height: 56,
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+    backgroundColor: colors.primary,
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  ctaShimmer: {
+    position: "absolute",
+    top: -20,
+    bottom: -20,
+  },
+  ctaMicrocopy: {
+    textAlign: "center",
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginTop: 10,
   },
   purchaseButtonDisabled: {
     opacity: 0.6,
