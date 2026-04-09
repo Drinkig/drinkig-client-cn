@@ -8,7 +8,7 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
-  Dimensions,
+  useWindowDimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Animated,
@@ -21,41 +21,54 @@ import * as KakaoLogin from "@react-native-seoul/kakao-login";
 import auth from "@react-native-firebase/auth";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { exchangeKakaoToken, appleLogin } from "../api/member";
 import { useUser } from "../context/UserContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
 
-const width = Dimensions.get("window").width;
+type SlideItem = {
+  id: string;
+  image: number;
+  titleKey: string;
+};
 
-const slides = [
+const slides: SlideItem[] = [
   {
     id: "1",
     image: require("../assets/onboarding/Drinky_onboarding_2.png"),
-    title: "몰랐던 와인 취향을\n가장 쉽게 발견해보세요",
+    titleKey: "login.slides.0",
   },
   {
     id: "2",
     image: require("../assets/onboarding/Drinky_onboarding_3.png"),
-    title: "나만의 와인 기록을\n남겨보세요",
+    titleKey: "login.slides.1",
   },
   {
     id: "3",
     image: require("../assets/onboarding/Drinky_smart_organize.png"),
-    title: "보유한 와인을\n똑똑하게 관리하세요",
+    titleKey: "login.slides.2",
   },
   {
     id: "4",
     image: require("../assets/onboarding/Drinky-search.png"),
-    title: "궁금한 와인을\n검색해보세요",
+    titleKey: "login.slides.3",
   },
 ];
 
-const Slide = ({ item }: { item: (typeof slides)[0] }) => {
+const Slide = ({
+  item,
+  width,
+  title,
+}: {
+  item: SlideItem;
+  width: number;
+  title: string;
+}) => {
   return (
     <View style={[styles.slide, { width }]}>
       <Image source={item.image} style={styles.logo} resizeMode="contain" />
-      <Text style={styles.sloganText}>{item.title}</Text>
+      <Text style={styles.sloganText}>{title}</Text>
     </View>
   );
 };
@@ -64,8 +77,9 @@ const LoginScreen = () => {
   const navigation = useNavigation();
   const { login } = useUser();
   const { showLoading, hideLoading, showToast } = useGlobalUI();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const { width } = Dimensions.get("window");
+  const { width } = useWindowDimensions();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -102,9 +116,10 @@ const LoginScreen = () => {
       } else {
         console.error("Apple Login Error:", error);
         showToast(
-          `Apple 로그인 실패: ${
-            error.message || error.code || "알 수 없는 오류"
-          }`,
+          t("login.toast.appleFailed", {
+            reason:
+              error.message || error.code || t("login.toast.appleUnknownError"),
+          }),
           { type: "error" }
         );
       }
@@ -146,10 +161,10 @@ const LoginScreen = () => {
       }
     } catch (error: any) {
       if (error.code === "E_CANCELLED_OPERATION") {
-        showToast("카카오 로그인이 취소되었습니다.", { type: "info" });
+        showToast(t("login.toast.kakaoCancelled"), { type: "info" });
       } else {
         console.error("Kakao Login Error:", error);
-        showToast("카카오 로그인에 실패했습니다. 관리자에게 문의하세요.", {
+        showToast(t("login.toast.kakaoFailed"), {
           type: "error",
         });
       }
@@ -268,7 +283,9 @@ const LoginScreen = () => {
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => <Slide item={item} />}
+              renderItem={({ item }) => (
+                <Slide item={item} width={width} title={t(item.titleKey)} />
+              )}
               onMomentumScrollEnd={updateCurrentSlideIndex}
               keyExtractor={(item) => item.id}
             />
@@ -301,7 +318,9 @@ const LoginScreen = () => {
                     color={colors.black}
                     style={styles.buttonIcon}
                   />
-                  <Text style={styles.appleButtonText}>Apple로 시작하기</Text>
+                  <Text style={styles.appleButtonText}>
+                    {t("login.buttons.apple")}
+                  </Text>
                 </TouchableOpacity>
               )}
 
@@ -317,23 +336,25 @@ const LoginScreen = () => {
                   color={colors.black}
                   style={styles.buttonIcon}
                 />
-                <Text style={styles.kakaoButtonText}>카카오로 시작하기</Text>
+                <Text style={styles.kakaoButtonText}>
+                  {t("login.buttons.kakao")}
+                </Text>
               </TouchableOpacity>
             </View>
 
             {/* Terms of Service Agreement */}
             <View style={styles.agreementContainer}>
               <Text style={styles.agreementText}>
-                로그인하시면{" "}
+                {t("login.agreement.prefix")}
                 <Text
                   style={styles.agreementLink}
                   onPress={() =>
                     Linking.openURL("https://web.drinkig.com/terms")
                   }
                 >
-                  이용약관
+                  {t("login.agreement.link")}
                 </Text>
-                에 동의하는 것으로 간주됩니다
+                {t("login.agreement.suffix")}
               </Text>
             </View>
           </View>

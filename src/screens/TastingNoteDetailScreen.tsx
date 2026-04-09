@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,22 +9,26 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from '../types';
-import { getTastingNoteDetail, TastingNoteDTO, deleteTastingNote } from '../api/wine';
-import { useGlobalUI } from '../context/GlobalUIContext';
-import PentagonRadarChart from '../components/common/PentagonRadarChart';
-import { COLOR_PALETTES } from '../components/tasting_note/constants';
-import { colors } from '../constants/colors';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { RootStackParamList } from "../types";
+import {
+  getTastingNoteDetail,
+  TastingNoteDTO,
+  deleteTastingNote,
+} from "../api/wine";
+import { useGlobalUI } from "../context/GlobalUIContext";
+import PentagonRadarChart from "../components/common/PentagonRadarChart";
+import { COLOR_PALETTES } from "../components/tasting_note/constants";
+import { colors } from "../constants/colors";
+import { useTranslation } from "react-i18next";
 
-type TastingNoteDetailRouteProp = RouteProp<RootStackParamList, 'TastingNoteDetail'>;
-
-const { width } = Dimensions.get('window');
+type TastingNoteDetailRouteProp = RouteProp<
+  RootStackParamList,
+  "TastingNoteDetail"
+>;
 
 export default function TastingNoteDetailScreen() {
   const navigation = useNavigation();
@@ -51,15 +55,18 @@ export default function TastingNoteDetailScreen() {
         }
         setNote(noteData);
       } else {
-        showToast(response.message || t('tastingNoteDetail.error.fetchFailMsg'), {
-          type: 'error',
-          onHide: () => navigation.goBack(),
-        });
+        showToast(
+          response.message || t("tastingNoteDetail.error.fetchFailMsg"),
+          {
+            type: "error",
+            onHide: () => navigation.goBack(),
+          }
+        );
       }
     } catch (error) {
-      console.error('Failed to fetch tasting note detail:', error);
-      showToast(t('tastingNoteDetail.error.networkFailMsg'), {
-        type: 'error',
+      console.error("Failed to fetch tasting note detail:", error);
+      showToast(t("tastingNoteDetail.error.networkFailMsg"), {
+        type: "error",
         onHide: () => navigation.goBack(),
       });
     } finally {
@@ -69,26 +76,31 @@ export default function TastingNoteDetailScreen() {
 
   const handleDelete = () => {
     showAlert({
-      title: t('tastingNoteDetail.delete.title'),
-      message: t('tastingNoteDetail.delete.message'),
-      confirmText: t('tastingNoteDetail.delete.confirm'),
+      title: t("tastingNoteDetail.delete.title"),
+      message: t("tastingNoteDetail.delete.message"),
+      confirmText: t("tastingNoteDetail.delete.confirm"),
       singleButton: false,
       onConfirm: async () => {
         try {
           const response = await deleteTastingNote(tastingNoteId);
           if (response.isSuccess) {
-            showToast(t('tastingNoteDetail.delete.successMsg'), {
-              type: 'success',
+            showToast(t("tastingNoteDetail.delete.successMsg"), {
+              type: "success",
               onHide: () => navigation.goBack(),
             });
           } else {
-            showToast(response.message || t('tastingNoteDetail.delete.failMsg'), { type: 'error' });
+            showToast(
+              response.message || t("tastingNoteDetail.delete.failMsg"),
+              { type: "error" }
+            );
           }
         } catch (error) {
-          console.error('Failed to delete tasting note:', error);
-          showToast(t('tastingNoteDetail.delete.networkFailMsg'), { type: 'error' });
+          console.error("Failed to delete tasting note:", error);
+          showToast(t("tastingNoteDetail.delete.networkFailMsg"), {
+            type: "error",
+          });
         }
-      }
+      },
     });
   };
 
@@ -102,18 +114,18 @@ export default function TastingNoteDetailScreen() {
 
   if (!note) return null;
 
-
   const parseReview = (fullReview: string) => {
     const finishMatch = fullReview.match(/\[Finish\] (.*?)(?:\n\n|$)/s);
     const finishTextRaw = finishMatch ? finishMatch[1] : null;
 
-
     const finishTags = finishTextRaw
-      ? finishTextRaw.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+      ? finishTextRaw
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter((tag) => tag.length > 0)
       : [];
 
-
-    let reviewText = fullReview.replace(/\[Finish\] .*?(?:\n\n|$)/s, '').trim();
+    let reviewText = fullReview.replace(/\[Finish\] .*?(?:\n\n|$)/s, "").trim();
 
     return { finishTags, reviewText };
   };
@@ -124,25 +136,32 @@ export default function TastingNoteDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('tastingNoteDetail.header')}</Text>
+        <Text style={styles.headerTitle}>{t("tastingNoteDetail.header")}</Text>
         <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
           <Ionicons name="trash-outline" size={24} color={colors.error} />
         </TouchableOpacity>
       </View>
 
-
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
-
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.topSection}>
           <View style={styles.wineImageContainer}>
             {note.imageUrl ? (
-              <Image source={{ uri: note.imageUrl }} style={styles.wineImage} resizeMode="contain" />
+              <Image
+                source={{ uri: note.imageUrl }}
+                style={styles.wineImage}
+                resizeMode="contain"
+              />
             ) : (
               <View style={styles.wineImagePlaceholder}>
                 <Ionicons name="wine" size={40} color="#666" />
@@ -152,21 +171,41 @@ export default function TastingNoteDetailScreen() {
 
           <View style={styles.wineInfoContainer}>
             <View style={styles.wineHeaderRow}>
-              <View style={[styles.typeBadge, { backgroundColor: getWineTypeColor(note.sort || '') }]}>
-                <Text style={styles.typeText}>{note.sort || 'Wine'}</Text>
+              <View
+                style={[
+                  styles.typeBadge,
+                  { backgroundColor: getWineTypeColor(note.sort || "") },
+                ]}
+              >
+                <Text style={styles.typeText}>{note.sort || "Wine"}</Text>
               </View>
               <Text style={styles.dateText}>{note.tasteDate}</Text>
             </View>
 
             <Text style={styles.wineName} numberOfLines={2}>
-              {i18n.language === 'en' ? (note.wineNameEng || note.wineName) : note.wineName}
+              {i18n.language === "en"
+                ? note.wineNameEng || note.wineName
+                : note.wineName}
             </Text>
-            <Text style={styles.vintageText}>{note.vintageYear === 0 ? t('tastingNoteDetail.info.nv') : t('tastingNoteDetail.info.vintage', { year: note.vintageYear })}</Text>
+            <Text style={styles.vintageText}>
+              {note.vintageYear === 0
+                ? t("tastingNoteDetail.info.nv")
+                : t("tastingNoteDetail.info.vintage", {
+                    year: note.vintageYear,
+                  })}
+            </Text>
 
             <View style={styles.metaRow}>
               <View style={styles.colorWrapper}>
-                <Text style={styles.metaLabel}>{t('tastingNoteDetail.info.color')}</Text>
-                <View style={[styles.colorCircle, { backgroundColor: getHexColorFromValue(note.color) }]} />
+                <Text style={styles.metaLabel}>
+                  {t("tastingNoteDetail.info.color")}
+                </Text>
+                <View
+                  style={[
+                    styles.colorCircle,
+                    { backgroundColor: getHexColorFromValue(note.color) },
+                  ]}
+                />
               </View>
               <View style={styles.ratingWrapper}>
                 <Ionicons name="star" size={16} color="#f1c40f" />
@@ -178,11 +217,11 @@ export default function TastingNoteDetailScreen() {
 
         <View style={styles.divider} />
 
-
         <View style={styles.middleSection}>
-
           <View style={[styles.palateColumn, styles.infoBox]}>
-            <Text style={styles.boxTitle}>{t('tastingNoteDetail.info.palate')}</Text>
+            <Text style={styles.boxTitle}>
+              {t("tastingNoteDetail.info.palate")}
+            </Text>
             <View style={styles.chartContainer}>
               <PentagonRadarChart
                 data={{
@@ -197,11 +236,11 @@ export default function TastingNoteDetailScreen() {
             </View>
           </View>
 
-
           <View style={styles.rightColumn}>
-
             <View style={styles.infoBox}>
-              <Text style={styles.boxTitle}>{t('tastingNoteDetail.info.nose')}</Text>
+              <Text style={styles.boxTitle}>
+                {t("tastingNoteDetail.info.nose")}
+              </Text>
               <View>
                 <View style={styles.noseTagsContainer}>
                   {note.noseList && note.noseList.length > 0 ? (
@@ -217,9 +256,10 @@ export default function TastingNoteDetailScreen() {
               </View>
             </View>
 
-
             <View style={[styles.infoBox, { flex: 1 }]}>
-              <Text style={styles.boxTitle}>{t('tastingNoteDetail.info.finish')}</Text>
+              <Text style={styles.boxTitle}>
+                {t("tastingNoteDetail.info.finish")}
+              </Text>
               <View>
                 <View style={styles.noseTagsContainer}>
                   {finishTags.length > 0 ? (
@@ -239,16 +279,16 @@ export default function TastingNoteDetailScreen() {
 
         <View style={styles.divider} />
 
-
         <View style={styles.bottomSectionWrapper}>
-          <Text style={styles.sectionHeader}>{t('tastingNoteDetail.info.review')}</Text>
+          <Text style={styles.sectionHeader}>
+            {t("tastingNoteDetail.info.review")}
+          </Text>
           <View style={styles.bottomContent}>
             <Text style={styles.bodyText}>
-              {reviewText || t('tastingNoteDetail.info.emptyReview')}
+              {reviewText || t("tastingNoteDetail.info.emptyReview")}
             </Text>
           </View>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -256,23 +296,34 @@ export default function TastingNoteDetailScreen() {
 
 const getWineTypeColor = (type: string) => {
   switch (type?.toUpperCase()) {
-    case 'RED': case '레드': return '#EF5350';
-    case 'WHITE': case '화이트': return '#F4D03F';
-    case 'SPARKLING': case '스파클링': return '#5DADE2';
-    case 'ROSE': case '로제': return '#F1948A';
-    case 'DESSERT': case '디저트': return '#F5B041';
-    default: return '#95A5A6';
+    case "RED":
+    case "레드":
+      return "#EF5350";
+    case "WHITE":
+    case "화이트":
+      return "#F4D03F";
+    case "SPARKLING":
+    case "스파클링":
+      return "#5DADE2";
+    case "ROSE":
+    case "로제":
+      return "#F1948A";
+    case "DESSERT":
+    case "디저트":
+      return "#F5B041";
+    default:
+      return "#95A5A6";
   }
 };
 
 const getHexColorFromValue = (value: string) => {
-  if (!value) return 'transparent';
+  if (!value) return "transparent";
   for (const paletteKey in COLOR_PALETTES) {
     const palette = COLOR_PALETTES[paletteKey];
-    const found = palette.find(item => item.value === value);
+    const found = palette.find((item) => item.value === value);
     if (found) return found.color;
   }
-  return value.startsWith('#') ? value : 'transparent';
+  return value.startsWith("#") ? value : "transparent";
 };
 
 const styles = StyleSheet.create({
@@ -282,14 +333,14 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -301,7 +352,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   placeholder: {
     width: 32,
@@ -313,38 +364,38 @@ const styles = StyleSheet.create({
   },
 
   topSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 120,
   },
   wineImageContainer: {
     width: 90,
     height: 120,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     backgroundColor: colors.surface1,
     marginRight: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 4,
   },
   wineImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   wineImagePlaceholder: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   wineInfoContainer: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingVertical: 4,
   },
   wineHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   typeBadge: {
     paddingHorizontal: 8,
@@ -354,7 +405,7 @@ const styles = StyleSheet.create({
   typeText: {
     color: colors.white,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   dateText: {
     color: colors.textSecondary,
@@ -363,21 +414,21 @@ const styles = StyleSheet.create({
   wineName: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     lineHeight: 24,
   },
   vintageText: {
-    color: '#aaa',
+    color: "#aaa",
     fontSize: 14,
   },
   metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
   },
   colorWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   metaLabel: {
@@ -392,14 +443,14 @@ const styles = StyleSheet.create({
     borderColor: colors.white,
   },
   ratingWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   ratingValue: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
   divider: {
@@ -407,9 +458,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
 
-
   middleSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     minHeight: 220,
     gap: 16,
   },
@@ -418,11 +468,10 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: -10,
   },
-
 
   rightColumn: {
     flex: 1,
@@ -437,13 +486,12 @@ const styles = StyleSheet.create({
   boxTitle: {
     color: colors.primary,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
-
   noseTagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 6,
   },
   noseTag: {
@@ -452,25 +500,23 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: "#444",
   },
   noseText: {
-    color: '#ddd',
+    color: "#ddd",
     fontSize: 11,
   },
   emptyText: {
-    color: '#666',
+    color: "#666",
     fontSize: 12,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 
-
   bodyText: {
-    color: '#ccc',
+    color: "#ccc",
     fontSize: 13,
     lineHeight: 20,
   },
-
 
   bottomSectionWrapper: {
     backgroundColor: colors.surface1,
@@ -480,7 +526,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     color: colors.primary,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   bottomContent: {

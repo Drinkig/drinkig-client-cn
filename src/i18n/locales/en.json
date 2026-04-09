@@ -1156,5 +1156,28 @@
         "manage": "Manage Subscription",
         "expiresAt": "Expires {{date}}",
         "promoApplied": "Promo Applied"
+    },
+    "login": {
+        "slides": {
+            "0": "Discover wine flavors\nyou never knew you loved",
+            "1": "Keep your own\nwine journal",
+            "2": "Manage your cellar\nthe smart way",
+            "3": "Search any wine\nyou're curious about"
+        },
+        "buttons": {
+            "apple": "Continue with Apple",
+            "kakao": "Continue with Kakao"
+        },
+        "agreement": {
+            "prefix": "By signing in, you agree to our ",
+            "link": "Terms of Service",
+            "suffix": ""
+        },
+        "toast": {
+            "appleFailed": "Apple sign-in failed: {{reason}}",
+            "appleUnknownError": "Unknown error",
+            "kakaoCancelled": "Kakao sign-in was cancelled.",
+            "kakaoFailed": "Kakao sign-in failed. Please contact support."
+        }
     }
 }

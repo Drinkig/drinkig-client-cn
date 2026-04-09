@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Dimensions,
   Easing,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -36,10 +36,8 @@ import NewbieFlavorProfileStep from "../components/onboarding/NewbieFlavorProfil
 import ProfileStep from "../components/onboarding/ProfileStep";
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import TransitionStep from "../components/onboarding/TransitionStep";
-import { colors } from '../constants/colors';
+import { colors } from "../constants/colors";
 import { generateRandomNickname } from "../utils/nicknameGenerator";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 type Step =
   | "INTRO"
@@ -149,21 +147,22 @@ const OnboardingScreen = () => {
   const { t } = useTranslation();
   const { completeOnboarding } = useUser();
   const { showToast } = useGlobalUI();
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   const BUDGET_OPTIONS = [
-    { label: t('onboarding.budget.under30'), value: 30000 },
-    { label: t('onboarding.budget.30to50'), value: 50000 },
-    { label: t('onboarding.budget.50to90'), value: 90000 },
-    { label: t('onboarding.budget.90to150'), value: 150000 },
-    { label: t('onboarding.budget.over150'), value: 200000 },
+    { label: t("onboarding.budget.under30"), value: 30000 },
+    { label: t("onboarding.budget.30to50"), value: 50000 },
+    { label: t("onboarding.budget.50to90"), value: 90000 },
+    { label: t("onboarding.budget.90to150"), value: 150000 },
+    { label: t("onboarding.budget.over150"), value: 200000 },
   ];
 
   const LOADING_MESSAGES = [
-    t('onboarding.loading.message0'),
-    t('onboarding.loading.message1'),
-    t('onboarding.loading.message2'),
-    t('onboarding.loading.message3'),
-    t('onboarding.loading.message4'),
+    t("onboarding.loading.message0"),
+    t("onboarding.loading.message1"),
+    t("onboarding.loading.message2"),
+    t("onboarding.loading.message3"),
+    t("onboarding.loading.message4"),
   ];
 
   const [step, setStep] = useState<Step>("INTRO");
@@ -253,11 +252,7 @@ const OnboardingScreen = () => {
   };
 
   const toggleSelection = (
-    key:
-      | "wineSort"
-      | "wineArea"
-      | "wineVariety"
-      | "preferredAlcohols",
+    key: "wineSort" | "wineArea" | "wineVariety" | "preferredAlcohols",
     value: string
   ) => {
     setFormData((prev) => {
@@ -311,14 +306,14 @@ const OnboardingScreen = () => {
 
     const timer = setTimeout(async () => {
       if (formData.name.length < 2) {
-        setNicknameError(t('onboarding.nicknameError.minLength'));
+        setNicknameError(t("onboarding.nicknameError.minLength"));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
       }
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(formData.name)) {
-        setNicknameError(t('onboarding.nicknameError.format'));
+        setNicknameError(t("onboarding.nicknameError.format"));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
@@ -331,10 +326,10 @@ const OnboardingScreen = () => {
           setNicknameError(null);
         } else {
           setNicknameAvailable(false);
-          setNicknameError(t('onboarding.nicknameError.duplicate'));
+          setNicknameError(t("onboarding.nicknameError.duplicate"));
         }
       } catch (e) {
-        setNicknameError(t('onboarding.nicknameError.checkFail'));
+        setNicknameError(t("onboarding.nicknameError.checkFail"));
         setNicknameAvailable(false);
       } finally {
         setIsCheckingNickname(false);
@@ -461,7 +456,7 @@ const OnboardingScreen = () => {
       }, 10000);
     } catch (error) {
       console.error("Onboarding Error:", error);
-      showToast(t('onboarding.error.saveMessage'), { type: 'error' });
+      showToast(t("onboarding.error.saveMessage"), { type: "error" });
       setLoading(false);
     }
   };
@@ -683,7 +678,7 @@ const OnboardingScreen = () => {
       case "ALCOHOL_PREF":
         return (
           <CategorizedSelectionStep
-            title={t('onboarding.alcoholPrefTitle')}
+            title={t("onboarding.alcoholPrefTitle")}
             categories={ALCOHOL_CATEGORIES}
             selected={formData.preferredAlcohols}
             onSelect={(v: string) => toggleSelection("preferredAlcohols", v)}
@@ -740,7 +735,7 @@ const OnboardingScreen = () => {
       case "WINE_INTEREST":
         return (
           <MultiSelectionStep
-            title={t('onboarding.wineSortTitle')}
+            title={t("onboarding.wineSortTitle")}
             options={WINE_SORTS}
             selected={formData.wineSort}
             onSelect={(v: string) => toggleSelection("wineSort", v)}
@@ -761,23 +756,23 @@ const OnboardingScreen = () => {
   };
 
   const getButtonText = () => {
-    if (loading) return t('onboarding.button.saving');
+    if (loading) return t("onboarding.button.saving");
 
     switch (step) {
       case "INTRO":
-        return t('onboarding.button.ok');
+        return t("onboarding.button.ok");
       case "PROFILE":
-        return t('onboarding.button.next');
+        return t("onboarding.button.next");
       case "NEWBIE_CHECK":
-        return t('onboarding.button.selectComplete');
+        return t("onboarding.button.selectComplete");
       case "NEWBIE_TRANSITION":
-        return t('onboarding.button.goFindTaste');
+        return t("onboarding.button.goFindTaste");
       case "EXPERT_TRANSITION":
-        return t('onboarding.button.goRegisterTaste');
+        return t("onboarding.button.goRegisterTaste");
       case "BUDGET":
-        return t('onboarding.button.viewResult');
+        return t("onboarding.button.viewResult");
       default:
-        return t('onboarding.button.next');
+        return t("onboarding.button.next");
     }
   };
 
@@ -870,7 +865,7 @@ const OnboardingScreen = () => {
 
           <Text style={styles.analyzingText}>
             {analyzingIndex === 4
-              ? t('onboarding.loading.message4', { nickname: formData.name })
+              ? t("onboarding.loading.message4", { nickname: formData.name })
               : LOADING_MESSAGES[analyzingIndex]}
           </Text>
         </View>
