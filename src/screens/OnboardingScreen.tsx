@@ -39,6 +39,7 @@ import ProfileStep from "../components/onboarding/ProfileStep";
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import TransitionStep from "../components/onboarding/TransitionStep";
 import { colors } from "../constants/colors";
+import { isDevAccessEnabled } from "../utils/devAccess";
 import { generateRandomNickname } from "../utils/nicknameGenerator";
 
 type Step =
@@ -788,7 +789,7 @@ const OnboardingScreen = () => {
                 <Icon name="arrow-back" size={24} color={colors.white} />
               </TouchableOpacity>
             )}
-            {__DEV__ && (
+            {isDevAccessEnabled && (
               <TouchableOpacity
                 onPress={() => completeOnboarding()}
                 style={styles.devSkipButton}

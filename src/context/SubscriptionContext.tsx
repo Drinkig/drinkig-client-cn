@@ -1,19 +1,34 @@
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getSubscriptionStatus, SubscriptionFeatures } from '../api/subscription';
-import { useUser } from './UserContext';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useCallback,
+  useEffect,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  getSubscriptionStatus,
+  SubscriptionFeatures,
+} from "../api/subscription";
+import { isDevAccessEnabled } from "../utils/devAccess";
+import { useUser } from "./UserContext";
 
-export type SubscriptionPlan = 'FREE' | 'MONTHLY' | 'YEARLY';
-export type SubscriptionStatus = 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'GRACE_PERIOD';
-export type DevSubscriptionOverride = 'none' | 'premium' | 'free';
+export type SubscriptionPlan = "FREE" | "MONTHLY" | "YEARLY";
+export type SubscriptionStatus =
+  | "ACTIVE"
+  | "EXPIRED"
+  | "CANCELLED"
+  | "GRACE_PERIOD";
+export type DevSubscriptionOverride = "none" | "premium" | "free";
 
-const DEV_OVERRIDE_STORAGE_KEY = '@dev_subscription_override';
+const DEV_OVERRIDE_STORAGE_KEY = "@dev_subscription_override";
 
 interface SubscriptionState {
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
   expiresAt: string | null;
-  platform: 'APPLE' | 'PROMO' | null;
+  platform: "APPLE" | "PROMO" | null;
   isPremium: boolean;
   features: SubscriptionFeatures;
 }
@@ -41,8 +56,8 @@ const premiumFeatures: SubscriptionFeatures = {
 };
 
 const defaultState: SubscriptionState = {
-  plan: 'FREE',
-  status: 'ACTIVE',
+  plan: "FREE",
+  status: "ACTIVE",
   expiresAt: null,
   platform: null,
   isPremium: false,
@@ -50,34 +65,37 @@ const defaultState: SubscriptionState = {
 };
 
 const premiumState: SubscriptionState = {
-  plan: 'MONTHLY',
-  status: 'ACTIVE',
+  plan: "MONTHLY",
+  status: "ACTIVE",
   expiresAt: null,
-  platform: 'PROMO',
+  platform: "PROMO",
   isPremium: true,
   features: premiumFeatures,
 };
 
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
+  undefined
+);
 
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const { isLoggedIn } = useUser();
   const [state, setState] = useState<SubscriptionState>(defaultState);
   const [isLoading, setIsLoading] = useState(false);
-  const [devOverride, setDevOverrideState] = useState<DevSubscriptionOverride>('none');
-  const [overrideHydrated, setOverrideHydrated] = useState(!__DEV__);
+  const [devOverride, setDevOverrideState] =
+    useState<DevSubscriptionOverride>("none");
+  const [overrideHydrated, setOverrideHydrated] = useState(!isDevAccessEnabled);
 
-  // Hydrate dev override from storage on mount (dev only)
+  // Hydrate dev override from storage on mount (dev builds & TestFlight only)
   useEffect(() => {
-    if (!__DEV__) return;
+    if (!isDevAccessEnabled) return;
     (async () => {
       try {
         const stored = await AsyncStorage.getItem(DEV_OVERRIDE_STORAGE_KEY);
-        if (stored === 'premium' || stored === 'free') {
+        if (stored === "premium" || stored === "free") {
           setDevOverrideState(stored);
         }
       } catch (e) {
-        console.warn('Failed to load dev subscription override', e);
+        console.warn("Failed to load dev subscription override", e);
       } finally {
         setOverrideHydrated(true);
       }
@@ -85,11 +103,11 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const refreshSubscription = useCallback(async () => {
-    if (__DEV__ && devOverride === 'premium') {
+    if (isDevAccessEnabled && devOverride === "premium") {
       setState(premiumState);
       return;
     }
-    if (__DEV__ && devOverride === 'free') {
+    if (isDevAccessEnabled && devOverride === "free") {
       setState(defaultState);
       return;
     }
@@ -113,7 +131,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     } catch (error) {
-      console.warn('Failed to fetch subscription status:', error);
+      console.warn("Failed to fetch subscription status:", error);
     } finally {
       setIsLoading(false);
     }
@@ -125,18 +143,24 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     refreshSubscription();
   }, [devOverride, overrideHydrated, refreshSubscription]);
 
-  const setDevOverride = useCallback(async (override: DevSubscriptionOverride) => {
-    if (override === 'none') {
-      await AsyncStorage.removeItem(DEV_OVERRIDE_STORAGE_KEY);
-    } else {
-      await AsyncStorage.setItem(DEV_OVERRIDE_STORAGE_KEY, override);
-    }
-    setDevOverrideState(override);
-  }, []);
+  const setDevOverride = useCallback(
+    async (override: DevSubscriptionOverride) => {
+      if (override === "none") {
+        await AsyncStorage.removeItem(DEV_OVERRIDE_STORAGE_KEY);
+      } else {
+        await AsyncStorage.setItem(DEV_OVERRIDE_STORAGE_KEY, override);
+      }
+      setDevOverrideState(override);
+    },
+    []
+  );
 
-  const checkFeature = useCallback((feature: keyof SubscriptionFeatures): boolean => {
-    return state.features[feature];
-  }, [state.features]);
+  const checkFeature = useCallback(
+    (feature: keyof SubscriptionFeatures): boolean => {
+      return state.features[feature];
+    },
+    [state.features]
+  );
 
   return (
     <SubscriptionContext.Provider
@@ -157,7 +181,9 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (!context) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
+    throw new Error(
+      "useSubscription must be used within a SubscriptionProvider"
+    );
   }
   return context;
 };
