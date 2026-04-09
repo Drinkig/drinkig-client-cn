@@ -5,6 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Animated,
+  Easing,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -19,6 +21,32 @@ interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
   const { t } = useTranslation();
 
+  // Slow, subtle sheen sweeping diagonally across the card
+  const sheenAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(sheenAnim, {
+          toValue: 1,
+          duration: 3800,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.delay(2600),
+      ]),
+    ).start();
+  }, [sheenAnim]);
+
+  const sheenTranslate = sheenAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-220, 420],
+  });
+  const sheenOpacity = sheenAnim.interpolate({
+    inputRange: [0, 0.15, 0.5, 0.85, 1],
+    outputRange: [0, 0.35, 0.5, 0.35, 0],
+  });
+
   return (
     <View style={styles.heroSectionShadow}>
       <View style={styles.heroSection}>
@@ -28,6 +56,29 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}
         />
+
+        {/* Subtle sheen sweeping diagonally across the card */}
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.sheen,
+            {
+              opacity: sheenOpacity,
+              transform: [{ translateX: sheenTranslate }, { rotate: '18deg' }],
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={[
+              'rgba(255,255,255,0)',
+              'rgba(255,255,255,0.18)',
+              'rgba(255,255,255,0)',
+            ]}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        </Animated.View>
 
         <View style={styles.heroTextContainer}>
           <Text
@@ -107,6 +158,13 @@ const styles = StyleSheet.create({
     color: 'rgba(244, 239, 249, 0.9)',
     lineHeight: 19,
     fontWeight: '500',
+  },
+  sheen: {
+    position: 'absolute',
+    top: -40,
+    bottom: -40,
+    width: 90,
+    zIndex: 1,
   },
   recommendButton: {
     position: 'absolute',
