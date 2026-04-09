@@ -7,6 +7,10 @@ import {
   ScrollView,
   Alert,
   Linking,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -21,6 +25,7 @@ import {
   getMemberInfo,
   MemberInfoResponse,
 } from "../api/member";
+import { redeemPromoCode } from "../api/subscription";
 import DeviceInfo from "react-native-device-info";
 import { colors } from "../constants/colors";
 import { isDevAccessEnabled } from "../utils/devAccess";
@@ -33,8 +38,15 @@ import { getSystemLanguage } from "../i18n";
 const SettingScreen = () => {
   const navigation = useNavigation();
   const { logout, resetToOnboarding } = useUser();
-  const { isPremium, plan, expiresAt, platform, devOverride, setDevOverride } =
-    useSubscription();
+  const {
+    isPremium,
+    plan,
+    expiresAt,
+    platform,
+    devOverride,
+    setDevOverride,
+    refreshSubscription,
+  } = useSubscription();
   const { showAlert, showToast, showLoading, hideLoading } = useGlobalUI();
   const { i18n, t } = useTranslation();
 
@@ -43,6 +55,9 @@ const SettingScreen = () => {
   const [username, setUsername] = useState<string>("");
   const [currentLanguageValue, setCurrentLanguageValue] =
     useState<string>("system");
+  const [promoModalVisible, setPromoModalVisible] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [isRedeemingPromo, setIsRedeemingPromo] = useState(false);
 
   useEffect(() => {
     const loadLang = async () => {
@@ -170,6 +185,38 @@ App Version: ${DeviceInfo.getVersion()}
       console.error("An error occurred", error);
       showToast(t("setting.alert.mailErrorMessage"), { type: "error" });
     }
+  };
+
+  const handleRedeemPromo = async () => {
+    const code = promoCode.trim();
+    if (!code || isRedeemingPromo) return;
+
+    setIsRedeemingPromo(true);
+    try {
+      const response = await redeemPromoCode(code);
+      if (response.isSuccess && response.result.success) {
+        await refreshSubscription();
+        setPromoModalVisible(false);
+        setPromoCode("");
+        showToast(t("paywall.promoSuccessMessage"), { type: "success" });
+      } else {
+        showToast(response.message || t("paywall.promoErrorGeneric"), {
+          type: "error",
+        });
+      }
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message || t("paywall.promoErrorGeneric");
+      showToast(message, { type: "error" });
+    } finally {
+      setIsRedeemingPromo(false);
+    }
+  };
+
+  const closePromoModal = () => {
+    if (isRedeemingPromo) return;
+    setPromoModalVisible(false);
+    setPromoCode("");
   };
 
   const handleLogout = () => {
@@ -302,6 +349,13 @@ App Version: ${DeviceInfo.getVersion()}
               </Text>
               <Icon name="chevron-forward" size={20} color="#666" />
             </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => setPromoModalVisible(true)}
+          >
+            <Text style={styles.itemText}>{t("subscription.enterPromo")}</Text>
+            <Icon name="chevron-forward" size={20} color="#666" />
           </TouchableOpacity>
         </View>
 
@@ -481,6 +535,69 @@ App Version: ${DeviceInfo.getVersion()}
           </View>
         )}
       </ScrollView>
+
+      <Modal
+        visible={promoModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closePromoModal}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={styles.promoModalOverlay}
+        >
+          <View style={styles.promoModalCard}>
+            <Text style={styles.promoModalTitle}>
+              {t("subscription.enterPromo")}
+            </Text>
+            <Text style={styles.promoModalDescription}>
+              {t("subscription.promoDescription")}
+            </Text>
+            <TextInput
+              style={styles.promoModalInput}
+              value={promoCode}
+              onChangeText={setPromoCode}
+              placeholder={t("paywall.promoPlaceholder")}
+              placeholderTextColor={colors.textTertiary}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              editable={!isRedeemingPromo}
+            />
+            <View style={styles.promoModalButtonRow}>
+              <TouchableOpacity
+                style={[
+                  styles.promoModalButton,
+                  styles.promoModalButtonSecondary,
+                ]}
+                onPress={closePromoModal}
+                disabled={isRedeemingPromo}
+              >
+                <Text style={styles.promoModalButtonSecondaryText}>
+                  {t("subscription.cancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.promoModalButton,
+                  styles.promoModalButtonPrimary,
+                  (!promoCode.trim() || isRedeemingPromo) &&
+                    styles.promoModalButtonDisabled,
+                ]}
+                onPress={handleRedeemPromo}
+                disabled={!promoCode.trim() || isRedeemingPromo}
+              >
+                {isRedeemingPromo ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.promoModalButtonPrimaryText}>
+                    {t("paywall.promoApply")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -545,6 +662,73 @@ const styles = StyleSheet.create({
   },
   devItemText: {
     color: "#f5a623",
+  },
+  promoModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  promoModalCard: {
+    backgroundColor: colors.surface1,
+    borderRadius: 16,
+    padding: 24,
+  },
+  promoModalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.white,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  promoModalDescription: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  promoModalInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    color: colors.white,
+    fontSize: 16,
+    marginBottom: 16,
+    backgroundColor: colors.background,
+  },
+  promoModalButtonRow: {
+    flexDirection: "row",
+  },
+  promoModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  promoModalButtonPrimary: {
+    backgroundColor: colors.primary,
+    marginLeft: 8,
+  },
+  promoModalButtonSecondary: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginRight: 8,
+  },
+  promoModalButtonDisabled: {
+    opacity: 0.5,
+  },
+  promoModalButtonPrimaryText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  promoModalButtonSecondaryText: {
+    color: colors.white,
+    fontSize: 16,
   },
 });
 

@@ -1135,7 +1135,7 @@
         "promoPlaceholder": "Enter promo code",
         "promoApply": "Apply",
         "promoSuccess": "Success",
-        "promoSuccessMessage": "Promo code applied! Enjoy Premium.",
+        "promoSuccessMessage": "1 month of Premium added!",
         "promoError": "Error",
         "promoErrorGeneric": "Failed to apply promo code.",
         "subscribeSuccess": "You're now a Premium member!",
@@ -1156,7 +1156,10 @@
         "free": "Free",
         "manage": "Manage Subscription",
         "expiresAt": "Expires {{date}}",
-        "promoApplied": "Promo Applied"
+        "promoApplied": "Promo Applied",
+        "enterPromo": "Enter Promo Code",
+        "promoDescription": "Each code adds 1 month on top of your current expiry date.",
+        "cancel": "Cancel"
     },
     "login": {
         "slides": {

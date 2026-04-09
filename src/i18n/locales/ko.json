@@ -1135,7 +1135,7 @@
         "promoPlaceholder": "프로모션 코드 입력",
         "promoApply": "적용",
         "promoSuccess": "성공",
-        "promoSuccessMessage": "프로모션이 적용되었습니다! 프리미엄을 즐겨보세요.",
+        "promoSuccessMessage": "1개월 프리미엄이 적용되었습니다!",
         "promoError": "오류",
         "promoErrorGeneric": "프로모션 코드 적용에 실패했습니다.",
         "subscribeSuccess": "프리미엄 회원이 되었습니다!",
@@ -1156,7 +1156,10 @@
         "free": "무료",
         "manage": "구독 관리",
         "expiresAt": "{{date}}까지",
-        "promoApplied": "프로모션 적용"
+        "promoApplied": "프로모션 적용",
+        "enterPromo": "프로모션 코드 입력",
+        "promoDescription": "코드 1개당 1개월이 현재 구독 만료일에 추가됩니다.",
+        "cancel": "취소"
     },
     "login": {
         "slides": {
