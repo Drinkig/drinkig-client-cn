@@ -4,9 +4,11 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  Keyboard,
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -778,52 +780,56 @@ const OnboardingScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        {step !== "INTRO" && (
-          <TouchableOpacity onPress={prevStep} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color={colors.white} />
-          </TouchableOpacity>
-        )}
-        {__DEV__ && (
-          <TouchableOpacity
-            onPress={() => completeOnboarding()}
-            style={styles.devSkipButton}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.dismissArea}>
+          <View style={styles.header}>
+            {step !== "INTRO" && (
+              <TouchableOpacity onPress={prevStep} style={styles.backButton}>
+                <Icon name="arrow-back" size={24} color={colors.white} />
+              </TouchableOpacity>
+            )}
+            {__DEV__ && (
+              <TouchableOpacity
+                onPress={() => completeOnboarding()}
+                style={styles.devSkipButton}
+              >
+                <Text style={styles.devSkipText}>DEV Skip</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {renderProgressBar()}
+
+          <Animated.View
+            style={[
+              styles.body,
+              {
+                transform: [{ translateX: slideAnim }],
+                opacity: fadeAnim,
+              },
+            ]}
           >
-            <Text style={styles.devSkipText}>DEV Skip</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+            {renderContent()}
+          </Animated.View>
 
-      {renderProgressBar()}
-
-      <Animated.View
-        style={[
-          styles.body,
-          {
-            transform: [{ translateX: slideAnim }],
-            opacity: fadeAnim,
-          },
-        ]}
-      >
-        {renderContent()}
-      </Animated.View>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.nextButton,
-            (loading || !isStepValid()) && styles.disabledButton,
-          ]}
-          onPress={nextStep}
-          disabled={loading || !isStepValid()}
-        >
-          {loading ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <Text style={styles.nextButtonText}>{getButtonText()}</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={[
+                styles.nextButton,
+                (loading || !isStepValid()) && styles.disabledButton,
+              ]}
+              onPress={nextStep}
+              disabled={loading || !isStepValid()}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <Text style={styles.nextButtonText}>{getButtonText()}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
 
       {analyzing && (
         <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
@@ -878,6 +884,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  dismissArea: {
+    flex: 1,
   },
   header: {
     height: 50,
