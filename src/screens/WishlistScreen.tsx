@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -8,23 +8,37 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { getWishlist, WishlistItemDTO } from '../api/wine';
-import { WineDBItem } from '../types/Wine';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { getWishlist, getWineDetailPublic, WishlistItemDTO } from "../api/wine";
+import { WineDBItem } from "../types/Wine";
 
-import { getVintageLabel } from '../utils/wineUtils';
-import { colors } from '../constants/colors';
-import { useTranslation } from 'react-i18next';
+import { getVintageLabel } from "../utils/wineUtils";
+import { colors } from "../constants/colors";
+import { useTranslation } from "react-i18next";
+import { useUser } from "../context/UserContext";
+import { useSubscription } from "../context/SubscriptionContext";
+import {
+  calculateCompatibilityScore,
+  getScoreColor,
+} from "../utils/compatibility";
+
+const scoreCache: { [wineId: number]: number | null } = {};
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { t, i18n } = useTranslation();
+  const { flavorProfile } = useUser();
+  const { isPremium } = useSubscription();
   const [isLoading, setIsLoading] = useState(true);
   const [wishlist, setWishlist] = useState<WishlistItemDTO[]>([]);
+  const [compatScores, setCompatScores] = useState<{
+    [wineId: number]: number | null;
+  }>({});
+  const fetchingRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     if (isFocused) {
@@ -40,25 +54,72 @@ export default function WishlistScreen() {
         setWishlist(response.result || []);
       }
     } catch (error) {
-      console.error('Failed to fetch wishlist:', error);
+      console.error("Failed to fetch wishlist:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Auto-fetch compatibility scores (premium only)
+  useEffect(() => {
+    if (!isPremium || !flavorProfile || wishlist.length === 0) return;
+
+    wishlist.forEach((item) => {
+      const wineId = item.wineId;
+      if (scoreCache[wineId] !== undefined) {
+        setCompatScores((prev) => ({ ...prev, [wineId]: scoreCache[wineId] }));
+        return;
+      }
+      if (fetchingRef.current.has(wineId)) return;
+      fetchingRef.current.add(wineId);
+
+      getWineDetailPublic(wineId)
+        .then((response) => {
+          if (response.isSuccess) {
+            const detail = response.result.wineInfoResponse as any;
+            const result = calculateCompatibilityScore(
+              flavorProfile,
+              {
+                sweetness: detail.officialSweetness ?? detail.avgSweetness,
+                acidity: detail.officialAcidity ?? detail.avgAcidity,
+                tannin: detail.officialTannin ?? detail.avgTannin,
+                body: detail.officialBody ?? detail.avgBody,
+              },
+              t
+            );
+            const score = result?.score ?? null;
+            scoreCache[wineId] = score;
+            setCompatScores((prev) => ({ ...prev, [wineId]: score }));
+          }
+        })
+        .catch(() => {
+          scoreCache[wineId] = null;
+        })
+        .finally(() => {
+          fetchingRef.current.delete(wineId);
+        });
+    });
+  }, [wishlist, flavorProfile, isPremium, t]);
+
   const getWineTypeColor = (type: string) => {
     switch (type) {
-      case '레드':
-      case 'Red': return '#EF5350';
-      case '화이트':
-      case 'White': return '#F4D03F';
-      case '스파클링':
-      case 'Sparkling': return '#5DADE2';
-      case '로제':
-      case 'Rose': return '#F1948A';
-      case '디저트':
-      case 'Dessert': return '#F5B041';
-      default: return '#95A5A6';
+      case "레드":
+      case "Red":
+        return "#EF5350";
+      case "화이트":
+      case "White":
+        return "#F4D03F";
+      case "스파클링":
+      case "Sparkling":
+        return "#5DADE2";
+      case "로제":
+      case "Rose":
+        return "#F1948A";
+      case "디저트":
+      case "Dessert":
+        return "#F5B041";
+      default:
+        return "#95A5A6";
     }
   };
 
@@ -75,52 +136,79 @@ export default function WishlistScreen() {
       price: item.price,
     };
     // @ts-ignore
-    navigation.navigate('WineDetail', { wine: wineItem });
+    navigation.navigate("WineDetail", { wine: wineItem });
   };
 
-  const renderItem = ({ item }: { item: WishlistItemDTO }) => (
-    <TouchableOpacity
-      style={styles.itemContainer}
-      onPress={() => handleWinePress(item)}
-    >
-      <View style={styles.imageContainer}>
-        {item.imageUrl ? (
-          <Image
-            source={{ uri: item.imageUrl }}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        ) : (
-          <Icon name="wine" size={30} color={colors.primary} />
-        )}
-      </View>
-      <View style={styles.infoContainer}>
-        <Text style={styles.nameKor} numberOfLines={1}>
-          {i18n.language === 'en' ? (item.nameEng || item.name) : item.name}
-        </Text>
-        {i18n.language !== 'en' && <Text style={styles.nameEng} numberOfLines={1}>{item.nameEng}</Text>}
-        <View style={styles.detailRow}>
-          <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
-            <Text style={styles.typeChipText}>{item.sort}</Text>
-          </View>
-          <Text style={styles.countryText}>
-            {item.country} · {getVintageLabel(item.vintageYear)}
+  const renderItem = ({ item }: { item: WishlistItemDTO }) => {
+    const score = compatScores[item.wineId];
+    return (
+      <TouchableOpacity
+        style={styles.itemContainer}
+        onPress={() => handleWinePress(item)}
+      >
+        <View style={styles.imageContainer}>
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          ) : (
+            <Icon name="wine" size={30} color={colors.primary} />
+          )}
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.nameKor} numberOfLines={1}>
+            {i18n.language === "en" ? item.nameEng || item.name : item.name}
           </Text>
+          {i18n.language !== "en" && (
+            <Text style={styles.nameEng} numberOfLines={1}>
+              {item.nameEng}
+            </Text>
+          )}
+          <View style={styles.detailRow}>
+            <View
+              style={[
+                styles.typeChip,
+                { backgroundColor: getWineTypeColor(item.sort) },
+              ]}
+            >
+              <Text style={styles.typeChipText}>{item.sort}</Text>
+            </View>
+            <Text style={styles.countryText}>
+              {item.country} · {getVintageLabel(item.vintageYear)}
+            </Text>
+          </View>
         </View>
-      </View>
-      {item.vivinoRating > 0 && (
-        <View style={styles.ratingContainer}>
-          <Icon name="star" size={14} color={colors.error} />
-          <Text style={styles.ratingText}>{item.vivinoRating.toFixed(1)}</Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+        {isPremium &&
+          flavorProfile &&
+          score !== undefined &&
+          score !== null && (
+            <View style={styles.scoreContainer}>
+              <View
+                style={[
+                  styles.scoreBadge,
+                  {
+                    borderColor: getScoreColor(score),
+                    backgroundColor: `${getScoreColor(score)}1F`,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.scoreValue, { color: getScoreColor(score) }]}
+                >
+                  {score}
+                </Text>
+              </View>
+            </View>
+          )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-
 
       <View style={styles.header}>
         <TouchableOpacity
@@ -129,10 +217,9 @@ export default function WishlistScreen() {
         >
           <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('wishlist.header')}</Text>
+        <Text style={styles.headerTitle}>{t("wishlist.header")}</Text>
         <View style={{ width: 24 }} />
       </View>
-
 
       <View style={styles.content}>
         {isLoading ? (
@@ -144,24 +231,30 @@ export default function WishlistScreen() {
             showsVerticalScrollIndicator={false}
             data={wishlist}
             renderItem={renderItem}
-            keyExtractor={item => item.wineId.toString()}
+            keyExtractor={(item) => item.wineId.toString()}
             contentContainerStyle={styles.listContent}
             ListHeaderComponent={
               wishlist.length > 0 ? (
                 <View style={styles.listHeader}>
-                  <Text style={styles.countText}>{t('wishlist.countPrefix')}<Text style={styles.countHighlight}>{wishlist.length}</Text>{t('wishlist.countSuffix')}</Text>
+                  <Text style={styles.countText}>
+                    {t("wishlist.countPrefix")}
+                    <Text style={styles.countHighlight}>{wishlist.length}</Text>
+                    {t("wishlist.countSuffix")}
+                  </Text>
                 </View>
               ) : null
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
-                  source={require('../assets/wish_list.png')}
+                  source={require("../assets/wish_list.png")}
                   style={styles.emptyImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.emptyText}>{t('wishlist.emptyTitle')}</Text>
-                <Text style={styles.emptySubText}>{t('wishlist.emptyDesc')}</Text>
+                <Text style={styles.emptyText}>{t("wishlist.emptyTitle")}</Text>
+                <Text style={styles.emptySubText}>
+                  {t("wishlist.emptyDesc")}
+                </Text>
               </View>
             }
           />
@@ -177,9 +270,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
@@ -191,15 +284,15 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   content: {
     flex: 1,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     padding: 16,
@@ -213,11 +306,11 @@ const styles = StyleSheet.create({
   },
   countHighlight: {
     color: colors.white,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -227,14 +320,14 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 8,
     backgroundColor: colors.surface1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   image: {
-    width: '85%',
-    height: '85%',
+    width: "85%",
+    height: "85%",
   },
   infoContainer: {
     flex: 1,
@@ -244,15 +337,15 @@ const styles = StyleSheet.create({
   nameKor: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   nameEng: {
     color: colors.textSecondary,
     fontSize: 13,
   },
   detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginTop: 2,
   },
@@ -264,26 +357,33 @@ const styles = StyleSheet.create({
   typeChipText: {
     color: colors.white,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   countryText: {
-    color: '#666',
+    color: "#666",
     fontSize: 12,
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingLeft: 8,
+  scoreContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingLeft: 12,
   },
-  ratingText: {
-    fontSize: 14,
-    color: colors.error,
-    fontWeight: 'bold',
+  scoreBadge: {
+    minWidth: 34,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scoreValue: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   emptyContainer: {
     padding: 32,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 60,
   },
   emptyImage: {
@@ -294,7 +394,7 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   emptySubText: {
@@ -302,4 +402,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-

@@ -48,6 +48,8 @@ const PaywallScreen = () => {
   const { showToast } = useGlobalUI();
   const insets = useSafeAreaInsets();
 
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [footerHeight, setFooterHeight] = useState(160);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("YEARLY");
   const [promoCode, setPromoCode] = useState("");
   const [showPromoInput, setShowPromoInput] = useState(false);
@@ -321,6 +323,15 @@ const PaywallScreen = () => {
     return () => loop.stop();
   }, [shimmerAnim]);
 
+  // Auto-scroll so the promo input is visible above the footer when opened
+  useEffect(() => {
+    if (!showPromoInput) return;
+    const timer = setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [showPromoInput]);
+
   const shimmerTranslate = shimmerAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [-ctaWidth * 0.6, ctaWidth],
@@ -371,7 +382,11 @@ const PaywallScreen = () => {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        ref={scrollViewRef}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: footerHeight + 24 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.titleSection}>
@@ -512,7 +527,10 @@ const PaywallScreen = () => {
         )}
       </ScrollView>
 
-      <View style={styles.footer}>
+      <View
+        style={styles.footer}
+        onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
+      >
         <TouchableOpacity
           activeOpacity={0.9}
           style={[

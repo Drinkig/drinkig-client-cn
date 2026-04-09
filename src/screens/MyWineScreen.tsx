@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -11,49 +11,52 @@ import {
   Dimensions,
   Modal,
   TouchableWithoutFeedback,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { getMyWines, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
-import { colors } from '../constants/colors';
-import { useTranslation, Trans } from 'react-i18next';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
+import {
+  getMyWines,
+  MyWineDTO,
+  getWineDetailPublic,
+  searchWinesPublic,
+} from "../api/wine";
+import { colors } from "../constants/colors";
+import { useTranslation, Trans } from "react-i18next";
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
-
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedType, setSelectedType] = useState('전체');
+  const [selectedType, setSelectedType] = useState("전체");
 
-
-  const [sortType, setSortType] = useState('latest');
+  const [sortType, setSortType] = useState("latest");
   const [isSortModalVisible, setIsSortModalVisible] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
-  const [viewMode, setViewMode] = useState<'list' | 'card'>('list');
+  const [viewMode, setViewMode] = useState<"list" | "card">("list");
 
   const { t, i18n } = useTranslation();
 
   const wineTypes = [
-    { label: t('myWine.types.all'), value: '전체' },
-    { label: t('myWine.types.red'), value: '레드' },
-    { label: t('myWine.types.white'), value: '화이트' },
-    { label: t('myWine.types.sparkling'), value: '스파클링' },
-    { label: t('myWine.types.rose'), value: '로제' },
-    { label: t('myWine.types.dessert'), value: '디저트' },
-    { label: t('myWine.types.fortified'), value: '주정강화' },
-    { label: t('myWine.types.other'), value: '기타' }
+    { label: t("myWine.types.all"), value: "전체" },
+    { label: t("myWine.types.red"), value: "레드" },
+    { label: t("myWine.types.white"), value: "화이트" },
+    { label: t("myWine.types.sparkling"), value: "스파클링" },
+    { label: t("myWine.types.rose"), value: "로제" },
+    { label: t("myWine.types.dessert"), value: "디저트" },
+    { label: t("myWine.types.fortified"), value: "주정강화" },
+    { label: t("myWine.types.other"), value: "기타" },
   ];
 
   const sortOptions = [
-    { label: t('myWine.sort.latest'), value: 'latest' },
-    { label: t('myWine.sort.longestPeriod'), value: 'longest_period' },
-    { label: t('myWine.sort.vintageHigh'), value: 'vintage_high' },
-    { label: t('myWine.sort.vintageLow'), value: 'vintage_low' },
-    { label: t('myWine.sort.priceHigh'), value: 'price_high' },
-    { label: t('myWine.sort.priceLow'), value: 'price_low' },
+    { label: t("myWine.sort.latest"), value: "latest" },
+    { label: t("myWine.sort.longestPeriod"), value: "longest_period" },
+    { label: t("myWine.sort.vintageHigh"), value: "vintage_high" },
+    { label: t("myWine.sort.vintageLow"), value: "vintage_low" },
+    { label: t("myWine.sort.priceHigh"), value: "price_high" },
+    { label: t("myWine.sort.priceLow"), value: "price_low" },
   ];
 
   useEffect(() => {
@@ -70,7 +73,6 @@ const MyWineScreen = () => {
       if (response.isSuccess) {
         let wines = response.result || [];
 
-
         const updatedWines = wines.map((wine) => {
           if (!wine.wineImageUrl) {
             // S3 버킷의 wine 폴더에서 직접 이미지 URL 구성
@@ -82,11 +84,10 @@ const MyWineScreen = () => {
 
         setMyWines(updatedWines);
       } else {
-
         setMyWines([]);
       }
     } catch (error) {
-      console.error('Failed to fetch my wines:', error);
+      console.error("Failed to fetch my wines:", error);
 
       setMyWines([]);
     } finally {
@@ -94,48 +95,55 @@ const MyWineScreen = () => {
     }
   };
 
-
-  const filteredWines = myWines.filter(wine => {
-    if (selectedType === '전체') return true;
-    if (selectedType === '기타') {
-      return !['Red', 'White', 'Sparkling', 'Rose', 'Dessert', 'Fortified', '레드', '화이트', '스파클링', '로제', '디저트', '주정강화'].includes(wine.wineSort);
+  const filteredWines = myWines.filter((wine) => {
+    if (selectedType === "전체") return true;
+    if (selectedType === "기타") {
+      return ![
+        "Red",
+        "White",
+        "Sparkling",
+        "Rose",
+        "Dessert",
+        "Fortified",
+        "레드",
+        "화이트",
+        "스파클링",
+        "로제",
+        "디저트",
+        "주정강화",
+      ].includes(wine.wineSort);
     }
 
     const typeMap: { [key: string]: string } = {
-      '레드': 'Red',
-      '화이트': 'White',
-      '스파클링': 'Sparkling',
-      '로제': 'Rose',
-      '디저트': 'Dessert',
-      '주정강화': 'Fortified'
+      레드: "Red",
+      화이트: "White",
+      스파클링: "Sparkling",
+      로제: "Rose",
+      디저트: "Dessert",
+      주정강화: "Fortified",
     };
 
     const targetType = typeMap[selectedType] || selectedType;
     return wine.wineSort === targetType || wine.wineSort === selectedType;
   });
 
-
   const sortedWines = [...filteredWines].sort((a, b) => {
     switch (sortType) {
-      case 'latest':
-
+      case "latest":
         return b.myWineId - a.myWineId;
-      case 'longest_period':
-
+      case "longest_period":
         return b.period - a.period;
-      case 'vintage_high':
-
+      case "vintage_high":
         if (a.vintageYear === 0) return 1;
         if (b.vintageYear === 0) return -1;
         return b.vintageYear - a.vintageYear;
-      case 'vintage_low':
-
+      case "vintage_low":
         if (a.vintageYear === 0) return 1;
         if (b.vintageYear === 0) return -1;
         return a.vintageYear - b.vintageYear;
-      case 'price_high':
+      case "price_high":
         return b.purchasePrice - a.purchasePrice;
-      case 'price_low':
+      case "price_low":
         return a.purchasePrice - b.purchasePrice;
       default:
         return 0;
@@ -143,16 +151,16 @@ const MyWineScreen = () => {
   });
 
   const handleAddWine = () => {
-    navigation.navigate('WineAdd' as never);
+    navigation.navigate("WineAdd" as never);
   };
 
-  const { width } = Dimensions.get('window');
+  const { width } = Dimensions.get("window");
   const cardGap = 12;
   const cardPadding = 16;
   const cardItemWidth = (width - cardPadding * 2 - cardGap) / 2;
 
   const navigateToDetail = (item: MyWineDTO) => {
-    navigation.navigate('MyWineDetail', {
+    navigation.navigate("MyWineDetail", {
       wineId: item.myWineId,
       wineImageUrl: item.wineImageUrl,
     });
@@ -175,10 +183,12 @@ const MyWineScreen = () => {
       </View>
       <View style={styles.listInfo}>
         <Text style={styles.listName} numberOfLines={2}>
-          {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
+          {i18n.language === "en"
+            ? item.wineNameEng || item.wineName
+            : item.wineName}
         </Text>
         <Text style={styles.listVintage}>
-          {item.vintageYear === 0 ? 'NV' : item.vintageYear}
+          {item.vintageYear === 0 ? "NV" : item.vintageYear}
         </Text>
       </View>
       <View style={styles.listBadge}>
@@ -207,26 +217,30 @@ const MyWineScreen = () => {
       </View>
       <View style={styles.cardInfo}>
         <Text style={styles.cardName} numberOfLines={2}>
-          {i18n.language === 'en' ? (item.wineNameEng || item.wineName) : item.wineName}
+          {i18n.language === "en"
+            ? item.wineNameEng || item.wineName
+            : item.wineName}
         </Text>
         <Text style={styles.cardVintage}>
-          {item.vintageYear === 0 ? 'NV' : item.vintageYear}
+          {item.vintageYear === 0 ? "NV" : item.vintageYear}
         </Text>
       </View>
     </TouchableOpacity>
   );
 
-
-
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* Relative 3D Pill Header (Safe) */}
       <View style={styles.headerContainer}>
         <View style={styles.headerPill}>
-          <Text style={styles.headerTitle}>{t('myWine.headerTitle')}</Text>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddWine} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Text style={styles.headerTitle}>{t("myWine.headerTitle")}</Text>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={handleAddWine}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Icon name="add" size={24} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -244,15 +258,17 @@ const MyWineScreen = () => {
             <TouchableOpacity
               style={[
                 styles.filterChip,
-                selectedType === item.value && styles.filterChipSelected
+                selectedType === item.value && styles.filterChipSelected,
               ]}
               onPress={() => setSelectedType(item.value)}
               activeOpacity={0.7}
             >
-              <Text style={[
-                styles.filterChipText,
-                selectedType === item.value && styles.filterChipTextSelected
-              ]}>
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedType === item.value && styles.filterChipTextSelected,
+                ]}
+              >
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -276,16 +292,21 @@ const MyWineScreen = () => {
               onPress={() => setIsSortModalVisible(true)}
             >
               <Text style={styles.sortButtonText}>
-                {sortOptions.find(opt => opt.value === sortType)?.label}
+                {sortOptions.find((opt) => opt.value === sortType)?.label}
               </Text>
-              <Icon name="chevron-down" size={14} color={colors.textSecondary} style={{ marginLeft: 4 }} />
+              <Icon
+                name="chevron-down"
+                size={14}
+                color={colors.textSecondary}
+                style={{ marginLeft: 4 }}
+              />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setViewMode(viewMode === 'list' ? 'card' : 'list')}
+              onPress={() => setViewMode(viewMode === "list" ? "card" : "list")}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Icon
-                name={viewMode === 'list' ? 'grid-outline' : 'list-outline'}
+                name={viewMode === "list" ? "grid-outline" : "list-outline"}
                 size={20}
                 color={colors.textSecondary}
               />
@@ -297,11 +318,13 @@ const MyWineScreen = () => {
       <FlatList
         key={viewMode}
         data={isLoading ? [] : sortedWines}
-        renderItem={viewMode === 'list' ? renderListItem : renderCardItem}
+        renderItem={viewMode === "list" ? renderListItem : renderCardItem}
         keyExtractor={(item) => item.myWineId.toString()}
-        contentContainerStyle={[styles.flatListContent, { paddingBottom: 20 }]}
+        contentContainerStyle={styles.flatListContent}
         showsVerticalScrollIndicator={false}
-        {...(viewMode === 'card' ? { numColumns: 2, columnWrapperStyle: { gap: cardGap } } : {})}
+        {...(viewMode === "card"
+          ? { numColumns: 2, columnWrapperStyle: { gap: cardGap } }
+          : {})}
         ListFooterComponent={null}
         ListEmptyComponent={() => {
           if (isLoading) {
@@ -315,19 +338,25 @@ const MyWineScreen = () => {
             <View style={styles.emptyContent}>
               <View style={styles.emptyInner}>
                 <Image
-                  source={require('../assets/Drinky_no_wine_1.png')}
+                  source={require("../assets/Drinky_no_wine_1.png")}
                   style={styles.emptyImage}
                   resizeMode="contain"
                 />
                 {myWines.length > 0 ? (
                   <>
-                    <Text style={styles.emptyText}>{t('myWine.emptyType.title')}</Text>
-                    <Text style={styles.subText}>{t('myWine.emptyType.desc')}</Text>
+                    <Text style={styles.emptyText}>
+                      {t("myWine.emptyType.title")}
+                    </Text>
+                    <Text style={styles.subText}>
+                      {t("myWine.emptyType.desc")}
+                    </Text>
                   </>
                 ) : (
                   <>
-                    <Text style={styles.emptyText}>{t('myWine.empty.title')}</Text>
-                    <Text style={styles.subText}>{t('myWine.empty.desc')}</Text>
+                    <Text style={styles.emptyText}>
+                      {t("myWine.empty.title")}
+                    </Text>
+                    <Text style={styles.subText}>{t("myWine.empty.desc")}</Text>
                   </>
                 )}
               </View>
@@ -345,7 +374,7 @@ const MyWineScreen = () => {
           >
             <View style={styles.sortModalContent}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t('myWine.sort.title')}</Text>
+                <Text style={styles.modalTitle}>{t("myWine.sort.title")}</Text>
                 <TouchableOpacity onPress={() => setIsSortModalVisible(false)}>
                   <Icon name="close" size={24} color={colors.textPrimary} />
                 </TouchableOpacity>
@@ -359,10 +388,13 @@ const MyWineScreen = () => {
                     setIsSortModalVisible(false);
                   }}
                 >
-                  <Text style={[
-                    styles.sortOptionText,
-                    sortType === option.value && styles.sortOptionTextSelected
-                  ]}>
+                  <Text
+                    style={[
+                      styles.sortOptionText,
+                      sortType === option.value &&
+                        styles.sortOptionTextSelected,
+                    ]}
+                  >
                     {option.label}
                   </Text>
                   {sortType === option.value && (
@@ -374,9 +406,7 @@ const MyWineScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-
-
-    </SafeAreaView >
+    </SafeAreaView>
   );
 };
 
@@ -393,17 +423,17 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerPill: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'rgba(42, 41, 43, 0.75)', // Matte glass-like pill
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "rgba(42, 41, 43, 0.75)", // Matte glass-like pill
     borderRadius: 24,
     height: 52,
     paddingHorizontal: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: "rgba(255,255,255,0.06)",
     // Subtle 3D shadow matching Home
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
@@ -411,7 +441,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
   },
   addButton: {
@@ -440,20 +470,20 @@ const styles = StyleSheet.create({
   filterChipText: {
     fontSize: 14,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   filterChipTextSelected: {
     color: colors.white,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   countAndSortContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 6,
@@ -467,11 +497,11 @@ const styles = StyleSheet.create({
   },
   countValue: {
     color: colors.textPrimary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   sortButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 4,
   },
   sortButtonText: {
@@ -479,7 +509,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   sortModalOverlay: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
@@ -487,8 +517,8 @@ const styles = StyleSheet.create({
   },
   sortModalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(25, 22, 28, 0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(25, 22, 28, 0.5)",
+    justifyContent: "flex-end",
   },
   sortModalContent: {
     backgroundColor: colors.background,
@@ -497,23 +527,23 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingHorizontal: 20,
     paddingBottom: 100,
-    maxHeight: '70%',
+    maxHeight: "70%",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
   },
   sortOptionItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -524,32 +554,32 @@ const styles = StyleSheet.create({
   },
   sortOptionTextSelected: {
     color: colors.primary,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   sortAndViewContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   flatListContent: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 100,
+    paddingBottom: 140,
   },
   centerContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyContent: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingBottom: 0,
   },
   emptyInner: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   emptyImage: {
@@ -560,31 +590,31 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.textPrimary,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginTop: 20,
   },
   subText: {
     color: colors.textSecondary,
     fontSize: 14,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 10,
     lineHeight: 20,
   },
   // shared
   wineImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
   },
   placeholderImage: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   // list view
   listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
     backgroundColor: colors.surface1,
     borderRadius: 12,
@@ -596,19 +626,19 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 8,
     backgroundColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
     flexShrink: 0,
   },
   listInfo: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   listName: {
     color: colors.textPrimary,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
     lineHeight: 20,
   },
@@ -617,50 +647,50 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   listBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    marginLeft: 'auto',
+    borderColor: "rgba(255, 255, 255, 0.2)",
+    marginLeft: "auto",
     flexShrink: 0,
   },
   listBadgeText: {
     color: colors.white,
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   // card view
   cardItem: {
     marginBottom: 12,
     backgroundColor: colors.surface1,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   cardImageContainer: {
-    width: '100%',
+    width: "100%",
     aspectRatio: 1,
     backgroundColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 10,
   },
   cardPeriodBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   cardPeriodText: {
     color: colors.white,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   cardInfo: {
     padding: 10,
@@ -668,7 +698,7 @@ const styles = StyleSheet.create({
   cardName: {
     color: colors.textPrimary,
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 3,
     lineHeight: 18,
   },
@@ -676,7 +706,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 11,
   },
-
 });
 
 export default MyWineScreen;
