@@ -285,22 +285,15 @@ export default function WineDetailScreen() {
     );
   }, [features, flavorProfile, t]);
 
-  // Premium: gate the score reveal behind a fake analysis animation for trust
-  const [premiumAnalyzed, setPremiumAnalyzed] = useState(false);
-
-  useEffect(() => {
-    setPremiumAnalyzed(false);
-  }, [wine.id]);
-
   // Load compatibility unlock state from server (premium bypasses; free users use daily quota)
   useEffect(() => {
     let cancelled = false;
+    setShowCompatBubble(false);
     if (isPremium) {
       setCompatUnlocked(true);
       setCompatRemaining(-1);
       return;
     }
-    setShowCompatBubble(false);
     setCompatUnlocked(false);
     getCompatQuota()
       .then((res) => {
@@ -320,52 +313,6 @@ export default function WineDetailScreen() {
       cancelled = true;
     };
   }, [wine.id, isPremium]);
-
-  // Auto-run premium analysis animation when data is ready.
-  // NOTE: depend on boolean readiness flags rather than the `features`/`flavorProfile`
-  // objects directly — those are recreated on every render and would cause the effect
-  // (and the animation) to restart in an infinite loop.
-  const flavorProfileReady = !!flavorProfile;
-  const featuresReady = !!features;
-
-  useEffect(() => {
-    if (!isPremium || premiumAnalyzed) return;
-    if (!flavorProfileReady) {
-      // No taste profile to analyze against; skip the animation
-      setPremiumAnalyzed(true);
-      return;
-    }
-    if (!featuresReady) return;
-
-    let cancelled = false;
-    setIsUnlockingCompat(true);
-    setShowCompatBubble(true);
-    setAnalyzeStep(0);
-    const stepDurations = [800, 900, 800];
-    const timeouts: ReturnType<typeof setTimeout>[] = [];
-
-    const advance = (step: number) => {
-      if (cancelled) return;
-      setAnalyzeStep(step);
-      if (step < stepDurations.length - 1) {
-        timeouts.push(setTimeout(() => advance(step + 1), stepDurations[step]));
-      } else {
-        timeouts.push(
-          setTimeout(() => {
-            if (cancelled) return;
-            setIsUnlockingCompat(false);
-            setPremiumAnalyzed(true);
-          }, stepDurations[step])
-        );
-      }
-    };
-    advance(0);
-
-    return () => {
-      cancelled = true;
-      timeouts.forEach(clearTimeout);
-    };
-  }, [isPremium, flavorProfileReady, featuresReady, premiumAnalyzed]);
 
   const runUnlockAnalysis = () => {
     setIsUnlockingCompat(true);
@@ -772,7 +719,7 @@ export default function WineDetailScreen() {
                     : t("wineDetail.compatBannerQuotaExhausted")}
                 </Text>
               </View>
-              {isUnlockingCompat || (isPremium && !premiumAnalyzed) ? (
+              {isUnlockingCompat ? (
                 <ActivityIndicator size="small" color={colors.primary} />
               ) : compatUnlocked ? (
                 compatResult ? (
@@ -800,7 +747,7 @@ export default function WineDetailScreen() {
                   ??{t("wineCompatibility.scoreUnit")}
                 </Text>
               )}
-              {!isUnlockingCompat && !(isPremium && !premiumAnalyzed) && (
+              {!isUnlockingCompat && (
                 <Ionicons
                   name={
                     compatUnlocked

@@ -291,6 +291,10 @@ export default function CameraScreen({ navigation }: Props) {
   // In dev mode without camera device (simulator), show mock UI
   const isSimulator = __DEV__ && !device;
 
+  // Premium users (remainingScans === -1) are never capped.
+  const scanDisabled =
+    !isPremium && remainingScans !== -1 && remainingScans <= 0;
+
   if (!device && !__DEV__) {
     return (
       <View style={styles.permissionContainer}>
@@ -375,21 +379,30 @@ export default function CameraScreen({ navigation }: Props) {
         </TouchableOpacity>
 
         <View style={styles.topRight}>
-          <View style={styles.scanCountBadge}>
-            <Ionicons
-              name="scan-outline"
-              size={14}
-              color={remainingScans > 0 ? colors.white : "#888"}
-            />
-            <Text
-              style={[
-                styles.scanCountText,
-                remainingScans === 0 && { color: "#888" },
-              ]}
-            >
-              {remainingScans}/{DAILY_SCAN_LIMIT}
-            </Text>
-          </View>
+          {isPremium ? (
+            <View style={styles.premiumBadge}>
+              <Ionicons name="sparkles" size={12} color={colors.white} />
+              <Text style={styles.premiumBadgeText}>
+                {t("camera.premiumBadge")}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.scanCountBadge}>
+              <Ionicons
+                name="scan-outline"
+                size={14}
+                color={remainingScans > 0 ? colors.white : "#888"}
+              />
+              <Text
+                style={[
+                  styles.scanCountText,
+                  remainingScans === 0 && { color: "#888" },
+                ]}
+              >
+                {remainingScans}/{DAILY_SCAN_LIMIT}
+              </Text>
+            </View>
+          )}
           <TouchableOpacity
             style={styles.topButton}
             onPress={() => setFlashOn((v) => !v)}
@@ -468,28 +481,27 @@ export default function CameraScreen({ navigation }: Props) {
           <TouchableOpacity
             style={[
               styles.galleryButton,
-              remainingScans <= 0 && styles.galleryButtonDisabled,
+              scanDisabled && styles.galleryButtonDisabled,
             ]}
             onPress={handleGallery}
             activeOpacity={0.7}
-            disabled={remainingScans <= 0}
+            disabled={scanDisabled}
           >
             <Ionicons
               name="images-outline"
               size={26}
-              color={remainingScans <= 0 ? "#555" : colors.white}
+              color={scanDisabled ? "#555" : colors.white}
             />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[
               styles.shutterButton,
-              (capturing || remainingScans <= 0) &&
-                styles.shutterButtonDisabled,
+              (capturing || scanDisabled) && styles.shutterButtonDisabled,
             ]}
             onPress={handleCapture}
             activeOpacity={0.8}
-            disabled={capturing || remainingScans <= 0}
+            disabled={capturing || scanDisabled}
           >
             {capturing ? (
               <ActivityIndicator color={colors.primary} size="small" />
@@ -497,7 +509,7 @@ export default function CameraScreen({ navigation }: Props) {
               <View
                 style={[
                   styles.shutterInner,
-                  remainingScans <= 0 && styles.shutterInnerDisabled,
+                  scanDisabled && styles.shutterInnerDisabled,
                 ]}
               />
             )}
@@ -679,6 +691,21 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 13,
     fontWeight: "600",
+  },
+  premiumBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  premiumBadgeText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
   closeButton: {
     width: 44,
