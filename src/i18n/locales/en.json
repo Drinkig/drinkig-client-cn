@@ -729,7 +729,8 @@
         "gallery": "Gallery",
         "limitAlertTitle": "Daily Scan Limit Reached",
         "limitAlertMessage": "You can scan up to {{limit}} times per day.\nPlease try again tomorrow.",
-        "resetTimer": "Resets in {{hours}}h {{minutes}}m"
+        "resetTimer": "Resets in {{hours}}h {{minutes}}m",
+        "listPremiumOnly": "Wine list scan is a premium-only feature"
     },
     "menuScanResult": {
         "header": "Menu Scan Result",

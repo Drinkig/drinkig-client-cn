@@ -729,7 +729,8 @@
         "gallery": "갤러리",
         "limitAlertTitle": "일일 스캔 횟수 초과",
         "limitAlertMessage": "하루 {{limit}}회까지 사용할 수 있어요.\n내일 다시 시도해 주세요.",
-        "resetTimer": "{{hours}}시간 {{minutes}}분 후 초기화"
+        "resetTimer": "{{hours}}시간 {{minutes}}분 후 초기화",
+        "listPremiumOnly": "와인 리스트 스캔은 프리미엄 전용이에요"
     },
     "menuScanResult": {
         "header": "메뉴판 스캔 결과",
