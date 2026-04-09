@@ -67,6 +67,19 @@
             "western": "Western",
             "other": "Other",
             "westernGeneric": "Other Western"
+        },
+        "upsell": {
+            "intro": "Oh — food pairing recommendations are a Premium feature 🍷",
+            "benefitsIntro": "Upgrade to Premium and unlock all of these:",
+            "badge": "Drinky Premium",
+            "cardTitle": "Wine curation,\njust for you ✨",
+            "benefits": [
+                "Unlimited food–wine pairing for any dish",
+                "Unlimited wine label camera scans",
+                "See your personal wine compatibility score",
+                "Refresh your taste recommendations anytime"
+            ],
+            "cta": "Subscribe & get recommendations"
         }
     },
     "search": {

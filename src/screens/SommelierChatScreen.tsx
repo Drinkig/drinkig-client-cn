@@ -24,6 +24,7 @@ import {
   FoodRecommendationDTO,
 } from '../api/wine';
 import { useUser } from '../context/UserContext';
+import { useSubscription } from '../context/SubscriptionContext';
 import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
 import AnalyzingRadarChart from '../components/common/AnalyzingRadarChart';
 import { getFoodDetail, SupportedLang } from '../data/foodDetails';
@@ -43,7 +44,7 @@ type Message =
       nickname: string;
     };
 
-type Step = 'top' | 'sub' | 'food' | 'finding' | 'results' | 'error';
+type Step = 'top' | 'sub' | 'food' | 'finding' | 'results' | 'error' | 'upsell';
 
 type SubCategory = {
   label: string;
@@ -147,6 +148,8 @@ export default function SommelierChatScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { t, i18n } = useTranslation();
   const { user, flavorProfile } = useUser();
+  const { checkFeature } = useSubscription();
+  const hasFoodPairing = checkFeature('foodPairing');
   const nickname = user?.nickname || t('foodPairingResult.defaultNickname');
   const currentLang: SupportedLang = i18n.language?.startsWith('en')
     ? 'en'
@@ -178,12 +181,16 @@ export default function SommelierChatScreen() {
   const [choicesVisible, setChoicesVisible] = useState(false);
   const choicesOpacity = useRef(new Animated.Value(0)).current;
   const choicesTranslateY = useRef(new Animated.Value(8)).current;
+  // Upsell sheet slide-up animation (free-user paywall card at screen bottom).
+  const upsellOpacity = useRef(new Animated.Value(0)).current;
+  const upsellTranslateY = useRef(new Animated.Value(40)).current;
 
   const scrollRef = useRef<ScrollView>(null);
   const idCounter = useRef(0);
   const nextId = () => `m${idCounter.current++}`;
 
-  // Initial greeting
+  // Initial greeting. For free users, Drinky greets and then explains the
+  // premium subscription instead of starting the food-pairing flow.
   useEffect(() => {
     setIsTyping(true);
     const timer = setTimeout(() => {
@@ -196,6 +203,36 @@ export default function SommelierChatScreen() {
           text: t('sommelierChat.greeting', { nickname }),
         },
       ]);
+
+      if (!hasFoodPairing) {
+        // Follow-up: explain the premium subscription as a sequence of short
+        // chat messages, then push an inline upsell card with the CTA.
+        // Keep delays short so free users aren't stuck waiting.
+        const lines = [
+          t('sommelierChat.upsell.intro'),
+          t('sommelierChat.upsell.benefitsIntro'),
+        ];
+        const sayLine = (text: string, after: () => void) => {
+          setIsTyping(true);
+          setTimeout(() => {
+            setIsTyping(false);
+            pushMessage({
+              id: nextId(),
+              role: 'sommelier',
+              kind: 'text',
+              text,
+            });
+            setTimeout(after, 350);
+          }, 600);
+        };
+        setTimeout(() => {
+          sayLine(lines[0], () => {
+            sayLine(lines[1], () => {
+              setStep('upsell');
+            });
+          });
+        }, 400);
+      }
     }, TYPING_DELAY);
     return () => clearTimeout(timer);
   }, []);
@@ -208,6 +245,24 @@ export default function SommelierChatScreen() {
     }, 80);
     return () => clearTimeout(timer);
   }, [messages, isTyping, thinkingLabel, choicesVisible, step]);
+
+  // Animate the upsell sheet in when the user reaches the upsell step.
+  useEffect(() => {
+    if (step !== 'upsell') return;
+    Animated.parallel([
+      Animated.timing(upsellOpacity, {
+        toValue: 1,
+        duration: 420,
+        useNativeDriver: true,
+      }),
+      Animated.timing(upsellTranslateY, {
+        toValue: 0,
+        duration: 420,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [step]);
 
   // Reveal choices shortly after sommelier finishes typing,
   // so it feels like they said something and then offered options.
@@ -580,7 +635,7 @@ export default function SommelierChatScreen() {
           ]}
           pointerEvents={choicesVisible ? 'auto' : 'none'}
         >
-          {step === 'top' && choicesVisible && messages.length > 0 && (
+          {step === 'top' && hasFoodPairing && choicesVisible && messages.length > 0 && (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -701,6 +756,60 @@ export default function SommelierChatScreen() {
             </View>
           )}
         </Animated.View>
+
+        {step === 'upsell' && (
+          <Animated.View
+            style={[
+              styles.upsellSheet,
+              {
+                opacity: upsellOpacity,
+                transform: [{ translateY: upsellTranslateY }],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={['#8e44ad', '#4A086B']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <View style={styles.upsellSheetHeader}>
+              <Text style={styles.upsellSheetBadge}>
+                {t('sommelierChat.upsell.badge')}
+              </Text>
+              <Text style={styles.upsellSheetTitle}>
+                {t('sommelierChat.upsell.cardTitle')}
+              </Text>
+            </View>
+            <View style={styles.upsellBenefitsList}>
+              {(
+                t('sommelierChat.upsell.benefits', {
+                  returnObjects: true,
+                }) as string[]
+              ).map((b, i) => (
+                <View key={i} style={styles.upsellBenefitRow}>
+                  <Icon
+                    name="checkmark-circle"
+                    size={18}
+                    color={colors.white}
+                    style={styles.upsellBenefitIcon}
+                  />
+                  <Text style={styles.upsellBenefitText}>{b}</Text>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={styles.upsellSheetCta}
+              onPress={() => navigation.navigate('Paywall' as never)}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.upsellSheetCtaText}>
+                {t('sommelierChat.upsell.cta')}
+              </Text>
+              <Icon name="arrow-forward" size={18} color={colors.primaryDark} />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </SafeAreaView>
     </View>
   );
@@ -1268,5 +1377,69 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 14,
     fontWeight: '600',
+  },
+  upsellSheet: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 22,
+    overflow: 'hidden',
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    elevation: 14,
+  },
+  upsellSheetHeader: {
+    marginBottom: 14,
+  },
+  upsellSheetBadge: {
+    alignSelf: 'flex-start',
+    color: '#FFD86B',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  upsellSheetTitle: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: '800',
+    lineHeight: 26,
+  },
+  upsellBenefitsList: {
+    marginBottom: 14,
+  },
+  upsellBenefitRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  upsellBenefitIcon: {
+    marginRight: 8,
+    marginTop: 1,
+  },
+  upsellBenefitText: {
+    color: 'rgba(255,255,255,0.95)',
+    fontSize: 13.5,
+    lineHeight: 19,
+    flex: 1,
+  },
+  upsellSheetCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    paddingVertical: 14,
+    borderRadius: 16,
+  },
+  upsellSheetCtaText: {
+    color: colors.primaryDark,
+    fontSize: 15,
+    fontWeight: '700',
+    marginRight: 6,
   },
 });

@@ -33,7 +33,7 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
   const { t } = useTranslation();
-  const { checkFeature, refreshSubscription } = useSubscription();
+  const { refreshSubscription } = useSubscription();
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
@@ -61,10 +61,8 @@ export default function HomeScreen() {
   }, []);
 
   const handleHeroPress = () => {
-    if (!checkFeature('foodPairing')) {
-      navigation.navigate('Paywall' as never);
-      return;
-    }
+    // Free users can enter the chat — Drinky will explain the premium
+    // subscription inside the conversation rather than blocking entry here.
     if (flipping) return;
     heroRef.current?.measureInWindow((x, y, w, h) => {
       if (!w || !h) {
