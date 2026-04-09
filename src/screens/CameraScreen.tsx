@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   Dimensions,
   Platform,
   StatusBar,
@@ -17,7 +18,7 @@ import {
 } from "react-native-vision-camera";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import ImageResizer from "@bam.tech/react-native-image-resizer";
+import PhotoManipulator, { MimeType } from "react-native-photo-manipulator";
 import { launchImageLibrary } from "react-native-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -27,8 +28,68 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import { useSubscription } from "../context/SubscriptionContext";
 import { getScanRemaining } from "../api/subscription";
 
+type ScanType = "label" | "list";
+
 const DAILY_SCAN_LIMIT = 3;
 const SCAN_USAGE_KEY = "scanDailyUsage";
+
+// OCR 품질에 직결되므로 scanType에 따라 크롭 비율/해상도/품질을 다르게 가져간다.
+// - label: 병 라벨 근접 촬영, 텍스트 양이 적어 2048로 충분
+// - list: 메뉴판 전체, 작은 글씨가 수십 줄이라 3072 + 높은 품질 필요
+// aspectW/aspectH는 화면의 가이드 프레임 비율과 동일해야 한다 (중앙 크롭 시 사용자가
+// 프레임 안에 넣은 피사체만 서버로 전달되도록).
+const SCAN_CONFIG: Record<
+  ScanType,
+  { aspectW: number; aspectH: number; maxEdge: number; quality: number }
+> = {
+  label: { aspectW: 1, aspectH: 1.1, maxEdge: 2048, quality: 90 },
+  list: { aspectW: 1, aspectH: 1.45, maxEdge: 3072, quality: 92 },
+};
+
+/**
+ * 사진의 중앙에서 scanType 프레임 비율에 맞는 영역을 잘라내고 maxEdge로 다운사이즈한다.
+ * 화면의 가이드 프레임과 동일한 비율이어야 사용자가 "프레임 안"이라고 믿은 영역만
+ * 서버에 전달된다. 프레임이 화면 중앙에서 약간 위쪽이긴 하지만 (dimOverlayTop flex 0.8
+ * vs bottom flex 1.2) 실제 오차는 크지 않아 중앙 크롭으로 근사한다.
+ */
+async function cropToFrame(
+  uri: string,
+  photoWidth: number,
+  photoHeight: number,
+  type: ScanType
+): Promise<string> {
+  const { aspectW, aspectH, maxEdge, quality } = SCAN_CONFIG[type];
+  const targetRatio = aspectW / aspectH; // width / height, 항상 < 1 (세로가 길다)
+  const photoRatio = photoWidth / photoHeight;
+
+  let cropW: number;
+  let cropH: number;
+  if (photoRatio > targetRatio) {
+    // 사진이 프레임보다 가로로 넓다 → 좌우를 깎는다
+    cropH = photoHeight;
+    cropW = Math.round(cropH * targetRatio);
+  } else {
+    // 사진이 프레임보다 세로로 길다 → 위아래를 깎는다
+    cropW = photoWidth;
+    cropH = Math.round(cropW / targetRatio);
+  }
+  const cropX = Math.round((photoWidth - cropW) / 2);
+  const cropY = Math.round((photoHeight - cropH) / 2);
+
+  // 크롭 후 긴 변이 maxEdge가 되도록 축소 (원본보다 커지지 않도록)
+  const scale = Math.min(1, maxEdge / cropH);
+  const targetW = Math.max(1, Math.round(cropW * scale));
+  const targetH = Math.max(1, Math.round(cropH * scale));
+
+  return PhotoManipulator.batch(
+    uri,
+    [],
+    { x: cropX, y: cropY, width: cropW, height: cropH },
+    { width: targetW, height: targetH },
+    quality,
+    MimeType.JPEG
+  );
+}
 
 async function getScanUsage(): Promise<{ date: string; count: number }> {
   const raw = await AsyncStorage.getItem(SCAN_USAGE_KEY);
@@ -66,8 +127,6 @@ export async function incrementScanCount(): Promise<void> {
 
 const { width, height } = Dimensions.get("window");
 
-type ScanType = "label" | "list";
-
 type Props = NativeStackScreenProps<any, "Camera">;
 
 export default function CameraScreen({ navigation }: Props) {
@@ -84,6 +143,11 @@ export default function CameraScreen({ navigation }: Props) {
   const [capturing, setCapturing] = useState(false);
   const [remainingScans, setRemainingScans] = useState(DAILY_SCAN_LIMIT);
   const [timeUntilReset, setTimeUntilReset] = useState("");
+  const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(
+    null
+  );
+  const focusIndicatorAnim = useRef(new Animated.Value(0)).current;
+  const focusHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (isPremium) {
@@ -210,17 +274,15 @@ export default function CameraScreen({ navigation }: Props) {
       const uri =
         Platform.OS === "android" ? `file://${photo.path}` : photo.path;
 
-      const resized = await ImageResizer.createResizedImage(
+      const croppedUri = await cropToFrame(
         uri,
-        1920,
-        1920,
-        "JPEG",
-        80,
-        0
+        photo.width,
+        photo.height,
+        scanType
       );
 
       navigation.replace("MenuScanResult", {
-        imageUri: resized.uri,
+        imageUri: croppedUri,
         scanType,
       });
     } catch (e) {
@@ -233,25 +295,59 @@ export default function CameraScreen({ navigation }: Props) {
   const handleGallery = useCallback(async () => {
     if (!(await checkDailyLimit())) return;
     const result = await launchImageLibrary({ mediaType: "photo" });
-    if (result.assets && result.assets[0]?.uri) {
-      try {
-        const resized = await ImageResizer.createResizedImage(
-          result.assets[0].uri,
-          1920,
-          1920,
-          "JPEG",
-          80,
-          0
-        );
-        navigation.replace("MenuScanResult", {
-          imageUri: resized.uri,
-          scanType,
-        });
-      } catch (e) {
-        showToast(t("camera.captureError"), { type: "error" });
-      }
+    const asset = result.assets?.[0];
+    if (!asset?.uri || !asset.width || !asset.height) return;
+    try {
+      const croppedUri = await cropToFrame(
+        asset.uri,
+        asset.width,
+        asset.height,
+        scanType
+      );
+      navigation.replace("MenuScanResult", {
+        imageUri: croppedUri,
+        scanType,
+      });
+    } catch (e) {
+      showToast(t("camera.captureError"), { type: "error" });
     }
-  }, [navigation, scanType, t, showToast]);
+  }, [checkDailyLimit, navigation, scanType, t, showToast]);
+
+  // 탭 지점에 카메라 포커스를 맞춘다. 라벨/리스트 모두 근접 촬영이라
+  // 포커스가 안 맞으면 OCR 인식률이 치명적으로 떨어진다.
+  const handleFocusTap = useCallback(
+    (e: { nativeEvent: { locationX: number; locationY: number } }) => {
+      if (!cameraRef.current || !device?.supportsFocus) return;
+      const { locationX, locationY } = e.nativeEvent;
+      setFocusPoint({ x: locationX, y: locationY });
+      focusIndicatorAnim.setValue(0);
+      Animated.sequence([
+        Animated.timing(focusIndicatorAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.delay(600),
+        Animated.timing(focusIndicatorAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      if (focusHideTimer.current) clearTimeout(focusHideTimer.current);
+      focusHideTimer.current = setTimeout(() => setFocusPoint(null), 1000);
+      cameraRef.current.focus({ x: locationX, y: locationY }).catch(() => {
+        // focus can throw if the point is out of bounds; swallow silently.
+      });
+    },
+    [device?.supportsFocus, focusIndicatorAnim]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (focusHideTimer.current) clearTimeout(focusHideTimer.current);
+    };
+  }, []);
 
   const handleRequestPermission = useCallback(async () => {
     const granted = await requestPermission();
@@ -332,14 +428,44 @@ export default function CameraScreen({ navigation }: Props) {
           <Text style={styles.mockText}>{t("camera.simulatorPreview")}</Text>
         </View>
       ) : (
-        <Camera
-          ref={cameraRef}
-          style={StyleSheet.absoluteFill}
-          device={device!}
-          isActive={true}
-          photo={true}
-          torch={flashOn ? "on" : "off"}
-        />
+        <>
+          <Camera
+            ref={cameraRef}
+            style={StyleSheet.absoluteFill}
+            device={device!}
+            isActive={true}
+            photo={true}
+            photoQualityBalance="quality"
+            torch={flashOn ? "on" : "off"}
+          />
+          {/* Tap-to-focus layer — must sit above the preview but below
+              controls. pointerEvents="box-only" lets us catch taps without
+              blocking child touchables (there are none here anyway). */}
+          <TouchableWithoutFeedback onPress={handleFocusTap}>
+            <View style={StyleSheet.absoluteFill} />
+          </TouchableWithoutFeedback>
+          {focusPoint && (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.focusIndicator,
+                {
+                  left: focusPoint.x - FOCUS_INDICATOR_SIZE / 2,
+                  top: focusPoint.y - FOCUS_INDICATOR_SIZE / 2,
+                  opacity: focusIndicatorAnim,
+                  transform: [
+                    {
+                      scale: focusIndicatorAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1.3, 1],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            />
+          )}
+        </>
       )}
 
       {/* Dimmed overlay with cutout frame */}
@@ -540,6 +666,9 @@ const CORNER_THICKNESS = 3;
 const TOGGLE_BTN_WIDTH = 104;
 const TOGGLE_PADDING = 4;
 
+// Tap-to-focus indicator
+const FOCUS_INDICATOR_SIZE = 72;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -554,6 +683,14 @@ const styles = StyleSheet.create({
   mockText: {
     color: "rgba(255,255,255,0.25)",
     fontSize: 14,
+  },
+  focusIndicator: {
+    position: "absolute",
+    width: FOCUS_INDICATOR_SIZE,
+    height: FOCUS_INDICATOR_SIZE,
+    borderRadius: FOCUS_INDICATOR_SIZE / 2,
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.9)",
   },
   permissionContainer: {
     flex: 1,

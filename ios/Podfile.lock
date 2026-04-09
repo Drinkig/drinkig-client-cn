@@ -1985,7 +1985,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-image-resizer (3.0.11):
+  - react-native-photo-manipulator (1.9.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -1996,7 +1996,6 @@ PODS:
     - RCT-Folly/Fabric
     - RCTRequired
     - RCTTypeSafety
-    - React-Codegen
     - React-Core
     - React-debug
     - React-Fabric
@@ -2013,6 +2012,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - SocketRocket
+    - WCPhotoManipulator (~> 2.6.0)
     - Yoga
   - react-native-safe-area-context (5.6.2):
     - boost
@@ -3073,6 +3073,7 @@ PODS:
   - VisionCamera/Core (4.7.3)
   - VisionCamera/React (4.7.3):
     - React-Core
+  - WCPhotoManipulator (2.6.0)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -3122,7 +3123,7 @@ DEPENDENCIES:
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
-  - "react-native-image-resizer (from `../node_modules/@bam.tech/react-native-image-resizer`)"
+  - react-native-photo-manipulator (from `../node_modules/react-native-photo-manipulator`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-tracking-transparency (from `../node_modules/react-native-tracking-transparency`)
   - react-native-video (from `../node_modules/react-native-video`)
@@ -3202,6 +3203,7 @@ SPEC REPOS:
     - React-Codegen
     - RecaptchaInterop
     - SocketRocket
+    - WCPhotoManipulator
 
 EXTERNAL SOURCES:
   boost:
@@ -3295,8 +3297,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-config"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
-  react-native-image-resizer:
-    :path: "../node_modules/@bam.tech/react-native-image-resizer"
+  react-native-photo-manipulator:
+    :path: "../node_modules/react-native-photo-manipulator"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-tracking-transparency:
@@ -3469,7 +3471,7 @@ SPEC CHECKSUMS:
   react-native-blur: b83ffbc5380d8bd2f06804b4b0e848be3507e65c
   react-native-config: 916e53e7333d5b2bcb7ee9882f5605143b4fc4c5
   react-native-image-picker: 6051cfd030121b880a58f1cc0e5e33e9887804e4
-  react-native-image-resizer: a889f67073804003f19da3721ef5593df569b45b
+  react-native-photo-manipulator: ae110224a8ebc3472a86ac65a6acd888253a823f
   react-native-safe-area-context: 0a3b034bb63a5b684dd2f5fffd3c90ef6ed41ee8
   react-native-tracking-transparency: 15eb319f2b982070eb9831582af27d87badfa624
   react-native-video: 624deff94be379ffaba289bed13fc0917f01abcb
@@ -3523,6 +3525,7 @@ SPEC CHECKSUMS:
   RNVectorIcons: e355dd0998d6b9020e560922a66614eb9636501b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
+  WCPhotoManipulator: 804988e16a6fe941cddff942b2acf887110de5d6
   Yoga: 526f25666395d30c297d53154398ffd249eaf9e1
 
 PODFILE CHECKSUM: 5fa9da0ff7f30138dba668d46fe10f6364f02569
