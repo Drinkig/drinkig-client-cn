@@ -1,0 +1,106 @@
+# CLAUDE.md — Drinkig Client (CN) 프로젝트 매뉴얼
+
+> 이 문서는 Claude Code 세션의 '뇌' 역할을 합니다. 아키텍처 요약, 코딩 컨벤션, 그리고 **우리가 작업 중에 마주친 버그/에러/해결책**을 누적 기록해 같은 실수를 반복하지 않도록 합니다.
+
+---
+
+## 1. 프로젝트 개요
+
+- **제품명**: Drinkig (드링키지) — 와인 추천/테이스팅 노트/소믈리에 챗 모바일 앱
+- **리포**: `drinkig-client-cn` — 이름의 `cn`은 **React Native(rn)의 오타**. 지역(중국) 빌드 아님. 그대로 두고 사용 중.
+- **스택**: React Native `0.82.1` + React `19.1.1` + TypeScript `5.8.3`
+- **노드 버전**: `>=20`
+- **빌드 타겟**: iOS, Android
+
+## 2. 핵심 아키텍처 & 디렉토리 레이아웃
+
+```
+src/
+├── animations/     # Reanimated/애니메이션 헬퍼
+├── api/            # axios 기반 백엔드 호출 레이어
+├── assets/         # 이미지/폰트/로컬 정적 리소스
+├── components/     # 재사용 UI
+│   ├── common/         # 공통(GlassChip 등) — 신규 UI는 우선 이곳을 참조
+│   ├── camera/
+│   ├── home/
+│   ├── onboarding/
+│   ├── tasting_note/
+│   ├── wine_detail/
+│   └── navigation/
+├── constants/      # 테마/색상/레이아웃 상수
+├── context/        # React Context providers
+├── data/           # 로컬 정적 데이터
+├── i18n/           # i18next 리소스 (KR/EN/ZH)
+├── navigation/     # @react-navigation 스택/탭 정의
+├── screens/        # 라우트-레벨 스크린 컴포넌트
+├── types/ types.ts # 전역 타입 정의
+└── utils/          # 순수 헬퍼
+```
+
+**핵심 라이브러리**
+- Navigation: `@react-navigation/native-stack`, `bottom-tabs`
+- 상태/저장: `@react-native-async-storage/async-storage`, `react-native-keychain`
+- 인증: Firebase Auth, Apple, Kakao
+- 결제/광고: `react-native-iap`, `react-native-google-mobile-ads`
+- 미디어: `react-native-vision-camera`, `react-native-video`, `react-native-svg`
+- 국제화: `i18next` + `react-i18next` + `react-native-localize`
+
+## 3. 코딩 컨벤션
+
+1. **언어**: TypeScript 엄격 사용. `any`는 최후 수단.
+2. **컴포넌트**: 함수형 + hooks. 파일명은 `PascalCase.tsx`.
+3. **스타일**: `StyleSheet.create` 선호. 색상/간격은 `src/constants/`에 정의된 테마 값을 사용 — 하드코딩된 hex는 지양.
+4. **i18n**: 사용자에게 노출되는 모든 문자열은 `t('...')`로. 리터럴 문자열 금지.
+5. **공통 UI**: 신규 칩/버튼 등을 만들기 전에 `src/components/common/`을 먼저 확인 (예: `GlassChip`).
+6. **import 경로**: `babel-plugin-module-resolver` 설정된 alias가 있다면 alias 우선, 없으면 상대 경로.
+7. **커밋 메시지**: 기존 컨벤션 유지 — `feat:`, `refactor:`, `fix:`, `chore:` 접두어.
+8. **불필요한 파일 금지**: `fix_jsx.js`, `replace_colors.js` 같은 일회성 스크립트를 반복 생성하지 않는다.
+9. **포매팅**: Prettier `2.8.8` + `@react-native/eslint-config`. 수정 후에는 항상 `npm run lint`로 검증.
+
+## 4. 자주 쓰는 명령
+
+```bash
+npm run lint         # eslint .
+npm test             # jest
+npx tsc --noEmit     # 타입 체크
+npm run ios          # iOS 실행
+npm run android      # Android 실행
+npm start            # Metro
+```
+
+## 5. 작업 워크플로우 (Claude가 지켜야 할 것)
+
+1. 파일을 수정하기 전에 항상 **먼저 Read**로 현재 내용을 확인한다.
+2. 수정 후 **PostToolUse 훅**이 자동으로 `prettier --write` + `eslint --fix`를 실행한다 (아래 §8 참조).
+3. 작업 범위 밖의 리팩토링/코멘트 추가는 **금지**.
+4. 버그를 발견/해결하면 즉시 본 문서의 **§7 버그/해결 로그**에 추가한다.
+
+## 6. 커스텀 슬래시 스킬
+
+- **`/check_drinkig`** — 프로젝트의 구조·타입·린트 상태를 빠르게 스모크 테스트. 자세한 내용은 `.claude/skills/check_drinkig/SKILL.md`.
+
+> 새로운 반복 작업이 생기면 `.claude/skills/<name>/SKILL.md` 형태로 추가한다.
+
+## 7. 버그 / 에러 / 해결책 로그 (누적 기록)
+
+> **규칙**: 작업 중 실패한 빌드, 런타임 에러, 놓친 엣지 케이스 등은 아래 표에 추가한다. "어떻게 재현하는지 → 원인 → 해결"을 한 줄로 남긴다.
+
+| 날짜 | 영역 | 증상 | 원인 | 해결 |
+|------|------|------|------|------|
+| 2026-04-09 | 초기화 | — | — | CLAUDE.md, `/check_drinkig` 스킬, PostToolUse 훅 초기 설정 |
+| _다음 항목부터 여기에 추가_ | | | | |
+
+## 8. 자동화 훅 요약
+
+`.claude/settings.local.json`의 `hooks.PostToolUse`가 `Edit|Write|MultiEdit` 도구 사용 직후 스크립트를 실행:
+
+- 수정된 `.ts/.tsx/.js/.jsx` 파일에 대해
+  - `npx prettier --write <file>` (들여쓰기 / 공백 정리)
+  - `npx eslint --fix <file>` (lint 에러 자동 수정 + 남은 에러 리포트)
+- 실패해도 Claude 세션을 블로킹하지 않고 stderr로 결과만 알린다.
+
+자세한 구현은 `.claude/hooks/format_and_lint.sh` 참고.
+
+---
+
+_마지막 업데이트: 2026-04-09 (위승주 대표 요청으로 초기 세팅)_
