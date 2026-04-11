@@ -58,6 +58,7 @@ const SettingScreen = () => {
   const [promoModalVisible, setPromoModalVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [isRedeemingPromo, setIsRedeemingPromo] = useState(false);
+  const [promoError, setPromoError] = useState("");
 
   useEffect(() => {
     const loadLang = async () => {
@@ -200,14 +201,12 @@ App Version: ${DeviceInfo.getVersion()}
         setPromoCode("");
         showToast(t("paywall.promoSuccessMessage"), { type: "success" });
       } else {
-        showToast(response.message || t("paywall.promoErrorGeneric"), {
-          type: "error",
-        });
+        setPromoError(response.message || t("paywall.promoErrorGeneric"));
       }
     } catch (error: any) {
       const message =
         error?.response?.data?.message || t("paywall.promoErrorGeneric");
-      showToast(message, { type: "error" });
+      setPromoError(message);
     } finally {
       setIsRedeemingPromo(false);
     }
@@ -217,6 +216,7 @@ App Version: ${DeviceInfo.getVersion()}
     if (isRedeemingPromo) return;
     setPromoModalVisible(false);
     setPromoCode("");
+    setPromoError("");
   };
 
   const handleLogout = () => {
@@ -556,13 +556,19 @@ App Version: ${DeviceInfo.getVersion()}
             <TextInput
               style={styles.promoModalInput}
               value={promoCode}
-              onChangeText={setPromoCode}
+              onChangeText={(text) => {
+                setPromoCode(text);
+                if (promoError) setPromoError("");
+              }}
               placeholder={t("paywall.promoPlaceholder")}
               placeholderTextColor={colors.textTertiary}
               autoCapitalize="characters"
               autoCorrect={false}
               editable={!isRedeemingPromo}
             />
+            {promoError ? (
+              <Text style={styles.promoModalError}>{promoError}</Text>
+            ) : null}
             <View style={styles.promoModalButtonRow}>
               <TouchableOpacity
                 style={[
@@ -697,6 +703,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 16,
     backgroundColor: colors.background,
+  },
+  promoModalError: {
+    color: "#FF6B6B",
+    fontSize: 13,
+    marginTop: -10,
+    marginBottom: 12,
   },
   promoModalButtonRow: {
     flexDirection: "row",
