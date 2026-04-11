@@ -279,7 +279,7 @@ const LoginScreen = () => {
           <View style={styles.carouselContainer}>
             <FlatList
               data={slides}
-              contentContainerStyle={{ height: "100%" }}
+              contentContainerStyle={{ flexGrow: 1 }}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
@@ -411,23 +411,25 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     justifyContent: "space-between",
-    paddingVertical: 40,
+    paddingVertical: 20,
   },
   carouselContainer: {
-    flex: 1,
-    height: "65%",
+    flex: 3,
     justifyContent: "center",
     alignItems: "center",
   },
   slide: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
   logo: {
-    width: 280,
-    height: 280,
-    marginBottom: 30,
+    width: "60%",
+    aspectRatio: 1,
+    maxWidth: 280,
+    maxHeight: 280,
+    marginBottom: 24,
   },
   sloganText: {
     color: colors.textPrimary,
@@ -455,9 +457,11 @@ const styles = StyleSheet.create({
     opacity: 1,
   },
   bottomContainer: {
+    flex: 1,
     width: "100%",
     paddingHorizontal: 24,
     paddingBottom: 20,
+    justifyContent: "flex-end",
   },
   buttonContainer: {
     width: "100%",
