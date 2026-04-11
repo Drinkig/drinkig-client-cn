@@ -1,185 +1,240 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import { useTranslation } from 'react-i18next';
-import { colors } from '../../constants/colors';
-import GlassChip from '../common/GlassChip';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+} from "react-native";
+import { useTranslation } from "react-i18next";
+import { colors } from "../../constants/colors";
+import GlassChip from "../common/GlassChip";
 
 interface Category {
-    title: string;
-    data: string[];
+  title: string;
+  data: string[];
 }
 
 interface CategorizedSelectionStepProps {
-    title: string;
-    categories: Category[];
-    selected: string[];
-    onSelect: (value: string) => void;
-    allowCustomInput?: boolean;
+  title: string;
+  categories: Category[];
+  selected: string[];
+  onSelect: (value: string) => void;
+  allowCustomInput?: boolean;
 }
 
-export const CategorizedSelectionStep = ({ title, categories, selected, onSelect, allowCustomInput }: CategorizedSelectionStepProps) => {
-    const { t } = useTranslation();
-    const [isInputVisible, setIsInputVisible] = useState(false);
-    const [inputText, setInputText] = useState('');
+export const CategorizedSelectionStep = ({
+  title,
+  categories,
+  selected,
+  onSelect,
+  allowCustomInput,
+}: CategorizedSelectionStepProps) => {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState(0);
+  const [isInputVisible, setIsInputVisible] = useState(false);
+  const [inputText, setInputText] = useState("");
 
-    // Collect all options flatly to check for custom value
-    const allOptions = categories.flatMap(c => c.data);
-    const customValue = selected.find(val => !allOptions.includes(val) && val !== '기타');
+  const allOptions = categories.flatMap((c) => c.data);
+  const customValue = selected.find(
+    (val) => !allOptions.includes(val) && val !== "기타"
+  );
 
-    const handleCustomSubmit = () => {
-        if (inputText.trim()) {
-            onSelect(inputText.trim());
-            setInputText('');
-        }
-        setIsInputVisible(false);
-    };
+  const activeCategory = categories[activeTab];
 
-    return (
-        <View style={styles.content}>
-            <Text style={styles.stepTitle}>{title}</Text>
-            <Text style={styles.stepDesc}>{t('onboarding.selection.multiDesc')}</Text>
+  const getSelectedCount = (category: Category) => {
+    let count = category.data.filter(
+      (opt) => opt !== "기타" && selected.includes(opt)
+    ).length;
+    if (allowCustomInput && category.data.includes("기타") && customValue) {
+      count += 1;
+    }
+    return count;
+  };
 
-            {/* ScrollView Container with Gradients */}
-            <View style={{ flex: 1 }}>
-                <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 20 }}>
-                    {categories.map((category) => (
-                        <View key={category.title} style={styles.section}>
-                            <Text style={styles.sectionTitle}>{category.title}</Text>
-                            <View style={styles.grid}>
-                                {category.data.map((opt) => {
-                                    if (allowCustomInput && opt === '기타') {
-                                        if (customValue) {
-                                            return (
-                                                <GlassChip
-                                                    key="custom-value"
-                                                    label={customValue}
-                                                    selected
-                                                    onPress={() => onSelect(customValue)}
-                                                />
-                                            );
-                                        }
-                                        if (isInputVisible) {
-                                            return (
-                                                <View key="custom-input" style={styles.inputChip}>
-                                                    <TextInput
-                                                        style={styles.textInput}
-                                                        value={inputText}
-                                                        onChangeText={setInputText}
-                                                        placeholder={t('onboarding.selection.customPlaceholder')}
-                                                        placeholderTextColor={colors.textSecondary}
-                                                        autoFocus
-                                                        onSubmitEditing={handleCustomSubmit}
-                                                        onBlur={handleCustomSubmit}
-                                                        returnKeyType="done"
-                                                    />
-                                                </View>
-                                            );
-                                        }
-                                        return (
-                                            <GlassChip
-                                                key={opt}
-                                                label={opt}
-                                                onPress={() => setIsInputVisible(true)}
-                                            />
-                                        );
-                                    }
+  const handleCustomSubmit = () => {
+    if (inputText.trim()) {
+      onSelect(inputText.trim());
+      setInputText("");
+    }
+    setIsInputVisible(false);
+  };
 
-                                    return (
-                                        <GlassChip
-                                            key={opt}
-                                            label={opt}
-                                            selected={selected.includes(opt)}
-                                            onPress={() => onSelect(opt)}
-                                        />
-                                    );
-                                })}
-                            </View>
-                        </View>
-                    ))}
-                    <View style={{ height: 40 }} />
-                </ScrollView>
+  return (
+    <View style={styles.content}>
+      <Text style={styles.stepTitle}>{title}</Text>
+      <Text style={styles.stepDesc}>{t("onboarding.selection.multiDesc")}</Text>
 
+      {/* Category Tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabBar}
+        contentContainerStyle={styles.tabBarContent}
+      >
+        {categories.map((category, index) => {
+          const isActive = index === activeTab;
+          const count = getSelectedCount(category);
+          return (
+            <TouchableOpacity
+              key={category.title}
+              style={[styles.tab, isActive && styles.activeTab]}
+              onPress={() => setActiveTab(index)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                {category.title}
+              </Text>
+              {count > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{count}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
 
-                <LinearGradient
-                    colors={[colors.background, `${colors.background}00`]}
-                    style={styles.topGradient}
-                    pointerEvents="none"
+      {/* Active Category Items */}
+      <View style={styles.itemsContainer}>
+        <View style={styles.grid}>
+          {activeCategory.data.map((opt) => {
+            if (allowCustomInput && opt === "기타") {
+              if (customValue) {
+                return (
+                  <GlassChip
+                    key="custom-value"
+                    label={customValue}
+                    selected
+                    onPress={() => onSelect(customValue)}
+                  />
+                );
+              }
+              if (isInputVisible) {
+                return (
+                  <View key="custom-input" style={styles.inputChip}>
+                    <TextInput
+                      style={styles.textInput}
+                      value={inputText}
+                      onChangeText={setInputText}
+                      placeholder={t("onboarding.selection.customPlaceholder")}
+                      placeholderTextColor={colors.textSecondary}
+                      autoFocus
+                      onSubmitEditing={handleCustomSubmit}
+                      onBlur={handleCustomSubmit}
+                      returnKeyType="done"
+                    />
+                  </View>
+                );
+              }
+              return (
+                <GlassChip
+                  key={opt}
+                  label={opt}
+                  onPress={() => setIsInputVisible(true)}
                 />
+              );
+            }
 
-
-                <LinearGradient
-                    colors={[`${colors.background}00`, colors.background]}
-                    style={styles.bottomGradient}
-                    pointerEvents="none"
-                />
-            </View>
+            return (
+              <GlassChip
+                key={opt}
+                label={opt}
+                selected={selected.includes(opt)}
+                onPress={() => onSelect(opt)}
+              />
+            );
+          })}
         </View>
-    );
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    content: {
-        flex: 1,
-        paddingTop: 20,
-        backgroundColor: colors.background,
-    },
-    stepTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: colors.textPrimary,
-        marginBottom: 8,
-    },
-    stepDesc: {
-        fontSize: 14,
-        color: colors.textSecondary,
-        marginBottom: 10,
-    },
-
-    topGradient: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 30,
-        zIndex: 1,
-    },
-    bottomGradient: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 50,
-        zIndex: 1,
-    },
-    section: {
-        marginBottom: 24,
-    },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: colors.textPrimary,
-        marginBottom: 12,
-        marginTop: 4,
-    },
-    grid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    inputChip: {
-        backgroundColor: colors.surface1,
-        borderColor: colors.primary,
-        borderWidth: 1,
-        borderRadius: 12,
-        minWidth: 80,
-        justifyContent: 'center',
-    },
-    textInput: {
-        color: colors.textPrimary,
-        fontSize: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        minWidth: 60,
-    },
+  content: {
+    flex: 1,
+    paddingTop: 10,
+    backgroundColor: colors.background,
+  },
+  stepTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  stepDesc: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 16,
+  },
+  tabBar: {
+    flexGrow: 0,
+    marginBottom: 24,
+  },
+  tabBarContent: {
+    gap: 8,
+  },
+  tab: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  activeTab: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.textTertiary,
+  },
+  activeTabText: {
+    color: colors.white,
+    fontWeight: "700",
+  },
+  badge: {
+    marginLeft: 6,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+  },
+  badgeText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  itemsContainer: {
+    flex: 1,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  inputChip: {
+    backgroundColor: colors.surface1,
+    borderColor: colors.primary,
+    borderWidth: 1,
+    borderRadius: 12,
+    minWidth: 80,
+    justifyContent: "center",
+  },
+  textInput: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    minWidth: 60,
+  },
 });
