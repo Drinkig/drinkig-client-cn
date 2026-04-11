@@ -1,11 +1,13 @@
-import { WineDBItem } from './types/Wine';
-import { MyWine } from './context/WineContext';
+import { WineDBItem } from "./types/Wine";
+import { MyWine } from "./context/WineContext";
 
 export type RootStackParamList = {
   Login: undefined;
 
   Onboarding: undefined;
-  RecommendationResult: { flavorProfile?: any; nickname?: string; fromReset?: boolean } | undefined;
+  RecommendationResult:
+    | { flavorProfile?: any; nickname?: string; fromReset?: boolean }
+    | undefined;
   TasteReset: undefined;
   Main: undefined;
   ProfileEdit: undefined;
@@ -15,10 +17,20 @@ export type RootStackParamList = {
   Wishlist: undefined;
   Search: { returnScreen?: keyof RootStackParamList } | undefined;
   WineSearch: { returnScreen?: keyof RootStackParamList } | undefined;
-  SearchResult: { searchKeyword: string; returnScreen?: keyof RootStackParamList };
+  SearchResult: {
+    searchKeyword: string;
+    returnScreen?: keyof RootStackParamList;
+  };
   WineDetail: { wine: WineDBItem | MyWine };
   MyWineDetail: { wineId: number; wineImageUrl?: string };
-  TastingNoteWrite: { wineId?: number; wineName?: string; wineImage?: string; wineType?: string } | undefined;
+  TastingNoteWrite:
+    | {
+        wineId?: number;
+        wineName?: string;
+        wineImage?: string;
+        wineType?: string;
+      }
+    | undefined;
   TastingNoteDetail: { tastingNoteId: number };
   WithdrawRetention: { authType: string };
   WithdrawReason: { authType: string };
@@ -26,10 +38,11 @@ export type RootStackParamList = {
   SommelierChat: undefined;
   FoodPairingResult: { foodName?: string };
   WineCompatibility: { userProfile: any; wineStats: any; wineName?: string };
+  PremiumWelcome: undefined;
 };
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList { }
+    interface RootParamList extends RootStackParamList {}
   }
 }

@@ -199,7 +199,7 @@ App Version: ${DeviceInfo.getVersion()}
         await refreshSubscription();
         setPromoModalVisible(false);
         setPromoCode("");
-        showToast(t("paywall.promoSuccessMessage"), { type: "success" });
+        navigation.navigate("PremiumWelcome" as never);
       } else {
         setPromoError(response.message || t("paywall.promoErrorGeneric"));
       }
@@ -531,6 +531,80 @@ App Version: ${DeviceInfo.getVersion()}
                 </Text>
                 <Icon name="chevron-forward" size={20} color={"#f5a623"} />
               </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => navigation.navigate("PremiumWelcome" as never)}
+            >
+              <Text style={[styles.itemText, styles.devItemText]}>
+                프리미엄 환영 화면 미리보기
+              </Text>
+              <Icon name="gift-outline" size={20} color={"#f5a623"} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.item}
+              onPress={() => {
+                const options = [
+                  "취소",
+                  "3일 남음",
+                  "1일 남음 (내일 만료)",
+                  "만료됨",
+                  "초기화 (서버 값)",
+                ];
+                const apply = async (idx: number) => {
+                  if (idx === 0) return;
+                  let fakeExpiry: string | null = null;
+                  if (idx === 1) {
+                    const d = new Date();
+                    d.setDate(d.getDate() + 3);
+                    fakeExpiry = d.toISOString();
+                  } else if (idx === 2) {
+                    const d = new Date();
+                    d.setDate(d.getDate() + 1);
+                    fakeExpiry = d.toISOString();
+                  } else if (idx === 3) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - 1);
+                    fakeExpiry = d.toISOString();
+                  } else if (idx === 4) {
+                    await AsyncStorage.removeItem("@dev_expiry_override");
+                    await refreshSubscription();
+                    showToast("만료일 오버라이드 초기화", { type: "success" });
+                    return;
+                  }
+                  if (fakeExpiry) {
+                    await AsyncStorage.setItem(
+                      "@dev_expiry_override",
+                      fakeExpiry
+                    );
+                    await refreshSubscription();
+                    showToast(`만료일 오버라이드: ${fakeExpiry.slice(0, 10)}`, {
+                      type: "success",
+                    });
+                  }
+                };
+                if (Platform.OS === "ios") {
+                  ActionSheetIOS.showActionSheetWithOptions(
+                    { options, cancelButtonIndex: 0 },
+                    apply
+                  );
+                } else {
+                  Alert.alert("만료일 오버라이드", undefined, [
+                    { text: options[1], onPress: () => apply(1) },
+                    { text: options[2], onPress: () => apply(2) },
+                    { text: options[3], onPress: () => apply(3) },
+                    { text: options[4], onPress: () => apply(4) },
+                    { text: options[0], style: "cancel" },
+                  ]);
+                }
+              }}
+            >
+              <Text style={[styles.itemText, styles.devItemText]}>
+                만료 배너 테스트
+              </Text>
+              <Icon name="time-outline" size={20} color={"#f5a623"} />
             </TouchableOpacity>
           </View>
         )}

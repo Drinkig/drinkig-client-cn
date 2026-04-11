@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   Image,
   Animated,
   Easing,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
-import { colors } from '../../constants/colors';
+} from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import LinearGradient from "react-native-linear-gradient";
+import { colors } from "../../constants/colors";
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 interface HeroSectionProps {
   onPress: () => void;
@@ -34,7 +34,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
           useNativeDriver: true,
         }),
         Animated.delay(2600),
-      ]),
+      ])
     ).start();
   }, [sheenAnim]);
 
@@ -51,7 +51,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
     <View style={styles.heroSectionShadow}>
       <View style={styles.heroSection}>
         <LinearGradient
-          colors={[colors.primaryDark, '#4A086B']} // Deep signature purple gradient
+          colors={[colors.primaryDark, "#4A086B"]} // Deep signature purple gradient
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFillObject}
@@ -64,15 +64,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
             styles.sheen,
             {
               opacity: sheenOpacity,
-              transform: [{ translateX: sheenTranslate }, { rotate: '18deg' }],
+              transform: [{ translateX: sheenTranslate }, { rotate: "18deg" }],
             },
           ]}
         >
           <LinearGradient
             colors={[
-              'rgba(255,255,255,0)',
-              'rgba(255,255,255,0.18)',
-              'rgba(255,255,255,0)',
+              "rgba(255,255,255,0)",
+              "rgba(255,255,255,0.18)",
+              "rgba(255,255,255,0)",
             ]}
             start={{ x: 0, y: 0.5 }}
             end={{ x: 1, y: 0.5 }}
@@ -87,10 +87,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
             adjustsFontSizeToFit
             minimumFontScale={0.75}
           >
-            {t('home.hero.title')}
+            {t("home.hero.title")}
           </Text>
           <Text style={styles.heroSubtitle} numberOfLines={2}>
-            {t('home.hero.subtitle')}
+            {t("home.hero.subtitle")}
           </Text>
         </View>
 
@@ -104,11 +104,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
             size={16}
             color={colors.primaryDark}
           />
-          <Text style={styles.recommendButtonText}>{t('home.hero.button')}</Text>
+          <Text style={styles.recommendButtonText}>
+            {t("home.hero.button")}
+          </Text>
         </TouchableOpacity>
 
         <Image
-          source={require('../../assets/onboarding/Drinky_onboarding_3.png')}
+          source={require("../../assets/onboarding/Drinky_onboarding_3.png")}
           style={styles.heroImage}
           resizeMode="contain"
         />
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     borderRadius: 20,
     // Premium matte shadow
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -133,8 +135,8 @@ const styles = StyleSheet.create({
   heroSection: {
     borderRadius: 20,
     padding: 24,
-    position: 'relative',
-    overflow: 'hidden', // Contain gradient and image bounds
+    position: "relative",
+    overflow: "hidden", // Contain gradient and image bounds
     height: 188,
     flexShrink: 0,
     backgroundColor: colors.surface1, // Fallback
@@ -143,11 +145,11 @@ const styles = StyleSheet.create({
     zIndex: 2,
     paddingRight: 110,
     marginTop: 4,
-    width: '100%',
+    width: "100%",
   },
   heroTitle: {
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
     marginBottom: 8,
     lineHeight: 28,
@@ -155,30 +157,30 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 13,
-    color: 'rgba(244, 239, 249, 0.9)',
+    color: "rgba(244, 239, 249, 0.95)",
     lineHeight: 19,
-    fontWeight: '500',
+    fontWeight: "600",
   },
   sheen: {
-    position: 'absolute',
+    position: "absolute",
     top: -40,
     bottom: -40,
     width: 90,
     zIndex: 1,
   },
   recommendButton: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 24,
     left: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     paddingVertical: 12,
     paddingHorizontal: 22,
     borderRadius: 26,
     zIndex: 2,
     gap: 7,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -189,12 +191,12 @@ const styles = StyleSheet.create({
   },
   recommendButtonText: {
     color: colors.primaryDark,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 15,
     letterSpacing: 0.2,
   },
   heroImage: {
-    position: 'absolute',
+    position: "absolute",
     right: -18,
     bottom: -20,
     width: 200,
@@ -203,4 +205,3 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 });
-

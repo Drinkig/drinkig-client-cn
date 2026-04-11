@@ -25,6 +25,7 @@ import { getMyWines, MyWineDTO } from "../api/wine";
 import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "../context/SubscriptionContext";
+import { SubscriptionExpiryBanner } from "../components/home/SubscriptionExpiryBanner";
 
 const FLIP_DURATION = 550;
 
@@ -170,6 +171,8 @@ export default function HomeScreen() {
             <HeroSection onPress={handleHeroPress} />
           </View>
 
+          <SubscriptionExpiryBanner />
+
           <BannerSection />
 
           <View style={styles.quickMenuContainer}>
@@ -186,12 +189,7 @@ export default function HomeScreen() {
               >
                 <View style={styles.tastingNoteContent}>
                   <View>
-                    <Text
-                      style={[
-                        styles.menuLabel,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
+                    <Text style={styles.menuLabel}>
                       {t("home.quickMenu.tastingNoteTitle")}
                     </Text>
                     <Text style={styles.menuSubLabel}>
@@ -202,7 +200,7 @@ export default function HomeScreen() {
                     <Icon
                       name="chevron-forward"
                       size={20}
-                      color={colors.textTertiary}
+                      color="rgba(255,255,255,0.5)"
                     />
                   </View>
                 </View>
@@ -222,22 +220,12 @@ export default function HomeScreen() {
               >
                 <View style={styles.tastingNoteContent}>
                   <View>
-                    <Text
-                      style={[
-                        styles.menuLabel,
-                        { color: colors.textSecondary },
-                      ]}
-                    >
+                    <Text style={styles.menuLabel}>
                       {t("home.quickMenu.myWineTitle")}
                     </Text>
                     <View style={styles.statRow}>
                       <Text style={styles.statNumber}>{myWines.length}</Text>
-                      <Text
-                        style={[
-                          styles.statUnit,
-                          { color: colors.textSecondary },
-                        ]}
-                      >
+                      <Text style={styles.statUnit}>
                         {t("home.quickMenu.bottlesUnit")}
                       </Text>
                     </View>
@@ -246,7 +234,7 @@ export default function HomeScreen() {
                     <Icon
                       name="chevron-forward"
                       size={20}
-                      color={colors.textTertiary}
+                      color="rgba(255,255,255,0.5)"
                     />
                   </View>
                 </View>
@@ -431,7 +419,7 @@ const styles = StyleSheet.create({
     height: 140,
     justifyContent: "space-between",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.04)", // Very subtle matte edge
+    borderColor: "rgba(255,255,255,0.10)",
     // Premium 3D float shadow matching the banners
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -454,7 +442,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    backgroundColor: "rgba(25, 22, 28, 0.6)",
+    backgroundColor: "rgba(25, 22, 28, 0.45)",
     borderRadius: 20,
   },
   arrowIconContainer: {
@@ -469,15 +457,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   menuLabel: {
-    color: colors.textSecondary,
+    color: "rgba(255,255,255,0.75)",
     fontSize: 13,
     marginBottom: 4,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   menuSubLabel: {
     color: colors.textPrimary,
     fontSize: 18,
     fontWeight: "bold",
+    textShadowColor: "rgba(0,0,0,0.4)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   statRow: {
     flexDirection: "row",
@@ -490,7 +481,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   statUnit: {
-    color: colors.textSecondary,
+    color: "rgba(255,255,255,0.7)",
     fontSize: 14,
     fontWeight: "600",
   },

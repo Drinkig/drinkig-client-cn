@@ -32,6 +32,12 @@
             "eventTag": "EVENT",
             "eventTitle": "Drinkig Launch\nPartner Wanted",
             "eventSub": "Get 1 month free advertising!"
+        },
+        "expiryBanner": {
+            "daysLeft": "Premium expires in {{days}} days",
+            "tomorrow": "Premium expires tomorrow",
+            "expired": "Your Premium has expired",
+            "cta": "Renew now"
         }
     },
     "sommelierChat": {
@@ -1160,6 +1166,20 @@
         "enterPromo": "Enter Promo Code",
         "promoDescription": "Each code adds 1 month on top of your current expiry date.",
         "cancel": "Cancel"
+    },
+    "premiumWelcome": {
+        "title": "Welcome to Premium!",
+        "subtitle": "You now have full access to\nall Drinkig features",
+        "expiresAt": "Available until {{date}}",
+        "cta": "Get Started",
+        "feature": {
+            "scan": "Unlimited Label Scan",
+            "menuScan": "Menu Wine Picks",
+            "pairing": "Wine Picks for Your Meal",
+            "compat": "Taste Match Score",
+            "report": "Match Analysis Report",
+            "reset": "Taste Profile Reset"
+        }
     },
     "login": {
         "slides": {

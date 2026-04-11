@@ -23,6 +23,7 @@ export type SubscriptionStatus =
 export type DevSubscriptionOverride = "none" | "premium" | "free";
 
 const DEV_OVERRIDE_STORAGE_KEY = "@dev_subscription_override";
+const DEV_EXPIRY_OVERRIDE_KEY = "@dev_expiry_override";
 
 interface SubscriptionState {
   plan: SubscriptionPlan;
@@ -121,10 +122,20 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await getSubscriptionStatus();
       if (response.isSuccess) {
+        let { expiresAt: expiry } = response.result;
+
+        // Dev expiry override for testing the expiry banner
+        if (isDevAccessEnabled) {
+          const devExpiry = await AsyncStorage.getItem(DEV_EXPIRY_OVERRIDE_KEY);
+          if (devExpiry) {
+            expiry = devExpiry;
+          }
+        }
+
         setState({
           plan: response.result.plan,
           status: response.result.status,
-          expiresAt: response.result.expiresAt,
+          expiresAt: expiry,
           platform: response.result.platform,
           isPremium: response.result.isPremium,
           features: response.result.features,

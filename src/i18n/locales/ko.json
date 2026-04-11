@@ -32,6 +32,12 @@
             "eventTag": "EVENT",
             "eventTitle": "드링키지 런칭 기념\n광고주 무료 모집",
             "eventSub": "1개월 무료로 광고해드려요!"
+        },
+        "expiryBanner": {
+            "daysLeft": "프리미엄이 {{days}}일 후 만료됩니다",
+            "tomorrow": "프리미엄이 내일 만료됩니다",
+            "expired": "프리미엄이 만료되었습니다",
+            "cta": "지금 연장하기"
         }
     },
     "sommelierChat": {
@@ -1160,6 +1166,20 @@
         "enterPromo": "프로모션 코드 입력",
         "promoDescription": "코드 1개당 1개월이 현재 구독 만료일에 추가됩니다.",
         "cancel": "취소"
+    },
+    "premiumWelcome": {
+        "title": "프리미엄이 시작되었어요!",
+        "subtitle": "이제 드링키지의 모든 기능을\n자유롭게 사용할 수 있어요",
+        "expiresAt": "{{date}}까지 이용 가능",
+        "cta": "시작하기",
+        "feature": {
+            "scan": "라벨 스캔 무제한",
+            "menuScan": "메뉴판 와인 추천",
+            "pairing": "메뉴에 맞는 와인 추천",
+            "compat": "내 취향 궁합 점수",
+            "report": "궁합 분석 리포트",
+            "reset": "취향 프로필 재설정"
+        }
     },
     "login": {
         "slides": {

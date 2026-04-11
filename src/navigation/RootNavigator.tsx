@@ -24,6 +24,7 @@ import WishlistScreen from "../screens/WishlistScreen";
 import MenuScanResultScreen from "../screens/MenuScanResultScreen";
 import CameraScreen from "../screens/CameraScreen";
 import PaywallScreen from "../screens/PaywallScreen";
+import PremiumWelcomeScreen from "../screens/PremiumWelcomeScreen";
 import MainTabNavigator from "./MainTabNavigator";
 
 const Stack = createNativeStackNavigator();
@@ -126,6 +127,14 @@ export default function RootNavigator() {
             <Stack.Screen
               name="Paywall"
               component={PaywallScreen}
+              options={{
+                presentation: "fullScreenModal",
+                animation: "slide_from_bottom",
+              }}
+            />
+            <Stack.Screen
+              name="PremiumWelcome"
+              component={PremiumWelcomeScreen}
               options={{
                 presentation: "fullScreenModal",
                 animation: "slide_from_bottom",

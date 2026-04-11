@@ -203,10 +203,10 @@ const PaywallScreen = () => {
       const response = await redeemPromoCode(promoCode.trim());
       if (response.isSuccess && response.result.success) {
         await refreshSubscription();
-        showToast(t("paywall.promoSuccessMessage"), {
-          type: "success",
-          onHide: () => navigation.goBack(),
-        });
+        navigation.goBack();
+        setTimeout(() => {
+          navigation.navigate("PremiumWelcome" as never);
+        }, 100);
       } else {
         showToast(response.message, { type: "error" });
       }

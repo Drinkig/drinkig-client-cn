@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,11 +10,11 @@ import {
   NativeScrollEvent,
   Image,
   Linking,
-} from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { colors } from '../../constants/colors';
+} from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { colors } from "../../constants/colors";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const BANNER_WIDTH = width - 40; // 좌우 마진 20씩 제외한 너비
 
 // 배너 데이터 타입 정의
@@ -34,25 +34,25 @@ interface BannerData {
 export const getBanners = (t: any): BannerData[] => [
   {
     id: 1,
-    tag: t('home.banner.noticeTag'),
-    title: t('home.banner.noticeTitle'),
-    subtitle: t('home.banner.noticeSub'),
-    backgroundColor: colors.surface1, // 통일된 다크 그레이
-    linkUrl: 'https://web.drinkig.com/notices/2',
-    iconName: 'file-document-edit-outline',
+    tag: t("home.banner.noticeTag"),
+    title: t("home.banner.noticeTitle"),
+    subtitle: t("home.banner.noticeSub"),
+    backgroundColor: colors.surface2, // 배경과 구분되도록 밝게
+    linkUrl: "https://web.drinkig.com/notices/2",
+    iconName: "file-document-edit-outline",
   },
   {
     id: 2,
-    tag: t('home.banner.eventTag'),
-    title: t('home.banner.eventTitle'),
-    subtitle: t('home.banner.eventSub'),
-    backgroundColor: '#3a1a1a', // 프리미엄 다크 버건디
-    linkUrl: 'https://web.drinkig.com/notices/3', // 가상의 링크 (사용자가 추후 수정 가능)
-    iconImage: require('../../assets/wish_list.png'),
+    tag: t("home.banner.eventTag"),
+    title: t("home.banner.eventTitle"),
+    subtitle: t("home.banner.eventSub"),
+    backgroundColor: "#4a2020", // 프리미엄 다크 버건디 (밝기 UP)
+    linkUrl: "https://web.drinkig.com/notices/3", // 가상의 링크 (사용자가 추후 수정 가능)
+    iconImage: require("../../assets/wish_list.png"),
   },
 ];
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 export const BannerSection: React.FC = () => {
   const { t } = useTranslation();
@@ -94,7 +94,9 @@ export const BannerSection: React.FC = () => {
   };
 
   // 사용자가 수동으로 스크롤할 때 처리
-  const handleBannerScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const handleBannerScroll = (
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     // 대략적인 인덱스 계산 (gap 포함)
     const index = Math.round(contentOffsetX / (BANNER_WIDTH + 12));
@@ -120,7 +122,7 @@ export const BannerSection: React.FC = () => {
         await Linking.openURL(url);
       }
     } catch (err) {
-      console.error('Failed to open banner URL:', err);
+      console.error("Failed to open banner URL:", err);
     }
   };
 
@@ -143,7 +145,10 @@ export const BannerSection: React.FC = () => {
         {activeBanners.map((banner) => (
           <TouchableOpacity
             key={banner.id}
-            style={[styles.bannerItem, { backgroundColor: banner.backgroundColor }]}
+            style={[
+              styles.bannerItem,
+              { backgroundColor: banner.backgroundColor },
+            ]}
             activeOpacity={0.9}
             onPress={() => handleBannerPress(banner.linkUrl)}
           >
@@ -163,15 +168,19 @@ export const BannerSection: React.FC = () => {
                     </View>
                   )}
                   <View style={{ marginTop: banner.tag ? 0 : 12 }}>
-                    <Text style={styles.bannerTitle} numberOfLines={2}>{banner.title}</Text>
-                    <Text style={styles.bannerSubtitle} numberOfLines={1}>{banner.subtitle}</Text>
+                    <Text style={styles.bannerTitle} numberOfLines={2}>
+                      {banner.title}
+                    </Text>
+                    <Text style={styles.bannerSubtitle} numberOfLines={1}>
+                      {banner.subtitle}
+                    </Text>
                   </View>
                 </View>
                 {banner.iconImage ? (
                   <Image
                     source={banner.iconImage}
                     style={{
-                      position: 'absolute',
+                      position: "absolute",
                       right: -35,
                       bottom: -35,
                       width: 170,
@@ -184,12 +193,12 @@ export const BannerSection: React.FC = () => {
                     <MaterialCommunityIcons
                       name={banner.iconName}
                       size={90}
-                      color="rgba(255,255,255,0.05)"
+                      color="rgba(255,255,255,0.12)"
                       style={{
-                        position: 'absolute',
+                        position: "absolute",
                         right: -10,
                         bottom: -15,
-                        transform: [{ rotate: '-15deg' }]
+                        transform: [{ rotate: "-15deg" }],
                       }}
                     />
                   )
@@ -207,12 +216,12 @@ export const BannerSection: React.FC = () => {
             key={index}
             style={[
               styles.paginationDot,
-              index === bannerIndex && styles.paginationDotActive
+              index === bannerIndex && styles.paginationDotActive,
             ]}
           />
         ))}
       </View>
-    </View >
+    </View>
   );
 };
 
@@ -221,7 +230,7 @@ const styles = StyleSheet.create({
   bannerSection: {
     height: 150,
     marginBottom: 16,
-    position: 'relative',
+    position: "relative",
   },
   bannerScrollViewContent: {
     paddingHorizontal: 20,
@@ -231,74 +240,74 @@ const styles = StyleSheet.create({
     width: BANNER_WIDTH,
     borderRadius: 24,
     padding: 20,
-    height: '100%',
-    overflow: 'hidden',
+    height: "100%",
+    overflow: "hidden",
     backgroundColor: colors.border,
     // Add subtle structural shadow
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
     elevation: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)', // Matte embossed border
+    borderColor: "rgba(255,255,255,0.14)",
   },
   bannerContent: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingVertical: 4,
   },
   bannerTagContainer: {
-    backgroundColor: 'rgba(255,255,255,0.25)',
+    backgroundColor: "rgba(255,255,255,0.25)",
     paddingVertical: 2,
     paddingHorizontal: 6,
     borderRadius: 8,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: "rgba(255,255,255,0.3)",
     marginBottom: 4,
   },
   bannerTag: {
     color: colors.white,
     fontSize: 8,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 1,
   },
   bannerTitle: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     lineHeight: 24,
     marginBottom: 6,
     marginTop: 2,
   },
   bannerSubtitle: {
-    color: 'rgba(255,255,255,0.8)',
+    color: "rgba(255,255,255,0.9)",
     fontSize: 12,
     lineHeight: 16,
-    maxWidth: '85%',
+    maxWidth: "85%",
   },
   bannerImage: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
+    width: "100%",
+    height: "100%",
+    position: "absolute",
     top: 0,
     left: 0,
   },
   paginationContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 12,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: 8,
   },
   paginationDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: "rgba(255,255,255,0.3)",
   },
   paginationDotActive: {
     backgroundColor: colors.white,
