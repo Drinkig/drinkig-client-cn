@@ -373,6 +373,17 @@ const PaywallScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
+      <LinearGradient
+        colors={[
+          "rgba(142, 68, 173, 0.25)",
+          "rgba(142, 68, 173, 0)",
+          "transparent",
+        ]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.topGlow}
+        pointerEvents="none"
+      />
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -649,6 +660,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  topGlow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 320,
+    zIndex: 0,
   },
   header: {
     flexDirection: "row",
