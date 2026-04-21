@@ -1,24 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Platform,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   FlatList,
   useWindowDimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Linking,
   Animated,
   Easing,
-  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { appleAuth } from "@invertase/react-native-apple-authentication";
 import * as KakaoLogin from "@react-native-seoul/kakao-login";
 import auth from "@react-native-firebase/auth";
+import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -26,52 +26,89 @@ import { exchangeKakaoToken, appleLogin } from "../api/member";
 import { useUser } from "../context/UserContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
+import {
+  MatchScoreIllust,
+  ScanIllust,
+  ChatbotIllust,
+  TastingNoteIllust,
+  CellarIllust,
+} from "../components/paywall/FeatureIllustrations";
 
 type SlideItem = {
   id: string;
-  image: number;
   titleKey: string;
+  Illust: React.ComponentType<{ visible?: boolean }>;
 };
 
 const slides: SlideItem[] = [
-  {
-    id: "1",
-    image: require("../assets/onboarding/Drinky_onboarding_2.png"),
-    titleKey: "login.slides.0",
-  },
-  {
-    id: "2",
-    image: require("../assets/onboarding/Drinky_onboarding_3.png"),
-    titleKey: "login.slides.1",
-  },
-  {
-    id: "3",
-    image: require("../assets/onboarding/Drinky_smart_organize.png"),
-    titleKey: "login.slides.2",
-  },
-  {
-    id: "4",
-    image: require("../assets/onboarding/Drinky-search.png"),
-    titleKey: "login.slides.3",
-  },
+  { id: "1", titleKey: "login.slides.0", Illust: MatchScoreIllust },
+  { id: "2", titleKey: "login.slides.1", Illust: ScanIllust },
+  { id: "3", titleKey: "login.slides.2", Illust: ChatbotIllust },
+  { id: "4", titleKey: "login.slides.3", Illust: TastingNoteIllust },
+  { id: "5", titleKey: "login.slides.4", Illust: CellarIllust },
 ];
 
-const Slide = ({
-  item,
-  width,
-  title,
-}: {
-  item: SlideItem;
-  width: number;
-  title: string;
-}) => {
+// 상단 그라디언트 브리딩 애니메이션
+function BreathingGradient() {
+  const anim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 4000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(anim, {
+          toValue: 0,
+          duration: 4000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity1 = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+  const opacity2 = anim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
   return (
-    <View style={[styles.slide, { width }]}>
-      <Image source={item.image} style={styles.logo} resizeMode="contain" />
-      <Text style={styles.sloganText}>{title}</Text>
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: opacity1 }]}>
+        <LinearGradient
+          colors={[
+            "rgba(142,68,173,0.35)",
+            "rgba(126,19,177,0.10)",
+            "transparent",
+          ]}
+          start={{ x: 0.2, y: 0 }}
+          end={{ x: 0.8, y: 0.6 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: opacity2 }]}>
+        <LinearGradient
+          colors={[
+            "rgba(192,132,252,0.30)",
+            "rgba(142,68,173,0.08)",
+            "transparent",
+          ]}
+          start={{ x: 0.8, y: 0 }}
+          end={{ x: 0.2, y: 0.55 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </Animated.View>
     </View>
   );
-};
+}
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -175,76 +212,6 @@ const LoginScreen = () => {
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
-  const floatAnim1 = React.useRef(new Animated.Value(0)).current;
-  const floatAnim2 = React.useRef(new Animated.Value(0)).current;
-  const floatAnim3 = React.useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    const loop1 = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim1, {
-          toValue: -20,
-          duration: 4000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim1, {
-          toValue: 0,
-          duration: 4000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop1.start();
-
-    const loop2 = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim2, {
-          toValue: 15,
-          duration: 5000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim2, {
-          toValue: 0,
-          duration: 5000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop2.start();
-
-    const loop3 = Animated.loop(
-      Animated.sequence([
-        Animated.parallel([
-          Animated.timing(floatAnim3, {
-            toValue: -10,
-            duration: 3500,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(floatAnim3, {
-            toValue: 0,
-            duration: 3500,
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
-          }),
-        ]),
-      ])
-    );
-    loop3.start();
-
-    return () => {
-      loop1.stop();
-      loop2.stop();
-      loop3.stop();
-    };
-  }, [floatAnim1, floatAnim2, floatAnim3]);
-
   const updateCurrentSlideIndex = (
     e: NativeSyntheticEvent<NativeScrollEvent>
   ) => {
@@ -255,24 +222,7 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Animated.View
-        style={[
-          styles.backgroundCircle1,
-          { transform: [{ translateY: floatAnim1 }] },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.backgroundCircle2,
-          { transform: [{ translateY: floatAnim2 }] },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.backgroundCircle3,
-          { transform: [{ translateY: floatAnim3 }] },
-        ]}
-      />
+      <BreathingGradient />
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentContainer}>
@@ -283,9 +233,17 @@ const LoginScreen = () => {
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <Slide item={item} width={width} title={t(item.titleKey)} />
-              )}
+              renderItem={({ item, index }) => {
+                const { Illust } = item;
+                return (
+                  <View style={[styles.slide, { width }]}>
+                    <View style={styles.illustContainer}>
+                      <Illust visible={index === currentSlideIndex} />
+                    </View>
+                    <Text style={styles.sloganText}>{t(item.titleKey)}</Text>
+                  </View>
+                );
+              }}
               onMomentumScrollEnd={updateCurrentSlideIndex}
               keyExtractor={(item) => item.id}
             />
@@ -378,36 +336,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  backgroundCircle1: {
-    position: "absolute",
-    top: -100,
-    left: -100,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: colors.primaryDark,
-    opacity: 0.15,
-  },
-  backgroundCircle2: {
-    position: "absolute",
-    bottom: -50,
-    right: -50,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: colors.primaryDark,
-    opacity: 0.15,
-  },
-  backgroundCircle3: {
-    position: "absolute",
-    top: "40%",
-    left: -50,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: "#9b59b6",
-    opacity: 0.1,
-  },
   contentContainer: {
     flex: 1,
     justifyContent: "space-between",
@@ -423,13 +351,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    paddingTop: 40,
   },
-  logo: {
-    width: "60%",
-    aspectRatio: 1,
-    maxWidth: 280,
-    maxHeight: 280,
-    marginBottom: 24,
+  illustContainer: {
+    width: 260,
+    height: 260,
+    marginBottom: 12,
   },
   sloganText: {
     color: colors.textPrimary,

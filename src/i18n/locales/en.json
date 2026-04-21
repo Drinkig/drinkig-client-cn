@@ -1198,10 +1198,19 @@
     },
     "login": {
         "slides": {
-            "0": "Discover wine flavors\nyou never knew you loved",
-            "1": "Keep your own\nwine journal",
-            "2": "Manage your cellar\nthe smart way",
-            "3": "Search any wine\nyou're curious about"
+            "0": "Find wines that\nmatch your taste",
+            "1": "Snap any label\nfor instant info",
+            "2": "Get wine picks\nfor any meal",
+            "3": "Keep your own\nwine journal",
+            "4": "Manage your cellar\nthe smart way"
+        },
+        "illust": {
+            "tagSweet": "Sweet",
+            "tagCherry": "Cherry",
+            "tagSmooth": "Smooth",
+            "tagMedium": "Medium",
+            "ownCount": "Own 6",
+            "drankCount": "Had 12"
         },
         "buttons": {
             "apple": "Continue with Apple",

@@ -1094,3 +1094,546 @@ export function TasteResetIllust({ visible = true }: IllustProps) {
     </Svg>
   );
 }
+
+// ── 6. TastingNoteIllust — 테이스팅 노트 ──
+
+export function TastingNoteIllust({ visible = true }: IllustProps) {
+  const { t } = useTranslation();
+  const tags = [
+    t("login.illust.tagSweet"),
+    t("login.illust.tagCherry"),
+    t("login.illust.tagSmooth"),
+    t("login.illust.tagMedium"),
+  ];
+
+  const card = useFadeIn(visible, 0, 500);
+  const tag1 = usePopIn(visible, 400);
+  const tag2 = usePopIn(visible, 600);
+  const tag3 = usePopIn(visible, 800);
+  const tag4 = usePopIn(visible, 1000);
+  const slider = useFadeIn(visible, 1200, 300);
+
+  const sliderWidth = useRef(new Animated.Value(0)).current;
+  const sliderCx = useRef(new Animated.Value(66)).current;
+  useEffect(() => {
+    if (!visible) {
+      sliderWidth.setValue(0);
+      sliderCx.setValue(66);
+      return;
+    }
+    Animated.parallel([
+      Animated.timing(sliderWidth, {
+        toValue: 75,
+        duration: 800,
+        delay: 1300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+      Animated.timing(sliderCx, {
+        toValue: 141,
+        duration: 800,
+        delay: 1300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [visible]);
+
+  return (
+    <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+      <Animated.View style={card}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="50"
+            y="45"
+            width="140"
+            height="160"
+            rx="12"
+            fill="#1a1a2e"
+            stroke="#a78bfa"
+            strokeWidth="1.5"
+          />
+          <Rect
+            x="66"
+            y="60"
+            width="24"
+            height="32"
+            rx="4"
+            fill="#a78bfa"
+            opacity={0.15}
+          />
+          <SvgText x="78" y="80" textAnchor="middle" fontSize="14">
+            🍷
+          </SvgText>
+          <Line
+            x1="100"
+            y1="68"
+            x2="170"
+            y2="68"
+            stroke="#a78bfa"
+            strokeWidth="1"
+            opacity={0.3}
+          />
+          <Line
+            x1="100"
+            y1="78"
+            x2="150"
+            y2="78"
+            stroke="#a78bfa"
+            strokeWidth="1"
+            opacity={0.2}
+          />
+          <Line
+            x1="100"
+            y1="88"
+            x2="135"
+            y2="88"
+            stroke="#a78bfa"
+            strokeWidth="1"
+            opacity={0.15}
+          />
+          <Line
+            x1="66"
+            y1="105"
+            x2="174"
+            y2="105"
+            stroke="#a78bfa"
+            strokeWidth="0.5"
+            opacity={0.2}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[tag1, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="66"
+            y="115"
+            width="42"
+            height="22"
+            rx="11"
+            fill="#a78bfa"
+            opacity={0.15}
+            stroke="#a78bfa"
+            strokeWidth="0.5"
+          />
+          <SvgText
+            x="87"
+            y="130"
+            textAnchor="middle"
+            fill="#c084fc"
+            fontSize="9"
+          >
+            {tags[0]}
+          </SvgText>
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[tag2, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="114"
+            y="115"
+            width="50"
+            height="22"
+            rx="11"
+            fill="#f472b6"
+            opacity={0.1}
+            stroke="#f472b6"
+            strokeWidth="0.5"
+          />
+          <SvgText
+            x="139"
+            y="130"
+            textAnchor="middle"
+            fill="#f9a8d4"
+            fontSize="9"
+          >
+            {tags[1]}
+          </SvgText>
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[tag3, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="66"
+            y="143"
+            width="46"
+            height="22"
+            rx="11"
+            fill="#fbbf24"
+            opacity={0.1}
+            stroke="#fbbf24"
+            strokeWidth="0.5"
+          />
+          <SvgText
+            x="89"
+            y="158"
+            textAnchor="middle"
+            fill="#fcd34d"
+            fontSize="9"
+          >
+            {tags[2]}
+          </SvgText>
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[tag4, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="118"
+            y="143"
+            width="52"
+            height="22"
+            rx="11"
+            fill="#34d399"
+            opacity={0.1}
+            stroke="#34d399"
+            strokeWidth="0.5"
+          />
+          <SvgText
+            x="144"
+            y="158"
+            textAnchor="middle"
+            fill="#6ee7b7"
+            fontSize="9"
+          >
+            {tags[3]}
+          </SvgText>
+        </Svg>
+      </Animated.View>
+
+      <Animated.View
+        style={[slider, { position: "absolute", top: 0, left: 0 }]}
+      >
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="66"
+            y="178"
+            width="108"
+            height="4"
+            rx="2"
+            fill="#a78bfa"
+            opacity={0.1}
+          />
+          <AnimatedRect
+            x="66"
+            y="178"
+            height="4"
+            rx="2"
+            fill="#a78bfa"
+            opacity={0.4}
+            width={sliderWidth}
+          />
+          <AnimatedCircle cy="180" r="5" fill="#c084fc" cx={sliderCx} />
+        </Svg>
+      </Animated.View>
+    </Svg>
+  );
+}
+
+// ── 7. CellarIllust — 마이 셀러 ──
+
+export function CellarIllust({ visible = true }: IllustProps) {
+  const { t } = useTranslation();
+  const ownedText = t("login.illust.ownCount");
+  const drankText = t("login.illust.drankCount");
+
+  const shelves = useFadeIn(visible, 0, 400);
+  const b1 = useFadeIn(visible, 200, 350);
+  const b2 = useFadeIn(visible, 350, 350);
+  const b3 = useFadeIn(visible, 500, 350);
+  const b4 = useFadeIn(visible, 650, 350);
+  const b5 = useFadeIn(visible, 800, 350);
+  const b6 = useFadeIn(visible, 950, 350);
+  const counts = useFadeIn(visible, 1100, 400);
+
+  return (
+    <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+      <Animated.View style={shelves}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Line
+            x1="40"
+            y1="90"
+            x2="200"
+            y2="90"
+            stroke="#ddd6fe"
+            strokeWidth="1.5"
+            opacity={0.5}
+          />
+          <Line
+            x1="40"
+            y1="150"
+            x2="200"
+            y2="150"
+            stroke="#ddd6fe"
+            strokeWidth="1.5"
+            opacity={0.5}
+          />
+          <Line
+            x1="40"
+            y1="210"
+            x2="200"
+            y2="210"
+            stroke="#ddd6fe"
+            strokeWidth="1.5"
+            opacity={0.5}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[b1, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="55"
+            y="55"
+            width="20"
+            height="35"
+            rx="4"
+            fill="#c084fc"
+            opacity={0.6}
+            stroke="#d8b4fe"
+            strokeWidth="1.2"
+          />
+          <Rect
+            x="60"
+            y="45"
+            width="10"
+            height="12"
+            rx="2"
+            fill="#c084fc"
+            opacity={0.5}
+          />
+          <Rect
+            x="59"
+            y="65"
+            width="12"
+            height="10"
+            rx="2"
+            fill="#e9d5ff"
+            opacity={0.25}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[b2, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="85"
+            y="60"
+            width="20"
+            height="30"
+            rx="4"
+            fill="#f472b6"
+            opacity={0.55}
+            stroke="#f9a8d4"
+            strokeWidth="1.2"
+          />
+          <Rect
+            x="90"
+            y="50"
+            width="10"
+            height="12"
+            rx="2"
+            fill="#f472b6"
+            opacity={0.45}
+          />
+          <Rect
+            x="89"
+            y="68"
+            width="12"
+            height="10"
+            rx="2"
+            fill="#fce7f3"
+            opacity={0.2}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[b3, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="115"
+            y="52"
+            width="20"
+            height="38"
+            rx="4"
+            fill="#fb7185"
+            opacity={0.55}
+            stroke="#fda4af"
+            strokeWidth="1.2"
+          />
+          <Rect
+            x="120"
+            y="42"
+            width="10"
+            height="12"
+            rx="2"
+            fill="#fb7185"
+            opacity={0.45}
+          />
+          <Rect
+            x="119"
+            y="62"
+            width="12"
+            height="12"
+            rx="2"
+            fill="#ffe4e6"
+            opacity={0.2}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[b4, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="145"
+            y="58"
+            width="20"
+            height="32"
+            rx="4"
+            fill="#fbbf24"
+            opacity={0.55}
+            stroke="#fcd34d"
+            strokeWidth="1.2"
+          />
+          <Rect
+            x="150"
+            y="48"
+            width="10"
+            height="12"
+            rx="2"
+            fill="#fbbf24"
+            opacity={0.45}
+          />
+          <Rect
+            x="149"
+            y="66"
+            width="12"
+            height="10"
+            rx="2"
+            fill="#fef9c3"
+            opacity={0.25}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[b5, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="55"
+            y="115"
+            width="20"
+            height="35"
+            rx="4"
+            fill="#34d399"
+            opacity={0.55}
+            stroke="#6ee7b7"
+            strokeWidth="1.2"
+          />
+          <Rect
+            x="60"
+            y="105"
+            width="10"
+            height="12"
+            rx="2"
+            fill="#34d399"
+            opacity={0.45}
+          />
+          <Rect
+            x="59"
+            y="125"
+            width="12"
+            height="10"
+            rx="2"
+            fill="#d1fae5"
+            opacity={0.2}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View style={[b6, { position: "absolute", top: 0, left: 0 }]}>
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="85"
+            y="118"
+            width="20"
+            height="32"
+            rx="4"
+            fill="#a78bfa"
+            opacity={0.55}
+            stroke="#c4b5fd"
+            strokeWidth="1.2"
+          />
+          <Rect
+            x="90"
+            y="108"
+            width="10"
+            height="12"
+            rx="2"
+            fill="#a78bfa"
+            opacity={0.45}
+          />
+          <Rect
+            x="89"
+            y="126"
+            width="12"
+            height="10"
+            rx="2"
+            fill="#ede9fe"
+            opacity={0.2}
+          />
+        </Svg>
+      </Animated.View>
+
+      <Animated.View
+        style={[counts, { position: "absolute", top: 0, left: 0 }]}
+      >
+        <Svg width={SIZE} height={SIZE} viewBox="0 0 240 240" fill="none">
+          <Rect
+            x="55"
+            y="170"
+            width="60"
+            height="24"
+            rx="12"
+            fill="#c084fc"
+            opacity={0.15}
+            stroke="#d8b4fe"
+            strokeWidth="0.8"
+          />
+          <SvgText
+            x="85"
+            y="186"
+            textAnchor="middle"
+            fill="#e9d5ff"
+            fontSize="10"
+            fontWeight="bold"
+          >
+            {ownedText}
+          </SvgText>
+          <Rect
+            x="122"
+            y="170"
+            width="72"
+            height="24"
+            rx="12"
+            fill="#a78bfa"
+            opacity={0.08}
+            stroke="#c4b5fd"
+            strokeWidth="0.8"
+          />
+          <SvgText
+            x="158"
+            y="186"
+            textAnchor="middle"
+            fill="#c4b5fd"
+            fontSize="10"
+          >
+            {drankText}
+          </SvgText>
+        </Svg>
+      </Animated.View>
+    </Svg>
+  );
+}
