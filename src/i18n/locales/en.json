@@ -1154,7 +1154,22 @@
         "restoreFailed": "Failed to restore purchase. Please try again.",
         "premiumRequired": "Premium Feature",
         "premiumRequiredMessage": "This feature is available for Premium members only.",
-        "upgrade": "Upgrade"
+        "upgrade": "Upgrade",
+        "illust": {
+            "chatQuestion": "Goes with steak?"
+        },
+        "showcase": {
+            "matchScore": "Taste Match",
+            "matchScoreDesc": "See how well each wine fits your palate",
+            "scan": "Label Scan",
+            "scanDesc": "Snap any wine label for instant details",
+            "chatbot": "AI Sommelier",
+            "chatbotDesc": "Get food-pairing wine recommendations",
+            "report": "Match Report",
+            "reportDesc": "See exactly why a wine fits your taste",
+            "tasteReset": "Taste Reset",
+            "tasteResetDesc": "Changed your palate? Reset your profile anytime"
+        }
     },
     "subscription": {
         "title": "Subscription",

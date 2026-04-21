@@ -1154,7 +1154,22 @@
         "restoreFailed": "구매 복원에 실패했습니다. 다시 시도해주세요.",
         "premiumRequired": "프리미엄 기능",
         "premiumRequiredMessage": "이 기능은 프리미엄 회원만 이용할 수 있습니다.",
-        "upgrade": "업그레이드"
+        "upgrade": "업그레이드",
+        "illust": {
+            "chatQuestion": "스테이크에 어울리는"
+        },
+        "showcase": {
+            "matchScore": "취향 점수",
+            "matchScoreDesc": "와인마다 내 취향에 맞는 점수를 확인해요",
+            "scan": "라벨 스캔",
+            "scanDesc": "와인 라벨을 찍으면 모든 정보를 알려줘요",
+            "chatbot": "AI 소믈리에",
+            "chatbotDesc": "음식에 어울리는 와인을 추천받아요",
+            "report": "궁합 분석 리포트",
+            "reportDesc": "왜 이 와인이 내 취향인지 자세히 알려줘요",
+            "tasteReset": "취향 재설정",
+            "tasteResetDesc": "입맛이 바뀌어도 언제든 다시 설정할 수 있어요"
+        }
     },
     "subscription": {
         "title": "구독",

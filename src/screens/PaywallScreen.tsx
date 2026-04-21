@@ -5,11 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  FlatList,
   TextInput,
   ActivityIndicator,
   Platform,
   Animated,
   Easing,
+  Dimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -30,6 +32,13 @@ import {
   PurchaseError,
 } from "react-native-iap";
 import { colors } from "../constants/colors";
+import {
+  MatchScoreIllust,
+  ScanIllust,
+  ChatbotIllust,
+  ReportIllust,
+  TasteResetIllust,
+} from "../components/paywall/FeatureIllustrations";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { redeemPromoCode, verifyReceipt } from "../api/subscription";
@@ -41,6 +50,49 @@ const PRODUCT_IDS = Platform.select({
 
 type PlanType = "MONTHLY" | "YEARLY";
 
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const SLIDE_WIDTH = SCREEN_WIDTH;
+
+type ShowcaseItem = {
+  key: string;
+  titleKey: string;
+  descKey: string;
+  Illust: React.ComponentType<{ visible?: boolean }>;
+};
+
+const SHOWCASE_ITEMS: ShowcaseItem[] = [
+  {
+    key: "matchScore",
+    titleKey: "paywall.showcase.matchScore",
+    descKey: "paywall.showcase.matchScoreDesc",
+    Illust: MatchScoreIllust,
+  },
+  {
+    key: "scan",
+    titleKey: "paywall.showcase.scan",
+    descKey: "paywall.showcase.scanDesc",
+    Illust: ScanIllust,
+  },
+  {
+    key: "chatbot",
+    titleKey: "paywall.showcase.chatbot",
+    descKey: "paywall.showcase.chatbotDesc",
+    Illust: ChatbotIllust,
+  },
+  {
+    key: "report",
+    titleKey: "paywall.showcase.report",
+    descKey: "paywall.showcase.reportDesc",
+    Illust: ReportIllust,
+  },
+  {
+    key: "tasteReset",
+    titleKey: "paywall.showcase.tasteReset",
+    descKey: "paywall.showcase.tasteResetDesc",
+    Illust: TasteResetIllust,
+  },
+];
+
 const PaywallScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
@@ -49,6 +101,7 @@ const PaywallScreen = () => {
   const insets = useSafeAreaInsets();
 
   const scrollViewRef = useRef<ScrollView>(null);
+  const [showcasePage, setShowcasePage] = useState(0);
   const [footerHeight, setFooterHeight] = useState(160);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("YEARLY");
   const [promoCode, setPromoCode] = useState("");
@@ -394,6 +447,45 @@ const PaywallScreen = () => {
           <Text style={styles.subtitle}>{t("paywall.subtitle")}</Text>
         </View>
 
+        <View style={styles.showcaseContainer}>
+          <FlatList
+            data={SHOWCASE_ITEMS}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.key}
+            onMomentumScrollEnd={(e) => {
+              const page = Math.round(
+                e.nativeEvent.contentOffset.x / SLIDE_WIDTH
+              );
+              setShowcasePage(page);
+            }}
+            renderItem={({ item, index }) => {
+              const { Illust } = item;
+              return (
+                <View style={styles.showcaseSlide}>
+                  <View style={styles.showcaseIllust}>
+                    <Illust visible={index === showcasePage} />
+                  </View>
+                  <Text style={styles.showcaseTitle}>{t(item.titleKey)}</Text>
+                  <Text style={styles.showcaseDesc}>{t(item.descKey)}</Text>
+                </View>
+              );
+            }}
+          />
+          <View style={styles.showcaseDots}>
+            {SHOWCASE_ITEMS.map((item, i) => (
+              <View
+                key={item.key}
+                style={[
+                  styles.showcaseDot,
+                  i === showcasePage && styles.showcaseDotActive,
+                ]}
+              />
+            ))}
+          </View>
+        </View>
+
         <View style={styles.featuresSection}>
           {coreFeatures.map((feature, index) =>
             renderFeatureRow(feature, index)
@@ -609,6 +701,50 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     padding: 4,
+  },
+  showcaseContainer: {
+    marginHorizontal: -24,
+    marginBottom: 28,
+  },
+  showcaseSlide: {
+    width: SLIDE_WIDTH,
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  showcaseIllust: {
+    width: 260,
+    height: 260,
+    marginBottom: 14,
+  },
+  showcaseTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.white,
+    marginBottom: 6,
+  },
+  showcaseDesc: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  showcaseDots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 16,
+  },
+  showcaseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.textTertiary,
+  },
+  showcaseDotActive: {
+    width: 20,
+    borderRadius: 3,
+    backgroundColor: colors.primary,
   },
   scrollContent: {
     paddingHorizontal: 24,
