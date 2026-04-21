@@ -15,7 +15,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LinearGradient from "react-native-linear-gradient";
@@ -321,41 +320,23 @@ const PaywallScreen = () => {
   const monthlyEquivalent = yearlyNum / 12;
   const hasDiscount = savePercent > 0;
 
-  const coreFeatures = [
+  const allFeatures = [
     { icon: "scan-outline", text: t("paywall.feature.unlimitedLabelScan") },
     { icon: "list-outline", text: t("paywall.feature.wineListScan") },
-    { icon: "restaurant-outline", text: t("paywall.feature.foodPairing") },
     {
-      icon: "heart-pulse",
-      text: t("paywall.feature.compatibility"),
-      isMCI: true,
+      icon: "restaurant-outline",
+      text: t("paywall.feature.foodPairing"),
     },
-  ];
-
-  const extraFeatures = [
+    {
+      icon: "heart-circle-outline",
+      text: t("paywall.feature.compatibility"),
+    },
     {
       icon: "document-text-outline",
       text: t("paywall.feature.compatibilityReport"),
     },
     { icon: "refresh-outline", text: t("paywall.feature.tasteReset") },
   ];
-
-  // Sequential fade-in animations for feature rows (100ms stagger)
-  const featureAnimsRef = useRef(
-    [...coreFeatures, ...extraFeatures].map(() => new Animated.Value(0))
-  );
-  useEffect(() => {
-    const anims = featureAnimsRef.current.map((v, i) =>
-      Animated.timing(v, {
-        toValue: 1,
-        duration: 320,
-        delay: 120 + i * 100,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      })
-    );
-    Animated.stagger(0, anims).start();
-  }, []);
 
   // Diagonal shimmer sweep across CTA button
   const shimmerAnim = useRef(new Animated.Value(0)).current;
@@ -390,39 +371,6 @@ const PaywallScreen = () => {
     outputRange: [-ctaWidth * 0.6, ctaWidth],
   });
 
-  const renderFeatureRow = (
-    feature: { icon: string; text: string; isMCI?: boolean },
-    index: number
-  ) => {
-    const anim = featureAnimsRef.current[index];
-    const translateY = anim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [8, 0],
-    });
-    return (
-      <Animated.View
-        key={index}
-        style={[
-          styles.featureRow,
-          { opacity: anim, transform: [{ translateY }] },
-        ]}
-      >
-        <View style={styles.featureIconContainer}>
-          {feature.isMCI ? (
-            <MaterialCommunityIcons
-              name={feature.icon}
-              size={20}
-              color={colors.primary}
-            />
-          ) : (
-            <Icon name={feature.icon} size={20} color={colors.primary} />
-          )}
-        </View>
-        <Text style={styles.featureText}>{feature.text}</Text>
-      </Animated.View>
-    );
-  };
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
@@ -443,8 +391,21 @@ const PaywallScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.titleSection}>
+          <View style={styles.premiumBadge}>
+            <Icon name="diamond-outline" size={13} color="#c084fc" />
+            <Text style={styles.premiumBadgeText}>PREMIUM</Text>
+          </View>
+
           <Text style={styles.title}>{t("paywall.title")}</Text>
           <Text style={styles.subtitle}>{t("paywall.subtitle")}</Text>
+
+          {/* 그라디언트 디바이더 */}
+          <LinearGradient
+            colors={["transparent", colors.primary, "#c084fc", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.titleDivider}
+          />
         </View>
 
         <View style={styles.showcaseContainer}>
@@ -486,19 +447,15 @@ const PaywallScreen = () => {
           </View>
         </View>
 
-        <View style={styles.featuresSection}>
-          {coreFeatures.map((feature, index) =>
-            renderFeatureRow(feature, index)
-          )}
-        </View>
-
-        <View style={styles.extraFeaturesSection}>
-          <Text style={styles.extraFeaturesTitle}>
-            {t("paywall.moreBenefitsTitle")}
-          </Text>
-          {extraFeatures.map((feature, index) =>
-            renderFeatureRow(feature, coreFeatures.length + index)
-          )}
+        <View style={styles.featuresGrid}>
+          {allFeatures.map((f, i) => (
+            <View key={i} style={styles.featureCard}>
+              <Icon name={f.icon} size={20} color={colors.primary} />
+              <Text style={styles.featureCardText} numberOfLines={2}>
+                {f.text}
+              </Text>
+            </View>
+          ))}
         </View>
 
         <View style={styles.planSection}>
@@ -748,11 +705,31 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 28,
     paddingBottom: 160,
   },
   titleSection: {
+    alignItems: "center",
     marginBottom: 32,
+    overflow: "visible",
+  },
+  premiumBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(142, 68, 173, 0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(192, 132, 252, 0.3)",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+    marginBottom: 16,
+  },
+  premiumBadgeText: {
+    color: "#c084fc",
+    fontSize: 11,
+    fontWeight: "bold",
+    letterSpacing: 1.5,
   },
   title: {
     fontSize: 28,
@@ -760,47 +737,36 @@ const styles = StyleSheet.create({
     color: colors.white,
     lineHeight: 38,
     marginBottom: 10,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
     color: colors.textSecondary,
     lineHeight: 24,
+    textAlign: "center",
   },
-  featuresSection: {
-    marginBottom: 20,
-    gap: 16,
+  titleDivider: {
+    width: 160,
+    height: 1.5,
+    borderRadius: 1,
+    marginTop: 20,
   },
-  extraFeaturesSection: {
-    marginBottom: 32,
-    paddingTop: 18,
-    gap: 14,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+  featuresGrid: {
+    gap: 8,
+    marginBottom: 24,
   },
-  extraFeaturesTitle: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  featureRow: {
+  featureCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
-  },
-  featureIconContainer: {
-    width: 40,
-    height: 40,
+    backgroundColor: colors.surface1,
     borderRadius: 12,
-    backgroundColor: "rgba(142, 68, 173, 0.15)",
-    justifyContent: "center",
-    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    gap: 12,
   },
-  featureText: {
-    fontSize: 16,
-    color: colors.white,
+  featureCardText: {
+    fontSize: 14,
+    color: colors.textPrimary,
     flex: 1,
   },
   planSection: {
