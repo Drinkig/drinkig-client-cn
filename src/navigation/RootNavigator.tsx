@@ -25,6 +25,8 @@ import MenuScanResultScreen from "../screens/MenuScanResultScreen";
 import CameraScreen from "../screens/CameraScreen";
 import PaywallScreen from "../screens/PaywallScreen";
 import PremiumWelcomeScreen from "../screens/PremiumWelcomeScreen";
+import WineRegisterScreen from "../screens/WineRegisterScreen";
+import AdminWineApprovalScreen from "../screens/AdminWineApprovalScreen";
 import MainTabNavigator from "./MainTabNavigator";
 
 const Stack = createNativeStackNavigator();
@@ -139,6 +141,18 @@ export default function RootNavigator() {
                 presentation: "fullScreenModal",
                 animation: "slide_from_bottom",
               }}
+            />
+            <Stack.Screen
+              name="WineRegister"
+              component={WineRegisterScreen}
+              options={{
+                presentation: "containedModal",
+                animation: "slide_from_bottom",
+              }}
+            />
+            <Stack.Screen
+              name="AdminWineApproval"
+              component={AdminWineApprovalScreen}
             />
             <Stack.Screen
               name="Camera"

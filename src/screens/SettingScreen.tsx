@@ -545,6 +545,16 @@ App Version: ${DeviceInfo.getVersion()}
 
             <TouchableOpacity
               style={styles.item}
+              onPress={() => navigation.navigate("AdminWineApproval" as never)}
+            >
+              <Text style={[styles.itemText, styles.devItemText]}>
+                와인 등록 신청 관리
+              </Text>
+              <Icon name="wine-outline" size={20} color={"#f5a623"} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.item}
               onPress={() => {
                 const options = [
                   "취소",

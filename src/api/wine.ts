@@ -1,4 +1,4 @@
-import client from './client';
+import client from "./client";
 
 export interface WineSearchResponse {
   isSuccess: boolean;
@@ -184,7 +184,7 @@ export interface MyWineDTO {
   purchaseDate: string;
   purchasePrice: number;
   period: number;
-  purchaseType?: 'OFFLINE' | 'DIRECT';
+  purchaseType?: "OFFLINE" | "DIRECT";
   purchaseShop?: string;
 }
 
@@ -193,7 +193,7 @@ export interface MyWineAddRequest {
   vintageYear: number;
   purchaseDate: string; // YYYY-MM-DD
   purchasePrice: number;
-  purchaseType: 'OFFLINE' | 'DIRECT';
+  purchaseType: "OFFLINE" | "DIRECT";
   purchaseShop: string;
 }
 
@@ -208,7 +208,7 @@ export interface MyWineUpdateRequest {
   vintageYear: number;
   purchaseDate: string; // YYYY-MM-DD
   purchasePrice: number;
-  purchaseType?: 'OFFLINE' | 'DIRECT';
+  purchaseType?: "OFFLINE" | "DIRECT";
   purchaseShop?: string;
 }
 
@@ -314,25 +314,30 @@ interface ReviewParams {
 }
 
 export const searchWines = async (params: SearchParams) => {
-  const response = await client.get<WineSearchResponse>('/admin/wine', {
+  const response = await client.get<WineSearchResponse>("/admin/wine", {
     params,
   });
   return response.data;
 };
 
 export const searchWinesPublic = async (params: PublicSearchParams) => {
-  const response = await client.get<WineUserSearchResponse>('/wine', {
+  const response = await client.get<WineUserSearchResponse>("/wine", {
     params,
   });
   return response.data;
 };
 
 export const getWineDetail = async (wineId: number) => {
-  const response = await client.get<WineDetailResponse>(`/admin/wine/${wineId}`);
+  const response = await client.get<WineDetailResponse>(
+    `/admin/wine/${wineId}`
+  );
   return response.data;
 };
 
-export const getWineDetailPublic = async (wineId: number, vintageYear?: number) => {
+export const getWineDetailPublic = async (
+  wineId: number,
+  vintageYear?: number
+) => {
   const response = await client.get<WineDetailUserResponse>(`/wine/${wineId}`, {
     params: { vintageYear },
   });
@@ -340,12 +345,14 @@ export const getWineDetailPublic = async (wineId: number, vintageYear?: number) 
 };
 
 export const getRecommendedWines = async () => {
-  const response = await client.get<RecommendedWineResponse>('/wine/recommend');
+  const response = await client.get<RecommendedWineResponse>("/wine/recommend");
   return response.data;
 };
 
 export const getOnboardingRecommendation = async () => {
-  const response = await client.get<OnboardingRecommendationResponse>('/wine/recommend');
+  const response = await client.get<OnboardingRecommendationResponse>(
+    "/wine/recommend"
+  );
   return response.data;
 };
 
@@ -367,34 +374,47 @@ export interface OnboardingRecommendationDTO {
 }
 
 export const getMyWines = async () => {
-  const response = await client.get<MyWineListResponse>('/my-wine');
+  const response = await client.get<MyWineListResponse>("/my-wine");
   return response.data;
 };
 
 export const getMyWineDetail = async (myWineId: number) => {
-  const response = await client.get<MyWineDetailResponse>(`/my-wine/${myWineId}`);
+  const response = await client.get<MyWineDetailResponse>(
+    `/my-wine/${myWineId}`
+  );
   return response.data;
 };
 
 export const addMyWine = async (data: MyWineAddRequest) => {
-  const response = await client.post<MyWineAddResponse>('/my-wine', data);
+  const response = await client.post<MyWineAddResponse>("/my-wine", data);
   return response.data;
 };
 
-export const updateMyWine = async (myWineId: number, data: MyWineUpdateRequest) => {
-  const response = await client.patch<MyWineUpdateResponse>(`/my-wine/${myWineId}`, data);
+export const updateMyWine = async (
+  myWineId: number,
+  data: MyWineUpdateRequest
+) => {
+  const response = await client.patch<MyWineUpdateResponse>(
+    `/my-wine/${myWineId}`,
+    data
+  );
   return response.data;
 };
 
 export const deleteMyWine = async (myWineId: number) => {
-  const response = await client.delete<MyWineDeleteResponse>(`/my-wine/${myWineId}`);
+  const response = await client.delete<MyWineDeleteResponse>(
+    `/my-wine/${myWineId}`
+  );
   return response.data;
 };
 
 export const getPriceHistory = async (wineId: number, vintageYear?: number) => {
-  const response = await client.get<WinePriceHistoryResponse>(`/wine/${wineId}/price-history`, {
-    params: { vintageYear },
-  });
+  const response = await client.get<WinePriceHistoryResponse>(
+    `/wine/${wineId}/price-history`,
+    {
+      params: { vintageYear },
+    }
+  );
   return response.data;
 };
 
@@ -414,38 +434,54 @@ export interface PriceHistoryDTO {
 }
 
 export const getWineReviews = async (wineId: number, params: ReviewParams) => {
-  const response = await client.get<ReviewListResponse>(`/wine/review/${wineId}`, {
-    params,
-  });
+  const response = await client.get<ReviewListResponse>(
+    `/wine/review/${wineId}`,
+    {
+      params,
+    }
+  );
   return response.data;
 };
 
 export const registerWine = async (data: WineRegisterRequest) => {
-  const response = await client.post<WineRegisterResponse>('/admin/wine', data);
+  const response = await client.post<WineRegisterResponse>("/admin/wine", data);
   return response.data;
 };
 
 export const updateWine = async (wineId: number, data: WineUpdateRequest) => {
-  const response = await client.patch<WineUpdateResponse>(`/admin/wine/${wineId}`, data);
+  const response = await client.patch<WineUpdateResponse>(
+    `/admin/wine/${wineId}`,
+    data
+  );
   return response.data;
 };
 
 export const addToWishlist = async (wineId: number, vintageYear?: number) => {
-  const response = await client.post<WishlistResponse>(`/wine-wishlist/${wineId}`, null, {
-    params: { vintageYear },
-  });
+  const response = await client.post<WishlistResponse>(
+    `/wine-wishlist/${wineId}`,
+    null,
+    {
+      params: { vintageYear },
+    }
+  );
   return response.data;
 };
 
-export const removeFromWishlist = async (wineId: number, vintageYear?: number) => {
-  const response = await client.delete<WishlistResponse>(`/wine-wishlist/${wineId}`, {
-    params: { vintageYear },
-  });
+export const removeFromWishlist = async (
+  wineId: number,
+  vintageYear?: number
+) => {
+  const response = await client.delete<WishlistResponse>(
+    `/wine-wishlist/${wineId}`,
+    {
+      params: { vintageYear },
+    }
+  );
   return response.data;
 };
 
 export const getWishlist = async () => {
-  const response = await client.get<WishlistListResponse>('/wine-wishlist');
+  const response = await client.get<WishlistListResponse>("/wine-wishlist");
   return response.data;
 };
 
@@ -470,7 +506,9 @@ export interface TastingNotePreviewDTO {
 }
 
 export const getMyTastingNotes = async () => {
-  const response = await client.get<TastingNoteListResponse>('/tasting-note/my');
+  const response = await client.get<TastingNoteListResponse>(
+    "/tasting-note/my"
+  );
   return response.data;
 };
 
@@ -497,12 +535,17 @@ export interface TastingNoteResponse {
 }
 
 export const createTastingNote = async (data: TastingNoteRequest) => {
-  const response = await client.post<TastingNoteResponse>('/tasting-note/new-note', data);
+  const response = await client.post<TastingNoteResponse>(
+    "/tasting-note/new-note",
+    data
+  );
   return response.data;
 };
 
 export const getTastingNoteDetail = async (noteId: number) => {
-  const response = await client.get<TastingNoteDetailResponse>(`/tasting-note/${noteId}`);
+  const response = await client.get<TastingNoteDetailResponse>(
+    `/tasting-note/${noteId}`
+  );
   return response.data;
 };
 
@@ -541,7 +584,9 @@ export interface TastingNoteDeleteResponse {
 }
 
 export const deleteTastingNote = async (noteId: number) => {
-  const response = await client.delete<TastingNoteDeleteResponse>(`/tasting-note/${noteId}`);
+  const response = await client.delete<TastingNoteDeleteResponse>(
+    `/tasting-note/${noteId}`
+  );
   return response.data;
 };
 
@@ -575,9 +620,95 @@ export interface FoodRecommendationDTO {
 }
 
 export const getFoodPairingRecommendation = async (foodName: string) => {
-  const response = await client.get<FoodRecommendationResponse>('/wine/recommend/food', {
-    params: { foodName },
-  });
+  const response = await client.get<FoodRecommendationResponse>(
+    "/wine/recommend/food",
+    {
+      params: { foodName },
+    }
+  );
   return response.data;
 };
 
+// ── Wine Registration Request (user-submitted wines) ──
+
+export type WineRequestStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface WineRequestDTO {
+  requestId: number;
+  wineId: number;
+  status: WineRequestStatus;
+  name: string;
+  nameEng: string;
+  imageUrl: string;
+  sort: string;
+  country: string;
+  region: string;
+  variety: string;
+  vintageYear: number;
+  memo: string;
+  createdAt: string;
+  memberName?: string;
+}
+
+export interface WineRequestResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: WineRequestDTO;
+}
+
+export interface WineRequestListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    content: WineRequestDTO[];
+    pageNumber: number;
+    totalPages: number;
+    totalElements: number;
+  };
+}
+
+export const submitWineRequest = async (formData: FormData) => {
+  const response = await client.post<WineRequestResponse>(
+    "/wine/request",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+};
+
+export const getMyWineRequests = async (status?: WineRequestStatus) => {
+  const response = await client.get<WineRequestListResponse>(
+    "/wine/request/my",
+    { params: { status } }
+  );
+  return response.data;
+};
+
+export const getAdminWineRequests = async (params: {
+  status?: WineRequestStatus;
+  page?: number;
+  size?: number;
+}) => {
+  const response = await client.get<WineRequestListResponse>(
+    "/admin/wine/request",
+    { params }
+  );
+  return response.data;
+};
+
+export const approveWineRequest = async (requestId: number) => {
+  const response = await client.patch<WineRequestResponse>(
+    `/admin/wine/request/${requestId}/approve`
+  );
+  return response.data;
+};
+
+export const rejectWineRequest = async (requestId: number, reason?: string) => {
+  const response = await client.patch<WineRequestResponse>(
+    `/admin/wine/request/${requestId}/reject`,
+    { reason }
+  );
+  return response.data;
+};

@@ -246,7 +246,9 @@
             "title": "Which wine are you adding?",
             "subtitle": "Please search by name",
             "placeholder": "Search wine names",
-            "empty": "No search results."
+            "empty": "No search results.",
+            "registerPrompt": "Can't find your wine?",
+            "registerButton": "Register it yourself"
         },
         "step2": {
             "title": "Enter purchase details",
@@ -281,6 +283,79 @@
             "addSuccessSingular": "Added to your cellar.",
             "addFail": "Failed to add wine.",
             "networkError": "Network error occurred."
+        }
+    },
+    "wineRegister": {
+        "header": "Register Wine",
+        "subtitle": "Register a wine that's not in our database.\nIt will be officially added after approval.",
+        "image": {
+            "label": "Wine Photo",
+            "add": "Add Photo",
+            "change": "Change Photo",
+            "camera": "Take Photo",
+            "gallery": "Choose from Gallery"
+        },
+        "name": "Wine Name (Local)",
+        "namePlaceholder": "e.g., Chateau Margaux",
+        "nameEng": "Wine Name (English)",
+        "nameEngPlaceholder": "e.g., Chateau Margaux",
+        "sort": "Wine Type",
+        "country": "Country",
+        "countryPlaceholder": "e.g., France",
+        "region": "Region (Optional)",
+        "regionPlaceholder": "e.g., Bordeaux",
+        "variety": "Grape (Optional)",
+        "varietyPlaceholder": "e.g., Cabernet Sauvignon",
+        "vintage": "Vintage (Optional)",
+        "vintagePlaceholder": "e.g., 2018",
+        "memo": "Memo (Optional)",
+        "memoPlaceholder": "Notes for the reviewer",
+        "types": {
+            "Red": "Red",
+            "White": "White",
+            "Sparkling": "Sparkling",
+            "Rose": "Rosé",
+            "Dessert": "Dessert"
+        },
+        "button": {
+            "submit": "Submit",
+            "submitting": "Submitting..."
+        },
+        "alert": {
+            "success": "Submitted",
+            "successMsg": "You can use this wine as a temporary entry until approved.\nRelated data will be removed if rejected.",
+            "error": "Error",
+            "errorMsg": "Failed to submit registration.",
+            "nameRequired": "Please enter the wine name.",
+            "sortRequired": "Please select a wine type.",
+            "countryRequired": "Please enter the country."
+        },
+        "pendingBadge": "Pending",
+        "approvedBadge": "Approved",
+        "rejectedBadge": "Rejected"
+    },
+    "adminWineApproval": {
+        "header": "Wine Registration Requests",
+        "empty": "No registration requests.",
+        "tabs": {
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected"
+        },
+        "detail": {
+            "submittedBy": "Submitted by",
+            "submittedAt": "Submitted at"
+        },
+        "approve": "Approve",
+        "reject": "Reject",
+        "rejectReason": "Rejection Reason",
+        "rejectReasonPlaceholder": "Enter reason for rejection",
+        "confirmApprove": "Approve this wine?\nIt will be added to the official database.",
+        "confirmReject": "Reject this wine?\nThe submitter's related data (cellar, notes) will be deleted.",
+        "alert": {
+            "approveSuccess": "Approved successfully.",
+            "rejectSuccess": "Rejected successfully.",
+            "error": "Failed to process."
         }
     },
     "myWineDetail": {

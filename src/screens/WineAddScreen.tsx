@@ -28,7 +28,7 @@ import {
 } from "../api/wine";
 import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
-import { colors } from '../constants/colors';
+import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 
@@ -50,13 +50,13 @@ const WineAddScreen = () => {
 
   // Wine selection (Step 1)
   const [selectedWineId, setSelectedWineId] = useState<number | null>(
-    myWine?.wineId || initialWine?.id || null,
+    myWine?.wineId || initialWine?.id || null
   );
   const [selectedWineName, setSelectedWineName] = useState(
-    myWine?.wineName || initialWine?.nameKor || "",
+    myWine?.wineName || initialWine?.nameKor || ""
   );
   const [selectedWineNameEng, setSelectedWineNameEng] = useState(
-    myWine?.wineNameEng || initialWine?.nameEng || "",
+    myWine?.wineNameEng || initialWine?.nameEng || ""
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [type, setType] = useState(myWine?.wineSort || initialWine?.type || "");
@@ -64,20 +64,16 @@ const WineAddScreen = () => {
 
   // Purchase details (Step 2)
   const [vintage, setVintage] = useState(
-    myWine
-      ? myWine.vintageYear === 0
-        ? "NV"
-        : String(myWine.vintageYear)
-      : "",
+    myWine ? (myWine.vintageYear === 0 ? "NV" : String(myWine.vintageYear)) : ""
   );
   const [purchasePrice, setPurchasePrice] = useState(
-    myWine ? myWine.purchasePrice.toLocaleString() : "",
+    myWine ? myWine.purchasePrice.toLocaleString() : ""
   );
   const [purchaseDate, setPurchaseDate] = useState(
-    myWine?.purchaseDate || new Date().toISOString().split("T")[0],
+    myWine?.purchaseDate || new Date().toISOString().split("T")[0]
   );
   const [purchaseType, setPurchaseType] = useState<"offline" | "direct">(
-    myWine?.purchaseType === "DIRECT" ? "direct" : "offline",
+    myWine?.purchaseType === "DIRECT" ? "direct" : "offline"
   );
   const [purchaseShop, setPurchaseShop] = useState(myWine?.purchaseShop || "");
   const [quantity, setQuantity] = useState(1);
@@ -98,7 +94,7 @@ const WineAddScreen = () => {
   const handleShowAlert = (
     title: string,
     message: string,
-    onConfirm?: () => void,
+    onConfirm?: () => void
   ) => {
     setAlertConfig({ title, message, onConfirm });
     setAlertVisible(true);
@@ -159,7 +155,12 @@ const WineAddScreen = () => {
           });
 
           if (response.isSuccess) {
-            setSearchResults(rankWineUserDTOByRelevance(response.result.content, searchQuery.trim()));
+            setSearchResults(
+              rankWineUserDTOByRelevance(
+                response.result.content,
+                searchQuery.trim()
+              )
+            );
           } else {
             setSearchResults([]);
           }
@@ -267,11 +268,18 @@ const WineAddScreen = () => {
         const response = await updateMyWine(myWine.myWineId, requestData);
 
         if (response.isSuccess) {
-          handleShowAlert(t('wineAdd.alert.success'), t('wineAdd.alert.editSuccess'), () => {
-            navigation.goBack();
-          });
+          handleShowAlert(
+            t("wineAdd.alert.success"),
+            t("wineAdd.alert.editSuccess"),
+            () => {
+              navigation.goBack();
+            }
+          );
         } else {
-          handleShowAlert(t('wineAdd.alert.error'), response.message || t('wineAdd.alert.editFail'));
+          handleShowAlert(
+            t("wineAdd.alert.error"),
+            response.message || t("wineAdd.alert.editFail")
+          );
         }
       } else {
         const requestData: MyWineAddRequest = {
@@ -306,20 +314,26 @@ const WineAddScreen = () => {
           const message =
             quantity > 1
               ? failCount > 0
-                ? t('wineAdd.alert.addSuccessPluralFail', { count: successCount, failCount })
-                : t('wineAdd.alert.addSuccessPlural', { count: successCount })
-              : t('wineAdd.alert.addSuccessSingular');
+                ? t("wineAdd.alert.addSuccessPluralFail", {
+                    count: successCount,
+                    failCount,
+                  })
+                : t("wineAdd.alert.addSuccessPlural", { count: successCount })
+              : t("wineAdd.alert.addSuccessSingular");
 
-          handleShowAlert(t('wineAdd.alert.success'), message, () => {
+          handleShowAlert(t("wineAdd.alert.success"), message, () => {
             navigation.goBack();
           });
         } else {
-          handleShowAlert(t('wineAdd.alert.error'), t('wineAdd.alert.addFail'));
+          handleShowAlert(t("wineAdd.alert.error"), t("wineAdd.alert.addFail"));
         }
       }
     } catch (error) {
       console.error("My wine add failed:", error);
-      handleShowAlert(t('wineAdd.alert.error'), t('wineAdd.alert.networkError'));
+      handleShowAlert(
+        t("wineAdd.alert.error"),
+        t("wineAdd.alert.networkError")
+      );
     } finally {
       setIsSaving(false);
     }
@@ -364,13 +378,20 @@ const WineAddScreen = () => {
           )}
         </View>
         <View style={styles.resultTextContainer}>
-          {i18n.language === 'en' ? (
-            <Text style={styles.resultNameKor} numberOfLines={2} lineBreakStrategyIOS="hangul-word">
+          {i18n.language === "en" ? (
+            <Text
+              style={styles.resultNameKor}
+              numberOfLines={2}
+              lineBreakStrategyIOS="hangul-word"
+            >
               {item.nameEng || item.name}
             </Text>
           ) : (
             <>
-              <Text style={styles.resultNameKor} lineBreakStrategyIOS="hangul-word">
+              <Text
+                style={styles.resultNameKor}
+                lineBreakStrategyIOS="hangul-word"
+              >
                 {item.name}
               </Text>
               <Text style={styles.resultNameEng}>{item.nameEng}</Text>
@@ -400,14 +421,19 @@ const WineAddScreen = () => {
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>{t('wineAdd.step1.title')}</Text>
-      <Text style={styles.stepSubtitle}>{t('wineAdd.step1.subtitle')}</Text>
+      <Text style={styles.stepTitle}>{t("wineAdd.step1.title")}</Text>
+      <Text style={styles.stepSubtitle}>{t("wineAdd.step1.subtitle")}</Text>
 
       <View style={styles.searchBarContainer}>
-        <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+        <Icon
+          name="search"
+          size={20}
+          color={colors.textSecondary}
+          style={styles.searchIcon}
+        />
         <TextInput
           style={styles.searchInput}
-          placeholder={t('wineAdd.step1.placeholder')}
+          placeholder={t("wineAdd.step1.placeholder")}
           placeholderTextColor="#666"
           value={searchQuery}
           onChangeText={handleSearch}
@@ -437,7 +463,23 @@ const WineAddScreen = () => {
         ListEmptyComponent={
           searchQuery.length > 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>{t('wineAdd.step1.empty')}</Text>
+              <Text style={styles.emptyText}>{t("wineAdd.step1.empty")}</Text>
+              <Text style={styles.registerPromptText}>
+                {t("wineAdd.step1.registerPrompt")}
+              </Text>
+              <TouchableOpacity
+                style={styles.registerButton}
+                onPress={() => navigation.navigate("WineRegister" as never)}
+              >
+                <Icon
+                  name="add-circle-outline"
+                  size={18}
+                  color={colors.primary}
+                />
+                <Text style={styles.registerButtonText}>
+                  {t("wineAdd.step1.registerButton")}
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : null
         }
@@ -455,16 +497,19 @@ const WineAddScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.step2Content}
       >
-        <Text style={styles.stepTitle}>{t('wineAdd.step2.title')}</Text>
+        <Text style={styles.stepTitle}>{t("wineAdd.step2.title")}</Text>
         <Text style={styles.stepSubtitle}>
-          {t('wineAdd.step2.subtitle', {
-            name: i18n.language === 'en' ? (selectedWineNameEng || selectedWineName) : selectedWineName
+          {t("wineAdd.step2.subtitle", {
+            name:
+              i18n.language === "en"
+                ? selectedWineNameEng || selectedWineName
+                : selectedWineName,
           })}
         </Text>
 
         {!isEditMode && (
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('wineAdd.step2.quantity')}</Text>
+            <Text style={styles.label}>{t("wineAdd.step2.quantity")}</Text>
             <View style={styles.quantityContainer}>
               <TouchableOpacity
                 style={styles.quantityButton}
@@ -476,7 +521,9 @@ const WineAddScreen = () => {
               </TouchableOpacity>
               <View style={styles.quantityValueContainer}>
                 <Text style={styles.quantityValue}>{quantity}</Text>
-                <Text style={styles.quantityUnit}>{t('wineAdd.step2.unit')}</Text>
+                <Text style={styles.quantityUnit}>
+                  {t("wineAdd.step2.unit")}
+                </Text>
               </View>
               <TouchableOpacity
                 style={styles.quantityButton}
@@ -489,8 +536,10 @@ const WineAddScreen = () => {
         )}
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('wineAdd.step2.type')}</Text>
-          <View style={[styles.inputWrapper, { backgroundColor: colors.surface1 }]}>
+          <Text style={styles.label}>{t("wineAdd.step2.type")}</Text>
+          <View
+            style={[styles.inputWrapper, { backgroundColor: colors.surface1 }]}
+          >
             <Text style={[styles.textInput, { color: "#aaa" }]}>
               {type || "-"}
             </Text>
@@ -498,11 +547,11 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('wineAdd.step2.vintage')}</Text>
+          <Text style={styles.label}>{t("wineAdd.step2.vintage")}</Text>
           <View style={styles.vintageInputWrapper}>
             <TextInput
               style={styles.vintageInput}
-              placeholder={t('wineAdd.step2.vintagePlaceholder')}
+              placeholder={t("wineAdd.step2.vintagePlaceholder")}
               placeholderTextColor="#666"
               keyboardType="numeric"
               value={vintage}
@@ -518,13 +567,13 @@ const WineAddScreen = () => {
 
             {((vintage.length === 4 && !isNaN(Number(vintage))) ||
               vintage === "NV") && (
-                <Icon
-                  name="checkmark-circle"
-                  size={20}
-                  color="#2ecc71"
-                  style={{ marginRight: 8 }}
-                />
-              )}
+              <Icon
+                name="checkmark-circle"
+                size={20}
+                color="#2ecc71"
+                style={{ marginRight: 8 }}
+              />
+            )}
             <TouchableOpacity
               style={[
                 styles.nvButton,
@@ -545,7 +594,7 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('wineAdd.step2.price')}</Text>
+          <Text style={styles.label}>{t("wineAdd.step2.price")}</Text>
           <View style={styles.priceInputWrapper}>
             <Text style={styles.currencySymbol}>₩</Text>
             <TextInput
@@ -558,7 +607,7 @@ const WineAddScreen = () => {
                 const numericValue = text.replace(/[^0-9]/g, "");
                 const formattedValue = numericValue.replace(
                   /\B(?=(\d{3})+(?!\d))/g,
-                  ",",
+                  ","
                 );
                 setPurchasePrice(formattedValue);
               }}
@@ -575,7 +624,7 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('wineAdd.step2.shop')}</Text>
+          <Text style={styles.label}>{t("wineAdd.step2.shop")}</Text>
           <View style={styles.purchaseTypeContainer}>
             <TouchableOpacity
               style={[
@@ -590,7 +639,7 @@ const WineAddScreen = () => {
                   purchaseType === "offline" && styles.typeButtonTextActive,
                 ]}
               >
-                {t('wineAdd.step2.shopOffline')}
+                {t("wineAdd.step2.shopOffline")}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -606,7 +655,7 @@ const WineAddScreen = () => {
                   purchaseType === "direct" && styles.typeButtonTextActive,
                 ]}
               >
-                {t('wineAdd.step2.shopDirect')}
+                {t("wineAdd.step2.shopDirect")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -615,8 +664,8 @@ const WineAddScreen = () => {
               style={styles.textInput}
               placeholder={
                 purchaseType === "offline"
-                  ? t('wineAdd.step2.shopPlaceholderOff')
-                  : t('wineAdd.step2.shopPlaceholderDir')
+                  ? t("wineAdd.step2.shopPlaceholderOff")
+                  : t("wineAdd.step2.shopPlaceholderDir")
               }
               placeholderTextColor="#666"
               value={purchaseShop}
@@ -634,13 +683,13 @@ const WineAddScreen = () => {
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('wineAdd.step2.date')}</Text>
+          <Text style={styles.label}>{t("wineAdd.step2.date")}</Text>
           <TouchableOpacity
             style={styles.inputWrapper}
             onPress={() => setCalendarVisible(true)}
           >
             <Text style={[styles.textInput, { paddingVertical: 12 }]}>
-              {purchaseDate || t('wineAdd.step2.datePlaceholder')}
+              {purchaseDate || t("wineAdd.step2.datePlaceholder")}
             </Text>
             {purchaseDate.length > 0 && (
               <Icon
@@ -677,7 +726,7 @@ const WineAddScreen = () => {
           <Icon name="arrow-back" size={24} color={colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {isEditMode ? t('wineAdd.headerEdit') : t('wineAdd.headerAdd')}
+          {isEditMode ? t("wineAdd.headerEdit") : t("wineAdd.headerAdd")}
         </Text>
         <View style={styles.headerRight} />
       </View>
@@ -703,7 +752,7 @@ const WineAddScreen = () => {
             ((currentStep === 1 && !isStep1Valid()) ||
               (currentStep === 2 && !isStep2Valid()) ||
               isSaving) &&
-            styles.disabledButton,
+              styles.disabledButton,
           ]}
           onPress={currentStep === 1 ? handleNext : handleSave}
           disabled={
@@ -714,12 +763,12 @@ const WineAddScreen = () => {
         >
           <Text style={styles.nextButtonText}>
             {isSaving
-              ? t('wineAdd.button.saving')
+              ? t("wineAdd.button.saving")
               : currentStep === 1
-                ? t('wineAdd.button.next')
-                : isEditMode
-                  ? t('wineAdd.button.edit')
-                  : t('wineAdd.button.add')}
+              ? t("wineAdd.button.next")
+              : isEditMode
+              ? t("wineAdd.button.edit")
+              : t("wineAdd.button.add")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -897,6 +946,27 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#666",
     fontSize: 16,
+  },
+  registerPromptText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginTop: 16,
+  },
+  registerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    gap: 6,
+  },
+  registerButtonText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "600",
   },
   step2Content: {
     paddingBottom: 24,
