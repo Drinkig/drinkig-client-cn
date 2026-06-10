@@ -1,44 +1,25 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
+  SafeAreaView,
   FlatList,
   StatusBar,
   TouchableOpacity,
   Image,
   ActivityIndicator,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
-import { getWishlist, getWineDetailPublic, WishlistItemDTO } from "../api/wine";
+import { getWishlist, WishlistItemDTO } from "../api/wine";
 import { WineDBItem } from "../types/Wine";
-
-import { getVintageLabel } from "../utils/wineUtils";
-import { colors } from "../constants/colors";
-import { useTranslation } from "react-i18next";
-import { useUser } from "../context/UserContext";
-import { useSubscription } from "../context/SubscriptionContext";
-import {
-  calculateCompatibilityScore,
-  getScoreColor,
-} from "../utils/compatibility";
-
-const scoreCache: { [wineId: number]: number | null } = {};
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const { t, i18n } = useTranslation();
-  const { flavorProfile } = useUser();
-  const { isPremium } = useSubscription();
   const [isLoading, setIsLoading] = useState(true);
   const [wishlist, setWishlist] = useState<WishlistItemDTO[]>([]);
-  const [compatScores, setCompatScores] = useState<{
-    [wineId: number]: number | null;
-  }>({});
-  const fetchingRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     if (isFocused) {
@@ -60,66 +41,25 @@ export default function WishlistScreen() {
     }
   };
 
-  // Auto-fetch compatibility scores (premium only)
-  useEffect(() => {
-    if (!isPremium || !flavorProfile || wishlist.length === 0) return;
-
-    wishlist.forEach((item) => {
-      const wineId = item.wineId;
-      if (scoreCache[wineId] !== undefined) {
-        setCompatScores((prev) => ({ ...prev, [wineId]: scoreCache[wineId] }));
-        return;
-      }
-      if (fetchingRef.current.has(wineId)) return;
-      fetchingRef.current.add(wineId);
-
-      getWineDetailPublic(wineId)
-        .then((response) => {
-          if (response.isSuccess) {
-            const detail = response.result.wineInfoResponse as any;
-            const result = calculateCompatibilityScore(
-              flavorProfile,
-              {
-                sweetness: detail.officialSweetness ?? detail.avgSweetness,
-                acidity: detail.officialAcidity ?? detail.avgAcidity,
-                tannin: detail.officialTannin ?? detail.avgTannin,
-                body: detail.officialBody ?? detail.avgBody,
-              },
-              t
-            );
-            const score = result?.score ?? null;
-            scoreCache[wineId] = score;
-            setCompatScores((prev) => ({ ...prev, [wineId]: score }));
-          }
-        })
-        .catch(() => {
-          scoreCache[wineId] = null;
-        })
-        .finally(() => {
-          fetchingRef.current.delete(wineId);
-        });
-    });
-  }, [wishlist, flavorProfile, isPremium, t]);
-
   const getWineTypeColor = (type: string) => {
     switch (type) {
       case "레드":
       case "Red":
-        return "#EF5350";
+        return "#C0392B";
       case "화이트":
       case "White":
-        return "#F4D03F";
+        return "#D4AC0D";
       case "스파클링":
       case "Sparkling":
-        return "#5DADE2";
+        return "#2980B9";
       case "로제":
       case "Rose":
-        return "#F1948A";
+        return "#C2185B";
       case "디저트":
       case "Dessert":
-        return "#F5B041";
+        return "#D35400";
       default:
-        return "#95A5A6";
+        return "#7F8C8D";
     }
   };
 
@@ -139,96 +79,74 @@ export default function WishlistScreen() {
     navigation.navigate("WineDetail", { wine: wineItem });
   };
 
-  const renderItem = ({ item }: { item: WishlistItemDTO }) => {
-    const score = compatScores[item.wineId];
-    return (
-      <TouchableOpacity
-        style={styles.itemContainer}
-        onPress={() => handleWinePress(item)}
-      >
-        <View style={styles.imageContainer}>
-          {item.imageUrl ? (
-            <Image
-              source={{ uri: item.imageUrl }}
-              style={styles.image}
-              resizeMode="contain"
-            />
-          ) : (
-            <Icon name="wine" size={30} color={colors.primary} />
-          )}
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.nameKor} numberOfLines={1}>
-            {i18n.language === "en" ? item.nameEng || item.name : item.name}
-          </Text>
-          {i18n.language !== "en" && (
-            <Text style={styles.nameEng} numberOfLines={1}>
-              {item.nameEng}
-            </Text>
-          )}
-          <View style={styles.detailRow}>
-            <View
-              style={[
-                styles.typeChip,
-                { backgroundColor: getWineTypeColor(item.sort) },
-              ]}
-            >
-              <Text style={styles.typeChipText}>{item.sort}</Text>
-            </View>
-            <Text style={styles.countryText}>
-              {item.country} · {getVintageLabel(item.vintageYear)}
-            </Text>
+  const renderItem = ({ item }: { item: WishlistItemDTO }) => (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => handleWinePress(item)}
+    >
+      <View style={styles.imageContainer}>
+        {item.imageUrl ? (
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        ) : (
+          <Icon name="wine" size={30} color="#8e44ad" />
+        )}
+      </View>
+      <View style={styles.infoContainer}>
+        <Text style={styles.nameKor} numberOfLines={1}>
+          {item.name}
+        </Text>
+        <Text style={styles.nameEng} numberOfLines={1}>
+          {item.nameEng}
+        </Text>
+        <View style={styles.detailRow}>
+          <View
+            style={[
+              styles.typeChip,
+              { backgroundColor: getWineTypeColor(item.sort) },
+            ]}
+          >
+            <Text style={styles.typeChipText}>{item.sort}</Text>
           </View>
+          <Text style={styles.countryText}>{item.country}</Text>
         </View>
-        {isPremium &&
-          flavorProfile &&
-          score !== undefined &&
-          score !== null && (
-            <View style={styles.scoreContainer}>
-              <View
-                style={[
-                  styles.scoreBadge,
-                  {
-                    borderColor: getScoreColor(score),
-                    backgroundColor: `${getScoreColor(score)}1F`,
-                  },
-                ]}
-              >
-                <Text
-                  style={[styles.scoreValue, { color: getScoreColor(score) }]}
-                >
-                  {score}
-                </Text>
-              </View>
-            </View>
-          )}
-      </TouchableOpacity>
-    );
-  };
+      </View>
+      {item.vivinoRating > 0 && (
+        <View style={styles.ratingContainer}>
+          <Icon name="star" size={14} color="#e74c3c" />
+          <Text style={styles.ratingText}>{item.vivinoRating.toFixed(1)}</Text>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
+      {/* 헤더 */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Icon name="arrow-back" size={24} color={colors.white} />
+          <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t("wishlist.header")}</Text>
+        <Text style={styles.headerTitle}>위시리스트</Text>
         <View style={{ width: 24 }} />
       </View>
 
+      {/* 컨텐츠 */}
       <View style={styles.content}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color="#E50914" />
           </View>
         ) : (
           <FlatList
-            showsVerticalScrollIndicator={false}
             data={wishlist}
             renderItem={renderItem}
             keyExtractor={(item) => item.wineId.toString()}
@@ -237,9 +155,9 @@ export default function WishlistScreen() {
               wishlist.length > 0 ? (
                 <View style={styles.listHeader}>
                   <Text style={styles.countText}>
-                    {t("wishlist.countPrefix")}
+                    총{" "}
                     <Text style={styles.countHighlight}>{wishlist.length}</Text>
-                    {t("wishlist.countSuffix")}
+                    개의 와인
                   </Text>
                 </View>
               ) : null
@@ -251,9 +169,9 @@ export default function WishlistScreen() {
                   style={styles.emptyImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.emptyText}>{t("wishlist.emptyTitle")}</Text>
+                <Text style={styles.emptyText}>위시리스트가 비어있습니다.</Text>
                 <Text style={styles.emptySubText}>
-                  {t("wishlist.emptyDesc")}
+                  마음에 드는 와인을 찜해보세요!
                 </Text>
               </View>
             }
@@ -267,7 +185,7 @@ export default function WishlistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: "#1a1a1a",
   },
   header: {
     flexDirection: "row",
@@ -276,13 +194,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: "#333",
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
-    color: colors.white,
+    color: "#fff",
     fontSize: 18,
     fontWeight: "600",
   },
@@ -301,11 +219,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   countText: {
-    color: colors.textSecondary,
+    color: "#888",
     fontSize: 14,
   },
   countHighlight: {
-    color: colors.white,
+    color: "#fff",
     fontWeight: "bold",
   },
   itemContainer: {
@@ -313,13 +231,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: "#333",
   },
   imageContainer: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: colors.surface1,
+    backgroundColor: "#2a2a2a",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -335,12 +253,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   nameKor: {
-    color: colors.white,
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
   },
   nameEng: {
-    color: colors.textSecondary,
+    color: "#888",
     fontSize: 13,
   },
   detailRow: {
@@ -355,7 +273,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: colors.white,
+    color: "#fff",
     fontSize: 10,
     fontWeight: "bold",
   },
@@ -363,23 +281,16 @@ const styles = StyleSheet.create({
     color: "#666",
     fontSize: 12,
   },
-  scoreContainer: {
+  ratingContainer: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: 12,
+    gap: 4,
+    paddingLeft: 8,
   },
-  scoreBadge: {
-    minWidth: 34,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scoreValue: {
-    fontSize: 13,
-    fontWeight: "700",
+  ratingText: {
+    fontSize: 14,
+    color: "#e74c3c",
+    fontWeight: "bold",
   },
   emptyContainer: {
     padding: 32,
@@ -392,13 +303,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyText: {
-    color: colors.white,
+    color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
   },
   emptySubText: {
-    color: colors.textSecondary,
+    color: "#888",
     fontSize: 14,
   },
 });
