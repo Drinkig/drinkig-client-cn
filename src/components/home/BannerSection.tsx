@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { colors } from "../../constants/colors";
+import { radius, surfaces } from "../../constants/theme";
 
 const { width } = Dimensions.get("window");
 const BANNER_WIDTH = width - 40; // 좌우 마진 20씩 제외한 너비
@@ -238,19 +239,13 @@ const styles = StyleSheet.create({
   },
   bannerItem: {
     width: BANNER_WIDTH,
-    borderRadius: 24,
+    borderRadius: radius.lg,
     padding: 20,
     height: "100%",
     overflow: "hidden",
-    backgroundColor: colors.border,
-    // Add subtle structural shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    backgroundColor: surfaces.card,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
+    borderColor: surfaces.hairline,
   },
   bannerContent: {
     flex: 1,

@@ -1,16 +1,9 @@
-import React, { useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Animated,
-  Easing,
-} from "react-native";
-import Icon from "react-native-vector-icons/Ionicons";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
+import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../constants/colors";
+import { spacing, radius, surfaces, accent } from "../../constants/theme";
 
 import { useTranslation } from "react-i18next";
 
@@ -21,186 +14,103 @@ interface HeroSectionProps {
 export const HeroSection: React.FC<HeroSectionProps> = ({ onPress }) => {
   const { t } = useTranslation();
 
-  // Slow, subtle sheen sweeping diagonally across the card
-  const sheenAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(sheenAnim, {
-          toValue: 1,
-          duration: 3800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.delay(2600),
-      ])
-    ).start();
-  }, [sheenAnim]);
-
-  const sheenTranslate = sheenAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [-220, 420],
-  });
-  const sheenOpacity = sheenAnim.interpolate({
-    inputRange: [0, 0.15, 0.5, 0.85, 1],
-    outputRange: [0, 0.35, 0.5, 0.35, 0],
-  });
-
   return (
-    <View style={styles.heroSectionShadow}>
-      <View style={styles.heroSection}>
-        <LinearGradient
-          colors={[colors.primaryDark, "#4A086B"]} // Deep signature purple gradient
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFillObject}
-        />
+    <View style={styles.card}>
+      {/* A single soft accent wash for depth — the only gradient on the card. */}
+      <LinearGradient
+        colors={[accent.soft, "transparent"]}
+        start={{ x: 1, y: 0 }}
+        end={{ x: 0.1, y: 0.9 }}
+        style={StyleSheet.absoluteFillObject}
+        pointerEvents="none"
+      />
 
-        {/* Subtle sheen sweeping diagonally across the card */}
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            styles.sheen,
-            {
-              opacity: sheenOpacity,
-              transform: [{ translateX: sheenTranslate }, { rotate: "18deg" }],
-            },
-          ]}
+      <Image
+        source={require("../../assets/onboarding/Drinky_onboarding_3.png")}
+        style={styles.image}
+        resizeMode="contain"
+      />
+
+      <View style={styles.textContainer}>
+        <Text
+          style={styles.title}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
         >
-          <LinearGradient
-            colors={[
-              "rgba(255,255,255,0)",
-              "rgba(255,255,255,0.18)",
-              "rgba(255,255,255,0)",
-            ]}
-            start={{ x: 0, y: 0.5 }}
-            end={{ x: 1, y: 0.5 }}
-            style={StyleSheet.absoluteFillObject}
-          />
-        </Animated.View>
-
-        <View style={styles.heroTextContainer}>
-          <Text
-            style={styles.heroTitle}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.75}
-          >
-            {t("home.hero.title")}
-          </Text>
-          <Text style={styles.heroSubtitle} numberOfLines={2}>
-            {t("home.hero.subtitle")}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          style={styles.recommendButton}
-          onPress={onPress}
-          activeOpacity={0.85}
-        >
-          <Icon
-            name="chatbubble-ellipses"
-            size={16}
-            color={colors.primaryDark}
-          />
-          <Text style={styles.recommendButtonText}>
-            {t("home.hero.button")}
-          </Text>
-        </TouchableOpacity>
-
-        <Image
-          source={require("../../assets/onboarding/Drinky_onboarding_3.png")}
-          style={styles.heroImage}
-          resizeMode="contain"
-        />
+          {t("home.hero.title")}
+        </Text>
+        <Text style={styles.subtitle} numberOfLines={2}>
+          {t("home.hero.subtitle")}
+        </Text>
       </View>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={onPress}
+        activeOpacity={0.85}
+      >
+        <Icon name="chatbubble-ellipses" size={16} color={accent.onAccent} />
+        <Text style={styles.buttonText}>{t("home.hero.button")}</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  heroSectionShadow: {
-    marginHorizontal: 20,
-    marginBottom: 16,
-    marginTop: 8,
-    borderRadius: 20,
-    // Premium matte shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
+  card: {
+    marginHorizontal: spacing.xl,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+    borderRadius: radius.xl,
+    padding: spacing.xxl,
+    height: 196,
+    overflow: "hidden",
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    justifyContent: "space-between",
   },
-  heroSection: {
-    borderRadius: 20,
-    padding: 24,
-    position: "relative",
-    overflow: "hidden", // Contain gradient and image bounds
-    height: 188,
-    flexShrink: 0,
-    backgroundColor: colors.surface1, // Fallback
-  },
-  heroTextContainer: {
+  textContainer: {
     zIndex: 2,
-    paddingRight: 110,
-    marginTop: 4,
-    width: "100%",
+    paddingRight: 100,
   },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
+  title: {
+    fontSize: 23,
+    fontWeight: "700",
     color: colors.textPrimary,
-    marginBottom: 8,
-    lineHeight: 28,
-    flexShrink: 1,
+    letterSpacing: -0.4,
+    marginBottom: spacing.sm,
   },
-  heroSubtitle: {
+  subtitle: {
     fontSize: 13,
-    color: "rgba(244, 239, 249, 0.95)",
+    color: colors.textSecondary,
     lineHeight: 19,
-    fontWeight: "600",
+    fontWeight: "500",
   },
-  sheen: {
-    position: "absolute",
-    top: -40,
-    bottom: -40,
-    width: 90,
-    zIndex: 1,
-  },
-  recommendButton: {
-    position: "absolute",
-    bottom: 24,
-    left: 24,
+  button: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.white,
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 26,
+    alignSelf: "flex-start",
+    backgroundColor: accent.base,
+    paddingVertical: 11,
+    paddingHorizontal: 20,
+    borderRadius: radius.pill,
     zIndex: 2,
     gap: 7,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
   },
-  recommendButtonText: {
-    color: colors.primaryDark,
-    fontWeight: "bold",
-    fontSize: 15,
+  buttonText: {
+    color: accent.onAccent,
+    fontWeight: "700",
+    fontSize: 14,
     letterSpacing: 0.2,
   },
-  heroImage: {
+  image: {
     position: "absolute",
-    right: -18,
-    bottom: -20,
-    width: 200,
-    height: 200,
+    right: -14,
+    bottom: -16,
+    width: 184,
+    height: 184,
     opacity: 0.95,
     zIndex: 1,
   },
