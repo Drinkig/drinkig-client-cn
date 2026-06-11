@@ -22,6 +22,7 @@ import {
 } from "../api/wine";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
+import { surfaces, accent, radius } from "../constants/theme";
 import { useTranslation, Trans } from "react-i18next";
 
 const ProfileScreen = () => {
@@ -213,11 +214,11 @@ const ProfileScreen = () => {
               {
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: colors.border,
+                backgroundColor: surfaces.raised,
               },
             ]}
           >
-            <Icon name="wine" size={24} color="#666" />
+            <Icon name="wine" size={24} color={colors.textTertiary} />
           </View>
         )}
       </View>
@@ -230,7 +231,7 @@ const ProfileScreen = () => {
         <Text style={styles.listNoteDate}>{item.tasteDate}</Text>
       </View>
       <View style={styles.listRatingBadge}>
-        <Icon name="star" size={12} color="#f1c40f" />
+        <Icon name="star" size={12} color="#E8C94A" />
         <Text style={styles.listRatingText}>{item.rating.toFixed(1)}</Text>
       </View>
     </TouchableOpacity>
@@ -257,15 +258,15 @@ const ProfileScreen = () => {
               {
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: colors.border,
+                backgroundColor: surfaces.raised,
               },
             ]}
           >
-            <Icon name="wine" size={28} color="#666" />
+            <Icon name="wine" size={28} color={colors.textTertiary} />
           </View>
         )}
         <View style={styles.cardRatingBadge}>
-          <Icon name="star" size={10} color="#f1c40f" />
+          <Icon name="star" size={10} color="#E8C94A" />
           <Text style={styles.cardRatingText}>{item.rating.toFixed(1)}</Text>
         </View>
       </View>
@@ -572,11 +573,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.card,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#444",
+    borderColor: accent.border,
     marginRight: 16,
     overflow: "hidden",
   },
@@ -602,17 +603,17 @@ const styles = StyleSheet.create({
   },
 
   editButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 16,
-    backgroundColor: colors.border,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: radius.pill,
+    backgroundColor: accent.soft,
     borderWidth: 1,
-    borderColor: "#555",
+    borderColor: accent.border,
   },
   editButtonText: {
-    color: "#ccc",
+    color: accent.text,
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   sectionContainer: {
     marginBottom: 20,
@@ -665,13 +666,13 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     marginBottom: 24,
-    backgroundColor: colors.background,
+    backgroundColor: surfaces.card,
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginHorizontal: 24,
-    borderRadius: 20,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
   },
   chartContentWrapper: {
     flexDirection: "row",
@@ -705,10 +706,10 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.surface1,
+    borderRadius: radius.pill,
+    backgroundColor: surfaces.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
   },
   filterChipSelected: {
     backgroundColor: colors.primary,
@@ -743,16 +744,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
     padding: 12,
     gap: 14,
   },
   listImageWrapper: {
     width: 56,
     height: 70,
-    borderRadius: 8,
-    backgroundColor: colors.border,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.raised,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
@@ -770,7 +773,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   listNoteDate: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 12,
   },
   listRatingBadge: {
@@ -801,14 +804,16 @@ const styles = StyleSheet.create({
   },
   cardItem: {
     marginBottom: 0,
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
     overflow: "hidden",
   },
   cardImageWrapper: {
     width: "100%",
     aspectRatio: 1,
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.raised,
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
@@ -843,7 +848,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   cardNoteDate: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 11,
   },
   emptyWrapper: {
@@ -852,12 +857,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyContainer: {
-    backgroundColor: colors.surface1,
-    borderRadius: 16,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
     padding: 30,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
     borderStyle: "dashed",
     width: "100%",
   },
@@ -869,7 +874,7 @@ const styles = StyleSheet.create({
   },
   emptySubText: {
     fontSize: 13,
-    color: "#666",
+    color: colors.textTertiary,
     textAlign: "center",
   },
 
@@ -902,11 +907,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: surfaces.hairline,
   },
   sortOptionText: {
     fontSize: 16,
-    color: "#ccc",
+    color: colors.textSecondary,
   },
   sortOptionTextSelected: {
     color: colors.primary,
