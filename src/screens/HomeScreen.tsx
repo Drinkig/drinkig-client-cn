@@ -155,96 +155,55 @@ export default function HomeScreen() {
             <HeroSection onPress={handleHeroPress} />
           </View>
 
-          {/* Tier-1 action: writing a tasting note is the core repeat habit, so
-              it gets a full-width emphasized card directly under the hero. */}
-          <TouchableOpacity
-            style={styles.primaryCard}
-            onPress={() => navigation.navigate("TastingNoteWrite" as never)}
-            activeOpacity={0.85}
-          >
-            <View style={styles.primaryIconChip}>
-              <MaterialCommunityIcons
-                name="notebook-edit-outline"
-                size={24}
-                color={accent.onAccent}
-              />
-            </View>
-            <View style={styles.primaryTextWrap}>
-              <Text style={styles.cardTitle}>
-                {t("home.quickMenu.tastingNoteTitle")}
-              </Text>
-              <Text style={styles.cardSub}>
-                {t("home.quickMenu.tastingNoteSub")}
-              </Text>
-            </View>
-            <Icon
-              name="chevron-forward"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-
-          {/* Tier-2 actions: still core tools, but lighter compact tiles. */}
-          <View style={styles.quickMenuContainer}>
+          {/* Two core actions as wide side-by-side cards. */}
+          <View style={styles.quickCardRow}>
             <TouchableOpacity
-              style={styles.compactCard}
+              style={styles.quickCard}
+              onPress={() => navigation.navigate("TastingNoteWrite" as never)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.iconChip}>
+                <MaterialCommunityIcons
+                  name="notebook-edit-outline"
+                  size={24}
+                  color={accent.text}
+                />
+              </View>
+              <View>
+                <Text style={styles.quickCardTitle}>
+                  {t("home.quickMenu.tastingNoteTitle")}
+                </Text>
+                <Text style={styles.quickCardSub}>
+                  {t("home.quickMenu.tastingNoteSub")}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickCard}
               onPress={() => navigation.navigate("MyWine" as never)}
               activeOpacity={0.85}
             >
               <View style={styles.iconChip}>
                 <MaterialCommunityIcons
                   name="bottle-wine-outline"
-                  size={22}
+                  size={24}
                   color={accent.text}
                 />
               </View>
-              <Text style={styles.compactTitle} numberOfLines={1}>
-                {t("home.quickMenu.myWineTitle")}
-              </Text>
-              <View style={styles.statRow}>
-                <Text style={styles.statNumber}>{myWines.length}</Text>
-                <Text style={styles.statUnit}>
+              <View>
+                <Text style={styles.quickCardTitle}>
+                  {t("home.quickMenu.myWineTitle")}
+                </Text>
+                <Text style={styles.quickCardSub}>
+                  {myWines.length}
                   {t("home.quickMenu.bottlesUnit")}
                 </Text>
               </View>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.compactCard}
-              onPress={() => navigation.navigate("FoodSelection" as never)}
-              activeOpacity={0.85}
-            >
-              <View style={styles.iconChip}>
-                <MaterialCommunityIcons
-                  name="silverware-fork-knife"
-                  size={22}
-                  color={accent.text}
-                />
-              </View>
-              <Text style={styles.compactTitle} numberOfLines={1}>
-                {t("home.quickMenu.foodPairingTitle")}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.compactCard}
-              onPress={() => navigation.navigate("Camera" as never)}
-              activeOpacity={0.85}
-            >
-              <View style={styles.iconChip}>
-                <MaterialCommunityIcons
-                  name="line-scan"
-                  size={22}
-                  color={accent.text}
-                />
-              </View>
-              <Text style={styles.compactTitle} numberOfLines={1}>
-                {t("home.quickMenu.menuScanTitle")}
-              </Text>
-            </TouchableOpacity>
           </View>
 
-          {/* Tier-3: discovery feed sits below the user's own tools. */}
+          {/* Discovery feed sits below the user's own tools. */}
           <RecentReviewsSection />
         </ScrollView>
       </SafeAreaView>
@@ -392,39 +351,16 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 120,
   },
-  primaryCard: {
+  quickCardRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.lg,
-    marginHorizontal: spacing.xl,
-    marginBottom: spacing.md,
-    padding: spacing.lg,
-    backgroundColor: surfaces.card,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: surfaces.hairline,
-  },
-  primaryIconChip: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    backgroundColor: accent.base,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  primaryTextWrap: {
-    flex: 1,
-  },
-  quickMenuContainer: {
-    flexDirection: "row",
-    paddingHorizontal: spacing.xl,
     gap: spacing.md,
+    marginHorizontal: spacing.xl,
     marginBottom: spacing.xxl,
   },
-  compactCard: {
+  quickCard: {
     flex: 1,
-    height: 116,
-    padding: spacing.md,
+    height: 152,
+    padding: spacing.lg,
     justifyContent: "space-between",
     backgroundColor: surfaces.card,
     borderRadius: radius.lg,
@@ -432,44 +368,23 @@ const styles = StyleSheet.create({
     borderColor: surfaces.hairline,
   },
   iconChip: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: radius.md,
     backgroundColor: accent.soft,
     justifyContent: "center",
     alignItems: "center",
   },
-  cardTitle: {
+  quickCardTitle: {
     color: colors.textPrimary,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "700",
     letterSpacing: -0.2,
     marginBottom: spacing.xs,
   },
-  cardSub: {
+  quickCardSub: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "500",
-  },
-  compactTitle: {
-    color: colors.textPrimary,
     fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: -0.2,
-  },
-  statRow: {
-    flexDirection: "row",
-    alignItems: "baseline",
-  },
-  statNumber: {
-    color: accent.text,
-    fontSize: 18,
-    fontWeight: "700",
-    marginRight: spacing.xs,
-  },
-  statUnit: {
-    color: colors.textSecondary,
-    fontSize: 13,
     fontWeight: "500",
   },
 });
