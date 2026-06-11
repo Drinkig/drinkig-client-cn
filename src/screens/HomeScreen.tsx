@@ -6,8 +6,6 @@ import {
   TouchableOpacity,
   StatusBar,
   ScrollView,
-  Image,
-  ImageBackground,
   Animated,
   Easing,
   useWindowDimensions,
@@ -23,6 +21,7 @@ import { HeroSection } from "../components/home/HeroSection";
 import { BannerSection } from "../components/home/BannerSection";
 import { getMyWines, MyWineDTO } from "../api/wine";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "../context/SubscriptionContext";
 import { SubscriptionExpiryBanner } from "../components/home/SubscriptionExpiryBanner";
@@ -130,32 +129,24 @@ export default function HomeScreen() {
         />
 
         <View style={styles.headerContainer}>
-          <View style={styles.headerPill}>
-            <TouchableOpacity
-              style={styles.searchBarContainer}
-              onPress={() => navigation.navigate("Search" as never)}
-              activeOpacity={0.9}
-            >
-              <Icon
-                name="search"
-                size={20}
-                color={colors.textSecondary}
-                style={styles.searchIcon}
-              />
-              <Text style={styles.searchPlaceholder}>
-                {t("home.searchPlaceholder")}
-              </Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.searchBar}
+            onPress={() => navigation.navigate("Search" as never)}
+            activeOpacity={0.85}
+          >
+            <Icon name="search" size={19} color={colors.textSecondary} />
+            <Text style={styles.searchPlaceholder}>
+              {t("home.searchPlaceholder")}
+            </Text>
+          </TouchableOpacity>
 
-            <View style={styles.headerSeparator} />
-
-            <TouchableOpacity
-              style={styles.notificationButton}
-              onPress={() => navigation.navigate("Wishlist" as never)}
-            >
-              <Icon name="heart-outline" size={24} color={colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => navigation.navigate("Wishlist" as never)}
+            activeOpacity={0.85}
+          >
+            <Icon name="heart-outline" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -177,68 +168,50 @@ export default function HomeScreen() {
 
           <View style={styles.quickMenuContainer}>
             <TouchableOpacity
-              style={[styles.quickMenuItem, styles.tastingNoteButton]}
+              style={styles.quickCard}
               onPress={() => navigation.navigate("TastingNoteWrite" as never)}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
-              <ImageBackground
-                source={require("../assets/taste_note.png")}
-                style={styles.tastingNoteBackground}
-                imageStyle={{ borderRadius: 20 }}
-                resizeMode="cover"
-              >
-                <View style={styles.tastingNoteContent}>
-                  <View>
-                    <Text style={styles.menuLabel}>
-                      {t("home.quickMenu.tastingNoteTitle")}
-                    </Text>
-                    <Text style={styles.menuSubLabel}>
-                      {t("home.quickMenu.tastingNoteSub")}
-                    </Text>
-                  </View>
-                  <View style={styles.arrowIconContainer}>
-                    <Icon
-                      name="chevron-forward"
-                      size={20}
-                      color="rgba(255,255,255,0.5)"
-                    />
-                  </View>
-                </View>
-              </ImageBackground>
+              <View style={styles.iconChip}>
+                <MaterialCommunityIcons
+                  name="notebook-edit-outline"
+                  size={22}
+                  color={accent.text}
+                />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>
+                  {t("home.quickMenu.tastingNoteTitle")}
+                </Text>
+                <Text style={styles.cardSub}>
+                  {t("home.quickMenu.tastingNoteSub")}
+                </Text>
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.quickMenuItem, styles.tastingNoteButton]}
+              style={styles.quickCard}
               onPress={() => navigation.navigate("MyWine" as never)}
-              activeOpacity={0.8}
+              activeOpacity={0.85}
             >
-              <ImageBackground
-                source={require("../assets/wine_cellar.png")}
-                style={styles.tastingNoteBackground}
-                imageStyle={{ borderRadius: 20 }}
-                resizeMode="cover"
-              >
-                <View style={styles.tastingNoteContent}>
-                  <View>
-                    <Text style={styles.menuLabel}>
-                      {t("home.quickMenu.myWineTitle")}
-                    </Text>
-                    <View style={styles.statRow}>
-                      <Text style={styles.statNumber}>{myWines.length}</Text>
-                      <Text style={styles.statUnit}>
-                        {t("home.quickMenu.bottlesUnit")}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.arrowIconContainer}>
-                    <Icon
-                      name="chevron-forward"
-                      size={20}
-                      color="rgba(255,255,255,0.5)"
-                    />
-                  </View>
+              <View style={styles.iconChip}>
+                <MaterialCommunityIcons
+                  name="bottle-wine-outline"
+                  size={22}
+                  color={accent.text}
+                />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>
+                  {t("home.quickMenu.myWineTitle")}
+                </Text>
+                <View style={styles.statRow}>
+                  <Text style={styles.statNumber}>{myWines.length}</Text>
+                  <Text style={styles.statUnit}>
+                    {t("home.quickMenu.bottlesUnit")}
+                  </Text>
                 </View>
-              </ImageBackground>
+              </View>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -267,12 +240,12 @@ export default function HomeScreen() {
               }),
               borderRadius: layoutAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [20, 0],
+                outputRange: [radius.xl, 0],
               }),
               overflow: "hidden",
             }}
           >
-            {/* Front face - hero card gradient */}
+            {/* Front face - hero card accent */}
             <Animated.View
               style={[
                 StyleSheet.absoluteFillObject,
@@ -290,15 +263,21 @@ export default function HomeScreen() {
                 },
               ]}
             >
+              <View
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  { backgroundColor: surfaces.card },
+                ]}
+              />
               <LinearGradient
-                colors={[colors.primaryDark, "#4A086B"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+                colors={[accent.soft, "transparent"]}
+                start={{ x: 1, y: 0 }}
+                end={{ x: 0.1, y: 0.9 }}
                 style={StyleSheet.absoluteFillObject}
               />
             </Animated.View>
 
-            {/* Back face - chat screen gradient */}
+            {/* Back face - chat screen */}
             <Animated.View
               style={[
                 StyleSheet.absoluteFillObject,
@@ -316,12 +295,11 @@ export default function HomeScreen() {
                 },
               ]}
             >
-              <LinearGradient
-                colors={[colors.primaryDark, "#4A086B", colors.background]}
-                locations={[0, 0.35, 1]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFillObject}
+              <View
+                style={[
+                  StyleSheet.absoluteFillObject,
+                  { backgroundColor: colors.background },
+                ]}
               />
             </Animated.View>
           </Animated.View>
@@ -341,148 +319,96 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   headerContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    paddingTop: 20,
-    backgroundColor: colors.background, // Keep the very top background the same as the app
-    zIndex: 10,
-  },
-  headerPill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface1, // Matte pill color
-    borderRadius: 24, // High border radius for pill shape
-    height: 52, // Slightly taller for comfortable touch target
-    paddingHorizontal: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-    // Add subtle shadow exactly like the bottom tab bar
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+    backgroundColor: colors.background,
+    zIndex: 10,
   },
-  searchBarContainer: {
+  searchBar: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "transparent", // Transparent to let the pill background show
-    paddingHorizontal: 16,
-    height: "100%",
-  },
-  headerSeparator: {
-    width: 1,
-    height: 24,
-    backgroundColor: colors.border, // Subtle vertical line separating search and icon
-    marginHorizontal: 8,
-  },
-  searchIcon: {
-    marginRight: 8,
+    gap: spacing.sm,
+    height: 48,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: surfaces.raised,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
   },
   searchPlaceholder: {
     color: colors.textSecondary,
-    fontSize: 14,
+    fontSize: 15,
   },
-  notificationButton: {
-    width: 44,
-    height: 44,
+  iconButton: {
+    width: 48,
+    height: 48,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 22,
-  },
-  notificationBadge: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.error,
+    borderRadius: radius.pill,
+    backgroundColor: surfaces.raised,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
   },
   content: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: spacing.xxxl,
   },
   quickMenuContainer: {
     flexDirection: "row",
-    paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 24,
+    paddingHorizontal: spacing.xl,
+    gap: spacing.md,
+    marginBottom: spacing.xxl,
   },
-  quickMenuItem: {
+  quickCard: {
     flex: 1,
-    backgroundColor: colors.surface1, // Darker surface matching the theme
-    borderRadius: 20,
-    height: 140,
+    height: 148,
+    padding: spacing.xl,
     justifyContent: "space-between",
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
-    // Premium 3D float shadow matching the banners
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 12,
+    borderColor: surfaces.hairline,
   },
-  tastingNoteButton: {
-    padding: 0,
-    // Removed transparent background so the surface2 color shows
-  },
-  tastingNoteBackground: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
-  tastingNoteContent: {
-    flex: 1,
-    padding: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    backgroundColor: "rgba(25, 22, 28, 0.45)",
-    borderRadius: 20,
-  },
-  arrowIconContainer: {
-    marginTop: 2,
-  },
-  menuIconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.surface2,
+  iconChip: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: accent.soft,
     justifyContent: "center",
     alignItems: "center",
   },
-  menuLabel: {
-    color: "rgba(255,255,255,0.75)",
-    fontSize: 13,
-    marginBottom: 4,
-    fontWeight: "600",
-  },
-  menuSubLabel: {
+  cardTitle: {
     color: colors.textPrimary,
-    fontSize: 18,
-    fontWeight: "bold",
-    textShadowColor: "rgba(0,0,0,0.4)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: -0.2,
+    marginBottom: spacing.xs,
+  },
+  cardSub: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "500",
   },
   statRow: {
     flexDirection: "row",
     alignItems: "baseline",
   },
   statNumber: {
-    color: colors.textPrimary,
+    color: accent.text,
     fontSize: 18,
-    fontWeight: "bold",
-    marginRight: 4,
+    fontWeight: "700",
+    marginRight: spacing.xs,
   },
   statUnit: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 14,
-    fontWeight: "600",
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "500",
   },
 });

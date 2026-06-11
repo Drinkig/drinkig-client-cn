@@ -31,5 +31,20 @@ target 'drinkigclientcn' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # fmt 11 (via glog/RCT-Folly) fails to compile under Xcode 26's Clang because
+    # its consteval format-string checks are rejected as non-constant expressions.
+    # base.h #defines FMT_USE_CONSTEVAL unconditionally (no #ifndef guard), so a
+    # -D compiler flag gets overwritten by the header. Patch the header directly to
+    # force the macro off, falling back to runtime checks (no behavioral change).
+    fmt_base_h = File.join(__dir__, 'Pods', 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base_h)
+      contents = File.read(fmt_base_h)
+      patched = contents.gsub('#  define FMT_USE_CONSTEVAL 1', '#  define FMT_USE_CONSTEVAL 0')
+      if patched != contents
+        File.write(fmt_base_h, patched)
+        Pod::UI.puts "[fmt patch] Disabled FMT_USE_CONSTEVAL in base.h".green
+      end
+    end
   end
 end
