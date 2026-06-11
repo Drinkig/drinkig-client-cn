@@ -14,8 +14,8 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "@react-native-community/blur";
 import LinearGradient from "react-native-linear-gradient";
+import GlassHeader from "../components/common/GlassHeader";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useNavigation,
@@ -970,31 +970,22 @@ export default function WineDetailScreen() {
       />
 
       {/* Translucent frosted header — content scrolls underneath it. */}
-      <View
-        style={[
-          styles.header,
-          { height: headerHeight, paddingTop: insets.top },
-        ]}
-      >
-        <BlurView
-          style={StyleSheet.absoluteFill}
-          blurType="dark"
-          blurAmount={18}
-          reducedTransparencyFallbackColor={surfaces.card}
-        />
-        <View style={styles.headerRow}>
+      <GlassHeader
+        title={
+          isMyWineItem
+            ? t("wineDetail.myWineHeader")
+            : t("wineDetail.infoHeader")
+        }
+        left={
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={styles.backButton}
           >
             <Ionicons name="arrow-back" size={22} color={colors.white} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>
-            {isMyWineItem
-              ? t("wineDetail.myWineHeader")
-              : t("wineDetail.infoHeader")}
-          </Text>
-          {!isMyWineItem ? (
+        }
+        right={
+          !isMyWineItem ? (
             <TouchableOpacity
               style={styles.wishlistButton}
               onPress={handleToggleWishlist}
@@ -1005,11 +996,9 @@ export default function WineDetailScreen() {
                 color={isLiked ? colors.error : colors.white}
               />
             </TouchableOpacity>
-          ) : (
-            <View style={styles.placeholder} />
-          )}
-        </View>
-      </View>
+          ) : undefined
+        }
+      />
 
       {isMyWineItem ? (
         <View style={styles.bottomButtonContainer}>
@@ -1144,23 +1133,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 20,
-    overflow: "hidden",
-    borderBottomWidth: 1,
-    borderBottomColor: surfaces.hairline,
-  },
-  headerRow: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
   bottomFade: {
     position: "absolute",
     left: 0,
@@ -1179,12 +1151,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: colors.white,
-    letterSpacing: -0.2,
-  },
   wishlistButton: {
     width: 40,
     height: 40,
@@ -1194,9 +1160,6 @@ const styles = StyleSheet.create({
     borderColor: surfaces.hairline,
     justifyContent: "center",
     alignItems: "center",
-  },
-  placeholder: {
-    width: 40,
   },
   content: {
     paddingBottom: 100,

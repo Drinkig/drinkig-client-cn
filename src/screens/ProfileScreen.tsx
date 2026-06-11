@@ -23,6 +23,9 @@ import {
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
 import { surfaces, accent, radius } from "../constants/theme";
+import GlassHeader, {
+  useGlassHeaderHeight,
+} from "../components/common/GlassHeader";
 import { useTranslation, Trans } from "react-i18next";
 
 const ProfileScreen = () => {
@@ -40,6 +43,7 @@ const ProfileScreen = () => {
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<"list" | "card">("list");
   const { t, i18n } = useTranslation();
+  const headerHeight = useGlassHeaderHeight();
 
   const sortOptions = [
     { label: t("profile.sort.latest"), value: "latest" },
@@ -282,23 +286,12 @@ const ProfileScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      {/* Relative 3D Pill Header (Safe) */}
-      <View style={styles.headerContainer}>
-        <View style={styles.headerPill}>
-          <Text style={styles.headerTitle}>{t("profile.headerTitle")}</Text>
-          <TouchableOpacity
-            style={styles.settingsButton}
-            onPress={() => navigation.navigate("Setting" as never)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon name="settings-outline" size={24} color={colors.white} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
+    <SafeAreaView style={styles.container} edges={["left", "right"]}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: headerHeight + 12 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.profileSection}>
@@ -469,6 +462,19 @@ const ProfileScreen = () => {
         </View>
       </ScrollView>
 
+      <GlassHeader
+        title={t("profile.headerTitle")}
+        right={
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => navigation.navigate("Setting" as never)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="settings-outline" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
+
       <Modal
         visible={isSortModalVisible}
         transparent={true}
@@ -525,35 +531,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    paddingTop: 20,
-    backgroundColor: colors.background,
-    zIndex: 10,
-  },
-  headerPill: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "rgba(42, 41, 43, 0.75)", // Matte glass-like pill
-    borderRadius: 24,
-    height: 52,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
-    // Subtle 3D shadow matching Home
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: colors.white,
   },
   settingsButton: {
     padding: 4,
