@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -20,12 +20,20 @@ import * as KakaoLogin from "@react-native-seoul/kakao-login";
 import auth from "@react-native-firebase/auth";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { exchangeKakaoToken, appleLogin } from "../api/member";
 import { useUser } from "../context/UserContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
+import {
+  spacing,
+  radius,
+  surfaces,
+  accent,
+  elevation,
+} from "../constants/theme";
+import KakaoIcon from "../components/common/KakaoIcon";
 import {
   MatchScoreIllust,
   ScanIllust,
@@ -48,7 +56,7 @@ const slides: SlideItem[] = [
   { id: "5", titleKey: "login.slides.4", Illust: CellarIllust },
 ];
 
-// 상단 그라디언트 브리딩 애니메이션
+// 상단 그라디언트 브리딩 애니메이션 — refined accent 기반의 차분한 웨이시
 function BreathingGradient() {
   const anim = useRef(new Animated.Value(0)).current;
 
@@ -69,7 +77,7 @@ function BreathingGradient() {
         }),
       ])
     ).start();
-  }, []);
+  }, [anim]);
 
   const opacity1 = anim.interpolate({
     inputRange: [0, 1],
@@ -85,24 +93,24 @@ function BreathingGradient() {
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: opacity1 }]}>
         <LinearGradient
           colors={[
-            "rgba(142,68,173,0.35)",
-            "rgba(126,19,177,0.10)",
+            "rgba(185,140,230,0.26)",
+            "rgba(185,140,230,0.06)",
             "transparent",
           ]}
           start={{ x: 0.2, y: 0 }}
-          end={{ x: 0.8, y: 0.6 }}
+          end={{ x: 0.8, y: 0.55 }}
           style={StyleSheet.absoluteFillObject}
         />
       </Animated.View>
       <Animated.View style={[StyleSheet.absoluteFill, { opacity: opacity2 }]}>
         <LinearGradient
           colors={[
-            "rgba(192,132,252,0.30)",
-            "rgba(142,68,173,0.08)",
+            "rgba(203,171,236,0.22)",
+            "rgba(185,140,230,0.05)",
             "transparent",
           ]}
-          start={{ x: 0.8, y: 0 }}
-          end={{ x: 0.2, y: 0.55 }}
+          start={{ x: 0.85, y: 0 }}
+          end={{ x: 0.15, y: 0.5 }}
           style={StyleSheet.absoluteFillObject}
         />
       </Animated.View>
@@ -111,9 +119,8 @@ function BreathingGradient() {
 }
 
 const LoginScreen = () => {
-  const navigation = useNavigation();
   const { login } = useUser();
-  const { showLoading, hideLoading, showToast } = useGlobalUI();
+  const { hideLoading, showToast } = useGlobalUI();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const { width } = useWindowDimensions();
@@ -211,13 +218,47 @@ const LoginScreen = () => {
   };
 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const flatListRef = useRef<FlatList<SlideItem>>(null);
+
+  // 무한 루프 캐러셀: 양 끝에 클론 슬라이드를 덧붙이고, 끝에 닿으면
+  // 애니메이션 없이 반대편 실제 슬라이드로 점프시킨다.
+  const loopSlides = useMemo<SlideItem[]>(() => {
+    if (slides.length === 0) return [];
+    const first = { ...slides[0], id: "clone-first" };
+    const last = { ...slides[slides.length - 1], id: "clone-last" };
+    return [last, ...slides, first];
+  }, []);
+
+  const getRealIndex = (loopIndex: number) =>
+    (loopIndex - 1 + slides.length) % slides.length;
+
+  // 스와이프 도중 실시간으로 인디케이터를 갱신해 손가락을 바로 따라오게 한다.
+  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const loopIndex = Math.round(e.nativeEvent.contentOffset.x / width);
+    const real = getRealIndex(loopIndex);
+    setCurrentSlideIndex((prev) => (prev === real ? prev : real));
+  };
 
   const updateCurrentSlideIndex = (
     e: NativeSyntheticEvent<NativeScrollEvent>
   ) => {
     const contentOffsetX = e.nativeEvent.contentOffset.x;
-    const currentIndex = Math.round(contentOffsetX / width);
-    setCurrentSlideIndex(currentIndex);
+    const loopIndex = Math.round(contentOffsetX / width);
+    setCurrentSlideIndex(getRealIndex(loopIndex));
+
+    if (loopIndex === 0) {
+      // 맨 앞 클론(실제 마지막) → 실제 마지막 슬라이드로 점프
+      flatListRef.current?.scrollToOffset({
+        offset: width * slides.length,
+        animated: false,
+      });
+    } else if (loopIndex === loopSlides.length - 1) {
+      // 맨 뒤 클론(실제 첫번째) → 실제 첫 슬라이드로 점프
+      flatListRef.current?.scrollToOffset({
+        offset: width,
+        animated: false,
+      });
+    }
   };
 
   return (
@@ -228,22 +269,33 @@ const LoginScreen = () => {
         <View style={styles.contentContainer}>
           <View style={styles.carouselContainer}>
             <FlatList
-              data={slides}
-              contentContainerStyle={{ flexGrow: 1 }}
+              ref={flatListRef}
+              data={loopSlides}
+              contentContainerStyle={styles.carouselContent}
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
+              initialScrollIndex={1}
+              getItemLayout={(_, index) => ({
+                length: width,
+                offset: width * index,
+                index,
+              })}
               renderItem={({ item, index }) => {
                 const { Illust } = item;
                 return (
                   <View style={[styles.slide, { width }]}>
                     <View style={styles.illustContainer}>
-                      <Illust visible={index === currentSlideIndex} />
+                      <Illust
+                        visible={getRealIndex(index) === currentSlideIndex}
+                      />
                     </View>
                     <Text style={styles.sloganText}>{t(item.titleKey)}</Text>
                   </View>
                 );
               }}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
               onMomentumScrollEnd={updateCurrentSlideIndex}
               keyExtractor={(item) => item.id}
             />
@@ -269,10 +321,11 @@ const LoginScreen = () => {
                   style={styles.appleButton}
                   onPress={onAppleButtonPress}
                   disabled={loading}
+                  activeOpacity={0.85}
                 >
                   <Icon
                     name="logo-apple"
-                    size={20}
+                    size={19}
                     color={colors.black}
                     style={styles.buttonIcon}
                   />
@@ -287,13 +340,9 @@ const LoginScreen = () => {
                 style={styles.kakaoButton}
                 onPress={onKakaoButtonPress}
                 disabled={loading}
+                activeOpacity={0.85}
               >
-                <Icon
-                  name="chatbubble"
-                  size={20}
-                  color={colors.black}
-                  style={styles.buttonIcon}
-                />
+                <KakaoIcon size={19} color="#191600" />
                 <Text style={styles.kakaoButtonText}>
                   {t("login.buttons.kakao")}
                 </Text>
@@ -321,7 +370,7 @@ const LoginScreen = () => {
 
       {loading && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={colors.white} />
+          <ActivityIndicator size="large" color={accent.base} />
         </View>
       )}
     </View>
@@ -339,24 +388,27 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     justifyContent: "space-between",
-    paddingVertical: 20,
+    paddingVertical: spacing.xl,
   },
   carouselContainer: {
     flex: 3,
     justifyContent: "center",
     alignItems: "center",
   },
+  carouselContent: {
+    flexGrow: 1,
+  },
   slide: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxxl,
   },
   illustContainer: {
     width: 260,
     height: 260,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   sloganText: {
     color: colors.textPrimary,
@@ -364,79 +416,71 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
     lineHeight: 34,
+    letterSpacing: -0.3,
   },
   indicatorContainer: {
     position: "absolute",
-    bottom: 30,
+    bottom: spacing.xxl,
     flexDirection: "row",
     justifyContent: "center",
-    gap: 8,
+    gap: spacing.sm,
   },
   indicator: {
-    height: 8,
-    width: 8,
-    backgroundColor: colors.white,
-    borderRadius: 4,
-    opacity: 0.2,
+    height: 7,
+    width: 7,
+    backgroundColor: surfaces.hairlineStrong,
+    borderRadius: radius.pill,
   },
   indicatorActive: {
-    width: 24,
-    opacity: 1,
+    width: 22,
+    backgroundColor: accent.base,
   },
   bottomContainer: {
     flex: 1,
     width: "100%",
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.xl,
     justifyContent: "flex-end",
   },
   buttonContainer: {
     width: "100%",
-    gap: 12,
-    marginTop: 20,
+    gap: spacing.md,
+    marginTop: spacing.xl,
   },
   appleButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.white,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
     width: "100%",
+    ...elevation.soft,
   },
   appleButtonText: {
     color: colors.black,
     fontSize: 16,
     fontWeight: "600",
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   kakaoButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#FEE500",
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: spacing.lg,
+    borderRadius: radius.md,
     width: "100%",
+    ...elevation.soft,
   },
   kakaoButtonText: {
-    color: colors.black,
+    color: "#191600",
     fontSize: 16,
     fontWeight: "600",
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   buttonIcon: {
-    marginRight: 4,
-  },
-  emailLoginLink: {
-    paddingVertical: 10,
-    alignItems: "center",
-    marginTop: 0,
-  },
-  emailLoginLinkText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    textDecorationLine: "underline",
+    marginRight: 0,
   },
   loadingOverlay: {
     position: "absolute",
@@ -444,12 +488,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(25, 22, 28, 0.7)",
+    backgroundColor: "rgba(20, 18, 22, 0.72)",
     justifyContent: "center",
     alignItems: "center",
   },
   agreementContainer: {
-    marginTop: 16,
+    marginTop: spacing.lg,
     alignItems: "center",
   },
   agreementText: {
