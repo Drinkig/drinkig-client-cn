@@ -36,13 +36,22 @@ export const surfaces = {
   hairlineStrong: "rgba(255,255,255,0.12)",
 } as const;
 
-// A single refined accent. Softer, less muddy than the legacy flat #8e44ad,
-// used sparingly (primary action, active states, icon chips).
+// Vivid violet accent with explicit emphasis tiers. The old #B98CE6 lavender
+// read washed-out and flat, so everything looked equally (un)important. These
+// tiers let the UI signal hierarchy:
+//   base   → solid fill for the ONE primary action on a screen (high emphasis)
+//   strong → pressed / deepest fill
+//   soft   → tinted surface for secondary affordances (icon chips, quiet cards)
+//   border → hairline outline for secondary emphasis
+//   text   → accent-tinted text & icons on dark surfaces
+//   onAccent → content sitting on a solid `base` fill (white pops on the vivid hue)
 export const accent = {
-  base: "#B98CE6",
-  soft: "rgba(185,140,230,0.14)",
-  text: "#CBABEC",
-  onAccent: "#1A1320",
+  base: "#7C3AED",
+  strong: "#6D28D9",
+  soft: "rgba(124,58,237,0.18)",
+  border: "rgba(124,58,237,0.45)",
+  text: "#B79CFF",
+  onAccent: "#FFFFFF",
 } as const;
 
 // Soft, low-opacity elevation. Replaces the heavy 0.3 / radius-16 shadows that
