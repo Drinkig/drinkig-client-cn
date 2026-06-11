@@ -155,33 +155,39 @@ export default function HomeScreen() {
             <HeroSection onPress={handleHeroPress} />
           </View>
 
-          <RecentReviewsSection />
+          {/* Tier-1 action: writing a tasting note is the core repeat habit, so
+              it gets a full-width emphasized card directly under the hero. */}
+          <TouchableOpacity
+            style={styles.primaryCard}
+            onPress={() => navigation.navigate("TastingNoteWrite" as never)}
+            activeOpacity={0.85}
+          >
+            <View style={styles.primaryIconChip}>
+              <MaterialCommunityIcons
+                name="notebook-edit-outline"
+                size={24}
+                color={accent.onAccent}
+              />
+            </View>
+            <View style={styles.primaryTextWrap}>
+              <Text style={styles.cardTitle}>
+                {t("home.quickMenu.tastingNoteTitle")}
+              </Text>
+              <Text style={styles.cardSub}>
+                {t("home.quickMenu.tastingNoteSub")}
+              </Text>
+            </View>
+            <Icon
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
 
+          {/* Tier-2 actions: still core tools, but lighter compact tiles. */}
           <View style={styles.quickMenuContainer}>
             <TouchableOpacity
-              style={styles.quickCard}
-              onPress={() => navigation.navigate("TastingNoteWrite" as never)}
-              activeOpacity={0.85}
-            >
-              <View style={styles.iconChip}>
-                <MaterialCommunityIcons
-                  name="notebook-edit-outline"
-                  size={22}
-                  color={accent.text}
-                />
-              </View>
-              <View>
-                <Text style={styles.cardTitle}>
-                  {t("home.quickMenu.tastingNoteTitle")}
-                </Text>
-                <Text style={styles.cardSub}>
-                  {t("home.quickMenu.tastingNoteSub")}
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.quickCard}
+              style={styles.compactCard}
               onPress={() => navigation.navigate("MyWine" as never)}
               activeOpacity={0.85}
             >
@@ -192,21 +198,19 @@ export default function HomeScreen() {
                   color={accent.text}
                 />
               </View>
-              <View>
-                <Text style={styles.cardTitle}>
-                  {t("home.quickMenu.myWineTitle")}
+              <Text style={styles.compactTitle} numberOfLines={1}>
+                {t("home.quickMenu.myWineTitle")}
+              </Text>
+              <View style={styles.statRow}>
+                <Text style={styles.statNumber}>{myWines.length}</Text>
+                <Text style={styles.statUnit}>
+                  {t("home.quickMenu.bottlesUnit")}
                 </Text>
-                <View style={styles.statRow}>
-                  <Text style={styles.statNumber}>{myWines.length}</Text>
-                  <Text style={styles.statUnit}>
-                    {t("home.quickMenu.bottlesUnit")}
-                  </Text>
-                </View>
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.quickCard}
+              style={styles.compactCard}
               onPress={() => navigation.navigate("FoodSelection" as never)}
               activeOpacity={0.85}
             >
@@ -217,18 +221,13 @@ export default function HomeScreen() {
                   color={accent.text}
                 />
               </View>
-              <View>
-                <Text style={styles.cardTitle}>
-                  {t("home.quickMenu.foodPairingTitle")}
-                </Text>
-                <Text style={styles.cardSub}>
-                  {t("home.quickMenu.foodPairingSub")}
-                </Text>
-              </View>
+              <Text style={styles.compactTitle} numberOfLines={1}>
+                {t("home.quickMenu.foodPairingTitle")}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.quickCard}
+              style={styles.compactCard}
               onPress={() => navigation.navigate("Camera" as never)}
               activeOpacity={0.85}
             >
@@ -239,16 +238,14 @@ export default function HomeScreen() {
                   color={accent.text}
                 />
               </View>
-              <View>
-                <Text style={styles.cardTitle}>
-                  {t("home.quickMenu.menuScanTitle")}
-                </Text>
-                <Text style={styles.cardSub}>
-                  {t("home.quickMenu.menuScanSub")}
-                </Text>
-              </View>
+              <Text style={styles.compactTitle} numberOfLines={1}>
+                {t("home.quickMenu.menuScanTitle")}
+              </Text>
             </TouchableOpacity>
           </View>
+
+          {/* Tier-3: discovery feed sits below the user's own tools. */}
+          <RecentReviewsSection />
         </ScrollView>
       </SafeAreaView>
 
@@ -395,18 +392,39 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 120,
   },
+  primaryCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.lg,
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+  },
+  primaryIconChip: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: accent.base,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  primaryTextWrap: {
+    flex: 1,
+  },
   quickMenuContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
     marginBottom: spacing.xxl,
   },
-  quickCard: {
-    flexGrow: 1,
-    flexBasis: "40%",
-    height: 132,
-    padding: spacing.lg,
+  compactCard: {
+    flex: 1,
+    height: 116,
+    padding: spacing.md,
     justifyContent: "space-between",
     backgroundColor: surfaces.card,
     borderRadius: radius.lg,
@@ -432,6 +450,12 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 13,
     fontWeight: "500",
+  },
+  compactTitle: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "700",
+    letterSpacing: -0.2,
   },
   statRow: {
     flexDirection: "row",

@@ -453,6 +453,9 @@ export interface HomeRecentReviewDTO {
   review: string;
   rating: number;
   createdAt: string;
+  // 홈 피드는 와인 이미지가 있는 리뷰를 우선 노출한다. 백엔드가 recent 응답에
+  // 와인 대표 이미지를 함께 내려주면 이미지 중심 카드가 채워진다(없으면 숨김).
+  wineImageUrl?: string;
 }
 
 export interface HomeRecentReviewListResponse {

@@ -39,6 +39,7 @@ import ProfileStep from "../components/onboarding/ProfileStep";
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import TransitionStep from "../components/onboarding/TransitionStep";
 import { colors } from "../constants/colors";
+import { radius, accent } from "../constants/theme";
 import { isDevAccessEnabled } from "../utils/devAccess";
 import { generateRandomNickname } from "../utils/nicknameGenerator";
 
@@ -57,6 +58,16 @@ type Step =
   | "WINE_INTEREST"
   | "EXPERT_TRANSITION"
   | "BUDGET";
+
+// 탭 한 번으로 자동 전환되는 단일 선택 단계 — 별도 '다음' 버튼(CTA)을 두지 않는다.
+const AUTO_ADVANCE_STEPS: Step[] = [
+  "NEWBIE_CHECK",
+  "FLAVOR_ACIDITY",
+  "FLAVOR_SWEETNESS",
+  "FLAVOR_TANNIN",
+  "FLAVOR_BODY",
+  "FLAVOR_ALCOHOL",
+];
 
 interface OnboardingData {
   name: string;
@@ -186,6 +197,14 @@ const OnboardingScreen = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const loadingBarAnim = useRef(new Animated.Value(0)).current;
+  // 단일 선택 단계에서 탭 직후 자동으로 다음 단계로 넘어가기 위한 타이머
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     const logScreenName: Record<Step, string> = {
@@ -468,6 +487,11 @@ const OnboardingScreen = () => {
     nextStepValue: Step,
     direction: "next" | "prev"
   ) => {
+    // 수동 이동(다음/뒤로)이 일어나면 예약된 자동 전환은 취소해 중복 전환을 막는다.
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: direction === "next" ? -SCREEN_WIDTH : SCREEN_WIDTH,
@@ -496,6 +520,18 @@ const OnboardingScreen = () => {
         }),
       ]).start();
     });
+  };
+
+  // 단일 선택 단계: 값을 고르면 짧은 지연 후 자동으로 다음 단계로 슬라이드한다.
+  // (다중 선택/텍스트/최종 단계는 기존 '다음' 버튼을 그대로 사용)
+  const AUTO_ADVANCE_DELAY = 260;
+
+  const scheduleAutoAdvance = (nextStepValue: Step) => {
+    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+    autoAdvanceTimer.current = setTimeout(() => {
+      autoAdvanceTimer.current = null;
+      animateTransition(nextStepValue, "next");
+    }, AUTO_ADVANCE_DELAY);
   };
 
   const nextStep = () => {
@@ -670,7 +706,12 @@ const OnboardingScreen = () => {
         return (
           <NewbieCheckStep
             isNewbie={formData.isNewbie}
-            onSelect={(val: boolean) => updateData("isNewbie", val)}
+            onSelect={(val: boolean) => {
+              updateData("isNewbie", val);
+              scheduleAutoAdvance(
+                val ? "NEWBIE_TRANSITION" : "EXPERT_TRANSITION"
+              );
+            }}
             name={formData.name}
           />
         );
@@ -700,7 +741,10 @@ const OnboardingScreen = () => {
           <NewbieFlavorProfileStep
             attribute="acidity"
             value={formData.flavorProfile.acidity}
-            onChange={(val) => updateFlavorProfile("acidity", val)}
+            onChange={(val) => {
+              updateFlavorProfile("acidity", val);
+              if (val != null) scheduleAutoAdvance("FLAVOR_SWEETNESS");
+            }}
           />
         );
       case "FLAVOR_SWEETNESS":
@@ -708,7 +752,10 @@ const OnboardingScreen = () => {
           <NewbieFlavorProfileStep
             attribute="sweetness"
             value={formData.flavorProfile.sweetness}
-            onChange={(val) => updateFlavorProfile("sweetness", val)}
+            onChange={(val) => {
+              updateFlavorProfile("sweetness", val);
+              if (val != null) scheduleAutoAdvance("FLAVOR_TANNIN");
+            }}
           />
         );
       case "FLAVOR_TANNIN":
@@ -716,7 +763,10 @@ const OnboardingScreen = () => {
           <NewbieFlavorProfileStep
             attribute="tannin"
             value={formData.flavorProfile.tannin}
-            onChange={(val) => updateFlavorProfile("tannin", val)}
+            onChange={(val) => {
+              updateFlavorProfile("tannin", val);
+              if (val != null) scheduleAutoAdvance("FLAVOR_BODY");
+            }}
           />
         );
       case "FLAVOR_BODY":
@@ -724,7 +774,10 @@ const OnboardingScreen = () => {
           <NewbieFlavorProfileStep
             attribute="body"
             value={formData.flavorProfile.body}
-            onChange={(val) => updateFlavorProfile("body", val)}
+            onChange={(val) => {
+              updateFlavorProfile("body", val);
+              if (val != null) scheduleAutoAdvance("FLAVOR_ALCOHOL");
+            }}
           />
         );
       case "FLAVOR_ALCOHOL":
@@ -732,7 +785,10 @@ const OnboardingScreen = () => {
           <NewbieFlavorProfileStep
             attribute="alcohol"
             value={formData.flavorProfile.alcohol}
-            onChange={(val) => updateFlavorProfile("alcohol", val)}
+            onChange={(val) => {
+              updateFlavorProfile("alcohol", val);
+              if (val != null) scheduleAutoAdvance("WINE_INTEREST");
+            }}
           />
         );
       case "WINE_INTEREST":
@@ -813,22 +869,24 @@ const OnboardingScreen = () => {
             {renderContent()}
           </Animated.View>
 
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.nextButton,
-                (loading || !isStepValid()) && styles.disabledButton,
-              ]}
-              onPress={nextStep}
-              disabled={loading || !isStepValid()}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.white} />
-              ) : (
-                <Text style={styles.nextButtonText}>{getButtonText()}</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+          {!AUTO_ADVANCE_STEPS.includes(step) && (
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[
+                  styles.nextButton,
+                  (loading || !isStepValid()) && styles.disabledButton,
+                ]}
+                onPress={nextStep}
+                disabled={loading || !isStepValid()}
+              >
+                {loading ? (
+                  <ActivityIndicator color={colors.white} />
+                ) : (
+                  <Text style={styles.nextButtonText}>{getButtonText()}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </TouchableWithoutFeedback>
 
@@ -934,21 +992,19 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 20,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   nextButton: {
     width: "100%",
     height: 56,
-    backgroundColor: colors.primary,
-    borderRadius: 28,
+    backgroundColor: accent.base,
+    borderRadius: radius.xl,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 14,
-    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 2,
   },
   disabledButton: {
     opacity: 0.3,
@@ -956,7 +1012,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   nextButtonText: {
-    color: colors.white,
+    color: accent.onAccent,
     fontSize: 18,
     fontWeight: "bold",
   },
