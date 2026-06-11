@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { colors } from '../../constants/colors';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { colors } from "../../constants/colors";
+import { surfaces, accent, radius } from "../../constants/theme";
+import { useTranslation } from "react-i18next";
 
 interface PriceStatsProps {
   prices: { price: number }[];
@@ -10,22 +11,26 @@ interface PriceStatsProps {
 export default function PriceStats({ prices }: PriceStatsProps) {
   const { t } = useTranslation();
 
-  if (!prices || prices.length === 0) return (
-    <View style={styles.emptyState}>
-      <Text style={styles.emptyStateText}>{t('wineDetail.price.empty')}</Text>
-    </View>
-  );
+  if (!prices || prices.length === 0)
+    return (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyStateText}>{t("wineDetail.price.empty")}</Text>
+      </View>
+    );
 
-  const priceValues = prices.map(p => p.price);
-  const avgPrice = Math.round(priceValues.reduce((a, b) => a + b, 0) / priceValues.length);
+  const priceValues = prices.map((p) => p.price);
+  const avgPrice = Math.round(
+    priceValues.reduce((a, b) => a + b, 0) / priceValues.length
+  );
   const minPrice = Math.min(...priceValues);
   const maxPrice = Math.max(...priceValues);
 
   return (
     <View style={styles.priceStatsContainer}>
-
       <View style={styles.avgPriceContainer}>
-        <Text style={styles.avgPriceLabel}>{t('wineDetail.price.avgPrice')}</Text>
+        <Text style={styles.avgPriceLabel}>
+          {t("wineDetail.price.avgPrice")}
+        </Text>
         <Text style={styles.avgPriceValue}>₩{avgPrice.toLocaleString()}</Text>
       </View>
 
@@ -33,11 +38,11 @@ export default function PriceStats({ prices }: PriceStatsProps) {
 
       <View style={styles.rangeContainer}>
         <View style={styles.rangeItem}>
-          <Text style={styles.rangeLabel}>{t('wineDetail.price.lowest')}</Text>
+          <Text style={styles.rangeLabel}>{t("wineDetail.price.lowest")}</Text>
           <Text style={styles.rangeValue}>₩{minPrice.toLocaleString()}</Text>
         </View>
         <View style={styles.rangeItem}>
-          <Text style={styles.rangeLabel}>{t('wineDetail.price.highest')}</Text>
+          <Text style={styles.rangeLabel}>{t("wineDetail.price.highest")}</Text>
           <Text style={styles.rangeValue}>₩{maxPrice.toLocaleString()}</Text>
         </View>
       </View>
@@ -48,20 +53,22 @@ export default function PriceStats({ prices }: PriceStatsProps) {
 const styles = StyleSheet.create({
   emptyState: {
     padding: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyStateText: {
-    color: '#666',
+    color: colors.textTertiary,
     fontSize: 16,
   },
   priceStatsContainer: {
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
     padding: 20,
     marginBottom: 12,
   },
   avgPriceContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
   avgPriceLabel: {
@@ -70,21 +77,21 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   avgPriceValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.primary,
+    fontSize: 26,
+    fontWeight: "bold",
+    color: accent.text,
   },
   divider: {
     height: 1,
-    backgroundColor: '#444',
+    backgroundColor: surfaces.hairline,
     marginBottom: 16,
   },
   rangeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   rangeItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   rangeLabel: {
     fontSize: 12,
@@ -93,8 +100,7 @@ const styles = StyleSheet.create({
   },
   rangeValue: {
     fontSize: 16,
-    color: '#ddd',
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontWeight: "600",
   },
 });
-

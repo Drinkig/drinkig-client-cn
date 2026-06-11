@@ -239,6 +239,8 @@
             "empty": "아직 작성된 리뷰가 없습니다.",
             "allVintage": "전체 리뷰",
             "vintageReview": "{{vintage}} 빈티지 리뷰",
+            "more": "더보기",
+            "collapse": "접기",
             "sort": {
                 "latest": "최신순",
                 "rating_high": "별점높은순",

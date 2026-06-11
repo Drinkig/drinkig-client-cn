@@ -239,6 +239,8 @@
             "empty": "No reviews have been written yet.",
             "allVintage": "All Reviews",
             "vintageReview": "{{vintage}} Vintage Info",
+            "more": "See more",
+            "collapse": "See less",
             "sort": {
                 "latest": "Recent",
                 "rating_high": "Highest Rated",

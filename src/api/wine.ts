@@ -303,6 +303,13 @@ export interface ReviewDTO {
   createdAt: string;
   vintageYear?: number;
   tasteDate?: string;
+  // 작성자 프로필 이미지. 백엔드는 member 객체 안에 imageUrl로 내려준다.
+  // (혹시 평탄화되어 오는 경우도 대비해 최상위 imageUrl도 함께 본다.)
+  imageUrl?: string;
+  member?: {
+    name?: string;
+    imageUrl?: string;
+  };
 }
 
 interface ReviewParams {

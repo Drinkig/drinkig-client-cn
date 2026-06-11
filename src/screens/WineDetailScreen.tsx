@@ -13,7 +13,9 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "@react-native-community/blur";
+import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useNavigation,
@@ -52,6 +54,7 @@ import {
   COMPAT_QUOTA_EXCEEDED_CODE,
 } from "../api/subscription";
 import { colors } from "../constants/colors";
+import { accent, surfaces, radius } from "../constants/theme";
 
 type WineDetailRouteProp = RouteProp<RootStackParamList, "WineDetail">;
 
@@ -69,6 +72,8 @@ export default function WineDetailScreen() {
   const { flavorProfile } = useUser();
   const { checkFeature, isPremium } = useSubscription();
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const headerHeight = insets.top + 52;
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,6 +91,42 @@ export default function WineDetailScreen() {
     null
   );
   const [isVintageModalVisible, setVintageModalVisible] = useState(false);
+
+  // Animated segmented tab control + content transition.
+  const TAB_KEYS = useMemo(
+    () =>
+      isMyWineItem
+        ? ["my_record", "info", "review", "price"]
+        : ["info", "review", "price"],
+    [isMyWineItem]
+  );
+  const TAB_LABELS: Record<string, string> = {
+    my_record: "myRecord",
+    info: "info",
+    review: "review",
+    price: "price",
+  };
+  const [segWidth, setSegWidth] = useState(0);
+  const segItemWidth = segWidth > 0 ? (segWidth - 8) / TAB_KEYS.length : 0;
+  const activeTabIndex = Math.max(0, TAB_KEYS.indexOf(activeTab));
+  const segIndicator = React.useRef(new Animated.Value(0)).current;
+  const tabContentAnim = React.useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.spring(segIndicator, {
+      toValue: activeTabIndex,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 8,
+    }).start();
+    tabContentAnim.setValue(0);
+    Animated.timing(tabContentAnim, {
+      toValue: 1,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTabIndex]);
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const fabAnimation = React.useRef(new Animated.Value(0)).current;
@@ -605,40 +646,14 @@ export default function WineDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isMyWineItem
-            ? t("wineDetail.myWineHeader")
-            : t("wineDetail.infoHeader")}
-        </Text>
-
-        {!isMyWineItem ? (
-          <TouchableOpacity
-            style={styles.wishlistButton}
-            onPress={handleToggleWishlist}
-          >
-            <Ionicons
-              name={isLiked ? "heart" : "heart-outline"}
-              size={24}
-              color={isLiked ? colors.error : colors.white}
-            />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.placeholder} />
-        )}
-      </View>
-
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: headerHeight + 8 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.wineHeaderSection}>
@@ -694,12 +709,13 @@ export default function WineDetailScreen() {
               style={styles.compatibilityBanner}
               onPress={handleCompatBannerPress}
             >
-              <MaterialCommunityIcons
-                name={compatUnlocked ? "heart-pulse" : "lock-outline"}
-                size={20}
-                color={colors.primary}
-                style={{ marginRight: 10 }}
-              />
+              <View style={styles.compatIconChip}>
+                <MaterialCommunityIcons
+                  name={compatUnlocked ? "heart-pulse" : "lock-outline"}
+                  size={20}
+                  color={accent.text}
+                />
+              </View>
               <View style={styles.compatibilityBannerTextContainer}>
                 <Text style={styles.compatibilityBannerTitle}>
                   {compatUnlocked
@@ -885,86 +901,115 @@ export default function WineDetailScreen() {
           </View>
         )}
 
-        <View style={styles.divider} />
-
-        <View style={styles.tabHeaderContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tabHeaderContent}
-          >
-            {isMyWineItem && (
-              <TouchableOpacity
-                style={[
-                  styles.tabButton,
-                  activeTab === "my_record" && styles.activeTabButton,
-                ]}
-                onPress={() => setActiveTab("my_record")}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    activeTab === "my_record" && styles.activeTabText,
-                  ]}
-                >
-                  {t("wineDetail.tabs.myRecord")}
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
+        <View
+          style={styles.segmentWrap}
+          onLayout={(e) => setSegWidth(e.nativeEvent.layout.width)}
+        >
+          {segItemWidth > 0 && (
+            <Animated.View
               style={[
-                styles.tabButton,
-                activeTab === "info" && styles.activeTabButton,
+                styles.segIndicator,
+                {
+                  width: segItemWidth,
+                  transform: [
+                    {
+                      translateX: segIndicator.interpolate({
+                        inputRange: TAB_KEYS.map((_, i) => i),
+                        outputRange: TAB_KEYS.map((_, i) => i * segItemWidth),
+                      }),
+                    },
+                  ],
+                },
               ]}
-              onPress={() => setActiveTab("info")}
+            />
+          )}
+          {TAB_KEYS.map((key) => (
+            <TouchableOpacity
+              key={key}
+              style={styles.segBtn}
+              activeOpacity={0.8}
+              onPress={() => setActiveTab(key)}
             >
               <Text
                 style={[
-                  styles.tabText,
-                  activeTab === "info" && styles.activeTabText,
+                  styles.segText,
+                  activeTab === key && styles.segTextActive,
                 ]}
               >
-                {t("wineDetail.tabs.info")}
+                {t(`wineDetail.tabs.${TAB_LABELS[key]}`)}
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "review" && styles.activeTabButton,
-              ]}
-              onPress={() => setActiveTab("review")}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "review" && styles.activeTabText,
-                ]}
-              >
-                {t("wineDetail.tabs.review")}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === "price" && styles.activeTabButton,
-              ]}
-              onPress={() => setActiveTab("price")}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === "price" && styles.activeTabText,
-                ]}
-              >
-                {t("wineDetail.tabs.price")}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+          ))}
         </View>
 
-        <View style={styles.tabBody}>{renderTabContent()}</View>
+        <Animated.View
+          style={[
+            styles.tabBody,
+            {
+              opacity: tabContentAnim,
+              transform: [
+                {
+                  translateY: tabContentAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [8, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          {renderTabContent()}
+        </Animated.View>
       </ScrollView>
+
+      {/* Bottom fade so content dissolves into the background as it scrolls off. */}
+      <LinearGradient
+        colors={["transparent", colors.background]}
+        style={styles.bottomFade}
+        pointerEvents="none"
+      />
+
+      {/* Translucent frosted header — content scrolls underneath it. */}
+      <View
+        style={[
+          styles.header,
+          { height: headerHeight, paddingTop: insets.top },
+        ]}
+      >
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="dark"
+          blurAmount={18}
+          reducedTransparencyFallbackColor={surfaces.card}
+        />
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>
+            {isMyWineItem
+              ? t("wineDetail.myWineHeader")
+              : t("wineDetail.infoHeader")}
+          </Text>
+          {!isMyWineItem ? (
+            <TouchableOpacity
+              style={styles.wishlistButton}
+              onPress={handleToggleWishlist}
+            >
+              <Ionicons
+                name={isLiked ? "heart" : "heart-outline"}
+                size={22}
+                color={isLiked ? colors.error : colors.white}
+              />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.placeholder} />
+          )}
+        </View>
+      </View>
 
       {isMyWineItem ? (
         <View style={styles.bottomButtonContainer}>
@@ -1067,7 +1112,7 @@ export default function WineDetailScreen() {
               <View
                 style={[
                   styles.fabMainGradient,
-                  { backgroundColor: isFabOpen ? "#555" : colors.border },
+                  { backgroundColor: isFabOpen ? surfaces.card : accent.base },
                 ]}
               >
                 <Animated.View style={{ transform: [{ rotate: fabRotation }] }}>
@@ -1090,7 +1135,7 @@ export default function WineDetailScreen() {
         selectedVintage={selectedVintage}
         onSelect={setSelectedVintage}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -1100,28 +1145,58 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    overflow: "hidden",
+    borderBottomWidth: 1,
+    borderBottomColor: surfaces.hairline,
+  },
+  headerRow: {
+    flex: 1,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.background,
+  },
+  bottomFade: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 96,
+    zIndex: 5,
   },
   backButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: surfaces.raised,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
+    fontSize: 17,
+    fontWeight: "700",
     color: colors.white,
+    letterSpacing: -0.2,
   },
   wishlistButton: {
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: surfaces.raised,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    justifyContent: "center",
+    alignItems: "center",
   },
   placeholder: {
-    width: 32,
+    width: 40,
   },
   content: {
     paddingBottom: 100,
@@ -1135,8 +1210,8 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: 110,
     height: 140,
-    borderRadius: 10,
-    backgroundColor: "#222",
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.card,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
@@ -1182,32 +1257,40 @@ const styles = StyleSheet.create({
     backgroundColor: "#111",
   },
 
-  tabHeaderContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.background,
+  segmentWrap: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 4,
+    padding: 4,
+    backgroundColor: surfaces.raised,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
   },
-  tabHeaderContent: {
-    paddingHorizontal: 8,
+  segIndicator: {
+    position: "absolute",
+    top: 4,
+    bottom: 4,
+    left: 4,
+    borderRadius: radius.sm,
+    backgroundColor: accent.base,
   },
-  tabButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+  segBtn: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: radius.sm,
     alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
+    justifyContent: "center",
   },
-  activeTabButton: {
-    borderBottomColor: colors.primary,
-  },
-  tabText: {
-    fontSize: 16,
+  segText: {
+    fontSize: 14,
     color: colors.textSecondary,
     fontWeight: "600",
   },
-  activeTabText: {
-    color: colors.white,
-    fontWeight: "bold",
+  segTextActive: {
+    color: accent.onAccent,
+    fontWeight: "700",
   },
   tabBody: {
     minHeight: 300,
@@ -1224,30 +1307,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
   },
   compatibilityBanner: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 12,
     marginHorizontal: 20,
     marginBottom: 0,
-    backgroundColor: colors.surface1,
+    backgroundColor: accent.soft,
     borderWidth: 1,
-    borderColor: colors.primary,
-    borderRadius: 12,
+    borderColor: accent.border,
+    borderRadius: radius.md,
     paddingVertical: 14,
     paddingHorizontal: 16,
+  },
+  compatIconChip: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.card,
+    justifyContent: "center",
+    alignItems: "center",
   },
   compatibilityBannerTextContainer: {
     flex: 1,
   },
   compatibilityBannerTitle: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
   },
   compatibilityBannerSubtitle: {
     color: colors.textSecondary,

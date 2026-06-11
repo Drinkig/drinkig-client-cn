@@ -1,50 +1,64 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import PriceStats from '../PriceStats';
-import { getPriceHistory, PriceHistoryDTO } from '../../../api/wine';
-import { sendReportEmail } from '../../../utils/reportUtils';
-import { useGlobalUI } from '../../../context/GlobalUIContext';
-import { colors } from '../../../constants/colors';
-import { useTranslation } from 'react-i18next';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import PriceStats from "../PriceStats";
+import { getPriceHistory, PriceHistoryDTO } from "../../../api/wine";
+import { sendReportEmail } from "../../../utils/reportUtils";
+import { useGlobalUI } from "../../../context/GlobalUIContext";
+import { colors } from "../../../constants/colors";
+import { surfaces, accent } from "../../../constants/theme";
+import { useTranslation } from "react-i18next";
 
 interface PriceTabProps {
   wineId: number;
   selectedVintageYear?: string;
 }
 
-export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps) {
+export default function PriceTab({
+  wineId,
+  selectedVintageYear,
+}: PriceTabProps) {
   const { t } = useTranslation();
   const { showToast } = useGlobalUI();
   const [history, setHistory] = useState<PriceHistoryDTO[]>([]);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
 
-        const vintageYear = selectedVintageYear && !isNaN(Number(selectedVintageYear))
-          ? Number(selectedVintageYear)
-          : undefined;
+        const vintageYear =
+          selectedVintageYear && !isNaN(Number(selectedVintageYear))
+            ? Number(selectedVintageYear)
+            : undefined;
 
         const response = await getPriceHistory(wineId, vintageYear);
         if (response.isSuccess) {
-          const uniqueHistory = response.result.filter((item, index, self) =>
-            index === self.findIndex((t) => (
-              t.vintage === item.vintage &&
-              t.purchaseDate === item.purchaseDate &&
-              t.price === item.price &&
-              t.shopName === item.shopName &&
-              t.purchaseType === item.purchaseType
-            ))
+          const uniqueHistory = response.result.filter(
+            (item, index, self) =>
+              index ===
+              self.findIndex(
+                (t) =>
+                  t.vintage === item.vintage &&
+                  t.purchaseDate === item.purchaseDate &&
+                  t.price === item.price &&
+                  t.shopName === item.shopName &&
+                  t.purchaseType === item.purchaseType
+              )
           );
           setHistory(uniqueHistory);
         }
       } catch (error) {
-        console.error('Failed to fetch price history:', error);
+        console.error("Failed to fetch price history:", error);
       } finally {
         setLoading(false);
       }
@@ -64,35 +78,36 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
   if (history.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyStateText}>{t('wineDetail.price.empty')}</Text>
+        <Text style={styles.emptyStateText}>{t("wineDetail.price.empty")}</Text>
       </View>
     );
   }
 
-
-  const statsData = history.map(h => ({
+  const statsData = history.map((h) => ({
     price: h.price,
     date: h.purchaseDate,
-    shop: h.shopName
+    shop: h.shopName,
   }));
 
   const renderPriceItem = (item: PriceHistoryDTO, index: number) => (
     <View key={index} style={styles.priceItem}>
       <View style={styles.colVintage}>
-        <Text style={styles.itemText}>{item.vintage || 'NV'}</Text>
+        <Text style={styles.itemText}>{item.vintage || "NV"}</Text>
       </View>
       <View style={styles.colDate}>
         <Text style={styles.itemText}>{item.purchaseDate}</Text>
       </View>
       <View style={styles.colShop}>
         <View style={styles.shopContainer}>
-          {item.purchaseType === 'DIRECT' && (
+          {item.purchaseType === "DIRECT" && (
             <View style={styles.directBadge}>
-              <Text style={styles.directBadgeText}>{t('wineDetail.price.directBadge')}</Text>
+              <Text style={styles.directBadgeText}>
+                {t("wineDetail.price.directBadge")}
+              </Text>
             </View>
           )}
           <Text style={styles.itemText} numberOfLines={1} ellipsizeMode="tail">
-            {item.shopName || '-'}
+            {item.shopName || "-"}
           </Text>
         </View>
       </View>
@@ -100,21 +115,31 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
         <Text style={styles.priceText}>₩{item.price.toLocaleString()}</Text>
         <TouchableOpacity
           style={styles.reportBtn}
-          onPress={() => sendReportEmail('PRICE', {
-            vintage: item.vintage ? String(item.vintage) : 'NV',
-            shopName: item.shopName,
-            price: item.price,
-            purchaseDate: item.purchaseDate
-          }, (reason) => {
-            showToast(
-              reason === 'UNSUPPORTED'
-                ? '메일 앱을 열 수 없습니다.'
-                : '메일 앱을 실행하는 중 문제가 발생했습니다.',
-              { type: 'error' }
-            );
-          })}
+          onPress={() =>
+            sendReportEmail(
+              "PRICE",
+              {
+                vintage: item.vintage ? String(item.vintage) : "NV",
+                shopName: item.shopName,
+                price: item.price,
+                purchaseDate: item.purchaseDate,
+              },
+              (reason) => {
+                showToast(
+                  reason === "UNSUPPORTED"
+                    ? "메일 앱을 열 수 없습니다."
+                    : "메일 앱을 실행하는 중 문제가 발생했습니다.",
+                  { type: "error" }
+                );
+              }
+            )
+          }
         >
-          <MaterialCommunityIcons name="alarm-light-outline" size={16} color="#666" />
+          <MaterialCommunityIcons
+            name="alarm-light-outline"
+            size={16}
+            color={colors.textTertiary}
+          />
         </TouchableOpacity>
       </View>
     </View>
@@ -125,29 +150,48 @@ export default function PriceTab({ wineId, selectedVintageYear }: PriceTabProps)
       <View style={styles.sectionContainer}>
         <View style={styles.vintageInfoContainer}>
           <Text style={styles.subSectionTitle}>
-            {t('wineDetail.price.statsTitle')} ({selectedVintageYear || '전체'})
+            {t("wineDetail.price.statsTitle")} ({selectedVintageYear || "전체"})
           </Text>
           <PriceStats prices={statsData} />
 
           <View style={styles.priceInfoNote}>
-            <Ionicons name="information-circle-outline" size={14} color={colors.textSecondary} style={{ marginRight: 4 }} />
+            <Ionicons
+              name="information-circle-outline"
+              size={14}
+              color={colors.textSecondary}
+              style={{ marginRight: 4 }}
+            />
             <Text style={styles.priceInfoText}>
-              {t('wineDetail.price.infoNote')}
+              {t("wineDetail.price.infoNote")}
             </Text>
           </View>
         </View>
 
         <View style={styles.listContainer}>
-          <Text style={styles.subSectionTitle}>{t('wineDetail.price.listTitle')}</Text>
-
+          <Text style={styles.subSectionTitle}>
+            {t("wineDetail.price.listTitle")}
+          </Text>
 
           <View style={styles.listHeader}>
-            <View style={styles.colVintage}><Text style={styles.headerText}>{t('wineDetail.vintage')}</Text></View>
-            <View style={styles.colDate}><Text style={styles.headerText}>{t('wineDetail.price.headerDate')}</Text></View>
-            <View style={styles.colShop}><Text style={styles.headerText}>{t('wineDetail.price.headerShop')}</Text></View>
-            <View style={styles.colPrice}><Text style={styles.headerText}>{t('wineDetail.price.headerPrice')}</Text></View>
+            <View style={styles.colVintage}>
+              <Text style={styles.headerText}>{t("wineDetail.vintage")}</Text>
+            </View>
+            <View style={styles.colDate}>
+              <Text style={styles.headerText}>
+                {t("wineDetail.price.headerDate")}
+              </Text>
+            </View>
+            <View style={styles.colShop}>
+              <Text style={styles.headerText}>
+                {t("wineDetail.price.headerShop")}
+              </Text>
+            </View>
+            <View style={styles.colPrice}>
+              <Text style={styles.headerText}>
+                {t("wineDetail.price.headerPrice")}
+              </Text>
+            </View>
           </View>
-
 
           {history.map((item, index) => (
             <View key={index}>
@@ -171,29 +215,26 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     padding: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyStateText: {
-    color: '#666',
+    color: colors.textTertiary,
     fontSize: 16,
   },
   vintageInfoContainer: {
     marginTop: 8,
-    backgroundColor: '#222',
-    borderRadius: 12,
-    padding: 16,
     marginBottom: 24,
   },
   subSectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#ddd',
+    fontWeight: "700",
+    color: colors.textPrimary,
     marginBottom: 12,
     marginTop: 8,
   },
   priceInfoNote: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 12,
   },
   priceInfoText: {
@@ -204,43 +245,43 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   listHeader: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#444',
+    borderBottomColor: surfaces.hairline,
     marginBottom: 8,
   },
   headerText: {
     color: colors.textSecondary,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   priceItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   itemText: {
-    color: '#ccc',
+    color: colors.textSecondary,
     fontSize: 14,
   },
   priceText: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "700",
   },
   separator: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.hairline,
   },
 
   colVintage: {
     flex: 1.5,
-    alignItems: 'center',
+    alignItems: "center",
   },
   colDate: {
     flex: 2.5,
-    alignItems: 'center',
+    alignItems: "center",
   },
   colShop: {
     flex: 2.5,
@@ -248,35 +289,34 @@ const styles = StyleSheet.create({
   },
   colPrice: {
     flex: 2,
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
     gap: 8,
   },
   reportBtn: {
     padding: 2,
   },
   shopContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   directBadge: {
-    backgroundColor: '#3498db',
-    paddingHorizontal: 4,
+    backgroundColor: accent.soft,
+    paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     marginRight: 4,
   },
   directBadgeText: {
     fontSize: 10,
-    color: colors.white,
-    fontWeight: 'bold',
+    color: accent.text,
+    fontWeight: "bold",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
 });
-

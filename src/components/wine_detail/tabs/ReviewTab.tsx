@@ -1,23 +1,33 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import ReviewCard from '../ReviewCard';
-import { getWineReviews, ReviewDTO } from '../../../api/wine';
-import { colors } from '../../../constants/colors';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import ReviewCard from "../ReviewCard";
+import { getWineReviews, ReviewDTO } from "../../../api/wine";
+import { colors } from "../../../constants/colors";
+import { surfaces, accent, radius } from "../../../constants/theme";
+import { useTranslation } from "react-i18next";
 
-type SortOption = 'latest' | 'rating_high' | 'rating_low';
+type SortOption = "latest" | "rating_high" | "rating_low";
 
 interface ReviewTabProps {
   wineId: number;
   selectedVintageYear: string | undefined;
 }
 
-export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProps) {
+export default function ReviewTab({
+  wineId,
+  selectedVintageYear,
+}: ReviewTabProps) {
   const { t } = useTranslation();
   const [reviews, setReviews] = useState<ReviewDTO[]>([]);
   const [loading, setLoading] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>('latest');
+  const [sortOption, setSortOption] = useState<SortOption>("latest");
   const [totalElements, setTotalElements] = useState(0);
   const [isSortDropdownOpen, setSortDropdownOpen] = useState(false);
 
@@ -26,13 +36,14 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
       try {
         setLoading(true);
 
-        const vintageYear = selectedVintageYear && !isNaN(Number(selectedVintageYear))
-          ? Number(selectedVintageYear)
-          : undefined;
+        const vintageYear =
+          selectedVintageYear && !isNaN(Number(selectedVintageYear))
+            ? Number(selectedVintageYear)
+            : undefined;
 
         const response = await getWineReviews(wineId, {
           vintageYear: vintageYear,
-          sortType: '최신순',
+          sortType: "최신순",
           page: 0,
           size: 100,
         });
@@ -45,7 +56,7 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
           setTotalElements(0);
         }
       } catch (error) {
-        console.error('Failed to fetch reviews:', error);
+        console.error("Failed to fetch reviews:", error);
         setReviews([]);
       } finally {
         setLoading(false);
@@ -59,22 +70,28 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
     const currentReviews = [...reviews];
     return currentReviews.sort((a, b) => {
       switch (sortOption) {
-        case 'rating_high':
+        case "rating_high":
           return b.rating - a.rating;
-        case 'rating_low':
+        case "rating_low":
           return a.rating - b.rating;
-        case 'latest':
+        case "latest":
         default:
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
       }
     });
   }, [reviews, sortOption]);
 
   const getSortLabel = (option: SortOption) => {
     switch (option) {
-      case 'rating_high': return t('wineDetail.review.sort.rating_high');
-      case 'rating_low': return t('wineDetail.review.sort.rating_low');
-      case 'latest': default: return t('wineDetail.review.sort.latest');
+      case "rating_high":
+        return t("wineDetail.review.sort.rating_high");
+      case "rating_low":
+        return t("wineDetail.review.sort.rating_low");
+      case "latest":
+      default:
+        return t("wineDetail.review.sort.latest");
     }
   };
 
@@ -94,7 +111,9 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
   if (reviews.length === 0) {
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyStateText}>{t('wineDetail.review.empty')}</Text>
+        <Text style={styles.emptyStateText}>
+          {t("wineDetail.review.empty")}
+        </Text>
       </View>
     );
   }
@@ -102,11 +121,17 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
   return (
     <View style={styles.tabContent}>
       <View style={styles.sectionContainer}>
-
         <View style={styles.reviewHeaderContainer}>
           <View style={styles.headerRow}>
             <Text style={styles.sectionTitle}>
-              {selectedVintageYear && selectedVintageYear !== 'ALL' && selectedVintageYear !== 'NV' ? t('wineDetail.review.vintageReview', { vintage: selectedVintageYear }) : t('wineDetail.review.allVintage')} ({totalElements})
+              {selectedVintageYear &&
+              selectedVintageYear !== "ALL" &&
+              selectedVintageYear !== "NV"
+                ? t("wineDetail.review.vintageReview", {
+                    vintage: selectedVintageYear,
+                  })
+                : t("wineDetail.review.allVintage")}{" "}
+              ({totalElements})
             </Text>
 
             <TouchableOpacity
@@ -114,37 +139,48 @@ export default function ReviewTab({ wineId, selectedVintageYear }: ReviewTabProp
               onPress={() => setSortDropdownOpen(!isSortDropdownOpen)}
               activeOpacity={0.8}
             >
-              <Text style={styles.sortDropdownHeaderText}>{getSortLabel(sortOption)}</Text>
+              <Text style={styles.sortDropdownHeaderText}>
+                {getSortLabel(sortOption)}
+              </Text>
               <Ionicons
-                name={isSortDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                name={isSortDropdownOpen ? "chevron-up" : "chevron-down"}
                 size={16}
-                color="#ccc"
+                color={colors.textSecondary}
               />
             </TouchableOpacity>
           </View>
 
           {isSortDropdownOpen && (
             <View style={styles.sortDropdownList}>
-              {(['latest', 'rating_high', 'rating_low'] as SortOption[]).map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.sortDropdownItem,
-                    sortOption === option && styles.sortDropdownItemSelected
-                  ]}
-                  onPress={() => handleSortSelect(option)}
-                >
-                  <Text style={[
-                    styles.sortDropdownItemText,
-                    sortOption === option && styles.sortDropdownItemTextSelected
-                  ]}>
-                    {getSortLabel(option)}
-                  </Text>
-                  {sortOption === option && (
-                    <Ionicons name="checkmark" size={16} color={colors.primary} />
-                  )}
-                </TouchableOpacity>
-              ))}
+              {(["latest", "rating_high", "rating_low"] as SortOption[]).map(
+                (option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={[
+                      styles.sortDropdownItem,
+                      sortOption === option && styles.sortDropdownItemSelected,
+                    ]}
+                    onPress={() => handleSortSelect(option)}
+                  >
+                    <Text
+                      style={[
+                        styles.sortDropdownItemText,
+                        sortOption === option &&
+                          styles.sortDropdownItemTextSelected,
+                      ]}
+                    >
+                      {getSortLabel(option)}
+                    </Text>
+                    {sortOption === option && (
+                      <Ionicons
+                        name="checkmark"
+                        size={16}
+                        color={accent.text}
+                      />
+                    )}
+                  </TouchableOpacity>
+                )
+              )}
             </View>
           )}
         </View>
@@ -170,71 +206,71 @@ const styles = StyleSheet.create({
   reviewHeaderContainer: {
     marginBottom: 16,
     zIndex: 100, // Increased zIndex for floating dropdown
-    position: 'relative',
+    position: "relative",
   },
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 8,
     zIndex: 101,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
   },
 
   sortDropdownHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: surfaces.card,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: surfaces.hairline,
     minWidth: 110,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   sortDropdownHeaderText: {
     color: colors.white,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: "500",
     marginRight: 4,
   },
   sortDropdownList: {
-    position: 'absolute',
+    position: "absolute",
     top: 40,
     right: 0,
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: '#444',
-    overflow: 'hidden',
+    borderColor: surfaces.hairline,
+    overflow: "hidden",
     width: 140,
     zIndex: 1000,
     elevation: 5,
   },
   sortDropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 12,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: surfaces.hairline,
   },
   sortDropdownItemSelected: {
-    backgroundColor: colors.border,
+    backgroundColor: accent.soft,
   },
   sortDropdownItemText: {
-    color: '#aaa',
+    color: colors.textSecondary,
     fontSize: 13,
   },
   sortDropdownItemTextSelected: {
     color: colors.white,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   reviewList: {
@@ -243,16 +279,16 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     padding: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyStateText: {
-    color: '#666',
+    color: colors.textTertiary,
     fontSize: 16,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 40,
   },
 });

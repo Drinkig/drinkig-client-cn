@@ -1,6 +1,6 @@
 export const colors = {
-  primary: "#7C3AED",
-  primaryDark: "#6D28D9",
+  primary: "#9231BF",
+  primaryDark: "#7C2AA2",
   background: "#1A191B", // 거의 #1a1a1a에 가까운 아주 미세한 틴트
   surface1: "#2A292B", // 거의 #2a2a2a에 가까운 아주 미세한 틴트
   surface2: "#343335", // Elevated elements

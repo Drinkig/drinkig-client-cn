@@ -45,12 +45,13 @@ export const surfaces = {
 //   border → hairline outline for secondary emphasis
 //   text   → accent-tinted text & icons on dark surfaces
 //   onAccent → content sitting on a solid `base` fill (white pops on the vivid hue)
+// Brand violet — sampled straight from the app logo (#9231BF).
 export const accent = {
-  base: "#7C3AED",
-  strong: "#6D28D9",
-  soft: "rgba(124,58,237,0.18)",
-  border: "rgba(124,58,237,0.45)",
-  text: "#B79CFF",
+  base: "#9231BF",
+  strong: "#7C2AA2",
+  soft: "rgba(146,49,191,0.18)",
+  border: "rgba(146,49,191,0.45)",
+  text: "#C795E5",
   onAccent: "#FFFFFF",
 } as const;
 
