@@ -23,7 +23,14 @@
             "tastingNoteTitle": "Tasting Notes",
             "tastingNoteSub": "Write",
             "myWineTitle": "My Cellar",
-            "bottlesUnit": "bottles"
+            "bottlesUnit": "bottles",
+            "foodPairingTitle": "Food Pairing",
+            "foodPairingSub": "Wine for your meal",
+            "menuScanTitle": "Scan Menu",
+            "menuScanSub": "Snap to get picks"
+        },
+        "recentReviews": {
+            "title": "Recent Reviews"
         },
         "banner": {
             "noticeTag": "NOTICE",

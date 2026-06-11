@@ -18,13 +18,12 @@ import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types";
 import { HeroSection } from "../components/home/HeroSection";
-import { BannerSection } from "../components/home/BannerSection";
 import { getMyWines, MyWineDTO } from "../api/wine";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "../context/SubscriptionContext";
-import { SubscriptionExpiryBanner } from "../components/home/SubscriptionExpiryBanner";
+import { RecentReviewsSection } from "../components/home/RecentReviewsSection";
 
 const FLIP_DURATION = 550;
 
@@ -37,7 +36,6 @@ export default function HomeScreen() {
   const { width: SCREEN_W, height: SCREEN_H } = useWindowDimensions();
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
-  const [recentWine, setRecentWine] = useState<MyWineDTO | null>(null);
 
   // Flip transition state
   const heroRef = useRef<View>(null);
@@ -59,6 +57,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     refreshSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleHeroPress = () => {
@@ -106,14 +105,8 @@ export default function HomeScreen() {
       const response = await getMyWines();
       if (response.isSuccess && response.result) {
         setMyWines(response.result);
-        if (response.result.length > 0) {
-          setRecentWine(response.result[0]);
-        } else {
-          setRecentWine(null);
-        }
       } else {
         setMyWines([]);
-        setRecentWine(null);
       }
     } catch (error) {
       console.error("Failed to fetch my wines summary:", error);
@@ -162,9 +155,7 @@ export default function HomeScreen() {
             <HeroSection onPress={handleHeroPress} />
           </View>
 
-          <SubscriptionExpiryBanner />
-
-          <BannerSection />
+          <RecentReviewsSection />
 
           <View style={styles.quickMenuContainer}>
             <TouchableOpacity
@@ -211,6 +202,50 @@ export default function HomeScreen() {
                     {t("home.quickMenu.bottlesUnit")}
                   </Text>
                 </View>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate("FoodSelection" as never)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.iconChip}>
+                <MaterialCommunityIcons
+                  name="silverware-fork-knife"
+                  size={22}
+                  color={accent.text}
+                />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>
+                  {t("home.quickMenu.foodPairingTitle")}
+                </Text>
+                <Text style={styles.cardSub}>
+                  {t("home.quickMenu.foodPairingSub")}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.quickCard}
+              onPress={() => navigation.navigate("Camera" as never)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.iconChip}>
+                <MaterialCommunityIcons
+                  name="line-scan"
+                  size={22}
+                  color={accent.text}
+                />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>
+                  {t("home.quickMenu.menuScanTitle")}
+                </Text>
+                <Text style={styles.cardSub}>
+                  {t("home.quickMenu.menuScanSub")}
+                </Text>
               </View>
             </TouchableOpacity>
           </View>
@@ -358,18 +393,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: spacing.xxxl,
+    paddingBottom: 120,
   },
   quickMenuContainer: {
     flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: spacing.xl,
     gap: spacing.md,
     marginBottom: spacing.xxl,
   },
   quickCard: {
-    flex: 1,
-    height: 148,
-    padding: spacing.xl,
+    flexGrow: 1,
+    flexBasis: "40%",
+    height: 132,
+    padding: spacing.lg,
     justifyContent: "space-between",
     backgroundColor: surfaces.card,
     borderRadius: radius.lg,

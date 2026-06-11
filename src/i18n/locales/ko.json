@@ -23,7 +23,14 @@
             "tastingNoteTitle": "테이스팅 노트",
             "tastingNoteSub": "기록하기",
             "myWineTitle": "내 와인 창고",
-            "bottlesUnit": "병"
+            "bottlesUnit": "병",
+            "foodPairingTitle": "푸드 페어링",
+            "foodPairingSub": "음식에 맞는 와인",
+            "menuScanTitle": "메뉴판 스캔",
+            "menuScanSub": "찍어서 추천받기"
+        },
+        "recentReviews": {
+            "title": "최근 리뷰"
         },
         "banner": {
             "noticeTag": "NOTICE",

@@ -443,6 +443,35 @@ export const getWineReviews = async (wineId: number, params: ReviewParams) => {
   return response.data;
 };
 
+// 홈 피드용: 전체 와인을 가로질러 최신 리뷰 N개. 카드에서 와인 상세로 이동할 수
+// 있도록 wineId/wineName을 포함한다. (백엔드: GET /wine/review/recent)
+export interface HomeRecentReviewDTO {
+  wineId: number;
+  wineName: string;
+  wineNameEng?: string;
+  name: string; // 작성자 닉네임
+  review: string;
+  rating: number;
+  createdAt: string;
+}
+
+export interface HomeRecentReviewListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: HomeRecentReviewDTO[];
+}
+
+export const getRecentReviews = async (size: number = 10) => {
+  const response = await client.get<HomeRecentReviewListResponse>(
+    "/wine/review/recent",
+    {
+      params: { size },
+    }
+  );
+  return response.data;
+};
+
 export const registerWine = async (data: WineRegisterRequest) => {
   const response = await client.post<WineRegisterResponse>("/admin/wine", data);
   return response.data;
