@@ -574,17 +574,17 @@ const styles = StyleSheet.create({
   },
   wineCountry: {
     fontSize: 12,
-    color: "#ccc",
+    color: colors.textSecondary,
   },
   wineVarietySmallEng: {
     fontSize: 13,
-    color: "#aaa",
+    color: colors.textSecondary,
     fontWeight: "normal",
     fontStyle: "italic",
   },
   wineRegionEng: {
     fontSize: 11,
-    color: "#666",
+    color: colors.textTertiary,
   },
   rankBadge: {
     width: 32,
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
   },
   heroText: {
     fontSize: 18,
-    color: "#ccc",
+    color: colors.textSecondary,
     lineHeight: 28,
     marginBottom: 8,
   },

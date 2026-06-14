@@ -97,7 +97,7 @@ export default function WishlistScreen() {
       </View>
       {item.vivinoRating > 0 && (
         <View style={styles.ratingContainer}>
-          <Icon name="star" size={14} color="#e74c3c" />
+          <Icon name="star" size={14} color={colors.error} />
           <Text style={styles.ratingText}>{item.vivinoRating.toFixed(1)}</Text>
         </View>
       )}
@@ -106,7 +106,7 @@ export default function WishlistScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* 헤더 */}
       <GlassHeader
@@ -168,7 +168,7 @@ export default function WishlistScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -185,11 +185,11 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   countText: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 14,
   },
   countHighlight: {
-    color: "#fff",
+    color: colors.white,
     fontWeight: "bold",
   },
   itemContainer: {
@@ -197,13 +197,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    borderBottomColor: colors.border,
   },
   imageContainer: {
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: "#2a2a2a",
+    backgroundColor: colors.surface1,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -219,12 +219,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   nameKor: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 16,
     fontWeight: "600",
   },
   nameEng: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 13,
   },
   detailRow: {
@@ -239,12 +239,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 10,
     fontWeight: "bold",
   },
   countryText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 12,
   },
   ratingContainer: {
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 14,
-    color: "#e74c3c",
+    color: colors.error,
     fontWeight: "bold",
   },
   emptyContainer: {
@@ -269,13 +269,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyText: {
-    color: "#fff",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
   },
   emptySubText: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 14,
   },
 });

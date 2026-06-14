@@ -143,7 +143,11 @@ export default function MyWineDetailScreen() {
     }
     return (
       <View style={styles.imagePlaceholder}>
-        <MaterialCommunityIcons name="bottle-wine" size={60} color="#ccc" />
+        <MaterialCommunityIcons
+          name="bottle-wine"
+          size={60}
+          color={colors.textSecondary}
+        />
       </View>
     );
   };
@@ -425,7 +429,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeText: {
-    color: "#ccc",
+    color: colors.textSecondary,
     fontSize: 12,
   },
   grapeText: {
@@ -462,7 +466,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: "#ccc",
+    color: colors.textSecondary,
   },
   value: {
     fontSize: 16,

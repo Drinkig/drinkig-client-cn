@@ -228,7 +228,7 @@ const WineRegisterScreen = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder={t("wineRegister.namePlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={name}
                 onChangeText={setName}
               />
@@ -242,7 +242,7 @@ const WineRegisterScreen = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder={t("wineRegister.nameEngPlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={nameEng}
                 onChangeText={setNameEng}
               />
@@ -289,7 +289,7 @@ const WineRegisterScreen = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder={t("wineRegister.countryPlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={country}
                 onChangeText={setCountry}
               />
@@ -303,7 +303,7 @@ const WineRegisterScreen = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder={t("wineRegister.regionPlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={region}
                 onChangeText={setRegion}
               />
@@ -317,7 +317,7 @@ const WineRegisterScreen = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder={t("wineRegister.varietyPlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={variety}
                 onChangeText={setVariety}
               />
@@ -331,7 +331,7 @@ const WineRegisterScreen = () => {
               <TextInput
                 style={styles.textInput}
                 placeholder={t("wineRegister.vintagePlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={vintage}
                 onChangeText={(text) => setVintage(text.replace(/[^0-9]/g, ""))}
                 keyboardType="numeric"
@@ -350,7 +350,7 @@ const WineRegisterScreen = () => {
                   { textAlignVertical: "top", minHeight: 60 },
                 ]}
                 placeholder={t("wineRegister.memoPlaceholder")}
-                placeholderTextColor="#666"
+                placeholderTextColor={colors.textTertiary}
                 value={memo}
                 onChangeText={setMemo}
                 multiline
@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
     paddingHorizontal: 12,
   },
   textInput: {
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
     backgroundColor: colors.surface1,
   },
   typeChipText: {
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: "#222",
+    borderTopColor: colors.border,
   },
   submitButton: {
     width: "100%",

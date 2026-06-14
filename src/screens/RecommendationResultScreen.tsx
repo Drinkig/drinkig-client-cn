@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: "#aaa",
+    color: colors.textSecondary,
   },
   content: {
     flex: 1,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   },
   styleText: {
     fontSize: 13,
-    color: "#aaa",
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   varietyText: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 13,
-    color: "#ccc",
+    color: colors.textSecondary,
   },
   footer: {
     padding: 24,

@@ -350,7 +350,11 @@ App Version: ${DeviceInfo.getVersion()}
                     : t("subscription.manage")
                   : t("paywall.upgrade")}
               </Text>
-              <Icon name="chevron-forward" size={20} color="#666" />
+              <Icon
+                name="chevron-forward"
+                size={20}
+                color={colors.textTertiary}
+              />
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -358,7 +362,11 @@ App Version: ${DeviceInfo.getVersion()}
             onPress={() => setPromoModalVisible(true)}
           >
             <Text style={styles.itemText}>{t("subscription.enterPromo")}</Text>
-            <Icon name="chevron-forward" size={20} color="#666" />
+            <Icon
+              name="chevron-forward"
+              size={20}
+              color={colors.textTertiary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -380,7 +388,11 @@ App Version: ${DeviceInfo.getVersion()}
                   ? t("setting.language.en")
                   : t("setting.language.system")}
               </Text>
-              <Icon name="chevron-forward" size={20} color="#666" />
+              <Icon
+                name="chevron-forward"
+                size={20}
+                color={colors.textTertiary}
+              />
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -388,14 +400,22 @@ App Version: ${DeviceInfo.getVersion()}
             onPress={() => handleLinkPress("https://web.drinkig.com/terms")}
           >
             <Text style={styles.itemText}>{t("setting.appInfo.terms")}</Text>
-            <Icon name="chevron-forward" size={20} color="#666" />
+            <Icon
+              name="chevron-forward"
+              size={20}
+              color={colors.textTertiary}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.item}
             onPress={() => handleLinkPress("https://web.drinkig.com/privacy")}
           >
             <Text style={styles.itemText}>{t("setting.appInfo.privacy")}</Text>
-            <Icon name="chevron-forward" size={20} color="#666" />
+            <Icon
+              name="chevron-forward"
+              size={20}
+              color={colors.textTertiary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -431,7 +451,11 @@ App Version: ${DeviceInfo.getVersion()}
             <Text style={styles.itemText}>
               {t("setting.management.logout")}
             </Text>
-            <Icon name="log-out-outline" size={20} color="#ccc" />
+            <Icon
+              name="log-out-outline"
+              size={20}
+              color={colors.textSecondary}
+            />
           </TouchableOpacity>
           <TouchableOpacity style={styles.item} onPress={handleDeleteAccount}>
             <Text style={[styles.itemText, styles.deleteText]}>

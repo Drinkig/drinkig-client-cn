@@ -177,7 +177,7 @@ const MyWineScreen = () => {
           <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
         ) : (
           <View style={styles.placeholderImage}>
-            <Icon name="wine" size={24} color="#555" />
+            <Icon name="wine" size={24} color={colors.textTertiary} />
           </View>
         )}
       </View>
@@ -208,7 +208,7 @@ const MyWineScreen = () => {
           <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
         ) : (
           <View style={styles.placeholderImage}>
-            <Icon name="wine" size={28} color="#555" />
+            <Icon name="wine" size={28} color={colors.textTertiary} />
           </View>
         )}
         <View style={styles.cardPeriodBadge}>

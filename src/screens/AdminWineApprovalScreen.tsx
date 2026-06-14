@@ -120,9 +120,9 @@ const AdminWineApprovalScreen = () => {
   const getStatusColor = (status: WineRequestStatus) => {
     switch (status) {
       case "PENDING":
-        return "#f5a623";
+        return colors.warning;
       case "APPROVED":
-        return "#2ecc71";
+        return colors.success;
       case "REJECTED":
         return colors.error;
     }
@@ -193,8 +193,12 @@ const AdminWineApprovalScreen = () => {
             style={[styles.actionButton, styles.approveButton]}
             onPress={() => handleApprove(item.requestId)}
           >
-            <Icon name="checkmark-circle-outline" size={18} color="#2ecc71" />
-            <Text style={[styles.actionText, { color: "#2ecc71" }]}>
+            <Icon
+              name="checkmark-circle-outline"
+              size={18}
+              color={colors.success}
+            />
+            <Text style={[styles.actionText, { color: colors.success }]}>
               {t("adminWineApproval.approve")}
             </Text>
           </TouchableOpacity>
@@ -295,7 +299,7 @@ const AdminWineApprovalScreen = () => {
             <TextInput
               style={styles.modalInput}
               placeholder={t("adminWineApproval.rejectReasonPlaceholder")}
-              placeholderTextColor="#666"
+              placeholderTextColor={colors.textTertiary}
               value={rejectReason}
               onChangeText={setRejectReason}
               multiline
@@ -459,9 +463,9 @@ const styles = StyleSheet.create({
     borderColor: colors.error + "33",
   },
   approveButton: {
-    backgroundColor: "#2ecc7115",
+    backgroundColor: colors.success + "15",
     borderWidth: 1,
-    borderColor: "#2ecc7133",
+    borderColor: colors.success + "33",
   },
   actionText: {
     fontSize: 14,

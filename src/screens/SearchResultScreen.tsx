@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   resultCountryText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 12,
   },
   scoreContainer: {
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 16,
   },
 });

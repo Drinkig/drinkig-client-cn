@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
   rankNumber: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#666",
+    color: colors.textTertiary,
   },
   infoSection: {
     flex: 1,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
   },
   wineRegion: {
     fontSize: 13,
-    color: "#ccc",
+    color: colors.textSecondary,
     fontWeight: "500",
   },
   wineVarietyEng: {
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   },
   wineRegionEng: {
     fontSize: 12,
-    color: "#666",
+    color: colors.textTertiary,
   },
   emptyContainer: {
     padding: 40,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -336,10 +336,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   resetCtaButtonDisabled: {
-    backgroundColor: "#333",
+    backgroundColor: colors.surface2,
   },
   resetCtaTextDisabled: {
-    color: "#888",
+    color: colors.textSecondary,
     fontSize: 14,
   },
 });

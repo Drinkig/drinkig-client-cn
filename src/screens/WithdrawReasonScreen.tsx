@@ -183,7 +183,7 @@ const WithdrawReasonScreen = () => {
                   <TextInput
                     style={styles.otherInput}
                     placeholder="이유를 입력해주세요"
-                    placeholderTextColor="#666"
+                    placeholderTextColor={colors.textTertiary}
                     multiline
                     value={otherReason}
                     onChangeText={setOtherReason}
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: "#666",
+    borderColor: colors.textTertiary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
   },
   reasonText: {
     fontSize: 16,
-    color: "#eee",
+    color: colors.textSecondary,
   },
   otherInput: {
     backgroundColor: colors.surface1,
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   withdrawButtonDisabled: {
-    backgroundColor: "#555",
+    backgroundColor: colors.textTertiary,
   },
   withdrawButtonText: {
     color: colors.white,

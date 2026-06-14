@@ -11,4 +11,6 @@ export const colors = {
   white: "#FFFFFF",
   black: "#000000",
   error: "#e74c3c",
+  success: "#2ecc71", // confirmations / approved status
+  warning: "#f5a623", // pending / caution status
 };

@@ -414,7 +414,7 @@ const WineAddScreen = () => {
         <TextInput
           style={styles.searchInput}
           placeholder={t("wineAdd.step1.placeholder")}
-          placeholderTextColor="#666"
+          placeholderTextColor={colors.textTertiary}
           value={searchQuery}
           onChangeText={handleSearch}
           returnKeyType="search"
@@ -429,7 +429,7 @@ const WineAddScreen = () => {
             }}
             style={styles.clearButton}
           >
-            <Icon name="close-circle" size={18} color="#666" />
+            <Icon name="close-circle" size={18} color={colors.textTertiary} />
           </TouchableOpacity>
         )}
       </View>
@@ -520,7 +520,7 @@ const WineAddScreen = () => {
           <View
             style={[styles.inputWrapper, { backgroundColor: colors.surface1 }]}
           >
-            <Text style={[styles.textInput, { color: "#aaa" }]}>
+            <Text style={[styles.textInput, { color: colors.textSecondary }]}>
               {type || "-"}
             </Text>
           </View>
@@ -532,7 +532,7 @@ const WineAddScreen = () => {
             <TextInput
               style={styles.vintageInput}
               placeholder={t("wineAdd.step2.vintagePlaceholder")}
-              placeholderTextColor="#666"
+              placeholderTextColor={colors.textTertiary}
               keyboardType="numeric"
               value={vintage}
               onChangeText={(text) => {
@@ -550,7 +550,7 @@ const WineAddScreen = () => {
               <Icon
                 name="checkmark-circle"
                 size={20}
-                color="#2ecc71"
+                color={colors.success}
                 style={{ marginRight: 8 }}
               />
             )}
@@ -580,7 +580,7 @@ const WineAddScreen = () => {
             <TextInput
               style={styles.priceInput}
               placeholder="0"
-              placeholderTextColor="#666"
+              placeholderTextColor={colors.textTertiary}
               keyboardType="numeric"
               value={purchasePrice}
               onChangeText={(text) => {
@@ -596,7 +596,7 @@ const WineAddScreen = () => {
               <Icon
                 name="checkmark-circle"
                 size={20}
-                color="#2ecc71"
+                color={colors.success}
                 style={{ marginLeft: 8 }}
               />
             )}
@@ -647,7 +647,7 @@ const WineAddScreen = () => {
                   ? t("wineAdd.step2.shopPlaceholderOff")
                   : t("wineAdd.step2.shopPlaceholderDir")
               }
-              placeholderTextColor="#666"
+              placeholderTextColor={colors.textTertiary}
               value={purchaseShop}
               onChangeText={setPurchaseShop}
             />
@@ -655,7 +655,7 @@ const WineAddScreen = () => {
               <Icon
                 name="checkmark-circle"
                 size={20}
-                color="#2ecc71"
+                color={colors.success}
                 style={{ marginLeft: 8 }}
               />
             )}
@@ -675,7 +675,7 @@ const WineAddScreen = () => {
               <Icon
                 name="checkmark-circle"
                 size={20}
-                color="#2ecc71"
+                color={colors.success}
                 style={{ marginLeft: 8 }}
               />
             )}
@@ -887,7 +887,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   resultCountryText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 12,
   },
   rightRatingContainer: {
@@ -906,7 +906,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 16,
   },
   registerPromptText: {
@@ -947,7 +947,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
     paddingHorizontal: 12,
   },
   textInput: {
@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#444",
+    backgroundColor: colors.surface2,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -992,7 +992,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
     paddingRight: 8,
   },
   vintageInput: {
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
-    backgroundColor: "#444",
+    backgroundColor: colors.surface2,
   },
   nvButtonActive: {
     backgroundColor: colors.primary,
@@ -1024,7 +1024,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
     paddingHorizontal: 12,
   },
   currencySymbol: {
@@ -1050,7 +1050,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
   },
   typeButtonActive: {
     backgroundColor: colors.primary,
@@ -1067,7 +1067,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: "#222",
+    borderTopColor: colors.border,
   },
   nextButton: {
     width: "100%",

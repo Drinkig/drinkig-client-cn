@@ -517,12 +517,12 @@ export default function CameraScreen({ navigation }: Props) {
               <Ionicons
                 name="scan-outline"
                 size={14}
-                color={remainingScans > 0 ? colors.white : "#888"}
+                color={remainingScans > 0 ? colors.white : colors.textSecondary}
               />
               <Text
                 style={[
                   styles.scanCountText,
-                  remainingScans === 0 && { color: "#888" },
+                  remainingScans === 0 && { color: colors.textSecondary },
                 ]}
               >
                 {remainingScans}/{DAILY_SCAN_LIMIT}
@@ -616,7 +616,7 @@ export default function CameraScreen({ navigation }: Props) {
             <Ionicons
               name="images-outline"
               size={26}
-              color={scanDisabled ? "#555" : colors.white}
+              color={scanDisabled ? colors.textTertiary : colors.white}
             />
           </TouchableOpacity>
 
@@ -672,7 +672,7 @@ const FOCUS_INDICATOR_SIZE = 72;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: colors.black,
   },
   mockCamera: {
     backgroundColor: "#1a1a2e",
@@ -938,7 +938,7 @@ const styles = StyleSheet.create({
   },
   shutterButtonDisabled: {
     opacity: 0.4,
-    borderColor: "#555",
+    borderColor: colors.textTertiary,
   },
   shutterInner: {
     width: SHUTTER_INNER_SIZE,
@@ -947,13 +947,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   shutterInnerDisabled: {
-    backgroundColor: "#555",
+    backgroundColor: colors.textTertiary,
   },
   galleryButtonDisabled: {
     opacity: 0.4,
   },
   resetTimerText: {
-    color: "#aaa",
+    color: colors.textSecondary,
     fontSize: 13,
     fontWeight: "500",
     textAlign: "center",

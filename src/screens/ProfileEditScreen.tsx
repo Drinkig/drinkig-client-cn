@@ -237,7 +237,7 @@ const ProfileEditScreen = () => {
               value={nickname}
               onChangeText={setNickname}
               placeholder={t("profileEdit.nickname.placeholder")}
-              placeholderTextColor="#666"
+              placeholderTextColor={colors.textTertiary}
               maxLength={10}
             />
           </View>
@@ -313,7 +313,7 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: "#444",
+    borderColor: colors.border,
     overflow: "hidden",
   },
   profileImage: {
@@ -355,13 +355,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.white,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
   },
   inputError: {
     borderColor: colors.error,
   },
   inputSuccess: {
-    borderColor: "#2ecc71",
+    borderColor: colors.success,
   },
   checkButton: {
     justifyContent: "center",
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   checkButtonDisabled: {
-    borderColor: "#444",
+    borderColor: colors.border,
     opacity: 0.5,
   },
   checkButtonText: {
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 12,
-    color: "#666",
+    color: colors.textTertiary,
   },
   errorText: {
     fontSize: 12,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   successText: {
     fontSize: 12,
-    color: "#2ecc71",
+    color: colors.success,
   },
   saveButton: {
     backgroundColor: colors.primary,
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   saveButtonDisabled: {
     backgroundColor: colors.border,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
   },
   saveButtonText: {
     color: colors.white,
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   saveButtonTextDisabled: {
-    color: "#666",
+    color: colors.textTertiary,
   },
 });
 

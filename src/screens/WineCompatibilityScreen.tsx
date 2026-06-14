@@ -371,13 +371,13 @@ const styles = StyleSheet.create({
   },
   scoreUnitText: {
     fontSize: 18,
-    color: "#ccc",
+    color: colors.textSecondary,
     marginLeft: 4,
     fontWeight: "600",
   },
   bubbleText: {
     fontSize: 14,
-    color: "#eee",
+    color: colors.textSecondary,
     lineHeight: 20,
     minHeight: 60,
   },
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   feedbackText: {
     flex: 1,
     fontSize: 14,
-    color: "#ccc",
+    color: colors.textSecondary,
     textAlign: "right",
   },
   feedbackPositive: {

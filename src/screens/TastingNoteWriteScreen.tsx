@@ -550,7 +550,7 @@ export default function TastingNoteWriteScreen() {
                     />
                   ) : (
                     <View style={styles.wineThumbnailPlaceholder}>
-                      <Icon name="wine" size={30} color="#666" />
+                      <Icon name="wine" size={30} color={colors.textTertiary} />
                     </View>
                   )}
                   <View style={styles.wineTextInfo}>
@@ -583,7 +583,7 @@ export default function TastingNoteWriteScreen() {
                   <TextInput
                     style={styles.searchInput}
                     placeholder={t("tastingNoteWrite.wineSearch.placeholder")}
-                    placeholderTextColor="#666"
+                    placeholderTextColor={colors.textTertiary}
                     value={searchText}
                     onChangeText={setSearchText}
                     returnKeyType="search"
@@ -596,7 +596,11 @@ export default function TastingNoteWriteScreen() {
                       }}
                       style={styles.clearButton}
                     >
-                      <Icon name="close-circle" size={18} color="#666" />
+                      <Icon
+                        name="close-circle"
+                        size={18}
+                        color={colors.textTertiary}
+                      />
                     </TouchableOpacity>
                   )}
                 </View>
@@ -691,7 +695,7 @@ export default function TastingNoteWriteScreen() {
                         placeholder={t(
                           "tastingNoteWrite.basicInfo.vintagePlaceholder"
                         )}
-                        placeholderTextColor="#666"
+                        placeholderTextColor={colors.textTertiary}
                         keyboardType="numeric"
                         value={vintageYear}
                         onChangeText={(text) => {
@@ -772,7 +776,7 @@ export default function TastingNoteWriteScreen() {
                   <TextInput
                     style={styles.input}
                     placeholder={t("tastingNoteWrite.nose.placeholder")}
-                    placeholderTextColor="#666"
+                    placeholderTextColor={colors.textTertiary}
                     value={nose}
                     onChangeText={setNose}
                   />
@@ -826,7 +830,7 @@ export default function TastingNoteWriteScreen() {
                   <TextInput
                     style={styles.input}
                     placeholder={t("tastingNoteWrite.finish.placeholder")}
-                    placeholderTextColor="#666"
+                    placeholderTextColor={colors.textTertiary}
                     value={finish}
                     onChangeText={setFinish}
                   />
@@ -849,7 +853,7 @@ export default function TastingNoteWriteScreen() {
                     placeholder={t(
                       "tastingNoteWrite.conclusion.reviewPlaceholder"
                     )}
-                    placeholderTextColor="#666"
+                    placeholderTextColor={colors.textTertiary}
                     multiline
                     numberOfLines={4}
                     value={review}
@@ -1012,7 +1016,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   resultCountryText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 12,
   },
   typeChip: {
@@ -1030,7 +1034,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 14,
   },
 
@@ -1039,7 +1043,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
   },
   wineInfoRow: {
     flexDirection: "row",
@@ -1093,7 +1097,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    color: "#ccc",
+    color: colors.textSecondary,
     fontSize: 14,
     marginBottom: 8,
   },
@@ -1146,7 +1150,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 4,
-    backgroundColor: "#444",
+    backgroundColor: colors.surface2,
   },
   nvButtonActive: {
     backgroundColor: colors.primary,

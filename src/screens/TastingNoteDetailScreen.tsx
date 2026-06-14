@@ -171,7 +171,7 @@ export default function TastingNoteDetailScreen() {
               />
             ) : (
               <View style={styles.wineImagePlaceholder}>
-                <Ionicons name="wine" size={40} color="#666" />
+                <Ionicons name="wine" size={40} color={colors.textTertiary} />
               </View>
             )}
           </View>
@@ -386,7 +386,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   vintageText: {
-    color: "#aaa",
+    color: colors.textSecondary,
     fontSize: 14,
   },
   metaRow: {
@@ -468,20 +468,20 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#444",
+    borderColor: colors.border,
   },
   noseText: {
-    color: "#ddd",
+    color: colors.textSecondary,
     fontSize: 11,
   },
   emptyText: {
-    color: "#666",
+    color: colors.textTertiary,
     fontSize: 12,
     fontStyle: "italic",
   },
 
   bodyText: {
-    color: "#ccc",
+    color: colors.textSecondary,
     fontSize: 13,
     lineHeight: 20,
   },

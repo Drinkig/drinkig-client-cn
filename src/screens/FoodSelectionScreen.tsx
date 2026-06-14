@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     width: "30%",
-    backgroundColor: "#222",
+    backgroundColor: colors.surface1,
     borderRightWidth: 1,
     borderRightColor: colors.border,
   },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: "#aaa",
+    color: colors.textSecondary,
   },
   categoryHeader: {
     padding: 20,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   foodItemText: {
-    color: "#ddd",
+    color: colors.textSecondary,
     fontSize: 15,
     textAlign: "center",
   },
