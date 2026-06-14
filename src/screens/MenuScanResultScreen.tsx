@@ -19,6 +19,7 @@ import client from "../api/client";
 import { useTranslation } from "react-i18next";
 import { incrementScanCount } from "./CameraScreen";
 import ScanFeedbackSheet from "../components/common/ScanFeedbackSheet";
+import GlassHeader from "../components/common/GlassHeader";
 import { addToWishlist, removeFromWishlist } from "../api/wine";
 
 // --- Types ------------------------------------------------------------------
@@ -356,16 +357,18 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           barStyle="light-content"
           backgroundColor={colors.background}
         />
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t("menuScanResult.header")}</Text>
-          <View style={styles.headerPlaceholder} />
-        </View>
+        <GlassHeader
+          floating={false}
+          title={t("menuScanResult.header")}
+          left={
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="arrow-back" size={22} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
         <View style={styles.stateContainer}>
           <ActivityIndicator
             size="large"
@@ -391,16 +394,18 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           barStyle="light-content"
           backgroundColor={colors.background}
         />
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t("menuScanResult.header")}</Text>
-          <View style={styles.headerPlaceholder} />
-        </View>
+        <GlassHeader
+          floating={false}
+          title={t("menuScanResult.header")}
+          left={
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="arrow-back" size={22} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
         <View style={styles.stateContainer}>
           <Ionicons
             name="alert-circle-outline"
@@ -435,16 +440,18 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t("menuScanResult.header")}</Text>
-          <View style={styles.headerPlaceholder} />
-        </View>
+        <GlassHeader
+          floating={false}
+          title={t("menuScanResult.header")}
+          left={
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="arrow-back" size={22} color={colors.white} />
+            </TouchableOpacity>
+          }
+        />
 
         <FlatList
           data={sorted}
@@ -546,28 +553,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  // ── Header ──────────────────────────────────────────────────────────────
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.white,
-  },
-  headerPlaceholder: {
-    width: 32,
   },
   // ── Loading / Error states ───────────────────────────────────────────────
   stateContainer: {

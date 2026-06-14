@@ -24,6 +24,7 @@ import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
 import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
+import GlassHeader from "../components/common/GlassHeader";
 
 type TastingNoteDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -136,18 +137,23 @@ export default function TastingNoteDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t("tastingNoteDetail.header")}</Text>
-        <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
-          <Ionicons name="trash-outline" size={24} color={colors.error} />
-        </TouchableOpacity>
-      </View>
+      <GlassHeader
+        floating={false}
+        title={t("tastingNoteDetail.header")}
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+        right={
+          <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
+            <Ionicons name="trash-outline" size={24} color={colors.error} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView
         style={styles.container}
@@ -336,23 +342,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "600",
   },
   placeholder: {
     width: 32,

@@ -24,6 +24,7 @@ import {
   rejectWineRequest,
 } from "../api/wine";
 import { useGlobalUI } from "../context/GlobalUIContext";
+import GlassHeader from "../components/common/GlassHeader";
 
 const TABS: WineRequestStatus[] = ["PENDING", "APPROVED", "REJECTED"];
 
@@ -240,16 +241,18 @@ const AdminWineApprovalScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t("adminWineApproval.header")}</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <GlassHeader
+        floating={false}
+        title={t("adminWineApproval.header")}
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       {/* Tabs */}
       <View style={styles.tabRow}>
@@ -340,27 +343,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.white,
-  },
-  backButton: {
-    padding: 8,
-    width: 40,
-  },
-  headerRight: {
-    width: 40,
   },
   tabRow: {
     flexDirection: "row",

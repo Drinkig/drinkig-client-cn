@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
+import GlassHeader from "../components/common/GlassHeader";
 import { logEvent, logScreen } from "utils/analytics";
 import {
   createTastingNote,
@@ -32,9 +33,14 @@ import TasteLevelSelector from "../components/tasting_note/TasteLevelSelector";
 import { TASTE_TIPS } from "../components/tasting_note/constants";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
-import { colors } from '../constants/colors';
+import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
-import { saveDraft, loadDraft, clearDraft, TastingNoteDraft } from "../utils/tastingNoteDraftStorage";
+import {
+  saveDraft,
+  loadDraft,
+  clearDraft,
+  TastingNoteDraft,
+} from "../utils/tastingNoteDraftStorage";
 
 if (
   Platform.OS === "android" &&
@@ -87,7 +93,12 @@ export default function TastingNoteWriteScreen() {
           searchName: searchText,
         });
         if (response.isSuccess) {
-          setSearchResults(rankWineUserDTOByRelevance(response.result.content, searchText.trim()));
+          setSearchResults(
+            rankWineUserDTOByRelevance(
+              response.result.content,
+              searchText.trim()
+            )
+          );
         } else {
           setSearchResults([]);
         }
@@ -142,7 +153,7 @@ export default function TastingNoteWriteScreen() {
   const [vintageYear, setVintageYear] = useState("");
   const [color, setColor] = useState("");
   const [tasteDate, setTasteDate] = useState(
-    new Date().toISOString().split("T")[0],
+    new Date().toISOString().split("T")[0]
   );
 
   const [sweetness, setSweetness] = useState(0);
@@ -179,11 +190,11 @@ export default function TastingNoteWriteScreen() {
       const draft = await loadDraft();
       if (draft) {
         showAlert({
-          title: t('tastingNoteWrite.draft.restoreTitle'),
-          message: t('tastingNoteWrite.draft.restoreMsg'),
+          title: t("tastingNoteWrite.draft.restoreTitle"),
+          message: t("tastingNoteWrite.draft.restoreMsg"),
           singleButton: false,
-          confirmText: t('tastingNoteWrite.draft.restoreConfirm'),
-          cancelText: t('tastingNoteWrite.draft.restoreCancel'),
+          confirmText: t("tastingNoteWrite.draft.restoreConfirm"),
+          cancelText: t("tastingNoteWrite.draft.restoreCancel"),
           onConfirm: () => {
             if (draft.wineId) {
               setSelectedWine({
@@ -220,33 +231,61 @@ export default function TastingNoteWriteScreen() {
   }, []);
 
   // Build current draft data
-  const getCurrentDraft = useCallback((): TastingNoteDraft => ({
-    wineId: selectedWine.wineId,
-    wineName: selectedWine.wineName,
-    wineNameEng: selectedWine.wineNameEng,
-    wineImage: selectedWine.wineImage,
-    wineType: selectedWine.wineType,
-    vintageYear,
-    color,
-    tasteDate,
-    sweetness,
-    acidity,
-    tannin,
-    body,
-    alcohol,
-    nose,
-    finish,
-    rating,
-    review,
-    savedAt: new Date().toISOString(),
-  }), [selectedWine, vintageYear, color, tasteDate, sweetness, acidity, tannin, body, alcohol, nose, finish, rating, review]);
+  const getCurrentDraft = useCallback(
+    (): TastingNoteDraft => ({
+      wineId: selectedWine.wineId,
+      wineName: selectedWine.wineName,
+      wineNameEng: selectedWine.wineNameEng,
+      wineImage: selectedWine.wineImage,
+      wineType: selectedWine.wineType,
+      vintageYear,
+      color,
+      tasteDate,
+      sweetness,
+      acidity,
+      tannin,
+      body,
+      alcohol,
+      nose,
+      finish,
+      rating,
+      review,
+      savedAt: new Date().toISOString(),
+    }),
+    [
+      selectedWine,
+      vintageYear,
+      color,
+      tasteDate,
+      sweetness,
+      acidity,
+      tannin,
+      body,
+      alcohol,
+      nose,
+      finish,
+      rating,
+      review,
+    ]
+  );
 
   // Auto-save draft (debounced 3s)
   useEffect(() => {
     if (!draftLoaded) return;
     // Only auto-save if user has started filling in data
-    const hasData = selectedWine.wineId || vintageYear || color || nose || finish || review ||
-      sweetness > 0 || acidity > 0 || tannin > 0 || body > 0 || alcohol > 0 || rating > 0;
+    const hasData =
+      selectedWine.wineId ||
+      vintageYear ||
+      color ||
+      nose ||
+      finish ||
+      review ||
+      sweetness > 0 ||
+      acidity > 0 ||
+      tannin > 0 ||
+      body > 0 ||
+      alcohol > 0 ||
+      rating > 0;
     if (!hasData) return;
 
     if (autoSaveTimer.current) {
@@ -273,16 +312,27 @@ export default function TastingNoteWriteScreen() {
 
   // Close with confirmation if there's unsaved data
   const handleClose = useCallback(() => {
-    const hasData = selectedWine.wineId || vintageYear || color || nose || finish || review ||
-      sweetness > 0 || acidity > 0 || tannin > 0 || body > 0 || alcohol > 0 || rating > 0;
+    const hasData =
+      selectedWine.wineId ||
+      vintageYear ||
+      color ||
+      nose ||
+      finish ||
+      review ||
+      sweetness > 0 ||
+      acidity > 0 ||
+      tannin > 0 ||
+      body > 0 ||
+      alcohol > 0 ||
+      rating > 0;
 
     if (hasData) {
       showAlert({
-        title: t('tastingNoteWrite.draft.closeTitle'),
-        message: t('tastingNoteWrite.draft.closeMsg'),
+        title: t("tastingNoteWrite.draft.closeTitle"),
+        message: t("tastingNoteWrite.draft.closeMsg"),
         singleButton: false,
-        confirmText: t('tastingNoteWrite.draft.closeSave'),
-        cancelText: t('tastingNoteWrite.draft.closeDiscard'),
+        confirmText: t("tastingNoteWrite.draft.closeSave"),
+        cancelText: t("tastingNoteWrite.draft.closeDiscard"),
         onConfirm: async () => {
           await saveDraft(getCurrentDraft());
           navigation.goBack();
@@ -295,7 +345,24 @@ export default function TastingNoteWriteScreen() {
     } else {
       navigation.goBack();
     }
-  }, [selectedWine, vintageYear, color, nose, finish, review, sweetness, acidity, tannin, body, alcohol, rating, getCurrentDraft, navigation, showAlert, t]);
+  }, [
+    selectedWine,
+    vintageYear,
+    color,
+    nose,
+    finish,
+    review,
+    sweetness,
+    acidity,
+    tannin,
+    body,
+    alcohol,
+    rating,
+    getCurrentDraft,
+    navigation,
+    showAlert,
+    t,
+  ]);
 
   const isFormValid =
     selectedWine.wineId &&
@@ -342,15 +409,15 @@ export default function TastingNoteWriteScreen() {
 
   const handleSubmit = async () => {
     if (!selectedWine.wineId) {
-      showToast(t('tastingNoteWrite.error.noWine'), { type: 'info' });
+      showToast(t("tastingNoteWrite.error.noWine"), { type: "info" });
       return;
     }
     if (!tasteDate) {
-      showToast(t('tastingNoteWrite.error.noDate'), { type: 'info' });
+      showToast(t("tastingNoteWrite.error.noDate"), { type: "info" });
       return;
     }
     if (!color) {
-      showToast(t('tastingNoteWrite.error.noColor'), { type: 'info' });
+      showToast(t("tastingNoteWrite.error.noColor"), { type: "info" });
       return;
     }
     if (
@@ -360,11 +427,11 @@ export default function TastingNoteWriteScreen() {
       body === 0 ||
       alcohol === 0
     ) {
-      showToast(t('tastingNoteWrite.error.noTaste'), { type: 'info' });
+      showToast(t("tastingNoteWrite.error.noTaste"), { type: "info" });
       return;
     }
     if (rating === 0) {
-      showToast(t('tastingNoteWrite.error.noRating'), { type: 'info' });
+      showToast(t("tastingNoteWrite.error.noRating"), { type: "info" });
       return;
     }
 
@@ -384,8 +451,8 @@ export default function TastingNoteWriteScreen() {
           vintageYear === "NV"
             ? 0
             : vintageYear
-              ? parseInt(vintageYear, 10)
-              : undefined,
+            ? parseInt(vintageYear, 10)
+            : undefined,
         color: color,
         tasteDate,
         sweetness: mapLevelToValue(sweetness),
@@ -406,21 +473,23 @@ export default function TastingNoteWriteScreen() {
       if (response.isSuccess) {
         await clearDraft();
         logEvent("tasting_note_save_success");
-        showToast(t('tastingNoteWrite.success.saveMsg'), {
-          type: 'success',
+        showToast(t("tastingNoteWrite.success.saveMsg"), {
+          type: "success",
           onHide: () => navigation.goBack(),
         });
       } else {
-        showToast(response.message || t('tastingNoteWrite.error.saveFail'), { type: 'error' });
+        showToast(response.message || t("tastingNoteWrite.error.saveFail"), {
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Tasting note submit error:", error);
       const isAuthError = (error as any).response?.status === 401;
       showToast(
         isAuthError
-          ? t('tastingNoteWrite.error.authExpired')
-          : t('tastingNoteWrite.error.networkFail'),
-        { type: 'error' }
+          ? t("tastingNoteWrite.error.authExpired")
+          : t("tastingNoteWrite.error.networkFail"),
+        { type: "error" }
       );
     } finally {
       setIsSubmitting(false);
@@ -439,36 +508,40 @@ export default function TastingNoteWriteScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={handleClose}
-          style={styles.headerSide}
-        >
-          <Icon name="close" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('tastingNoteWrite.header')}</Text>
-        <TouchableOpacity
-          onPress={isFormValid ? handleSubmit : handleSaveDraft}
-          disabled={isSubmitting}
-          style={styles.headerSide}
-        >
-          <Text
-            style={[
-              styles.saveButton,
-              !isFormValid && styles.draftSaveButton,
-              isSubmitting && { opacity: 0.4 },
-            ]}
+      <GlassHeader
+        floating={false}
+        title={t("tastingNoteWrite.header")}
+        left={
+          <TouchableOpacity onPress={handleClose} style={styles.headerSide}>
+            <Icon name="close" size={24} color={colors.white} />
+          </TouchableOpacity>
+        }
+        right={
+          <TouchableOpacity
+            onPress={isFormValid ? handleSubmit : handleSaveDraft}
+            disabled={isSubmitting}
+            style={styles.headerSide}
           >
-            {isFormValid ? t('tastingNoteWrite.save') : t('tastingNoteWrite.draft.save')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Text
+              style={[
+                styles.saveButton,
+                !isFormValid && styles.draftSaveButton,
+                isSubmitting && { opacity: 0.4 },
+              ]}
+            >
+              {isFormValid
+                ? t("tastingNoteWrite.save")
+                : t("tastingNoteWrite.draft.save")}
+            </Text>
+          </TouchableOpacity>
+        }
+      />
 
       {draftSavedMessage && (
         <View style={styles.draftSavedToast}>
           <Icon name="checkmark-circle" size={16} color={colors.primary} />
           <Text style={styles.draftSavedToastText}>
-            {t('tastingNoteWrite.draft.savedMsg')}
+            {t("tastingNoteWrite.draft.savedMsg")}
           </Text>
         </View>
       )}
@@ -483,7 +556,9 @@ export default function TastingNoteWriteScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={[styles.section, { zIndex: 100 }]}>
-            <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.wineSelection')}</Text>
+            <Text style={styles.sectionTitle}>
+              {t("tastingNoteWrite.section.wineSelection")}
+            </Text>
 
             {selectedWine.wineId ? (
               <View style={styles.selectedWineContainer}>
@@ -501,7 +576,9 @@ export default function TastingNoteWriteScreen() {
                   )}
                   <View style={styles.wineTextInfo}>
                     <Text style={styles.wineName} numberOfLines={2}>
-                      {i18n.language === 'en' ? (selectedWine.wineNameEng || selectedWine.wineName) : selectedWine.wineName}
+                      {i18n.language === "en"
+                        ? selectedWine.wineNameEng || selectedWine.wineName
+                        : selectedWine.wineName}
                     </Text>
                     <Text style={styles.wineType}>{selectedWine.wineType}</Text>
                   </View>
@@ -510,16 +587,23 @@ export default function TastingNoteWriteScreen() {
                   style={styles.changeButton}
                   onPress={resetSelection}
                 >
-                  <Text style={styles.changeButtonText}>{t('tastingNoteWrite.wineSearch.changeButton')}</Text>
+                  <Text style={styles.changeButtonText}>
+                    {t("tastingNoteWrite.wineSearch.changeButton")}
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.searchSection}>
                 <View style={styles.searchBarContainer}>
-                  <Icon name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+                  <Icon
+                    name="search"
+                    size={20}
+                    color={colors.textSecondary}
+                    style={styles.searchIcon}
+                  />
                   <TextInput
                     style={styles.searchInput}
-                    placeholder={t('tastingNoteWrite.wineSearch.placeholder')}
+                    placeholder={t("tastingNoteWrite.wineSearch.placeholder")}
                     placeholderTextColor="#666"
                     value={searchText}
                     onChangeText={setSearchText}
@@ -557,16 +641,21 @@ export default function TastingNoteWriteScreen() {
                         )}
                       </View>
                       <View style={styles.resultTextContainer}>
-                        {i18n.language === 'en' ? (
+                        {i18n.language === "en" ? (
                           <Text style={styles.resultNameKor} numberOfLines={2}>
                             {item.nameEng || item.name}
                           </Text>
                         ) : (
                           <>
-                            <Text style={styles.resultNameKor} numberOfLines={2}>
+                            <Text
+                              style={styles.resultNameKor}
+                              numberOfLines={2}
+                            >
                               {item.name}
                             </Text>
-                            <Text style={styles.resultNameEng}>{item.nameEng}</Text>
+                            <Text style={styles.resultNameEng}>
+                              {item.nameEng}
+                            </Text>
                           </>
                         )}
                         <View style={styles.resultInfoRow}>
@@ -578,14 +667,18 @@ export default function TastingNoteWriteScreen() {
                           >
                             <Text style={styles.typeChipText}>{item.sort}</Text>
                           </View>
-                          <Text style={styles.resultCountryText}>{item.country}</Text>
+                          <Text style={styles.resultCountryText}>
+                            {item.country}
+                          </Text>
                         </View>
                       </View>
                     </TouchableOpacity>
                   ))
                 ) : searchText.length > 0 ? (
                   <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>{t('tastingNoteWrite.wineSearch.noResult')}</Text>
+                    <Text style={styles.emptyText}>
+                      {t("tastingNoteWrite.wineSearch.noResult")}
+                    </Text>
                   </View>
                 ) : null}
               </View>
@@ -595,24 +688,30 @@ export default function TastingNoteWriteScreen() {
           {selectedWine.wineId && (
             <>
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.basicInfo')}</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("tastingNoteWrite.section.basicInfo")}
+                </Text>
 
                 <View style={styles.row}>
                   <View
                     style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}
                   >
-                    <Text style={styles.label}>{t('tastingNoteWrite.basicInfo.vintage')}</Text>
+                    <Text style={styles.label}>
+                      {t("tastingNoteWrite.basicInfo.vintage")}
+                    </Text>
                     <View
                       style={[
                         styles.vintageInputWrapper,
                         vintageYear.length === 4 &&
-                        vintageYear !== "NV" &&
-                        styles.vintageInputWrapperValid,
+                          vintageYear !== "NV" &&
+                          styles.vintageInputWrapperValid,
                       ]}
                     >
                       <TextInput
                         style={styles.vintageInput}
-                        placeholder={t('tastingNoteWrite.basicInfo.vintagePlaceholder')}
+                        placeholder={t(
+                          "tastingNoteWrite.basicInfo.vintagePlaceholder"
+                        )}
                         placeholderTextColor="#666"
                         keyboardType="numeric"
                         value={vintageYear}
@@ -656,15 +755,22 @@ export default function TastingNoteWriteScreen() {
                   </View>
 
                   <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                    <Text style={styles.label}>{t('tastingNoteWrite.basicInfo.tasteDate')}</Text>
+                    <Text style={styles.label}>
+                      {t("tastingNoteWrite.basicInfo.tasteDate")}
+                    </Text>
                     <TouchableOpacity
                       style={styles.dateButton}
                       onPress={() => setCalendarVisible(true)}
                     >
                       <Text style={styles.dateButtonText}>
-                        {tasteDate || t('tastingNoteWrite.basicInfo.datePlaceholder')}
+                        {tasteDate ||
+                          t("tastingNoteWrite.basicInfo.datePlaceholder")}
                       </Text>
-                      <Icon name="calendar-outline" size={20} color={colors.primary} />
+                      <Icon
+                        name="calendar-outline"
+                        size={20}
+                        color={colors.primary}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -677,14 +783,16 @@ export default function TastingNoteWriteScreen() {
               />
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.nose')}</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("tastingNoteWrite.section.nose")}
+                </Text>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>
-                    {t('tastingNoteWrite.nose.label')}
+                    {t("tastingNoteWrite.nose.label")}
                   </Text>
                   <TextInput
                     style={styles.input}
-                    placeholder={t('tastingNoteWrite.nose.placeholder')}
+                    placeholder={t("tastingNoteWrite.nose.placeholder")}
                     placeholderTextColor="#666"
                     value={nose}
                     onChangeText={setNose}
@@ -693,33 +801,35 @@ export default function TastingNoteWriteScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.palate')}</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("tastingNoteWrite.section.palate")}
+                </Text>
                 <TasteLevelSelector
-                  label={t('tastingNoteWrite.palate.sweetness')}
+                  label={t("tastingNoteWrite.palate.sweetness")}
                   value={sweetness}
                   onChange={setSweetness}
                   onHelpPress={() => showTip("sweetness")}
                 />
                 <TasteLevelSelector
-                  label={t('tastingNoteWrite.palate.acidity')}
+                  label={t("tastingNoteWrite.palate.acidity")}
                   value={acidity}
                   onChange={setAcidity}
                   onHelpPress={() => showTip("acidity")}
                 />
                 <TasteLevelSelector
-                  label={t('tastingNoteWrite.palate.tannin')}
+                  label={t("tastingNoteWrite.palate.tannin")}
                   value={tannin}
                   onChange={setTannin}
                   onHelpPress={() => showTip("tannin")}
                 />
                 <TasteLevelSelector
-                  label={t('tastingNoteWrite.palate.body')}
+                  label={t("tastingNoteWrite.palate.body")}
                   value={body}
                   onChange={setBody}
                   onHelpPress={() => showTip("body")}
                 />
                 <TasteLevelSelector
-                  label={t('tastingNoteWrite.palate.alcohol')}
+                  label={t("tastingNoteWrite.palate.alcohol")}
                   value={alcohol}
                   onChange={setAlcohol}
                   onHelpPress={() => showTip("alcohol")}
@@ -727,14 +837,16 @@ export default function TastingNoteWriteScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.finish')}</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("tastingNoteWrite.section.finish")}
+                </Text>
                 <View style={styles.inputGroup}>
                   <Text style={styles.label}>
-                    {t('tastingNoteWrite.finish.label')}
+                    {t("tastingNoteWrite.finish.label")}
                   </Text>
                   <TextInput
                     style={styles.input}
-                    placeholder={t('tastingNoteWrite.finish.placeholder')}
+                    placeholder={t("tastingNoteWrite.finish.placeholder")}
                     placeholderTextColor="#666"
                     value={finish}
                     onChangeText={setFinish}
@@ -743,15 +855,21 @@ export default function TastingNoteWriteScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('tastingNoteWrite.section.conclusion')}</Text>
+                <Text style={styles.sectionTitle}>
+                  {t("tastingNoteWrite.section.conclusion")}
+                </Text>
 
                 <StarRating rating={rating} onRatingChange={handleRating} />
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>{t('tastingNoteWrite.conclusion.reviewLabel')}</Text>
+                  <Text style={styles.label}>
+                    {t("tastingNoteWrite.conclusion.reviewLabel")}
+                  </Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
-                    placeholder={t('tastingNoteWrite.conclusion.reviewPlaceholder')}
+                    placeholder={t(
+                      "tastingNoteWrite.conclusion.reviewPlaceholder"
+                    )}
                     placeholderTextColor="#666"
                     multiline
                     numberOfLines={4}
@@ -760,7 +878,6 @@ export default function TastingNoteWriteScreen() {
                   />
                 </View>
               </View>
-
             </>
           )}
         </ScrollView>
@@ -779,7 +896,7 @@ export default function TastingNoteWriteScreen() {
         onDateSelect={setTasteDate}
         onClose={() => setCalendarVisible(false)}
       />
-    </SafeAreaView >
+    </SafeAreaView>
   );
 }
 
@@ -788,27 +905,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
   headerSide: {
     width: 60,
     alignItems: "center",
     justifyContent: "center",
     padding: 4,
-  },
-  headerTitle: {
-    flex: 1,
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
   },
   draftSaveButton: {
     color: colors.textSecondary,

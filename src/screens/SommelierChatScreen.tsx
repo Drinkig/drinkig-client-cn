@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -10,41 +10,41 @@ import {
   Easing,
   StatusBar,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
-import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTranslation } from 'react-i18next';
-import { RootStackParamList } from '../types';
-import { colors } from '../constants/colors';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Icon from "react-native-vector-icons/Ionicons";
+import LinearGradient from "react-native-linear-gradient";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
+import { RootStackParamList } from "../types";
+import { colors } from "../constants/colors";
 import {
   getFoodPairingRecommendation,
   FoodRecommendationDTO,
-} from '../api/wine';
-import { useUser } from '../context/UserContext';
-import { useSubscription } from '../context/SubscriptionContext';
-import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
-import AnalyzingRadarChart from '../components/common/AnalyzingRadarChart';
-import { getFoodDetail, SupportedLang } from '../data/foodDetails';
+} from "../api/wine";
+import { useUser } from "../context/UserContext";
+import { useSubscription } from "../context/SubscriptionContext";
+import { FlavorProfile } from "../components/onboarding/FlavorProfileStep";
+import AnalyzingRadarChart from "../components/common/AnalyzingRadarChart";
+import { getFoodDetail, SupportedLang } from "../data/foodDetails";
 
 type Cuisine = { name: string; flag: string; items: string[] };
 
 type Message =
-  | { id: string; role: 'sommelier'; kind: 'text'; text: string }
-  | { id: string; role: 'user'; kind: 'text'; text: string }
+  | { id: string; role: "sommelier"; kind: "text"; text: string }
+  | { id: string; role: "user"; kind: "text"; text: string }
   | {
       id: string;
-      role: 'sommelier';
-      kind: 'wines';
+      role: "sommelier";
+      kind: "wines";
       foodName: string;
       wines: FoodRecommendationDTO[];
       foodFlavor: FlavorProfile | null;
       nickname: string;
     };
 
-type Step = 'top' | 'sub' | 'food' | 'finding' | 'results' | 'error' | 'upsell';
+type Step = "top" | "sub" | "food" | "finding" | "results" | "error" | "upsell";
 
 type SubCategory = {
   label: string;
@@ -53,8 +53,8 @@ type SubCategory = {
 };
 
 type TopCategory =
-  | { kind: 'leaf'; label: string; flag: string; cuisineIndex: number }
-  | { kind: 'group'; label: string; flag: string; subs: SubCategory[] };
+  | { kind: "leaf"; label: string; flag: string; cuisineIndex: number }
+  | { kind: "group"; label: string; flag: string; subs: SubCategory[] };
 
 const TYPING_DELAY = 700;
 
@@ -69,14 +69,14 @@ const typingFor = (text: string, base = 700, perChar = 28, max = 2800) =>
  */
 const computeMatchedProfile = (
   userProfile: FlavorProfile | null,
-  foodProfile: FlavorProfile | null,
+  foodProfile: FlavorProfile | null
 ): FlavorProfile | null => {
   if (!userProfile && !foodProfile) return null;
   if (!userProfile) return foodProfile;
   if (!foodProfile) return userProfile;
   const mid = (a: number | null | undefined, b: number | null | undefined) => {
-    const av = typeof a === 'number' ? a : null;
-    const bv = typeof b === 'number' ? b : null;
+    const av = typeof a === "number" ? a : null;
+    const bv = typeof b === "number" ? b : null;
     if (av === null && bv === null) return null;
     if (av === null) return bv;
     if (bv === null) return av;
@@ -97,15 +97,19 @@ const computeMatchedProfile = (
 // 13=간단안주/스낵, 14=디저트
 const buildTopCategories = (
   cuisines: Cuisine[],
-  t: (key: string) => string,
+  t: (key: string) => string
 ): TopCategory[] => {
   const leaf = (i: number): TopCategory => ({
-    kind: 'leaf',
+    kind: "leaf",
     label: cuisines[i].name,
     flag: cuisines[i].flag,
     cuisineIndex: i,
   });
-  const sub = (i: number, overrideLabel?: string, overrideFlag?: string): SubCategory => ({
+  const sub = (
+    i: number,
+    overrideLabel?: string,
+    overrideFlag?: string
+  ): SubCategory => ({
     label: overrideLabel ?? cuisines[i].name,
     flag: overrideFlag ?? cuisines[i].flag,
     cuisineIndex: i,
@@ -115,25 +119,25 @@ const buildTopCategories = (
     leaf(1), // 중식
     leaf(2), // 일식
     {
-      kind: 'group',
-      label: t('sommelierChat.groups.western'),
-      flag: '🍝',
+      kind: "group",
+      label: t("sommelierChat.groups.western"),
+      flag: "🍝",
       subs: [
         sub(11), // 이탈리아
-        sub(5),  // 프랑스
-        sub(4),  // 스페인
-        sub(3, t('sommelierChat.groups.westernGeneric'), '🍽️'), // 기타 양식
+        sub(5), // 프랑스
+        sub(4), // 스페인
+        sub(3, t("sommelierChat.groups.westernGeneric"), "🍽️"), // 기타 양식
       ],
     },
     {
-      kind: 'group',
-      label: t('sommelierChat.groups.other'),
-      flag: '🌍',
+      kind: "group",
+      label: t("sommelierChat.groups.other"),
+      flag: "🌍",
       subs: [
-        sub(6),  // 베트남
-        sub(7),  // 태국
-        sub(8),  // 인도
-        sub(9),  // 멕시코
+        sub(6), // 베트남
+        sub(7), // 태국
+        sub(8), // 인도
+        sub(9), // 멕시코
         sub(10), // 남미
         sub(12), // 아메리칸 차이니즈
         sub(13), // 간단안주/스낵
@@ -149,30 +153,30 @@ export default function SommelierChatScreen() {
   const { t, i18n } = useTranslation();
   const { user, flavorProfile } = useUser();
   const { checkFeature } = useSubscription();
-  const hasFoodPairing = checkFeature('foodPairing');
-  const nickname = user?.nickname || t('foodPairingResult.defaultNickname');
-  const currentLang: SupportedLang = i18n.language?.startsWith('en')
-    ? 'en'
-    : 'ko';
+  const hasFoodPairing = checkFeature("foodPairing");
+  const nickname = user?.nickname || t("foodPairingResult.defaultNickname");
+  const currentLang: SupportedLang = i18n.language?.startsWith("en")
+    ? "en"
+    : "ko";
 
-  const cuisines = t('foodSelection.cuisines', {
+  const cuisines = t("foodSelection.cuisines", {
     returnObjects: true,
   }) as Cuisine[];
 
   // Korean cuisines used as canonical lookup for API calls (backend expects KO).
-  const koCuisines = t('foodSelection.cuisines', {
+  const koCuisines = t("foodSelection.cuisines", {
     returnObjects: true,
-    lng: 'ko',
+    lng: "ko",
   }) as Cuisine[];
 
   const topCategories = React.useMemo(
     () => buildTopCategories(cuisines, t),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [cuisines.length],
+    [cuisines.length]
   );
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [step, setStep] = useState<Step>('top');
+  const [step, setStep] = useState<Step>("top");
   const [selectedTop, setSelectedTop] = useState<TopCategory | null>(null);
   const [selectedSub, setSelectedSub] = useState<SubCategory | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -198,9 +202,9 @@ export default function SommelierChatScreen() {
       setMessages([
         {
           id: nextId(),
-          role: 'sommelier',
-          kind: 'text',
-          text: t('sommelierChat.greeting', { nickname }),
+          role: "sommelier",
+          kind: "text",
+          text: t("sommelierChat.greeting", { nickname }),
         },
       ]);
 
@@ -209,8 +213,8 @@ export default function SommelierChatScreen() {
         // chat messages, then push an inline upsell card with the CTA.
         // Keep delays short so free users aren't stuck waiting.
         const lines = [
-          t('sommelierChat.upsell.intro'),
-          t('sommelierChat.upsell.benefitsIntro'),
+          t("sommelierChat.upsell.intro"),
+          t("sommelierChat.upsell.benefitsIntro"),
         ];
         const sayLine = (text: string, after: () => void) => {
           setIsTyping(true);
@@ -218,8 +222,8 @@ export default function SommelierChatScreen() {
             setIsTyping(false);
             pushMessage({
               id: nextId(),
-              role: 'sommelier',
-              kind: 'text',
+              role: "sommelier",
+              kind: "text",
               text,
             });
             setTimeout(after, 350);
@@ -228,7 +232,7 @@ export default function SommelierChatScreen() {
         setTimeout(() => {
           sayLine(lines[0], () => {
             sayLine(lines[1], () => {
-              setStep('upsell');
+              setStep("upsell");
             });
           });
         }, 400);
@@ -248,7 +252,7 @@ export default function SommelierChatScreen() {
 
   // Animate the upsell sheet in when the user reaches the upsell step.
   useEffect(() => {
-    if (step !== 'upsell') return;
+    if (step !== "upsell") return;
     Animated.parallel([
       Animated.timing(upsellOpacity, {
         toValue: 1,
@@ -267,7 +271,7 @@ export default function SommelierChatScreen() {
   // Reveal choices shortly after sommelier finishes typing,
   // so it feels like they said something and then offered options.
   useEffect(() => {
-    if (isTyping || step === 'finding') {
+    if (isTyping || step === "finding") {
       setChoicesVisible(false);
       choicesOpacity.setValue(0);
       choicesTranslateY.setValue(8);
@@ -304,46 +308,46 @@ export default function SommelierChatScreen() {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
-      pushMessage({ id: nextId(), role: 'sommelier', kind: 'text', text });
+      pushMessage({ id: nextId(), role: "sommelier", kind: "text", text });
     }, afterMs);
   };
 
   const handleTopPick = (top: TopCategory) => {
     const userMsgKey =
-      top.kind === 'leaf'
-        ? 'sommelierChat.userPickedCuisine'
-        : 'sommelierChat.userPickedGroup';
+      top.kind === "leaf"
+        ? "sommelierChat.userPickedCuisine"
+        : "sommelierChat.userPickedGroup";
     pushMessage({
       id: nextId(),
-      role: 'user',
-      kind: 'text',
+      role: "user",
+      kind: "text",
       text: t(userMsgKey, {
         cuisine: `${top.flag} ${top.label}`,
       }),
     });
     setSelectedTop(top);
     setSelectedSub(null);
-    if (top.kind === 'leaf') {
-      setStep('food');
-      sommelierReply(t('sommelierChat.askFood', { cuisine: top.label }));
+    if (top.kind === "leaf") {
+      setStep("food");
+      sommelierReply(t("sommelierChat.askFood", { cuisine: top.label }));
     } else {
-      setStep('sub');
-      sommelierReply(t('sommelierChat.askSub'));
+      setStep("sub");
+      sommelierReply(t("sommelierChat.askSub"));
     }
   };
 
   const handleSubPick = (sub: SubCategory) => {
     pushMessage({
       id: nextId(),
-      role: 'user',
-      kind: 'text',
-      text: t('sommelierChat.userPickedFood', {
+      role: "user",
+      kind: "text",
+      text: t("sommelierChat.userPickedFood", {
         food: `${sub.flag} ${sub.label}`,
       }),
     });
     setSelectedSub(sub);
-    setStep('food');
-    sommelierReply(t('sommelierChat.askFood', { cuisine: sub.label }));
+    setStep("food");
+    sommelierReply(t("sommelierChat.askFood", { cuisine: sub.label }));
   };
 
   // Fetch + show wine result card. Coordinates with the thinking-steps bubble:
@@ -354,13 +358,13 @@ export default function SommelierChatScreen() {
   const fetchAndShowResults = async (
     apiFood: string,
     displayFood: string = apiFood,
-    minThinkMs = 3400,
+    minThinkMs = 3400
   ) => {
     const startedAt = Date.now();
     try {
       const response = await getFoodPairingRecommendation(apiFood);
       if (!response.isSuccess || !response.result) {
-        throw new Error('Failed');
+        throw new Error("Failed");
       }
       const wines = response.result.recommendWines ?? [];
       const rawFoodFlavor = response.result.foodFlavor ?? null;
@@ -368,7 +372,7 @@ export default function SommelierChatScreen() {
       // profile and the food's required profile.
       const matchedProfile = computeMatchedProfile(
         flavorProfile,
-        rawFoodFlavor,
+        rawFoodFlavor
       );
 
       const elapsed = Date.now() - startedAt;
@@ -383,8 +387,8 @@ export default function SommelierChatScreen() {
       setIsTyping(false);
       pushMessage({
         id: nextId(),
-        role: 'sommelier',
-        kind: 'wines',
+        role: "sommelier",
+        kind: "wines",
         foodName: displayFood,
         wines,
         foodFlavor: matchedProfile,
@@ -392,22 +396,22 @@ export default function SommelierChatScreen() {
       });
 
       // Outro message after a short beat
-      const outroText = t('sommelierChat.resultOutro');
+      const outroText = t("sommelierChat.resultOutro");
       setTimeout(() => {
         setIsTyping(true);
         setTimeout(() => {
           setIsTyping(false);
           pushMessage({
             id: nextId(),
-            role: 'sommelier',
-            kind: 'text',
+            role: "sommelier",
+            kind: "text",
             text: outroText,
           });
-          setStep('results');
+          setStep("results");
         }, typingFor(outroText));
       }, 1200);
     } catch (error) {
-      console.error('Failed to fetch recommendations:', error);
+      console.error("Failed to fetch recommendations:", error);
       const elapsed = Date.now() - startedAt;
       const wait = Math.max(0, 800 - elapsed);
       await new Promise<void>((resolve) => setTimeout(() => resolve(), wait));
@@ -416,11 +420,11 @@ export default function SommelierChatScreen() {
       setTimeout(() => {
         pushMessage({
           id: nextId(),
-          role: 'sommelier',
-          kind: 'text',
-          text: t('sommelierChat.errorFetch'),
+          role: "sommelier",
+          kind: "text",
+          text: t("sommelierChat.errorFetch"),
         });
-        setStep('error');
+        setStep("error");
       }, 300);
     }
   };
@@ -437,30 +441,30 @@ export default function SommelierChatScreen() {
     //    contain slashes like "스시/초밥" which read awkwardly with a suffix).
     pushMessage({
       id: nextId(),
-      role: 'user',
-      kind: 'text',
+      role: "user",
+      kind: "text",
       text: food,
     });
     setLastFood(canonicalFood);
-    setStep('finding');
+    setStep("finding");
 
     // 2) Sommelier reacts with a food-specific line
     const detailLine = getFoodDetail(
       currentCuisineIndex,
       foodIdx,
       currentLang,
-      food,
+      food
     );
 
-    const bridgeText = t('sommelierChat.tasteBridge', { nickname });
+    const bridgeText = t("sommelierChat.tasteBridge", { nickname });
 
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
       pushMessage({
         id: nextId(),
-        role: 'sommelier',
-        kind: 'text',
+        role: "sommelier",
+        kind: "text",
         text: detailLine,
       });
 
@@ -471,8 +475,8 @@ export default function SommelierChatScreen() {
           setIsTyping(false);
           pushMessage({
             id: nextId(),
-            role: 'sommelier',
-            kind: 'text',
+            role: "sommelier",
+            kind: "text",
             text: bridgeText,
           });
 
@@ -482,19 +486,19 @@ export default function SommelierChatScreen() {
           setTimeout(() => {
             const steps: { label: string; duration: number }[] = [
               {
-                label: t('sommelierChat.thinking.checkingTaste', { nickname }),
+                label: t("sommelierChat.thinking.checkingTaste", { nickname }),
                 duration: 1600,
               },
               {
-                label: t('sommelierChat.thinking.analyzingFood', { food }),
+                label: t("sommelierChat.thinking.analyzingFood", { food }),
                 duration: 2600,
               },
               {
-                label: t('sommelierChat.thinking.comparing'),
+                label: t("sommelierChat.thinking.comparing"),
                 duration: 2100,
               },
               {
-                label: t('sommelierChat.thinking.organizing'),
+                label: t("sommelierChat.thinking.organizing"),
                 duration: 2400,
               },
             ];
@@ -528,7 +532,7 @@ export default function SommelierChatScreen() {
     setChoicesVisible(false);
     choicesOpacity.setValue(0);
     choicesTranslateY.setValue(8);
-    setStep('top');
+    setStep("top");
   };
 
   const handleRetry = () => {
@@ -536,8 +540,11 @@ export default function SommelierChatScreen() {
       handleReset();
       return;
     }
-    setStep('finding');
-    sommelierReply(t('sommelierChat.finding', { food: lastFood }), TYPING_DELAY);
+    setStep("finding");
+    sommelierReply(
+      t("sommelierChat.finding", { food: lastFood }),
+      TYPING_DELAY
+    );
     setTimeout(() => {
       fetchAndShowResults(lastFood);
     }, TYPING_DELAY + 900);
@@ -545,36 +552,39 @@ export default function SommelierChatScreen() {
 
   const handleBackOne = () => {
     // food → sub (if we came via sub) or top; sub → top
-    if (step === 'food') {
-      if (selectedSub && selectedTop?.kind === 'group') {
+    if (step === "food") {
+      if (selectedSub && selectedTop?.kind === "group") {
         setSelectedSub(null);
-        setStep('sub');
+        setStep("sub");
         return;
       }
     }
     setSelectedTop(null);
     setSelectedSub(null);
-    setStep('top');
+    setStep("top");
   };
 
   // Determine current cuisine index for the food step
   const currentCuisineIndex =
     selectedSub?.cuisineIndex ??
-    (selectedTop?.kind === 'leaf' ? selectedTop.cuisineIndex : undefined);
+    (selectedTop?.kind === "leaf" ? selectedTop.cuisineIndex : undefined);
   const currentCuisine =
     currentCuisineIndex !== undefined ? cuisines[currentCuisineIndex] : null;
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primaryDark} />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={colors.primaryDark}
+      />
       <LinearGradient
-        colors={[colors.primaryDark, '#4A086B', colors.background]}
+        colors={[colors.primaryDark, "#4A086B", colors.background]}
         locations={[0, 0.35, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safeArea} edges={["top", "bottom"]}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -582,7 +592,7 @@ export default function SommelierChatScreen() {
             style={styles.backButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="chevron-back" size={26} color={colors.white} />
+            <Icon name="arrow-back" size={22} color={colors.white} />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
             <View style={styles.avatarOuter}>
@@ -597,10 +607,10 @@ export default function SommelierChatScreen() {
             </View>
             <View>
               <Text style={styles.headerTitle}>
-                {t('sommelierChat.headerTitle')}
+                {t("sommelierChat.headerTitle")}
               </Text>
               <Text style={styles.headerSubtitle}>
-                {t('sommelierChat.headerSubtitle')}
+                {t("sommelierChat.headerSubtitle")}
               </Text>
             </View>
           </View>
@@ -633,61 +643,66 @@ export default function SommelierChatScreen() {
               transform: [{ translateY: choicesTranslateY }],
             },
           ]}
-          pointerEvents={choicesVisible ? 'auto' : 'none'}
+          pointerEvents={choicesVisible ? "auto" : "none"}
         >
-          {step === 'top' && hasFoodPairing && choicesVisible && messages.length > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chipsRow}
-            >
-              {topCategories.map((top) => (
-                <TouchableOpacity
-                  key={top.label}
-                  style={styles.chip}
-                  onPress={() => handleTopPick(top)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.chipText}>
-                    {top.flag} {top.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
-
-          {step === 'sub' && selectedTop?.kind === 'group' && choicesVisible && (
-            <View>
-              <TouchableOpacity
-                onPress={handleBackOne}
-                style={styles.changeCuisineBtn}
-              >
-                <Text style={styles.changeCuisineText}>
-                  {t('sommelierChat.changeCuisine')}
-                </Text>
-              </TouchableOpacity>
+          {step === "top" &&
+            hasFoodPairing &&
+            choicesVisible &&
+            messages.length > 0 && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.chipsRow}
               >
-                {selectedTop.subs.map((s) => (
+                {topCategories.map((top) => (
                   <TouchableOpacity
-                    key={`${s.cuisineIndex}-${s.label}`}
+                    key={top.label}
                     style={styles.chip}
-                    onPress={() => handleSubPick(s)}
+                    onPress={() => handleTopPick(top)}
                     activeOpacity={0.8}
                   >
                     <Text style={styles.chipText}>
-                      {s.flag} {s.label}
+                      {top.flag} {top.label}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            </View>
-          )}
+            )}
 
-          {step === 'food' && currentCuisine && choicesVisible && (
+          {step === "sub" &&
+            selectedTop?.kind === "group" &&
+            choicesVisible && (
+              <View>
+                <TouchableOpacity
+                  onPress={handleBackOne}
+                  style={styles.changeCuisineBtn}
+                >
+                  <Text style={styles.changeCuisineText}>
+                    {t("sommelierChat.changeCuisine")}
+                  </Text>
+                </TouchableOpacity>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipsRow}
+                >
+                  {selectedTop.subs.map((s) => (
+                    <TouchableOpacity
+                      key={`${s.cuisineIndex}-${s.label}`}
+                      style={styles.chip}
+                      onPress={() => handleSubPick(s)}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={styles.chipText}>
+                        {s.flag} {s.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+          {step === "food" && currentCuisine && choicesVisible && (
             <View>
               <TouchableOpacity
                 onPress={handleBackOne}
@@ -695,8 +710,8 @@ export default function SommelierChatScreen() {
               >
                 <Text style={styles.changeCuisineText}>
                   {selectedSub
-                    ? t('sommelierChat.backOneStep')
-                    : t('sommelierChat.changeCuisine')}
+                    ? t("sommelierChat.backOneStep")
+                    : t("sommelierChat.changeCuisine")}
                 </Text>
               </TouchableOpacity>
               <ScrollView
@@ -719,7 +734,7 @@ export default function SommelierChatScreen() {
             </View>
           )}
 
-          {step === 'results' && choicesVisible && (
+          {step === "results" && choicesVisible && (
             <View style={styles.resetRow}>
               <TouchableOpacity
                 style={styles.resetChip}
@@ -727,13 +742,13 @@ export default function SommelierChatScreen() {
                 activeOpacity={0.85}
               >
                 <Text style={styles.resetChipText}>
-                  {t('sommelierChat.resetButton')}
+                  {t("sommelierChat.resetButton")}
                 </Text>
               </TouchableOpacity>
             </View>
           )}
 
-          {step === 'error' && choicesVisible && (
+          {step === "error" && choicesVisible && (
             <View style={styles.resetRow}>
               <TouchableOpacity
                 style={[styles.resetChip, { marginRight: 8 }]}
@@ -741,7 +756,7 @@ export default function SommelierChatScreen() {
                 activeOpacity={0.85}
               >
                 <Text style={styles.resetChipText}>
-                  {t('sommelierChat.retryButton')}
+                  {t("sommelierChat.retryButton")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -750,14 +765,14 @@ export default function SommelierChatScreen() {
                 activeOpacity={0.85}
               >
                 <Text style={styles.resetChipText}>
-                  {t('sommelierChat.resetButton')}
+                  {t("sommelierChat.resetButton")}
                 </Text>
               </TouchableOpacity>
             </View>
           )}
         </Animated.View>
 
-        {step === 'upsell' && (
+        {step === "upsell" && (
           <Animated.View
             style={[
               styles.upsellSheet,
@@ -768,22 +783,22 @@ export default function SommelierChatScreen() {
             ]}
           >
             <LinearGradient
-              colors={['#8e44ad', '#4A086B']}
+              colors={["#8e44ad", "#4A086B"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFillObject}
             />
             <View style={styles.upsellSheetHeader}>
               <Text style={styles.upsellSheetBadge}>
-                {t('sommelierChat.upsell.badge')}
+                {t("sommelierChat.upsell.badge")}
               </Text>
               <Text style={styles.upsellSheetTitle}>
-                {t('sommelierChat.upsell.cardTitle')}
+                {t("sommelierChat.upsell.cardTitle")}
               </Text>
             </View>
             <View style={styles.upsellBenefitsList}>
               {(
-                t('sommelierChat.upsell.benefits', {
+                t("sommelierChat.upsell.benefits", {
                   returnObjects: true,
                 }) as string[]
               ).map((b, i) => (
@@ -800,11 +815,11 @@ export default function SommelierChatScreen() {
             </View>
             <TouchableOpacity
               style={styles.upsellSheetCta}
-              onPress={() => navigation.navigate('Paywall' as never)}
+              onPress={() => navigation.navigate("Paywall" as never)}
               activeOpacity={0.9}
             >
               <Text style={styles.upsellSheetCtaText}>
-                {t('sommelierChat.upsell.cta')}
+                {t("sommelierChat.upsell.cta")}
               </Text>
               <Icon name="arrow-forward" size={18} color={colors.primaryDark} />
             </TouchableOpacity>
@@ -815,7 +830,7 @@ export default function SommelierChatScreen() {
   );
 }
 
-const SOMMELIER_AVATAR = require('../assets/onboarding/Drinky_onboarding_2.png');
+const SOMMELIER_AVATAR = require("../assets/onboarding/Drinky_onboarding_2.png");
 
 const SommelierAvatar: React.FC = () => (
   <View style={styles.chatAvatar}>
@@ -828,21 +843,25 @@ const SommelierAvatar: React.FC = () => (
 );
 
 const getWineColor = (type: string) => {
-  if (type.includes('레드') || type.toUpperCase().includes('RED')) return colors.error;
-  if (type.includes('화이트') || type.toUpperCase().includes('WHITE')) return '#f1c40f';
-  if (type.includes('스파클링') || type.toUpperCase().includes('SPARKLING')) return '#3498db';
-  if (type.includes('로제') || type.toUpperCase().includes('ROSE')) return '#e91e63';
+  if (type.includes("레드") || type.toUpperCase().includes("RED"))
+    return colors.error;
+  if (type.includes("화이트") || type.toUpperCase().includes("WHITE"))
+    return "#f1c40f";
+  if (type.includes("스파클링") || type.toUpperCase().includes("SPARKLING"))
+    return "#3498db";
+  if (type.includes("로제") || type.toUpperCase().includes("ROSE"))
+    return "#e91e63";
   return colors.textSecondary;
 };
 
-const localizeSort = (sort: string, lang: 'ko' | 'en') => {
-  if (lang !== 'en') return sort;
-  if (sort.includes('레드')) return 'Red';
-  if (sort.includes('화이트')) return 'White';
-  if (sort.includes('스파클링')) return 'Sparkling';
-  if (sort.includes('로제')) return 'Rosé';
-  if (sort.includes('디저트')) return 'Dessert';
-  if (sort.includes('주정강화')) return 'Fortified';
+const localizeSort = (sort: string, lang: "ko" | "en") => {
+  if (lang !== "en") return sort;
+  if (sort.includes("레드")) return "Red";
+  if (sort.includes("화이트")) return "White";
+  if (sort.includes("스파클링")) return "Sparkling";
+  if (sort.includes("로제")) return "Rosé";
+  if (sort.includes("디저트")) return "Dessert";
+  if (sort.includes("주정강화")) return "Fortified";
   return sort;
 };
 
@@ -917,9 +936,9 @@ const ThinkingStatus: React.FC<{ label: string }> = ({ label }) => {
 const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
   const { opacity, translateY } = useBubbleEnter();
   const { t, i18n } = useTranslation();
-  const lang: 'ko' | 'en' = i18n.language?.startsWith('en') ? 'en' : 'ko';
+  const lang: "ko" | "en" = i18n.language?.startsWith("en") ? "en" : "ko";
 
-  if (message.kind === 'wines') {
+  if (message.kind === "wines") {
     const { wines, foodFlavor, foodName, nickname: msgNickname } = message;
     return (
       <Animated.View
@@ -934,32 +953,28 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
           {foodFlavor && (
             <View style={styles.winesChartSection}>
               <Text style={styles.winesChartTitle}>
-                {t('sommelierChat.resultChartTitle', {
+                {t("sommelierChat.resultChartTitle", {
                   food: foodName,
                   nickname: msgNickname,
                 })}
               </Text>
-              <AnalyzingRadarChart
-                data={foodFlavor}
-                size={170}
-                mode="fixed"
-              />
+              <AnalyzingRadarChart data={foodFlavor} size={170} mode="fixed" />
             </View>
           )}
 
           <Text style={styles.winesMatchText}>
-            {t('sommelierChat.resultMatch', { nickname: msgNickname })}
+            {t("sommelierChat.resultMatch", { nickname: msgNickname })}
           </Text>
 
           {wines.length > 0 ? (
             <View style={styles.wineList}>
               {wines.map((w, idx) => {
                 const variety =
-                  lang === 'en' && w.varietyEng ? w.varietyEng : w.variety;
+                  lang === "en" && w.varietyEng ? w.varietyEng : w.variety;
                 const country =
-                  lang === 'en' && w.countryEng ? w.countryEng : w.country;
+                  lang === "en" && w.countryEng ? w.countryEng : w.country;
                 const region =
-                  lang === 'en' && w.regionEng ? w.regionEng : w.region;
+                  lang === "en" && w.regionEng ? w.regionEng : w.region;
                 const sortLabel = localizeSort(w.sort, lang);
                 return (
                   <View
@@ -986,7 +1001,7 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
                       {(country || region) && (
                         <Text style={styles.wineRegion} numberOfLines={1}>
                           {country}
-                          {region ? ` · ${region}` : ''}
+                          {region ? ` · ${region}` : ""}
                         </Text>
                       )}
                     </View>
@@ -1002,7 +1017,7 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
     );
   }
 
-  const isSommelier = message.role === 'sommelier';
+  const isSommelier = message.role === "sommelier";
 
   return (
     <Animated.View
@@ -1052,7 +1067,7 @@ const TypingBubble: React.FC = () => {
             duration: 350,
             useNativeDriver: true,
           }),
-        ]),
+        ])
       );
     const a = animateDot(dot1, 0);
     const b = animateDot(dot2, 150);
@@ -1070,7 +1085,9 @@ const TypingBubble: React.FC = () => {
   return (
     <View style={[styles.bubbleRow, styles.bubbleRowLeft]}>
       <SommelierAvatar />
-      <View style={[styles.bubble, styles.bubbleSommelier, styles.typingBubble]}>
+      <View
+        style={[styles.bubble, styles.bubbleSommelier, styles.typingBubble]}
+      >
         <Animated.View style={[styles.typingDot, { opacity: dot1 }]} />
         <Animated.View style={[styles.typingDot, { opacity: dot2 }]} />
         <Animated.View style={[styles.typingDot, { opacity: dot3 }]} />
@@ -1088,58 +1105,58 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   backButton: {
     width: 30,
     height: 30,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+    justifyContent: "center",
+    alignItems: "flex-start",
     marginRight: 6,
   },
   headerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   avatarOuter: {
     marginRight: 10,
-    position: 'relative',
+    position: "relative",
   },
   avatarWrapper: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    overflow: 'hidden',
+    backgroundColor: "rgba(255,255,255,0.15)",
+    overflow: "hidden",
   },
   avatarImage: {
     width: 60,
     height: 60,
-    position: 'absolute',
+    position: "absolute",
     left: -10,
     top: -11,
   },
   onlineDot: {
-    position: 'absolute',
+    position: "absolute",
     right: -1,
     bottom: -1,
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#2ecc71',
+    backgroundColor: "#2ecc71",
     borderWidth: 2,
     borderColor: colors.primaryDark,
   },
   headerTitle: {
     color: colors.white,
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerSubtitle: {
-    color: 'rgba(255,255,255,0.7)',
+    color: "rgba(255,255,255,0.7)",
     fontSize: 11,
   },
   messagesContainer: {
@@ -1151,40 +1168,40 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   bubbleRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 10,
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   bubbleRowLeft: {
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
   },
   bubbleRowRight: {
-    justifyContent: 'flex-end',
+    justifyContent: "flex-end",
   },
   chatAvatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: "rgba(255,255,255,0.12)",
     marginRight: 8,
     marginBottom: 2,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   chatAvatarImage: {
     width: 54,
     height: 54,
-    position: 'absolute',
+    position: "absolute",
     left: -9,
     top: -10,
   },
   bubble: {
-    maxWidth: '72%',
+    maxWidth: "72%",
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 20,
   },
   bubbleSommelier: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: "rgba(255,255,255,0.12)",
     borderBottomLeftRadius: 4,
   },
   bubbleUser: {
@@ -1200,11 +1217,11 @@ const styles = StyleSheet.create({
   },
   bubbleTextUser: {
     color: colors.primaryDark,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   typingBubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 14,
     paddingHorizontal: 14,
     gap: 4,
@@ -1226,9 +1243,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   chip: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: "rgba(255,255,255,0.14)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    borderColor: "rgba(255,255,255,0.25)",
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: 18,
@@ -1237,31 +1254,31 @@ const styles = StyleSheet.create({
   chipText: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   changeCuisineBtn: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingVertical: 6,
     paddingHorizontal: 4,
     marginBottom: 6,
   },
   changeCuisineText: {
-    color: 'rgba(255,255,255,0.7)',
+    color: "rgba(255,255,255,0.7)",
     fontSize: 13,
   },
   foodScroll: {
     maxHeight: 220,
   },
   foodGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 5,
     paddingBottom: 8,
   },
   foodChip: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: "rgba(255,255,255,0.14)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    borderColor: "rgba(255,255,255,0.25)",
     paddingHorizontal: 12,
     paddingVertical: 9,
     borderRadius: 14,
@@ -1269,7 +1286,7 @@ const styles = StyleSheet.create({
   foodChipText: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   thinkingStatusContainer: {
     // Indent past the avatar column (36 width + 8 marginRight = 44)
@@ -1278,40 +1295,40 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     paddingTop: 2,
     paddingBottom: 8,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   thinkingStatusText: {
-    color: 'rgba(255,255,255,0.65)',
+    color: "rgba(255,255,255,0.65)",
     fontSize: 13,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     lineHeight: 18,
   },
   winesBubble: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: "rgba(255,255,255,0.12)",
     borderRadius: 20,
     borderBottomLeftRadius: 4,
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
   winesChartSection: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.15)',
+    borderBottomColor: "rgba(255,255,255,0.15)",
     marginBottom: 10,
   },
   winesChartTitle: {
     color: colors.white,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 6,
     opacity: 0.85,
   },
   winesMatchText: {
     color: colors.white,
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 10,
     lineHeight: 19,
   },
@@ -1319,7 +1336,7 @@ const styles = StyleSheet.create({
   wineRow: {
     paddingVertical: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(255,255,255,0.12)',
+    borderBottomColor: "rgba(255,255,255,0.12)",
   },
   wineRowLast: {
     borderBottomWidth: 0,
@@ -1329,8 +1346,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   wineHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 2,
   },
   wineSortBadge: {
@@ -1341,34 +1358,34 @@ const styles = StyleSheet.create({
   },
   wineSortText: {
     fontSize: 9,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
   },
   wineVariety: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     flex: 1,
   },
   wineRegion: {
-    color: 'rgba(255,255,255,0.7)',
+    color: "rgba(255,255,255,0.7)",
     fontSize: 11,
   },
   winesEmpty: {
-    color: 'rgba(255,255,255,0.8)',
+    color: "rgba(255,255,255,0.8)",
     fontSize: 14,
     paddingVertical: 12,
-    textAlign: 'center',
+    textAlign: "center",
   },
   resetRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     paddingVertical: 4,
   },
   resetChip: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: "rgba(255,255,255,0.14)",
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
+    borderColor: "rgba(255,255,255,0.25)",
     paddingHorizontal: 18,
     paddingVertical: 11,
     borderRadius: 20,
@@ -1376,17 +1393,17 @@ const styles = StyleSheet.create({
   resetChipText: {
     color: colors.white,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   upsellSheet: {
     marginHorizontal: 16,
     marginBottom: 12,
     borderRadius: 22,
-    overflow: 'hidden',
+    overflow: "hidden",
     paddingHorizontal: 20,
     paddingTop: 18,
     paddingBottom: 18,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,
     shadowRadius: 18,
@@ -1396,26 +1413,26 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   upsellSheetBadge: {
-    alignSelf: 'flex-start',
-    color: '#FFD86B',
+    alignSelf: "flex-start",
+    color: "#FFD86B",
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     marginBottom: 6,
   },
   upsellSheetTitle: {
     color: colors.white,
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: "800",
     lineHeight: 26,
   },
   upsellBenefitsList: {
     marginBottom: 14,
   },
   upsellBenefitRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     marginBottom: 8,
   },
   upsellBenefitIcon: {
@@ -1423,15 +1440,15 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   upsellBenefitText: {
-    color: 'rgba(255,255,255,0.95)',
+    color: "rgba(255,255,255,0.95)",
     fontSize: 13.5,
     lineHeight: 19,
     flex: 1,
   },
   upsellSheetCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: colors.white,
     paddingVertical: 14,
     borderRadius: 16,
@@ -1439,7 +1456,7 @@ const styles = StyleSheet.create({
   upsellSheetCtaText: {
     color: colors.primaryDark,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
     marginRight: 6,
   },
 });

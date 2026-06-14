@@ -21,23 +21,40 @@ interface GlassHeaderProps {
   title?: string;
   left?: React.ReactNode;
   right?: React.ReactNode;
+  /**
+   * `true` (default): absolute, frosted-glass header that floats over content
+   * scrolling underneath — pad the scroll container by `useGlassHeaderHeight()`.
+   * `false`: renders in normal layout flow (for SafeAreaView screens with a
+   * plain header at the top of the tree). Same visual language, no blur, no
+   * status-bar inset — drop it in place of a hand-rolled `<View>` header.
+   */
+  floating?: boolean;
 }
 
-export default function GlassHeader({ title, left, right }: GlassHeaderProps) {
+export default function GlassHeader({
+  title,
+  left,
+  right,
+  floating = true,
+}: GlassHeaderProps) {
   const insets = useSafeAreaInsets();
+  const topPad = floating ? insets.top : 0;
   return (
     <View
       style={[
         styles.header,
-        { height: insets.top + HEADER_BASE_HEIGHT, paddingTop: insets.top },
+        floating ? styles.floating : styles.inFlow,
+        { height: topPad + HEADER_BASE_HEIGHT, paddingTop: topPad },
       ]}
     >
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType="dark"
-        blurAmount={18}
-        reducedTransparencyFallbackColor={surfaces.card}
-      />
+      {floating && (
+        <BlurView
+          style={StyleSheet.absoluteFill}
+          blurType="dark"
+          blurAmount={18}
+          reducedTransparencyFallbackColor={surfaces.card}
+        />
+      )}
       <View style={styles.row}>
         <View style={styles.side}>{left}</View>
         {title ? (
@@ -55,14 +72,19 @@ export default function GlassHeader({ title, left, right }: GlassHeaderProps) {
 
 const styles = StyleSheet.create({
   header: {
+    overflow: "hidden",
+    borderBottomWidth: 1,
+    borderBottomColor: surfaces.hairline,
+  },
+  floating: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     zIndex: 20,
-    overflow: "hidden",
-    borderBottomWidth: 1,
-    borderBottomColor: surfaces.hairline,
+  },
+  inFlow: {
+    backgroundColor: surfaces.base,
   },
   row: {
     flex: 1,

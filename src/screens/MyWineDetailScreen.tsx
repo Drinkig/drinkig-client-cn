@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,20 +8,27 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { RootStackParamList } from '../types';
-import { getMyWineDetail, deleteMyWine, MyWineDTO, getWineDetailPublic, searchWinesPublic } from '../api/wine';
-import { useGlobalUI } from '../context/GlobalUIContext';
-import MenuBottomSheet from '../components/common/MenuBottomSheet';
-import SelectionModal from '../components/common/SelectionModal';
-import { colors } from '../constants/colors';
-import { useTranslation } from 'react-i18next';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { RootStackParamList } from "../types";
+import {
+  getMyWineDetail,
+  deleteMyWine,
+  MyWineDTO,
+  getWineDetailPublic,
+  searchWinesPublic,
+} from "../api/wine";
+import { useGlobalUI } from "../context/GlobalUIContext";
+import MenuBottomSheet from "../components/common/MenuBottomSheet";
+import SelectionModal from "../components/common/SelectionModal";
+import { colors } from "../constants/colors";
+import { useTranslation } from "react-i18next";
+import GlassHeader from "../components/common/GlassHeader";
 
-type MyWineDetailRouteProp = RouteProp<RootStackParamList, 'MyWineDetail'>;
+type MyWineDetailRouteProp = RouteProp<RootStackParamList, "MyWineDetail">;
 
 export default function MyWineDetailScreen() {
   const navigation = useNavigation();
@@ -58,15 +65,15 @@ export default function MyWineDetailScreen() {
 
         setWine(wineData);
       } else {
-        showToast(t('myWineDetail.error.fetchFailMsg'), {
-          type: 'error',
+        showToast(t("myWineDetail.error.fetchFailMsg"), {
+          type: "error",
           onHide: () => navigation.goBack(),
         });
       }
     } catch (error) {
-      console.error('Failed to fetch my wine detail:', error);
-      showToast(t('myWineDetail.error.networkFailMsg'), {
-        type: 'error',
+      console.error("Failed to fetch my wine detail:", error);
+      showToast(t("myWineDetail.error.networkFailMsg"), {
+        type: "error",
         onHide: () => navigation.goBack(),
       });
     } finally {
@@ -76,34 +83,35 @@ export default function MyWineDetailScreen() {
 
   const handleDelete = () => {
     showAlert({
-      title: t('myWineDetail.delete.title'),
-      message: t('myWineDetail.delete.message'),
-      confirmText: t('myWineDetail.delete.confirm'),
+      title: t("myWineDetail.delete.title"),
+      message: t("myWineDetail.delete.message"),
+      confirmText: t("myWineDetail.delete.confirm"),
       singleButton: false,
       onConfirm: async () => {
         try {
           const response = await deleteMyWine(wineId);
           if (response.isSuccess) {
-            showToast(t('myWineDetail.delete.successMsg'), {
-              type: 'success',
+            showToast(t("myWineDetail.delete.successMsg"), {
+              type: "success",
               onHide: () => navigation.goBack(),
             });
           } else {
-            showToast(response.message || t('myWineDetail.delete.failMsg'), { type: 'error' });
+            showToast(response.message || t("myWineDetail.delete.failMsg"), {
+              type: "error",
+            });
           }
         } catch (error) {
-          console.error('Failed to delete wine:', error);
-          showToast(t('myWineDetail.error.networkFailMsg'), { type: 'error' });
+          console.error("Failed to delete wine:", error);
+          showToast(t("myWineDetail.error.networkFailMsg"), { type: "error" });
         }
-      }
+      },
     });
   };
 
   const handleEdit = () => {
     if (wine) {
-
       // @ts-ignore
-      navigation.navigate('WineAdd', { myWine: wine });
+      navigation.navigate("WineAdd", { myWine: wine });
     }
   };
 
@@ -123,11 +131,14 @@ export default function MyWineDetailScreen() {
     return null;
   }
 
-
   const renderImage = () => {
     if (wine.wineImageUrl) {
       return (
-        <Image source={{ uri: wine.wineImageUrl }} style={styles.wineImage} resizeMode="contain" />
+        <Image
+          source={{ uri: wine.wineImageUrl }}
+          style={styles.wineImage}
+          resizeMode="contain"
+        />
       );
     }
     return (
@@ -137,14 +148,22 @@ export default function MyWineDetailScreen() {
     );
   };
 
-
-  const renderInfoRow = (icon: string, label: string, value?: string | number | null) => (
+  const renderInfoRow = (
+    icon: string,
+    label: string,
+    value?: string | number | null
+  ) => (
     <View style={styles.infoRow}>
       <View style={styles.labelContainer}>
-        <MaterialCommunityIcons name={icon} size={20} color={colors.primary} style={styles.icon} />
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={colors.primary}
+          style={styles.icon}
+        />
         <Text style={styles.label}>{label}</Text>
       </View>
-      <Text style={styles.value}>{value || '-'}</Text>
+      <Text style={styles.value}>{value || "-"}</Text>
     </View>
   );
 
@@ -152,45 +171,54 @@ export default function MyWineDetailScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
+      <GlassHeader
+        floating={false}
+        title={t("myWineDetail.header")}
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+        right={
+          <TouchableOpacity
+            onPress={() => setIsMenuVisible(true)}
+            style={styles.deleteButton}
+          >
+            <Ionicons name="ellipsis-vertical" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Ionicons name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('myWineDetail.header')}</Text>
-        <TouchableOpacity onPress={() => setIsMenuVisible(true)} style={styles.deleteButton}>
-          <Ionicons name="ellipsis-vertical" size={22} color={colors.white} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <TouchableOpacity
           style={[styles.card, { zIndex: 10 }]}
           onPress={() => {
             const wineParam = {
               id: wine.wineId,
               nameKor: wine.wineName,
-              nameEng: wine.wineNameEng || '',
+              nameEng: wine.wineNameEng || "",
               type: wine.wineSort,
               country: wine.wineCountry,
               grape: wine.wineVariety,
               imageUri: wine.wineImageUrl,
             };
             // @ts-ignore
-            navigation.navigate('WineDetail', { wine: wineParam });
+            navigation.navigate("WineDetail", { wine: wineParam });
           }}
           activeOpacity={0.5}
         >
-          <View style={styles.imageContainer}>
-            {renderImage()}
-          </View>
+          <View style={styles.imageContainer}>{renderImage()}</View>
           <View style={styles.headerInfo}>
             <Text style={styles.wineName}>
-              {i18n.language === 'en' ? (wine.wineNameEng || wine.wineName) : wine.wineName}
+              {i18n.language === "en"
+                ? wine.wineNameEng || wine.wineName
+                : wine.wineName}
             </Text>
             <View style={styles.badges}>
               <View style={styles.badge}>
@@ -204,47 +232,78 @@ export default function MyWineDetailScreen() {
           </View>
         </TouchableOpacity>
 
-
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('myWineDetail.section.purchaseInfo')}</Text>
+          <Text style={styles.sectionTitle}>
+            {t("myWineDetail.section.purchaseInfo")}
+          </Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('calendar', t('myWineDetail.info.vintage'), wine.vintageYear === 0 ? 'NV' : wine.vintageYear)}
+            {renderInfoRow(
+              "calendar",
+              t("myWineDetail.info.vintage"),
+              wine.vintageYear === 0 ? "NV" : wine.vintageYear
+            )}
             <View style={styles.divider} />
-            {renderInfoRow('cash', t('myWineDetail.info.price'), wine.purchasePrice ? `₩${wine.purchasePrice.toLocaleString()}` : null)}
+            {renderInfoRow(
+              "cash",
+              t("myWineDetail.info.price"),
+              wine.purchasePrice
+                ? `₩${wine.purchasePrice.toLocaleString()}`
+                : null
+            )}
             <View style={styles.divider} />
-            {renderInfoRow('store', t('myWineDetail.info.shop'), wine.purchaseShop ? `${wine.purchaseShop} (${wine.purchaseType === 'DIRECT' ? t('myWineDetail.info.shopDirect') : t('myWineDetail.info.shopOffline')})` : '-')}
+            {renderInfoRow(
+              "store",
+              t("myWineDetail.info.shop"),
+              wine.purchaseShop
+                ? `${wine.purchaseShop} (${
+                    wine.purchaseType === "DIRECT"
+                      ? t("myWineDetail.info.shopDirect")
+                      : t("myWineDetail.info.shopOffline")
+                  })`
+                : "-"
+            )}
             <View style={styles.divider} />
-            {renderInfoRow('calendar-check', t('myWineDetail.info.date'), wine.purchaseDate)}
+            {renderInfoRow(
+              "calendar-check",
+              t("myWineDetail.info.date"),
+              wine.purchaseDate
+            )}
             <View style={styles.divider} />
-            {renderInfoRow('clock-outline', t('myWineDetail.info.storagePeriod'), t('myWineDetail.info.periodDays', { days: wine.period }))}
+            {renderInfoRow(
+              "clock-outline",
+              t("myWineDetail.info.storagePeriod"),
+              t("myWineDetail.info.periodDays", { days: wine.period })
+            )}
           </View>
         </View>
 
-
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('myWineDetail.section.detailInfo')}</Text>
+          <Text style={styles.sectionTitle}>
+            {t("myWineDetail.section.detailInfo")}
+          </Text>
           <View style={styles.infoContainer}>
-            {renderInfoRow('map-marker', t('myWineDetail.info.region'), wine.wineRegion)}
-
+            {renderInfoRow(
+              "map-marker",
+              t("myWineDetail.info.region"),
+              wine.wineRegion
+            )}
           </View>
         </View>
-
       </ScrollView>
-
 
       <MenuBottomSheet
         visible={isMenuVisible}
         onClose={() => setIsMenuVisible(false)}
-        title={t('myWineDetail.menu.title')}
+        title={t("myWineDetail.menu.title")}
         options={[
           {
-            label: t('myWineDetail.menu.edit'),
-            icon: 'create-outline',
+            label: t("myWineDetail.menu.edit"),
+            icon: "create-outline",
             onPress: handleEdit,
           },
           {
-            label: t('myWineDetail.menu.delete'),
-            icon: 'trash-outline',
+            label: t("myWineDetail.menu.delete"),
+            icon: "trash-outline",
             onPress: handleDelete,
             isDestructive: true,
           },
@@ -253,15 +312,15 @@ export default function MyWineDetailScreen() {
 
       <SelectionModal
         visible={isFinishModalVisible}
-        title={t('myWineDetail.finishModal.title')}
-        message={t('myWineDetail.finishModal.message')}
+        title={t("myWineDetail.finishModal.title")}
+        message={t("myWineDetail.finishModal.message")}
         onClose={() => setIsFinishModalVisible(false)}
-        option1Text={t('myWineDetail.finishModal.writeNote')}
+        option1Text={t("myWineDetail.finishModal.writeNote")}
         onSelectOption1={() => {
           setIsFinishModalVisible(false);
           if (wine) {
             // @ts-ignore
-            navigation.navigate('TastingNoteWrite', {
+            navigation.navigate("TastingNoteWrite", {
               wineId: wine.wineId,
               wineName: wine.wineName,
               wineImage: wine.wineImageUrl,
@@ -269,7 +328,7 @@ export default function MyWineDetailScreen() {
             });
           }
         }}
-        option2Text={t('myWineDetail.finishModal.delete')}
+        option2Text={t("myWineDetail.finishModal.delete")}
         onSelectOption2={() => {
           setIsFinishModalVisible(false);
           handleDelete();
@@ -277,9 +336,19 @@ export default function MyWineDetailScreen() {
       />
 
       <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity style={styles.editButton} onPress={handleFinishedDrinking}>
-          <MaterialCommunityIcons name="glass-wine" size={20} color={colors.white} style={{ marginRight: 8 }} />
-          <Text style={styles.editButtonText}>{t('myWineDetail.button.finished')}</Text>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={handleFinishedDrinking}
+        >
+          <MaterialCommunityIcons
+            name="glass-wine"
+            size={20}
+            color={colors.white}
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.editButtonText}>
+            {t("myWineDetail.button.finished")}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -294,36 +363,18 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.background,
-  },
-  backButton: {
-    padding: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   deleteButton: {
     padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.white,
   },
   content: {
     padding: 16,
     paddingBottom: 100,
   },
   card: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: colors.surface1,
     borderRadius: 16,
     padding: 16,
@@ -334,37 +385,36 @@ const styles = StyleSheet.create({
     width: 80,
     height: 120,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
     backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 4,
   },
   wineImage: {
-    width: '100%',
-    height: '100%',
-
+    width: "100%",
+    height: "100%",
   },
   imagePlaceholder: {
     width: 80,
     height: 120,
     borderRadius: 8,
     backgroundColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerInfo: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   wineName: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
     marginBottom: 8,
   },
   badges: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginBottom: 8,
   },
@@ -375,7 +425,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   badgeText: {
-    color: '#ccc',
+    color: "#ccc",
     fontSize: 12,
   },
   grapeText: {
@@ -387,7 +437,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
     marginBottom: 12,
     marginLeft: 4,
@@ -398,33 +448,33 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: 12,
   },
   labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   icon: {
     marginRight: 12,
   },
   label: {
     fontSize: 16,
-    color: '#ccc',
+    color: "#ccc",
   },
   value: {
     fontSize: 16,
     color: colors.white,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   divider: {
     height: 1,
     backgroundColor: colors.border,
   },
   bottomButtonContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -438,13 +488,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderRadius: 12,
     height: 50,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   editButtonText: {
     color: colors.white,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });

@@ -20,8 +20,9 @@ import {
 import PhotoOptionsBottomSheet from "../components/common/PhotoOptionsBottomSheet";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useUser } from "../context/UserContext";
-import { colors } from '../constants/colors';
-import { useTranslation } from 'react-i18next';
+import { colors } from "../constants/colors";
+import { useTranslation } from "react-i18next";
+import GlassHeader from "../components/common/GlassHeader";
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
@@ -31,14 +32,14 @@ const ProfileEditScreen = () => {
 
   const [nickname, setNickname] = useState(user?.nickname || "");
   const [profileImage, setProfileImage] = useState<string | null>(
-    user?.profileImage || null,
+    user?.profileImage || null
   );
   const [selectedImageAsset, setSelectedImageAsset] = useState<any | null>(
-    null,
+    null
   );
 
   const [nicknameAvailable, setNicknameAvailable] = useState<boolean | null>(
-    true,
+    true
   );
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
@@ -99,14 +100,14 @@ const ProfileEditScreen = () => {
 
     const timer = setTimeout(async () => {
       if (nickname.length < 2) {
-        setNicknameError(t('profileEdit.nickname.errorLength'));
+        setNicknameError(t("profileEdit.nickname.errorLength"));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
       }
 
       if (/[ㄱ-ㅎㅏ-ㅣ]/.test(nickname)) {
-        setNicknameError(t('profileEdit.nickname.errorFormat'));
+        setNicknameError(t("profileEdit.nickname.errorFormat"));
         setNicknameAvailable(false);
         setIsCheckingNickname(false);
         return;
@@ -119,11 +120,11 @@ const ProfileEditScreen = () => {
           setNicknameError(null);
         } else {
           setNicknameAvailable(false);
-          setNicknameError(t('profileEdit.nickname.errorDuplicate'));
+          setNicknameError(t("profileEdit.nickname.errorDuplicate"));
         }
       } catch (e) {
         console.error(e);
-        setNicknameError(t('profileEdit.nickname.errorCheck'));
+        setNicknameError(t("profileEdit.nickname.errorCheck"));
         setNicknameAvailable(false);
       } finally {
         setIsCheckingNickname(false);
@@ -137,7 +138,9 @@ const ProfileEditScreen = () => {
     if (isSaving) return;
 
     if (nicknameError || (nickname !== user?.nickname && !nicknameAvailable)) {
-      showToast(nicknameError || t('profileEdit.alert.needCheck'), { type: 'info' });
+      showToast(nicknameError || t("profileEdit.alert.needCheck"), {
+        type: "info",
+      });
       return;
     }
 
@@ -150,7 +153,7 @@ const ProfileEditScreen = () => {
         const uploadResponse = await uploadProfileImage(
           selectedImageAsset.uri,
           selectedImageAsset.type || "image/jpeg",
-          selectedImageAsset.fileName || "profile.jpg",
+          selectedImageAsset.fileName || "profile.jpg"
         );
         if (!uploadResponse.isSuccess) throw new Error("Image upload failed");
       } else if (profileImage === null && user?.profileImage) {
@@ -170,30 +173,32 @@ const ProfileEditScreen = () => {
       navigation.goBack();
 
       setTimeout(() => {
-        showToast(t('profileEdit.alert.successMessage'), { type: 'success' });
+        showToast(t("profileEdit.alert.successMessage"), { type: "success" });
       }, 500);
     } catch (error) {
       hideLoading();
       setIsSaving(false);
       console.error("Profile update failed:", error);
       setTimeout(() => {
-        showToast(t('profileEdit.alert.errorMessage'), { type: 'error' });
+        showToast(t("profileEdit.alert.errorMessage"), { type: "error" });
       }, 500);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="chevron-back" size={28} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('profileEdit.header')}</Text>
-        <View style={{ width: 28 }} />
-      </View>
+      <GlassHeader
+        floating={false}
+        title={t("profileEdit.header")}
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       <View style={styles.content}>
         <View style={styles.imageSection}>
@@ -218,7 +223,7 @@ const ProfileEditScreen = () => {
         </View>
 
         <View style={styles.inputSection}>
-          <Text style={styles.label}>{t('profileEdit.nickname.label')}</Text>
+          <Text style={styles.label}>{t("profileEdit.nickname.label")}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={[
@@ -226,12 +231,12 @@ const ProfileEditScreen = () => {
                 nicknameError
                   ? styles.inputError
                   : nicknameAvailable && nickname !== user?.nickname
-                    ? styles.inputSuccess
-                    : null,
+                  ? styles.inputSuccess
+                  : null,
               ]}
               value={nickname}
               onChangeText={setNickname}
-              placeholder={t('profileEdit.nickname.placeholder')}
+              placeholder={t("profileEdit.nickname.placeholder")}
               placeholderTextColor="#666"
               maxLength={10}
             />
@@ -239,11 +244,15 @@ const ProfileEditScreen = () => {
 
           <View style={styles.helperRow}>
             {isCheckingNickname ? (
-              <Text style={styles.helperText}>{t('profileEdit.nickname.checking')}</Text>
+              <Text style={styles.helperText}>
+                {t("profileEdit.nickname.checking")}
+              </Text>
             ) : nicknameError ? (
               <Text style={styles.errorText}>{nicknameError}</Text>
             ) : nicknameAvailable && nickname !== user?.nickname ? (
-              <Text style={styles.successText}>{t('profileEdit.nickname.success')}</Text>
+              <Text style={styles.successText}>
+                {t("profileEdit.nickname.success")}
+              </Text>
             ) : null}
           </View>
         </View>
@@ -262,7 +271,9 @@ const ProfileEditScreen = () => {
               (!canSave || isSaving) && styles.saveButtonTextDisabled,
             ]}
           >
-            {isSaving ? t('profileEdit.button.saving') : t('profileEdit.button.save')}
+            {isSaving
+              ? t("profileEdit.button.saving")
+              : t("profileEdit.button.save")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -282,23 +293,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.white,
   },
   content: {
     flex: 1,

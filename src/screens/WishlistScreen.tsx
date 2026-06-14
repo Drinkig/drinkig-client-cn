@@ -14,6 +14,8 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { getWishlist, WishlistItemDTO } from "../api/wine";
 import { WineDBItem } from "../types/Wine";
+import GlassHeader from "../components/common/GlassHeader";
+import { colors } from "../constants/colors";
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
@@ -128,16 +130,18 @@ export default function WishlistScreen() {
       <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
 
       {/* 헤더 */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>위시리스트</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <GlassHeader
+        floating={false}
+        title="위시리스트"
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       {/* 컨텐츠 */}
       <View style={styles.content}>
@@ -186,23 +190,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a1a1a",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
   },
   content: {
     flex: 1,

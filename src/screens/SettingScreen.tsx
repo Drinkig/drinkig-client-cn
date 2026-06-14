@@ -29,6 +29,7 @@ import { redeemPromoCode } from "../api/subscription";
 import DeviceInfo from "react-native-device-info";
 import { colors } from "../constants/colors";
 import { isDevAccessEnabled } from "../utils/devAccess";
+import GlassHeader from "../components/common/GlassHeader";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
@@ -288,16 +289,18 @@ App Version: ${DeviceInfo.getVersion()}
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="chevron-back" size={28} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t("setting.header")}</Text>
-        <View style={{ width: 28 }} />
-      </View>
+      <GlassHeader
+        floating={false}
+        title={t("setting.header")}
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
@@ -696,23 +699,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backButton: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.white,
   },
   content: {
     flex: 1,

@@ -19,6 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
+import GlassHeader from "../components/common/GlassHeader";
 import { submitWineRequest } from "../api/wine";
 import { useGlobalUI } from "../context/GlobalUIContext";
 
@@ -186,16 +187,18 @@ const WineRegisterScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t("wineRegister.header")}</Text>
-        <View style={styles.headerRight} />
-      </View>
+      <GlassHeader
+        floating={false}
+        title={t("wineRegister.header")}
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -401,27 +404,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.white,
-  },
-  backButton: {
-    padding: 8,
-    width: 40,
-  },
-  headerRight: {
-    width: 40,
   },
   body: {
     flex: 1,

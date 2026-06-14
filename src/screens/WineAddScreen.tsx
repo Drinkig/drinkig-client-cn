@@ -29,6 +29,7 @@ import {
 import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 import { colors } from "../constants/colors";
+import GlassHeader from "../components/common/GlassHeader";
 import { useTranslation } from "react-i18next";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 
@@ -721,15 +722,18 @@ const WineAddScreen = () => {
         singleButton={true}
       />
 
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color={colors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {isEditMode ? t("wineAdd.headerEdit") : t("wineAdd.headerAdd")}
-        </Text>
-        <View style={styles.headerRight} />
-      </View>
+      <GlassHeader
+        floating={false}
+        title={isEditMode ? t("wineAdd.headerEdit") : t("wineAdd.headerAdd")}
+        left={
+          <TouchableOpacity
+            onPress={handleBack}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+      />
 
       {renderProgressBar()}
 
@@ -787,27 +791,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.white,
-  },
-  backButton: {
-    padding: 8,
-    width: 40,
-  },
-  headerRight: {
-    width: 40,
   },
   progressContainer: {
     paddingHorizontal: 24,
