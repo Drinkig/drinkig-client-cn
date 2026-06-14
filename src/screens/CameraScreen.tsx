@@ -17,6 +17,7 @@ import {
   useCameraPermission,
 } from "react-native-vision-camera";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import LinearGradient from "react-native-linear-gradient";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import PhotoManipulator, { MimeType } from "react-native-photo-manipulator";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -24,6 +25,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { colors } from "../constants/colors";
+import { accent, radius, spacing } from "../constants/theme";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useSubscription } from "../context/SubscriptionContext";
 import { getScanRemaining } from "../api/subscription";
@@ -195,6 +197,8 @@ export default function CameraScreen({ navigation }: Props) {
   const frameHeightAnim = useRef(
     new Animated.Value(FRAME_LABEL_HEIGHT)
   ).current;
+  // Sweeping scan line (0 → 1 → 0, mapped to the current frame height)
+  const scanLineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const toValue = scanType === "label" ? 0 : 1;
@@ -215,6 +219,26 @@ export default function CameraScreen({ navigation }: Props) {
       }),
     ]).start();
   }, [scanType]);
+
+  // Loop the scan line up & down for an active "scanning" feel.
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scanLineAnim, {
+          toValue: 1,
+          duration: 2200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scanLineAnim, {
+          toValue: 0,
+          duration: 2200,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [scanLineAnim]);
 
   const handleClose = useCallback(() => {
     navigation.goBack();
@@ -391,6 +415,10 @@ export default function CameraScreen({ navigation }: Props) {
   const scanDisabled =
     !isPremium && remainingScans !== -1 && remainingScans <= 0;
 
+  // Scan-line travel range follows the active frame's height.
+  const currentFrameHeight =
+    scanType === "label" ? FRAME_LABEL_HEIGHT : FRAME_LIST_HEIGHT;
+
   if (!device && !__DEV__) {
     return (
       <View style={styles.permissionContainer}>
@@ -481,22 +509,57 @@ export default function CameraScreen({ navigation }: Props) {
               { width: FRAME_WIDTH, height: frameHeightAnim },
             ]}
           >
+            {/* Sweeping scan line */}
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.scanLine,
+                {
+                  transform: [
+                    {
+                      translateY: scanLineAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, currentFrameHeight - SCAN_LINE_HEIGHT],
+                      }),
+                    },
+                  ],
+                  opacity: scanLineAnim.interpolate({
+                    inputRange: [0, 0.08, 0.92, 1],
+                    outputRange: [0, 1, 1, 0],
+                  }),
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={["transparent", accent.text, "transparent"]}
+                style={StyleSheet.absoluteFill}
+              />
+            </Animated.View>
             {/* Corner brackets */}
             <View style={[styles.corner, styles.cornerTL]} />
             <View style={[styles.corner, styles.cornerTR]} />
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
             {/* Guide text */}
-            <Text style={styles.guideText}>
-              {scanType === "label"
-                ? t("camera.guideLabel")
-                : t("camera.guideList")}
-            </Text>
+            <View style={styles.guidePill}>
+              <Text style={styles.guideText}>
+                {scanType === "label"
+                  ? t("camera.guideLabel")
+                  : t("camera.guideList")}
+              </Text>
+            </View>
           </Animated.View>
           <View style={styles.dimSide} />
         </View>
         <View style={styles.dimOverlayBottom} />
       </View>
+
+      {/* Cinematic top scrim behind the controls */}
+      <LinearGradient
+        pointerEvents="none"
+        colors={["rgba(0,0,0,0.65)", "transparent"]}
+        style={[styles.topScrim, { height: insets.top + 96 }]}
+      />
 
       {/* Top Controls */}
       <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
@@ -544,6 +607,12 @@ export default function CameraScreen({ navigation }: Props) {
 
       {/* Bottom Controls */}
       <View style={styles.bottomBar}>
+        <LinearGradient
+          pointerEvents="none"
+          colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.9)"]}
+          locations={[0, 0.45, 1]}
+          style={StyleSheet.absoluteFill}
+        />
         {/* Scan Type Toggle */}
         <View style={styles.toggleContainer}>
           {/* Sliding pill indicator */}
@@ -659,8 +728,9 @@ const SHUTTER_INNER_SIZE = 58;
 const FRAME_WIDTH = width * 0.78;
 const FRAME_LABEL_HEIGHT = FRAME_WIDTH * 1.1; // label: slightly taller than wide
 const FRAME_LIST_HEIGHT = FRAME_WIDTH * 1.45; // list: much taller for menus
-const CORNER_SIZE = 28;
+const CORNER_SIZE = 32;
 const CORNER_THICKNESS = 3;
+const SCAN_LINE_HEIGHT = 3;
 
 // Toggle dimensions
 const TOGGLE_BTN_WIDTH = 104;
@@ -744,13 +814,29 @@ const styles = StyleSheet.create({
   frameCutout: {
     alignItems: "center",
     justifyContent: "flex-end",
-    paddingBottom: 20,
-    borderRadius: 12,
+    paddingBottom: spacing.xl,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+  },
+  scanLine: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: SCAN_LINE_HEIGHT,
+  },
+  guidePill: {
+    backgroundColor: "rgba(0,0,0,0.45)",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radius.pill,
   },
   guideText: {
-    color: "rgba(255,255,255,0.7)",
+    color: colors.white,
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
+    letterSpacing: 0.2,
   },
   // Corner brackets
   corner: {
@@ -759,36 +845,42 @@ const styles = StyleSheet.create({
     height: CORNER_SIZE,
   },
   cornerTL: {
-    top: 0,
-    left: 0,
+    top: -1,
+    left: -1,
     borderTopWidth: CORNER_THICKNESS,
     borderLeftWidth: CORNER_THICKNESS,
     borderColor: colors.white,
-    borderTopLeftRadius: 12,
+    borderTopLeftRadius: radius.lg,
   },
   cornerTR: {
-    top: 0,
-    right: 0,
+    top: -1,
+    right: -1,
     borderTopWidth: CORNER_THICKNESS,
     borderRightWidth: CORNER_THICKNESS,
     borderColor: colors.white,
-    borderTopRightRadius: 12,
+    borderTopRightRadius: radius.lg,
   },
   cornerBL: {
-    bottom: 0,
-    left: 0,
+    bottom: -1,
+    left: -1,
     borderBottomWidth: CORNER_THICKNESS,
     borderLeftWidth: CORNER_THICKNESS,
     borderColor: colors.white,
-    borderBottomLeftRadius: 12,
+    borderBottomLeftRadius: radius.lg,
   },
   cornerBR: {
-    bottom: 0,
-    right: 0,
+    bottom: -1,
+    right: -1,
     borderBottomWidth: CORNER_THICKNESS,
     borderRightWidth: CORNER_THICKNESS,
     borderColor: colors.white,
-    borderBottomRightRadius: 12,
+    borderBottomRightRadius: radius.lg,
+  },
+  topScrim: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
   },
   // Top bar
   topBar: {
@@ -807,8 +899,10 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(20,18,22,0.55)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
   },
   topRight: {
     flexDirection: "row",
@@ -863,17 +957,16 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingBottom: Platform.OS === "ios" ? 44 : 24,
     paddingTop: 16,
-    backgroundColor: "rgba(0,0,0,0.5)",
     gap: 20,
   },
   // Scan type toggle
   toggleContainer: {
     flexDirection: "row",
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 24,
+    backgroundColor: "rgba(20,18,22,0.55)",
+    borderRadius: radius.pill,
     padding: TOGGLE_PADDING,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.14)",
   },
   togglePill: {
     position: "absolute",
@@ -881,8 +974,8 @@ const styles = StyleSheet.create({
     left: TOGGLE_PADDING,
     width: TOGGLE_BTN_WIDTH,
     height: 34,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    backgroundColor: accent.base,
   },
   toggleButton: {
     width: TOGGLE_BTN_WIDTH,
