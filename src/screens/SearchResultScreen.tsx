@@ -20,6 +20,7 @@ import {
 import { WineDBItem } from "../types/Wine";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
+import { getWineTypeColor } from "../constants/wineColors";
 import { useTranslation, Trans } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
 import { useUser } from "../context/UserContext";
@@ -134,28 +135,6 @@ export default function SearchResultScreen() {
         });
     });
   }, [searchResults, flavorProfile, isPremium]);
-
-  const getWineTypeColor = (type: string) => {
-    switch (type) {
-      case "레드":
-      case "Red":
-        return "#EF5350";
-      case "화이트":
-      case "White":
-        return "#F4D03F";
-      case "스파클링":
-      case "Sparkling":
-        return "#5DADE2";
-      case "로제":
-      case "Rose":
-        return "#F1948A";
-      case "디저트":
-      case "Dessert":
-        return "#F5B041";
-      default:
-        return "#95A5A6";
-    }
-  };
 
   const handleWinePress = (item: WineDBItem) => {
     if (returnScreen === "TastingNoteWrite") {

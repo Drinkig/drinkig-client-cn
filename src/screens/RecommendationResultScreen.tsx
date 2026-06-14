@@ -1,39 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
-import { useUser } from '../context/UserContext';
-import { getOnboardingRecommendation, OnboardingRecommendationDTO } from '../api/wine';
-import PentagonRadarChart from '../components/common/PentagonRadarChart';
-import { colors } from '../constants/colors';
-
-const getWineTypeColor = (type: string) => {
-  switch (type) {
-    case '레드':
-      return '#EF5350';
-    case '화이트':
-      return '#F4D03F';
-    case '스파클링':
-      return '#5DADE2';
-    case '로제':
-      return '#F1948A';
-    case '디저트':
-    case '주정강화':
-      return '#F5B041';
-    default:
-      return '#95A5A6';
-  }
-};
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Animated,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import { useUser } from "../context/UserContext";
+import {
+  getOnboardingRecommendation,
+  OnboardingRecommendationDTO,
+} from "../api/wine";
+import PentagonRadarChart from "../components/common/PentagonRadarChart";
+import { colors } from "../constants/colors";
+import { getWineTypeColor } from "../constants/wineColors";
 
 const RecommendationResultScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { t } = useTranslation();
-  const { user, completeOnboarding, setRecommendations: saveRecommendations, setFlavorProfile: saveFlavorProfile } = useUser();
+  const {
+    user,
+    completeOnboarding,
+    setRecommendations: saveRecommendations,
+    setFlavorProfile: saveFlavorProfile,
+  } = useUser();
   const [loading, setLoading] = useState(true);
-  const [recommendations, setRecommendations] = useState<OnboardingRecommendationDTO[]>([]);
+  const [recommendations, setRecommendations] = useState<
+    OnboardingRecommendationDTO[]
+  >([]);
 
   const flavorProfile = (route.params as any)?.flavorProfile;
   const nickname = (route.params as any)?.nickname;
@@ -42,7 +43,6 @@ const RecommendationResultScreen = () => {
   const [animations, setAnimations] = useState<Animated.Value[]>([]);
 
   useEffect(() => {
-
     if (flavorProfile) {
       saveFlavorProfile(flavorProfile);
     }
@@ -51,20 +51,26 @@ const RecommendationResultScreen = () => {
   useEffect(() => {
     if (!loading && recommendations.length > 0) {
       const totalItems = (flavorProfile ? 1 : 0) + recommendations.length;
-      const anims = Array.from({ length: totalItems }, () => new Animated.Value(0));
+      const anims = Array.from(
+        { length: totalItems },
+        () => new Animated.Value(0)
+      );
       setAnimations(anims);
     }
   }, [loading, recommendations.length, flavorProfile]);
 
   useEffect(() => {
     if (animations.length > 0) {
-      Animated.stagger(200, animations.map(anim =>
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        })
-      )).start();
+      Animated.stagger(
+        200,
+        animations.map((anim) =>
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          })
+        )
+      ).start();
     }
   }, [animations]);
 
@@ -98,7 +104,9 @@ const RecommendationResultScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>{t('recommendationResult.loading')}</Text>
+        <Text style={styles.loadingText}>
+          {t("recommendationResult.loading")}
+        </Text>
       </View>
     );
   }
@@ -106,30 +114,43 @@ const RecommendationResultScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('recommendationResult.header')}</Text>
-        <Text style={styles.subtitle}>{t('recommendationResult.subtitle')}</Text>
+        <Text style={styles.title}>{t("recommendationResult.header")}</Text>
+        <Text style={styles.subtitle}>
+          {t("recommendationResult.subtitle")}
+        </Text>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {flavorProfile && (
           <Animated.View
             style={[
               styles.chartContainer,
               animations[0] && {
                 opacity: animations[0],
-                transform: [{
-                  translateY: animations[0].interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [20, 0]
-                  })
-                }]
-              }
+                transform: [
+                  {
+                    translateY: animations[0].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [20, 0],
+                    }),
+                  },
+                ],
+              },
             ]}
           >
-            <Text style={styles.chartTitle}>{t('recommendationResult.chartTitle', { nickname: nickname || user?.nickname })}</Text>
+            <Text style={styles.chartTitle}>
+              {t("recommendationResult.chartTitle", {
+                nickname: nickname || user?.nickname,
+              })}
+            </Text>
             <PentagonRadarChart data={flavorProfile} size={220} />
-            <Text style={styles.chartHelperText}>{t('recommendationResult.chartHelper')}</Text>
+            <Text style={styles.chartHelperText}>
+              {t("recommendationResult.chartHelper")}
+            </Text>
           </Animated.View>
         )}
 
@@ -144,18 +165,22 @@ const RecommendationResultScreen = () => {
                 styles.card,
                 anim && {
                   opacity: anim,
-                  transform: [{
-                    translateY: anim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [20, 0]
-                    })
-                  }]
-                }
+                  transform: [
+                    {
+                      translateY: anim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [20, 0],
+                      }),
+                    },
+                  ],
+                },
               ]}
             >
               <View style={styles.cardHeader}>
                 <View style={styles.headerTitleContainer}>
-                  <Text style={styles.cardTitle}>{t(`recommendationResult.rankTitle${index}`)}</Text>
+                  <Text style={styles.cardTitle}>
+                    {t(`recommendationResult.rankTitle${index}`)}
+                  </Text>
                 </View>
               </View>
 
@@ -164,16 +189,17 @@ const RecommendationResultScreen = () => {
                   <Text style={styles.styleText}>
                     {item.country} {item.region}
                   </Text>
-                  <Text style={styles.varietyText}>
-                    {item.variety}
-                  </Text>
+                  <Text style={styles.varietyText}>{item.variety}</Text>
                 </View>
-                <View style={[styles.typeChip, { backgroundColor: getWineTypeColor(item.sort) }]}>
+                <View
+                  style={[
+                    styles.typeChip,
+                    { backgroundColor: getWineTypeColor(item.sort) },
+                  ]}
+                >
                   <Text style={styles.typeChipText}>{item.sort}</Text>
                 </View>
               </View>
-
-
             </Animated.View>
           );
         })}
@@ -181,7 +207,11 @@ const RecommendationResultScreen = () => {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.button} onPress={handleComplete}>
-          <Text style={styles.buttonText}>{fromReset ? t('recommendationResult.buttonReset') : t('recommendationResult.button')}</Text>
+          <Text style={styles.buttonText}>
+            {fromReset
+              ? t("recommendationResult.buttonReset")
+              : t("recommendationResult.button")}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -191,13 +221,13 @@ const RecommendationResultScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: "#121212",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#121212',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
   },
   loadingText: {
     color: colors.white,
@@ -210,13 +240,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#aaa',
+    color: "#aaa",
   },
   content: {
     flex: 1,
@@ -227,7 +257,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   chartContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
     backgroundColor: colors.background,
     paddingTop: 24,
@@ -240,7 +270,7 @@ const styles = StyleSheet.create({
   chartTitle: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   chartHelperText: {
@@ -248,11 +278,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 4,
     marginBottom: 8,
-    textAlign: 'center',
-    fontWeight: '500',
+    textAlign: "center",
+    fontWeight: "500",
   },
   card: {
-    backgroundColor: '#1e1e1e',
+    backgroundColor: "#1e1e1e",
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingTop: 15,
@@ -261,9 +291,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   typeChip: {
@@ -274,24 +304,24 @@ const styles = StyleSheet.create({
   typeChipText: {
     color: colors.white,
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   rankBadge: {
     fontSize: 20,
   },
   cardTitle: {
     fontSize: 15,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
     marginLeft: 10,
   },
   cardBody: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.surface1,
     borderRadius: 12,
     paddingVertical: 12,
@@ -303,8 +333,8 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     backgroundColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 12,
   },
   textContainer: {
@@ -312,17 +342,17 @@ const styles = StyleSheet.create({
   },
   styleText: {
     fontSize: 13,
-    color: '#aaa',
+    color: "#aaa",
     marginBottom: 6,
   },
   varietyText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.white,
   },
   tagContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   tag: {
@@ -333,26 +363,25 @@ const styles = StyleSheet.create({
   },
   tagText: {
     fontSize: 13,
-    color: '#ccc',
+    color: "#ccc",
   },
   footer: {
     padding: 24,
     borderTopWidth: 1,
-    borderTopColor: '#222',
+    borderTopColor: "#222",
   },
   button: {
     backgroundColor: colors.primary,
     height: 56,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonText: {
     color: colors.white,
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
 export default RecommendationResultScreen;
-

@@ -19,6 +19,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
+import { getWineTypeColor as getWineColor } from "../constants/wineColors";
 import {
   getFoodPairingRecommendation,
   FoodRecommendationDTO,
@@ -841,18 +842,6 @@ const SommelierAvatar: React.FC = () => (
     />
   </View>
 );
-
-const getWineColor = (type: string) => {
-  if (type.includes("레드") || type.toUpperCase().includes("RED"))
-    return colors.error;
-  if (type.includes("화이트") || type.toUpperCase().includes("WHITE"))
-    return "#f1c40f";
-  if (type.includes("스파클링") || type.toUpperCase().includes("SPARKLING"))
-    return "#3498db";
-  if (type.includes("로제") || type.toUpperCase().includes("ROSE"))
-    return "#e91e63";
-  return colors.textSecondary;
-};
 
 const localizeSort = (sort: string, lang: "ko" | "en") => {
   if (lang !== "en") return sort;

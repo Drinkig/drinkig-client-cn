@@ -16,6 +16,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
+import { getWineTypeColor as getTypeColor } from "../constants/wineColors";
 import {
   WineRequestDTO,
   WineRequestStatus,
@@ -114,23 +115,6 @@ const AdminWineApprovalScreen = () => {
     }
     setRejectModalVisible(false);
     setRejectTarget(null);
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "Red":
-        return "#EF5350";
-      case "White":
-        return "#F4D03F";
-      case "Sparkling":
-        return "#5DADE2";
-      case "Rose":
-        return "#F1948A";
-      case "Dessert":
-        return "#F5B041";
-      default:
-        return "#95A5A6";
-    }
   };
 
   const getStatusColor = (status: WineRequestStatus) => {

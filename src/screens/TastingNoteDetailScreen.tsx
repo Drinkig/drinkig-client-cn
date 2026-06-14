@@ -23,6 +23,7 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
 import { colors } from "../constants/colors";
+import { getWineTypeColor } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 
@@ -299,28 +300,6 @@ export default function TastingNoteDetailScreen() {
     </SafeAreaView>
   );
 }
-
-const getWineTypeColor = (type: string) => {
-  switch (type?.toUpperCase()) {
-    case "RED":
-    case "레드":
-      return "#EF5350";
-    case "WHITE":
-    case "화이트":
-      return "#F4D03F";
-    case "SPARKLING":
-    case "스파클링":
-      return "#5DADE2";
-    case "ROSE":
-    case "로제":
-      return "#F1948A";
-    case "DESSERT":
-    case "디저트":
-      return "#F5B041";
-    default:
-      return "#95A5A6";
-  }
-};
 
 const getHexColorFromValue = (value: string) => {
   if (!value) return "transparent";

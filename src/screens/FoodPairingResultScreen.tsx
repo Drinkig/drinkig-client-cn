@@ -26,6 +26,7 @@ import { FlavorProfile } from "../components/onboarding/FlavorProfileStep";
 import AnalyzingRadarChart from "../components/common/AnalyzingRadarChart";
 import RollingCandidates from "../components/common/RollingCandidates";
 import { colors } from "../constants/colors";
+import { getWineTypeColor as getWineColor } from "../constants/wineColors";
 
 const RANK_BADGES = ["🥇", "🥈", "🥉"];
 
@@ -473,18 +474,6 @@ export default function FoodPairingResultScreen() {
     </SafeAreaView>
   );
 }
-
-const getWineColor = (type: string) => {
-  if (type.includes("레드") || type.toUpperCase().includes("RED"))
-    return colors.error;
-  if (type.includes("화이트") || type.toUpperCase().includes("WHITE"))
-    return "#f1c40f";
-  if (type.includes("스파클링") || type.toUpperCase().includes("SPARKLING"))
-    return "#3498db";
-  if (type.includes("로제") || type.toUpperCase().includes("ROSE"))
-    return "#e91e63";
-  return colors.textSecondary;
-};
 
 const styles = StyleSheet.create({
   container: {

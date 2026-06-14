@@ -19,6 +19,7 @@ import { useNavigation } from "@react-navigation/native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
+import { getWineTypeColor as getTypeColor } from "../constants/wineColors";
 import GlassHeader from "../components/common/GlassHeader";
 import { submitWineRequest } from "../api/wine";
 import { useGlobalUI } from "../context/GlobalUIContext";
@@ -165,23 +166,6 @@ const WineRegisterScreen = () => {
       showToast(t("wineRegister.alert.errorMsg"), { type: "error" });
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "Red":
-        return "#EF5350";
-      case "White":
-        return "#F4D03F";
-      case "Sparkling":
-        return "#5DADE2";
-      case "Rose":
-        return "#F1948A";
-      case "Dessert":
-        return "#F5B041";
-      default:
-        return "#95A5A6";
     }
   };
 

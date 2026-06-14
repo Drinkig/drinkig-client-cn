@@ -15,6 +15,7 @@ import { useSubscription } from "../context/SubscriptionContext";
 import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
+import { getWineTypeColor } from "../constants/wineColors";
 
 const COOLDOWN_DAYS = 7;
 const RANK_BADGES = ["🥇", "🥈", "🥉"];
@@ -66,28 +67,6 @@ const RecommendationListScreen = () => {
       return () => clearInterval(interval);
     }, [checkCooldown])
   );
-
-  const getWineTypeColor = (type: string) => {
-    switch (type) {
-      case "레드":
-      case "Red":
-        return "#EF5350";
-      case "화이트":
-      case "White":
-        return "#F4D03F";
-      case "스파클링":
-      case "Sparkling":
-        return "#5DADE2";
-      case "로제":
-      case "Rose":
-        return "#F1948A";
-      case "디저트":
-      case "Dessert":
-        return "#F5B041";
-      default:
-        return "#95A5A6";
-    }
-  };
 
   const getWineTypeLabel = (type: string, lang: string) => {
     if (lang !== "en") return type;

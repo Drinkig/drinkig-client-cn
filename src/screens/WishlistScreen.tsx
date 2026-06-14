@@ -16,6 +16,7 @@ import { getWishlist, WishlistItemDTO } from "../api/wine";
 import { WineDBItem } from "../types/Wine";
 import GlassHeader from "../components/common/GlassHeader";
 import { colors } from "../constants/colors";
+import { getWineTypeColor } from "../constants/wineColors";
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
@@ -40,28 +41,6 @@ export default function WishlistScreen() {
       console.error("Failed to fetch wishlist:", error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getWineTypeColor = (type: string) => {
-    switch (type) {
-      case "레드":
-      case "Red":
-        return "#C0392B";
-      case "화이트":
-      case "White":
-        return "#D4AC0D";
-      case "스파클링":
-      case "Sparkling":
-        return "#2980B9";
-      case "로제":
-      case "Rose":
-        return "#C2185B";
-      case "디저트":
-      case "Dessert":
-        return "#D35400";
-      default:
-        return "#7F8C8D";
     }
   };
 

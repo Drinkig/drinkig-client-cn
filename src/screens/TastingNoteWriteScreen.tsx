@@ -34,6 +34,7 @@ import { TASTE_TIPS } from "../components/tasting_note/constants";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
+import { getWineTypeColor } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import {
   saveDraft,
@@ -127,28 +128,6 @@ export default function TastingNoteWriteScreen() {
       setColor("");
     }
   }, [route.params]);
-
-  const getWineTypeColor = (type: string) => {
-    switch (type) {
-      case "레드":
-      case "Red":
-        return "#EF5350";
-      case "화이트":
-      case "White":
-        return "#F4D03F";
-      case "스파클링":
-      case "Sparkling":
-        return "#5DADE2";
-      case "로제":
-      case "Rose":
-        return "#F1948A";
-      case "디저트":
-      case "Dessert":
-        return "#F5B041";
-      default:
-        return "#95A5A6";
-    }
-  };
 
   const [vintageYear, setVintageYear] = useState("");
   const [color, setColor] = useState("");
