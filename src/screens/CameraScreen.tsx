@@ -197,8 +197,6 @@ export default function CameraScreen({ navigation }: Props) {
   const frameHeightAnim = useRef(
     new Animated.Value(FRAME_LABEL_HEIGHT)
   ).current;
-  // Sweeping scan line (0 → 1 → 0, mapped to the current frame height)
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const toValue = scanType === "label" ? 0 : 1;
@@ -219,26 +217,6 @@ export default function CameraScreen({ navigation }: Props) {
       }),
     ]).start();
   }, [scanType]);
-
-  // Loop the scan line up & down for an active "scanning" feel.
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 2200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 2200,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [scanLineAnim]);
 
   const handleClose = useCallback(() => {
     navigation.goBack();
@@ -415,10 +393,6 @@ export default function CameraScreen({ navigation }: Props) {
   const scanDisabled =
     !isPremium && remainingScans !== -1 && remainingScans <= 0;
 
-  // Scan-line travel range follows the active frame's height.
-  const currentFrameHeight =
-    scanType === "label" ? FRAME_LABEL_HEIGHT : FRAME_LIST_HEIGHT;
-
   if (!device && !__DEV__) {
     return (
       <View style={styles.permissionContainer}>
@@ -509,32 +483,6 @@ export default function CameraScreen({ navigation }: Props) {
               { width: FRAME_WIDTH, height: frameHeightAnim },
             ]}
           >
-            {/* Sweeping scan line */}
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.scanLine,
-                {
-                  transform: [
-                    {
-                      translateY: scanLineAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, currentFrameHeight - SCAN_LINE_HEIGHT],
-                      }),
-                    },
-                  ],
-                  opacity: scanLineAnim.interpolate({
-                    inputRange: [0, 0.08, 0.92, 1],
-                    outputRange: [0, 1, 1, 0],
-                  }),
-                },
-              ]}
-            >
-              <LinearGradient
-                colors={["transparent", accent.text, "transparent"]}
-                style={StyleSheet.absoluteFill}
-              />
-            </Animated.View>
             {/* Corner brackets */}
             <View style={[styles.corner, styles.cornerTL]} />
             <View style={[styles.corner, styles.cornerTR]} />
@@ -730,7 +678,6 @@ const FRAME_LABEL_HEIGHT = FRAME_WIDTH * 1.1; // label: slightly taller than wid
 const FRAME_LIST_HEIGHT = FRAME_WIDTH * 1.45; // list: much taller for menus
 const CORNER_SIZE = 32;
 const CORNER_THICKNESS = 3;
-const SCAN_LINE_HEIGHT = 3;
 
 // Toggle dimensions
 const TOGGLE_BTN_WIDTH = 104;
@@ -818,13 +765,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.14)",
-  },
-  scanLine: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    height: SCAN_LINE_HEIGHT,
   },
   guidePill: {
     backgroundColor: "rgba(0,0,0,0.45)",
