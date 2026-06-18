@@ -765,11 +765,11 @@
             }
         },
         "loading": {
-            "message0": "Analyzing your preferences...",
-            "message1": "Reviewing your flavor profile...",
-            "message2": "Finding the perfect grape varieties...",
-            "message3": "Matching wine data from around the world...",
-            "message4": "Found the best match for {{nickname}}!"
+            "message0": "Analyzing your taste",
+            "message1": "Reading your flavor profile",
+            "message2": "Finding your grape varieties",
+            "message3": "Matching wines worldwide",
+            "message4": "Found your best match!"
         },
         "nicknameError": {
             "minLength": "Nickname must be at least 2 characters.",

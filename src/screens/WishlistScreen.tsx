@@ -16,6 +16,7 @@ import { getWishlist, WishlistItemDTO } from "../api/wine";
 import { WineDBItem } from "../types/Wine";
 import GlassHeader from "../components/common/GlassHeader";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
 
 export default function WishlistScreen() {
@@ -64,6 +65,7 @@ export default function WishlistScreen() {
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => handleWinePress(item)}
+      activeOpacity={0.85}
     >
       <View style={styles.imageContainer}>
         {item.imageUrl ? (
@@ -73,16 +75,18 @@ export default function WishlistScreen() {
             resizeMode="contain"
           />
         ) : (
-          <Icon name="wine" size={30} color="#8e44ad" />
+          <Icon name="wine" size={26} color={accent.text} />
         )}
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.nameKor} numberOfLines={1}>
           {item.name}
         </Text>
-        <Text style={styles.nameEng} numberOfLines={1}>
-          {item.nameEng}
-        </Text>
+        {item.nameEng ? (
+          <Text style={styles.nameEng} numberOfLines={1}>
+            {item.nameEng}
+          </Text>
+        ) : null}
         <View style={styles.detailRow}>
           <View
             style={[
@@ -92,12 +96,14 @@ export default function WishlistScreen() {
           >
             <Text style={styles.typeChipText}>{item.sort}</Text>
           </View>
-          <Text style={styles.countryText}>{item.country}</Text>
+          {item.country ? (
+            <Text style={styles.countryText}>{item.country}</Text>
+          ) : null}
         </View>
       </View>
       {item.vivinoRating > 0 && (
         <View style={styles.ratingContainer}>
-          <Icon name="star" size={14} color={colors.error} />
+          <Icon name="star" size={12} color={colors.warning} />
           <Text style={styles.ratingText}>{item.vivinoRating.toFixed(1)}</Text>
         </View>
       )}
@@ -145,6 +151,7 @@ export default function WishlistScreen() {
                 </View>
               ) : null
             }
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Image
@@ -179,34 +186,39 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   listContent: {
-    padding: 16,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
   listHeader: {
-    paddingBottom: 16,
+    paddingBottom: spacing.md,
   },
   countText: {
     color: colors.textSecondary,
     fontSize: 14,
   },
   countHighlight: {
-    color: colors.white,
+    color: colors.textPrimary,
     fontWeight: "bold",
   },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   imageContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    backgroundColor: colors.surface1,
+    width: 56,
+    height: 70,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.raised,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: spacing.lg,
     overflow: "hidden",
   },
   image: {
@@ -219,24 +231,24 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   nameKor: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "600",
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: "700",
   },
   nameEng: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
   },
   detailRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginTop: 2,
+    gap: spacing.sm,
+    marginTop: spacing.xs,
   },
   typeChip: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: radius.sm,
   },
   typeChipText: {
     color: colors.white,
@@ -250,13 +262,13 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    paddingLeft: 8,
+    gap: 3,
+    paddingLeft: spacing.sm,
   },
   ratingText: {
-    fontSize: 14,
-    color: colors.error,
-    fontWeight: "bold",
+    fontSize: 13,
+    color: colors.textPrimary,
+    fontWeight: "700",
   },
   emptyContainer: {
     padding: 32,

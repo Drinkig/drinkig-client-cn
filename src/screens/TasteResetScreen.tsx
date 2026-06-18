@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
-import Svg, { Circle } from "react-native-svg";
+import LinearGradient from "react-native-linear-gradient";
+import Svg, { Defs, RadialGradient, Stop, Circle } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { MemberInitRequest, updateMemberInitInfo } from "../api/member";
@@ -23,8 +24,9 @@ import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import { CategorizedSelectionStep } from "../components/onboarding/CategorizedSelectionStep";
 import BudgetStep from "../components/onboarding/BudgetStep";
 import { colors } from "../constants/colors";
+import { spacing, radius, accent } from "../constants/theme";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 type Step =
   | "ALCOHOL_PREF"
@@ -171,71 +173,13 @@ const TasteResetScreen = () => {
 
   const [loading, setLoading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [analyzingIndex, setAnalyzingIndex] = useState(0);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  // Guards against double-advance when a flavor option is tapped twice quickly
+  // (those steps auto-advance on selection, so there's no Next button to debounce).
+  const advancingRef = useRef(false);
   const progressAnim = useRef(new Animated.Value(1 / STEPS.length)).current;
-  const loadingBarAnim = useRef(new Animated.Value(0)).current;
-
-  const CIRCLE_SIZE = 120;
-  const STROKE_WIDTH = 8;
-  const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-  const strokeDashoffset = loadingBarAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [CIRCUMFERENCE, 0],
-  });
-
-  useEffect(() => {
-    if (analyzing) {
-      setAnalyzingIndex(0);
-      loadingBarAnim.setValue(0);
-
-      const times = [2000, 3000, 5000, 8000];
-
-      const timeout1 = setTimeout(() => setAnalyzingIndex(1), times[0]);
-      const timeout2 = setTimeout(() => setAnalyzingIndex(2), times[1]);
-      const timeout3 = setTimeout(() => setAnalyzingIndex(3), times[2]);
-      const timeout4 = setTimeout(() => setAnalyzingIndex(4), times[3]);
-
-      Animated.sequence([
-        Animated.timing(loadingBarAnim, {
-          toValue: 0.3,
-          duration: 2000,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(loadingBarAnim, {
-          toValue: 0.6,
-          duration: 4000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-        Animated.timing(loadingBarAnim, {
-          toValue: 0.85,
-          duration: 2000,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(loadingBarAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      return () => {
-        clearTimeout(timeout1);
-        clearTimeout(timeout2);
-        clearTimeout(timeout3);
-        clearTimeout(timeout4);
-        loadingBarAnim.stopAnimation();
-      };
-    }
-  }, [analyzing]);
 
   const toggleAlcohol = (value: string) => {
     setPreferredAlcohols((prev) =>
@@ -294,8 +238,8 @@ const TasteResetScreen = () => {
     Animated.parallel([
       Animated.timing(slideAnim, {
         toValue: direction === "next" ? -SCREEN_WIDTH : SCREEN_WIDTH,
-        duration: 200,
-        easing: Easing.out(Easing.cubic),
+        duration: 180,
+        easing: Easing.in(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(fadeAnim, {
@@ -311,7 +255,7 @@ const TasteResetScreen = () => {
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 250,
+          duration: 240,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
@@ -322,20 +266,21 @@ const TasteResetScreen = () => {
         }),
         Animated.timing(progressAnim, {
           toValue: (nextIndex + 1) / STEPS.length,
-          duration: 300,
+          duration: 280,
           useNativeDriver: false,
         }),
       ]).start();
     });
   };
 
-  const handleFinalSubmit = async () => {
+  const handleFinalSubmit = async (priceOverride?: number) => {
+    const finalPrice = priceOverride ?? monthPrice;
     setLoading(true);
     try {
       const requestData: MemberInitRequest = {
         name: user?.nickname || "",
         isNewbie: true,
-        monthPrice,
+        monthPrice: finalPrice,
         wineSort,
         acidity: flavorProfile.acidity ?? null,
         sweetness: flavorProfile.sweetness ?? null,
@@ -395,6 +340,37 @@ const TasteResetScreen = () => {
     }
   };
 
+  // Single-select steps advance on tap and have no footer button.
+  const isAutoAdvanceStep =
+    currentStep.startsWith("FLAVOR_") || currentStep === "BUDGET";
+
+  // Flavor steps are single-select 5-point scales — tapping an option records it
+  // and immediately moves to the next step (no Next button). Going back re-shows
+  // the step with the previous choice highlighted, so it stays editable.
+  const handleFlavorSelect = (key: keyof FlavorProfile, value: number) => {
+    if (advancingRef.current) return;
+    advancingRef.current = true;
+    updateFlavorProfile(key, value);
+    // Near-instant: just enough for the selected highlight to paint a frame
+    // before the slide begins, so tap → motion feels like one continuous action.
+    setTimeout(() => {
+      nextStep();
+      setTimeout(() => {
+        advancingRef.current = false;
+      }, 450);
+    }, 50);
+  };
+
+  // Budget is the last step and also single-select — tapping an amount records it
+  // and submits immediately (no Complete button). Pass the picked price straight
+  // to submit so we don't read stale state before setMonthPrice settles.
+  const handleBudgetSelect = (price: number) => {
+    if (advancingRef.current) return;
+    advancingRef.current = true;
+    setMonthPrice(price);
+    setTimeout(() => handleFinalSubmit(price), 120);
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case "ALCOHOL_PREF":
@@ -422,7 +398,7 @@ const TasteResetScreen = () => {
           <NewbieFlavorProfileStep
             attribute="acidity"
             value={flavorProfile.acidity}
-            onChange={(val) => updateFlavorProfile("acidity", val)}
+            onChange={(val) => handleFlavorSelect("acidity", val)}
           />
         );
       case "FLAVOR_SWEETNESS":
@@ -430,7 +406,7 @@ const TasteResetScreen = () => {
           <NewbieFlavorProfileStep
             attribute="sweetness"
             value={flavorProfile.sweetness}
-            onChange={(val) => updateFlavorProfile("sweetness", val)}
+            onChange={(val) => handleFlavorSelect("sweetness", val)}
           />
         );
       case "FLAVOR_TANNIN":
@@ -438,7 +414,7 @@ const TasteResetScreen = () => {
           <NewbieFlavorProfileStep
             attribute="tannin"
             value={flavorProfile.tannin}
-            onChange={(val) => updateFlavorProfile("tannin", val)}
+            onChange={(val) => handleFlavorSelect("tannin", val)}
           />
         );
       case "FLAVOR_BODY":
@@ -446,7 +422,7 @@ const TasteResetScreen = () => {
           <NewbieFlavorProfileStep
             attribute="body"
             value={flavorProfile.body}
-            onChange={(val) => updateFlavorProfile("body", val)}
+            onChange={(val) => handleFlavorSelect("body", val)}
           />
         );
       case "FLAVOR_ALCOHOL":
@@ -454,7 +430,7 @@ const TasteResetScreen = () => {
           <NewbieFlavorProfileStep
             attribute="alcohol"
             value={flavorProfile.alcohol}
-            onChange={(val) => updateFlavorProfile("alcohol", val)}
+            onChange={(val) => handleFlavorSelect("alcohol", val)}
           />
         );
       case "WINE_INTEREST":
@@ -471,7 +447,7 @@ const TasteResetScreen = () => {
         return (
           <BudgetStep
             selectedPrice={monthPrice}
-            onSelect={setMonthPrice}
+            onSelect={handleBudgetSelect}
             options={BUDGET_OPTIONS}
           />
         );
@@ -515,132 +491,323 @@ const TasteResetScreen = () => {
         {renderStep()}
       </Animated.View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.nextButton,
-            !isStepValid() && styles.nextButtonDisabled,
-          ]}
-          onPress={nextStep}
-          disabled={!isStepValid()}
-        >
-          <Text
+      {/* Footer — single-select steps auto-advance on tap, so no button there */}
+      {!isAutoAdvanceStep && (
+        <View style={styles.footer}>
+          <TouchableOpacity
             style={[
-              styles.nextButtonText,
-              !isStepValid() && styles.nextButtonTextDisabled,
+              styles.nextButton,
+              !isStepValid() && styles.nextButtonDisabled,
             ]}
+            onPress={nextStep}
+            disabled={!isStepValid()}
           >
-            {currentStep === "BUDGET"
-              ? t("tasteReset.button.complete")
-              : t("tasteReset.button.next")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <Text
+              style={[
+                styles.nextButtonText,
+                !isStepValid() && styles.nextButtonTextDisabled,
+              ]}
+            >
+              {t("tasteReset.button.next")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {loading && (
         <View style={[StyleSheet.absoluteFill, styles.loadingContainer]}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <ActivityIndicator size="large" color={accent.base} />
         </View>
       )}
 
-      {analyzing && (
-        <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
-          <View
-            style={{
-              width: CIRCLE_SIZE,
-              height: CIRCLE_SIZE,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 10,
-            }}
-          >
-            <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
-              <Circle
-                cx={CIRCLE_SIZE / 2}
-                cy={CIRCLE_SIZE / 2}
-                r={RADIUS}
-                stroke={colors.border}
-                strokeWidth={STROKE_WIDTH}
-                fill="transparent"
-              />
-              <AnimatedCircle
-                cx={CIRCLE_SIZE / 2}
-                cy={CIRCLE_SIZE / 2}
-                r={RADIUS}
-                stroke={colors.primary}
-                strokeWidth={STROKE_WIDTH}
-                fill="transparent"
-                strokeDasharray={CIRCUMFERENCE}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                rotation="-90"
-                origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
-              />
-            </Svg>
-          </View>
-
-          <Text style={styles.analyzingText}>
-            {analyzingIndex === 4
-              ? t("onboarding.loading.message4", { nickname: user?.nickname })
-              : LOADING_MESSAGES[analyzingIndex]}
-          </Text>
-        </View>
-      )}
+      {analyzing && <AnalyzingOverlay messages={LOADING_MESSAGES} />}
     </SafeAreaView>
   );
 };
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+// Brand-violet glows in 5 lightness tones for the rising motion background.
+const GLOW_TONES = ["#C9A0E8", "#B47AE0", "#9231BF", "#7A2BA6", "#5E2080"];
+
+// Each blob differs in size, horizontal start, speed and delay so they drift up
+// without ever lining up — the staggered overlap is what reads as "alive".
+const GLOW_BLOBS = [
+  { size: 300, startX: SCREEN_WIDTH * 0.04, duration: 4800, delay: 0 },
+  { size: 232, startX: SCREEN_WIDTH * 0.56, duration: 3600, delay: 1200 },
+  { size: 360, startX: SCREEN_WIDTH * 0.28, duration: 5800, delay: 600 },
+  { size: 258, startX: SCREEN_WIDTH * 0.7, duration: 4200, delay: 2400 },
+  { size: 322, startX: -SCREEN_WIDTH * 0.1, duration: 5200, delay: 3200 },
+];
+
+// A single radial glow that rises bottom → top, swaying and breathing, forever.
+const GlowBlob = ({
+  size,
+  startX,
+  duration,
+  delay,
+  color,
+  gradId,
+}: {
+  size: number;
+  startX: number;
+  duration: number;
+  delay: number;
+  color: string;
+  gradId: string;
+}) => {
+  const t = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.timing(t, {
+        toValue: 1,
+        duration,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    );
+    const starter = setTimeout(() => loop.start(), delay);
+    return () => {
+      clearTimeout(starter);
+      loop.stop();
+    };
+  }, [t, duration, delay]);
+
+  const translateY = t.interpolate({
+    inputRange: [0, 1],
+    outputRange: [SCREEN_HEIGHT * 0.95, -size * 0.6],
+  });
+  const translateX = t.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: [0, 16, 0, -16, 0],
+  });
+  const scale = t.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.8, 1.1, 0.85],
+  });
+  const opacity = t.interpolate({
+    inputRange: [0, 0.15, 0.5, 0.85, 1],
+    outputRange: [0, 0.26, 0.28, 0.18, 0],
+  });
+
+  return (
+    <Animated.View
+      style={{
+        position: "absolute",
+        left: startX,
+        width: size,
+        height: size,
+        opacity,
+        transform: [{ translateX }, { translateY }, { scale }],
+      }}
+    >
+      <Svg width={size} height={size}>
+        <Defs>
+          <RadialGradient id={gradId} cx="50%" cy="50%" r="50%">
+            <Stop offset="0%" stopColor={color} stopOpacity={0.3} />
+            <Stop offset="60%" stopColor={color} stopOpacity={0.22} />
+            <Stop offset="100%" stopColor={color} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={size / 2}
+          fill={`url(#${gradId})`}
+        />
+      </Svg>
+    </Animated.View>
+  );
+};
+
+// Thresholds at which the stage copy advances to the next message.
+const STAGE_THRESHOLDS = [25, 55, 80];
+
+/**
+ * Analysis screen, ported from the resume-scan flow:
+ *  - rising radial glow background (no progress gauge anywhere)
+ *  - a static sparkles icon with a soft halo
+ *  - stage copy that swaps with an up-out / down-in transition
+ *  - a plain "%" text that climbs fast → slow, stalls at 92, then jumps to 100
+ * Left-aligned. Self-contained — mounts while `analyzing` is true.
+ */
+const AnalyzingOverlay = ({ messages }: { messages: string[] }) => {
+  const [percent, setPercent] = useState(6);
+  const [stage, setStage] = useState(0);
+  const percentRef = useRef(6);
+  const stageRef = useRef(0);
+
+  const textY = useRef(new Animated.Value(0)).current;
+  const textOpacity = useRef(new Animated.Value(1)).current;
+
+  // Stage copy transition: current line lifts up + fades out, swaps while hidden,
+  // then the new line floats up from below + fades in. translateY only, so the
+  // "%" underneath never jumps.
+  const goToStage = (next: number) => {
+    Animated.parallel([
+      Animated.timing(textOpacity, {
+        toValue: 0,
+        duration: 150,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(textY, {
+        toValue: -8,
+        duration: 150,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setStage(next);
+      textY.setValue(8);
+      Animated.parallel([
+        Animated.timing(textOpacity, {
+          toValue: 1,
+          duration: 380,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(textY, {
+          toValue: 0,
+          duration: 380,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  // Percentage climb: fast early, slower late, stall at 92, jump to 100 near the
+  // end (the parent navigates away ~10s in).
+  useEffect(() => {
+    const tick = setInterval(() => {
+      const p = percentRef.current;
+      if (p >= 92) return;
+      const inc = p < 60 ? 3 : p < 85 ? 2 : 1;
+      const np = Math.min(92, p + inc);
+      percentRef.current = np;
+      setPercent(np);
+      const reached = STAGE_THRESHOLDS.filter((th) => np >= th).length;
+      if (reached > stageRef.current) {
+        stageRef.current = reached;
+        goToStage(reached);
+      }
+    }, 320);
+
+    const finish = setTimeout(() => {
+      percentRef.current = 100;
+      setPercent(100);
+      if (stageRef.current < messages.length - 1) {
+        stageRef.current = messages.length - 1;
+        goToStage(messages.length - 1);
+      }
+    }, 9000);
+
+    return () => {
+      clearInterval(tick);
+      clearTimeout(finish);
+    };
+    // Runs once on mount; re-running would restart the climb each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
+      {/* Rising glow background */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="none">
+        {GLOW_BLOBS.map((b, i) => (
+          <GlowBlob
+            key={i}
+            size={b.size}
+            startX={b.startX}
+            duration={b.duration}
+            delay={b.delay}
+            color={GLOW_TONES[i]}
+            gradId={`glow${i}`}
+          />
+        ))}
+      </View>
+
+      {/* Foreground content (left-aligned) */}
+      <View style={styles.analyzingTop}>
+        <View style={styles.iconWrap}>
+          <View style={styles.iconHalo} />
+          <View style={styles.iconBox}>
+            <LinearGradient
+              colors={[accent.base, accent.strong]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Icon name="sparkles" size={26} color={colors.white} />
+          </View>
+        </View>
+
+        <Animated.Text
+          style={[
+            styles.stageText,
+            { opacity: textOpacity, transform: [{ translateY: textY }] },
+          ]}
+        >
+          {messages[stage]}
+        </Animated.Text>
+
+        <Text style={styles.percentText}>
+          {percent}
+          <Text style={styles.percentSign}>%</Text>
+        </Text>
+      </View>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
   },
   backButton: {
-    padding: 4,
+    padding: spacing.xs,
   },
   progressBarContainer: {
     flex: 1,
     height: 4,
-    backgroundColor: "#333",
+    backgroundColor: colors.surface2,
     borderRadius: 2,
     overflow: "hidden",
   },
   progressBar: {
     height: "100%",
-    backgroundColor: colors.primary,
+    backgroundColor: accent.base,
     borderRadius: 2,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xxl,
   },
   footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 16,
-    paddingTop: 8,
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.lg,
+    paddingTop: spacing.sm,
   },
   nextButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: accent.base,
     height: 56,
-    borderRadius: 12,
+    borderRadius: radius.md,
     justifyContent: "center",
     alignItems: "center",
   },
   nextButtonDisabled: {
-    backgroundColor: "#333",
+    backgroundColor: colors.surface2,
   },
   nextButtonText: {
-    color: colors.white,
+    color: accent.onAccent,
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -648,27 +815,68 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
   },
   loadingContainer: {
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
     zIndex: 9999,
     justifyContent: "center",
     alignItems: "center",
   },
   analyzingContainer: {
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
     zIndex: 9999,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
+    paddingHorizontal: 28,
+    paddingTop: SCREEN_HEIGHT * 0.16,
+    paddingBottom: 48,
+    overflow: "hidden",
   },
-  analyzingText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "500",
-    marginTop: 20,
-    marginBottom: 0,
-    textAlign: "center",
-    lineHeight: 24,
-    opacity: 0.9,
+  analyzingTop: {
+    alignItems: "flex-start",
+  },
+  iconWrap: {
+    width: 64,
+    height: 64,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.xxl,
+  },
+  iconHalo: {
+    position: "absolute",
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: accent.base,
+    opacity: 0.18,
+  },
+  iconBox: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    shadowColor: accent.base,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 14,
+    elevation: 8,
+  },
+  stageText: {
+    color: colors.textPrimary,
+    fontSize: 26,
+    fontWeight: "800",
+    letterSpacing: -0.4,
+    lineHeight: 34,
+    minHeight: 68,
+  },
+  percentText: {
+    color: accent.text,
+    fontSize: 17,
+    fontWeight: "800",
+    marginTop: spacing.sm,
+  },
+  percentSign: {
+    color: accent.text,
+    fontSize: 17,
+    fontWeight: "800",
   },
 });
 

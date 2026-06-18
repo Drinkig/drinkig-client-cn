@@ -20,6 +20,7 @@ import {
 import { WineDBItem } from "../types/Wine";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
 import { useTranslation, Trans } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
@@ -156,6 +157,7 @@ export default function SearchResultScreen() {
       <TouchableOpacity
         style={styles.resultItem}
         onPress={() => handleWinePress(item)}
+        activeOpacity={0.85}
       >
         <View style={styles.resultIconContainer}>
           {item.imageUri ? (
@@ -165,7 +167,7 @@ export default function SearchResultScreen() {
               resizeMode="contain"
             />
           ) : (
-            <Icon name="wine" size={20} color={colors.primary} />
+            <Icon name="wine" size={26} color={accent.text} />
           )}
         </View>
         <View style={styles.resultTextContainer}>
@@ -300,37 +302,40 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   resultCountContainer: {
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
   resultCountText: {
     color: colors.textSecondary,
     fontSize: 14,
   },
   resultCountHighlight: {
-    color: colors.white,
+    color: colors.textPrimary,
     fontWeight: "bold",
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     paddingTop: 0,
     paddingBottom: 110,
   },
   resultItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    padding: spacing.md,
+    marginBottom: spacing.md,
   },
   resultIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    backgroundColor: colors.surface1,
+    width: 56,
+    height: 70,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.raised,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: spacing.lg,
     overflow: "hidden",
   },
   resultImage: {
@@ -343,24 +348,24 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   resultNameKor: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "600",
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: "700",
   },
   resultNameEng: {
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 12,
   },
   resultInfoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    marginTop: 2,
+    gap: spacing.sm,
+    marginTop: spacing.xs,
   },
   typeChip: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: radius.sm,
   },
   typeChipText: {
     color: colors.white,
@@ -374,13 +379,13 @@ const styles = StyleSheet.create({
   scoreContainer: {
     alignItems: "center",
     justifyContent: "center",
-    paddingLeft: 12,
+    paddingLeft: spacing.md,
   },
   scoreBadge: {
     minWidth: 34,
     paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: radius.sm,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
