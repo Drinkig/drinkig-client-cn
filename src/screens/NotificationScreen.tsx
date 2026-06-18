@@ -9,11 +9,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
+import { spacing, radius, accent } from "../constants/theme";
 import GlassHeader from "../components/common/GlassHeader";
 
 const NotificationScreen = () => {
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -21,7 +24,7 @@ const NotificationScreen = () => {
 
       <GlassHeader
         floating={false}
-        title="알림"
+        title={t("notification.title")}
         left={
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -33,12 +36,13 @@ const NotificationScreen = () => {
       />
 
       <View style={styles.emptyContainer}>
-        <Icon
-          name="notifications-off-outline"
-          size={48}
-          color={colors.textTertiary}
-        />
-        <Text style={styles.emptyText}>새로운 알림이 없습니다.</Text>
+        <View style={styles.iconCircle}>
+          <Icon name="notifications-outline" size={36} color={accent.text} />
+        </View>
+        <Text style={styles.emptyTitle}>{t("notification.emptyTitle")}</Text>
+        <Text style={styles.emptySubtitle}>
+          {t("notification.emptySubtitle")}
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -53,11 +57,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: spacing.xxxl,
+    paddingBottom: spacing.xxxl,
   },
-  emptyText: {
+  iconCircle: {
+    width: 88,
+    height: 88,
+    borderRadius: radius.pill,
+    backgroundColor: accent.soft,
+    borderWidth: 1,
+    borderColor: accent.border,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: spacing.xl,
+  },
+  emptyTitle: {
+    color: colors.textPrimary,
+    fontSize: 18,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: spacing.sm,
+  },
+  emptySubtitle: {
     color: colors.textSecondary,
-    fontSize: 16,
-    marginTop: 16,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
   },
 });
 

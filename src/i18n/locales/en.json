@@ -1311,5 +1311,10 @@
             "kakaoCancelled": "Kakao sign-in was cancelled.",
             "kakaoFailed": "Kakao sign-in failed. Please contact support."
         }
+    },
+    "notification": {
+        "title": "Notifications",
+        "emptyTitle": "No notifications yet",
+        "emptySubtitle": "Wine picks and updates will show up here when they arrive."
     }
 }

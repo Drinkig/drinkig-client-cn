@@ -1311,5 +1311,10 @@
             "kakaoCancelled": "카카오 로그인이 취소되었습니다.",
             "kakaoFailed": "카카오 로그인에 실패했습니다. 관리자에게 문의하세요."
         }
+    },
+    "notification": {
+        "title": "알림",
+        "emptyTitle": "새로운 알림이 없어요",
+        "emptySubtitle": "와인 추천과 새 소식이 도착하면 여기에 모아드릴게요."
     }
 }

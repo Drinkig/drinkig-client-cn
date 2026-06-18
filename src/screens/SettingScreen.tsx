@@ -28,8 +28,84 @@ import {
 import { redeemPromoCode } from "../api/subscription";
 import DeviceInfo from "react-native-device-info";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { isDevAccessEnabled } from "../utils/devAccess";
 import GlassHeader from "../components/common/GlassHeader";
+
+type RowTone = "default" | "danger" | "dev";
+
+const SettingRow = ({
+  icon,
+  label,
+  value,
+  onPress,
+  showChevron,
+  trailing,
+  tone = "default",
+  first = false,
+}: {
+  icon: string;
+  label: string;
+  value?: string;
+  onPress?: () => void;
+  showChevron?: boolean;
+  trailing?: React.ReactNode;
+  tone?: RowTone;
+  first?: boolean;
+}) => {
+  const chevron = showChevron ?? !!onPress;
+  const chipStyle =
+    tone === "danger"
+      ? styles.chipDanger
+      : tone === "dev"
+      ? styles.chipDev
+      : styles.chipDefault;
+  const iconColor =
+    tone === "danger"
+      ? colors.error
+      : tone === "dev"
+      ? colors.warning
+      : accent.text;
+  const labelStyle =
+    tone === "danger"
+      ? styles.labelDanger
+      : tone === "dev"
+      ? styles.labelDev
+      : styles.label;
+
+  const RowWrap: any = onPress ? TouchableOpacity : View;
+
+  return (
+    <RowWrap
+      style={[styles.row, !first && styles.rowBorder]}
+      onPress={onPress}
+      activeOpacity={0.6}
+    >
+      <View style={[styles.chip, chipStyle]}>
+        <Icon name={icon} size={18} color={iconColor} />
+      </View>
+      <Text style={labelStyle} numberOfLines={1}>
+        {label}
+      </Text>
+      {trailing ?? (
+        <View style={styles.trailing}>
+          {value ? (
+            <Text style={styles.value} numberOfLines={1}>
+              {value}
+            </Text>
+          ) : null}
+          {chevron ? (
+            <Icon
+              name="chevron-forward"
+              size={18}
+              color={colors.textTertiary}
+            />
+          ) : null}
+        </View>
+      )}
+    </RowWrap>
+  );
+};
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
@@ -302,33 +378,49 @@ App Version: ${DeviceInfo.getVersion()}
         }
       />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("setting.section.account")}
-          </Text>
-          <View style={styles.item}>
-            <Text style={styles.itemText}>
-              {t("setting.account.loginMethod")}
-            </Text>
-            <Text style={styles.versionText}>
-              {authType === "KAKAO"
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.sectionTitle}>{t("setting.section.account")}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            first
+            icon="finger-print-outline"
+            label={t("setting.account.loginMethod")}
+            value={
+              authType === "KAKAO"
                 ? "카카오"
                 : authType === "APPLE"
                 ? "Apple"
-                : authType}
-            </Text>
-          </View>
-          <View style={styles.item}>
-            <Text style={styles.itemText}>{t("setting.account.email")}</Text>
-            <Text style={styles.versionText}>{userEmail}</Text>
-          </View>
+                : authType ?? undefined
+            }
+          />
+          <SettingRow
+            icon="mail-outline"
+            label={t("setting.account.email")}
+            value={userEmail}
+          />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t("subscription.title")}</Text>
-          <TouchableOpacity
-            style={styles.item}
+        <Text style={styles.sectionTitle}>{t("subscription.title")}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            first
+            icon="diamond-outline"
+            label={
+              isPremium ? t("subscription.premium") : t("subscription.free")
+            }
+            value={
+              isPremium
+                ? expiresAt
+                  ? t("subscription.expiresAt", {
+                      date: new Date(expiresAt).toLocaleDateString(),
+                    })
+                  : t("subscription.manage")
+                : t("paywall.upgrade")
+            }
             onPress={() => {
               if (isPremium) {
                 Linking.openURL("https://apps.apple.com/account/subscriptions");
@@ -336,314 +428,240 @@ App Version: ${DeviceInfo.getVersion()}
                 navigation.navigate("Paywall" as never);
               }
             }}
-          >
-            <Text style={styles.itemText}>
-              {isPremium ? t("subscription.premium") : t("subscription.free")}
-            </Text>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={[styles.versionText, { marginRight: 8 }]}>
-                {isPremium
-                  ? expiresAt
-                    ? t("subscription.expiresAt", {
-                        date: new Date(expiresAt).toLocaleDateString(),
-                      })
-                    : t("subscription.manage")
-                  : t("paywall.upgrade")}
-              </Text>
-              <Icon
-                name="chevron-forward"
-                size={20}
-                color={colors.textTertiary}
-              />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.item}
+          />
+          <SettingRow
+            icon="gift-outline"
+            label={t("subscription.enterPromo")}
             onPress={() => setPromoModalVisible(true)}
-          >
-            <Text style={styles.itemText}>{t("subscription.enterPromo")}</Text>
-            <Icon
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
+          />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("setting.section.appInfo")}
-          </Text>
-          <View style={styles.item}>
-            <Text style={styles.itemText}>{t("setting.appInfo.version")}</Text>
-            <Text style={styles.versionText}>{DeviceInfo.getVersion()}</Text>
-          </View>
-          <TouchableOpacity style={styles.item} onPress={handleChangeLanguage}>
-            <Text style={styles.itemText}>{t("setting.appInfo.language")}</Text>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text style={[styles.versionText, { marginRight: 8 }]}>
-                {currentLanguageValue === "ko"
-                  ? t("setting.language.ko")
-                  : currentLanguageValue === "en"
-                  ? t("setting.language.en")
-                  : t("setting.language.system")}
-              </Text>
-              <Icon
-                name="chevron-forward"
-                size={20}
-                color={colors.textTertiary}
-              />
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.item}
+        <Text style={styles.sectionTitle}>{t("setting.section.appInfo")}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            first
+            icon="phone-portrait-outline"
+            label={t("setting.appInfo.version")}
+            value={DeviceInfo.getVersion()}
+          />
+          <SettingRow
+            icon="language-outline"
+            label={t("setting.appInfo.language")}
+            value={
+              currentLanguageValue === "ko"
+                ? t("setting.language.ko")
+                : currentLanguageValue === "en"
+                ? t("setting.language.en")
+                : t("setting.language.system")
+            }
+            onPress={handleChangeLanguage}
+          />
+          <SettingRow
+            icon="document-text-outline"
+            label={t("setting.appInfo.terms")}
             onPress={() => handleLinkPress("https://web.drinkig.com/terms")}
-          >
-            <Text style={styles.itemText}>{t("setting.appInfo.terms")}</Text>
-            <Icon
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.item}
+          />
+          <SettingRow
+            icon="shield-checkmark-outline"
+            label={t("setting.appInfo.privacy")}
             onPress={() => handleLinkPress("https://web.drinkig.com/privacy")}
-          >
-            <Text style={styles.itemText}>{t("setting.appInfo.privacy")}</Text>
-            <Icon
-              name="chevron-forward"
-              size={20}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
+          />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("setting.section.contact")}
-          </Text>
-          <TouchableOpacity
-            style={styles.item}
+        <Text style={styles.sectionTitle}>{t("setting.section.contact")}</Text>
+        <View style={styles.card}>
+          <SettingRow
+            first
+            icon="bug-outline"
+            label={t("setting.contact.reportError")}
             onPress={() => handleEmailPress("REPORT")}
-          >
-            <Text style={styles.itemText}>
-              {t("setting.contact.reportError")}
-            </Text>
-            <Icon name="bug-outline" size={20} color={colors.white} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.item}
+          />
+          <SettingRow
+            icon="bulb-outline"
+            label={t("setting.contact.suggestFeature")}
             onPress={() => handleEmailPress("SUGGESTION")}
-          >
-            <Text style={styles.itemText}>
-              {t("setting.contact.suggestFeature")}
-            </Text>
-            <Icon name="bulb-outline" size={20} color={colors.white} />
-          </TouchableOpacity>
+          />
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t("setting.section.management")}
-          </Text>
-          <TouchableOpacity style={styles.item} onPress={handleLogout}>
-            <Text style={styles.itemText}>
-              {t("setting.management.logout")}
-            </Text>
-            <Icon
-              name="log-out-outline"
-              size={20}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.item} onPress={handleDeleteAccount}>
-            <Text style={[styles.itemText, styles.deleteText]}>
-              {t("setting.management.deleteAccount")}
-            </Text>
-            <Icon name="trash-outline" size={20} color={colors.error} />
-          </TouchableOpacity>
+        <Text style={styles.sectionTitle}>
+          {t("setting.section.management")}
+        </Text>
+        <View style={styles.card}>
+          <SettingRow
+            first
+            icon="log-out-outline"
+            label={t("setting.management.logout")}
+            onPress={handleLogout}
+            showChevron={false}
+          />
+          <SettingRow
+            tone="danger"
+            icon="trash-outline"
+            label={t("setting.management.deleteAccount")}
+            onPress={handleDeleteAccount}
+            showChevron={false}
+          />
         </View>
 
         {isDevAccessEnabled && (
-          <View style={styles.section}>
+          <>
             <Text style={[styles.sectionTitle, styles.devSectionTitle]}>
               개발자 모드 (DEV)
             </Text>
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => {
-                showAlert({
-                  title: "온보딩 다시 보기",
-                  message: "온보딩 화면으로 이동합니다. 계정은 유지돼요.",
-                  confirmText: "이동",
-                  singleButton: false,
-                  onConfirm: async () => {
-                    await resetToOnboarding();
-                  },
-                });
-              }}
-            >
-              <Text style={[styles.itemText, styles.devItemText]}>
-                온보딩 다시 보기
-              </Text>
-              <Icon name="refresh-outline" size={20} color={"#f5a623"} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.item}
-              onPress={async () => {
-                await AsyncStorage.removeItem("recommendations");
-                await AsyncStorage.removeItem("flavorProfile");
-                showToast("로컬 추천/취향 캐시 삭제됨", { type: "success" });
-              }}
-            >
-              <Text style={[styles.itemText, styles.devItemText]}>
-                로컬 캐시 삭제 (추천/취향)
-              </Text>
-              <Icon name="trash-bin-outline" size={20} color={"#f5a623"} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => {
-                const options = [
-                  "취소",
-                  "서버 값 사용 (기본)",
-                  "강제 프리미엄",
-                  "강제 무료",
-                ];
-                const apply = async (idx: number) => {
-                  if (idx === 1) {
-                    await setDevOverride("none");
-                    showToast("구독 오버라이드 해제", { type: "success" });
-                  } else if (idx === 2) {
-                    await setDevOverride("premium");
-                    showToast("강제 프리미엄 적용", { type: "success" });
-                  } else if (idx === 3) {
-                    await setDevOverride("free");
-                    showToast("강제 무료 적용", { type: "success" });
-                  }
-                };
-                if (Platform.OS === "ios") {
-                  ActionSheetIOS.showActionSheetWithOptions(
-                    { options, cancelButtonIndex: 0 },
-                    apply
-                  );
-                } else {
-                  Alert.alert("구독 상태 오버라이드", undefined, [
-                    { text: options[1], onPress: () => apply(1) },
-                    { text: options[2], onPress: () => apply(2) },
-                    { text: options[3], onPress: () => apply(3) },
-                    { text: options[0], style: "cancel" },
-                  ]);
-                }
-              }}
-            >
-              <Text style={[styles.itemText, styles.devItemText]}>
-                구독 상태 오버라이드
-              </Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text
-                  style={[
-                    styles.versionText,
-                    styles.devItemText,
-                    { marginRight: 8 },
-                  ]}
-                >
-                  {devOverride === "premium"
+            <View style={[styles.card, styles.devCard]}>
+              <SettingRow
+                first
+                tone="dev"
+                icon="refresh-outline"
+                label="온보딩 다시 보기"
+                onPress={() => {
+                  showAlert({
+                    title: "온보딩 다시 보기",
+                    message: "온보딩 화면으로 이동합니다. 계정은 유지돼요.",
+                    confirmText: "이동",
+                    singleButton: false,
+                    onConfirm: async () => {
+                      await resetToOnboarding();
+                    },
+                  });
+                }}
+              />
+              <SettingRow
+                tone="dev"
+                icon="trash-bin-outline"
+                label="로컬 캐시 삭제 (추천/취향)"
+                onPress={async () => {
+                  await AsyncStorage.removeItem("recommendations");
+                  await AsyncStorage.removeItem("flavorProfile");
+                  showToast("로컬 추천/취향 캐시 삭제됨", { type: "success" });
+                }}
+              />
+              <SettingRow
+                tone="dev"
+                icon="card-outline"
+                label="구독 상태 오버라이드"
+                value={
+                  devOverride === "premium"
                     ? "강제 프리미엄"
                     : devOverride === "free"
                     ? "강제 무료"
-                    : "기본"}
-                </Text>
-                <Icon name="chevron-forward" size={20} color={"#f5a623"} />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => navigation.navigate("PremiumWelcome" as never)}
-            >
-              <Text style={[styles.itemText, styles.devItemText]}>
-                프리미엄 환영 화면 미리보기
-              </Text>
-              <Icon name="gift-outline" size={20} color={"#f5a623"} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => navigation.navigate("AdminWineApproval" as never)}
-            >
-              <Text style={[styles.itemText, styles.devItemText]}>
-                와인 등록 신청 관리
-              </Text>
-              <Icon name="wine-outline" size={20} color={"#f5a623"} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.item}
-              onPress={() => {
-                const options = [
-                  "취소",
-                  "3일 남음",
-                  "1일 남음 (내일 만료)",
-                  "만료됨",
-                  "초기화 (서버 값)",
-                ];
-                const apply = async (idx: number) => {
-                  if (idx === 0) return;
-                  let fakeExpiry: string | null = null;
-                  if (idx === 1) {
-                    const d = new Date();
-                    d.setDate(d.getDate() + 3);
-                    fakeExpiry = d.toISOString();
-                  } else if (idx === 2) {
-                    const d = new Date();
-                    d.setDate(d.getDate() + 1);
-                    fakeExpiry = d.toISOString();
-                  } else if (idx === 3) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - 1);
-                    fakeExpiry = d.toISOString();
-                  } else if (idx === 4) {
-                    await AsyncStorage.removeItem("@dev_expiry_override");
-                    await refreshSubscription();
-                    showToast("만료일 오버라이드 초기화", { type: "success" });
-                    return;
-                  }
-                  if (fakeExpiry) {
-                    await AsyncStorage.setItem(
-                      "@dev_expiry_override",
-                      fakeExpiry
-                    );
-                    await refreshSubscription();
-                    showToast(`만료일 오버라이드: ${fakeExpiry.slice(0, 10)}`, {
-                      type: "success",
-                    });
-                  }
-                };
-                if (Platform.OS === "ios") {
-                  ActionSheetIOS.showActionSheetWithOptions(
-                    { options, cancelButtonIndex: 0 },
-                    apply
-                  );
-                } else {
-                  Alert.alert("만료일 오버라이드", undefined, [
-                    { text: options[1], onPress: () => apply(1) },
-                    { text: options[2], onPress: () => apply(2) },
-                    { text: options[3], onPress: () => apply(3) },
-                    { text: options[4], onPress: () => apply(4) },
-                    { text: options[0], style: "cancel" },
-                  ]);
+                    : "기본"
                 }
-              }}
-            >
-              <Text style={[styles.itemText, styles.devItemText]}>
-                만료 배너 테스트
-              </Text>
-              <Icon name="time-outline" size={20} color={"#f5a623"} />
-            </TouchableOpacity>
-          </View>
+                onPress={() => {
+                  const options = [
+                    "취소",
+                    "서버 값 사용 (기본)",
+                    "강제 프리미엄",
+                    "강제 무료",
+                  ];
+                  const apply = async (idx: number) => {
+                    if (idx === 1) {
+                      await setDevOverride("none");
+                      showToast("구독 오버라이드 해제", { type: "success" });
+                    } else if (idx === 2) {
+                      await setDevOverride("premium");
+                      showToast("강제 프리미엄 적용", { type: "success" });
+                    } else if (idx === 3) {
+                      await setDevOverride("free");
+                      showToast("강제 무료 적용", { type: "success" });
+                    }
+                  };
+                  if (Platform.OS === "ios") {
+                    ActionSheetIOS.showActionSheetWithOptions(
+                      { options, cancelButtonIndex: 0 },
+                      apply
+                    );
+                  } else {
+                    Alert.alert("구독 상태 오버라이드", undefined, [
+                      { text: options[1], onPress: () => apply(1) },
+                      { text: options[2], onPress: () => apply(2) },
+                      { text: options[3], onPress: () => apply(3) },
+                      { text: options[0], style: "cancel" },
+                    ]);
+                  }
+                }}
+              />
+              <SettingRow
+                tone="dev"
+                icon="gift-outline"
+                label="프리미엄 환영 화면 미리보기"
+                onPress={() => navigation.navigate("PremiumWelcome" as never)}
+              />
+              <SettingRow
+                tone="dev"
+                icon="wine-outline"
+                label="와인 등록 신청 관리"
+                onPress={() =>
+                  navigation.navigate("AdminWineApproval" as never)
+                }
+              />
+              <SettingRow
+                tone="dev"
+                icon="time-outline"
+                label="만료 배너 테스트"
+                onPress={() => {
+                  const options = [
+                    "취소",
+                    "3일 남음",
+                    "1일 남음 (내일 만료)",
+                    "만료됨",
+                    "초기화 (서버 값)",
+                  ];
+                  const apply = async (idx: number) => {
+                    if (idx === 0) return;
+                    let fakeExpiry: string | null = null;
+                    if (idx === 1) {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 3);
+                      fakeExpiry = d.toISOString();
+                    } else if (idx === 2) {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 1);
+                      fakeExpiry = d.toISOString();
+                    } else if (idx === 3) {
+                      const d = new Date();
+                      d.setDate(d.getDate() - 1);
+                      fakeExpiry = d.toISOString();
+                    } else if (idx === 4) {
+                      await AsyncStorage.removeItem("@dev_expiry_override");
+                      await refreshSubscription();
+                      showToast("만료일 오버라이드 초기화", {
+                        type: "success",
+                      });
+                      return;
+                    }
+                    if (fakeExpiry) {
+                      await AsyncStorage.setItem(
+                        "@dev_expiry_override",
+                        fakeExpiry
+                      );
+                      await refreshSubscription();
+                      showToast(
+                        `만료일 오버라이드: ${fakeExpiry.slice(0, 10)}`,
+                        {
+                          type: "success",
+                        }
+                      );
+                    }
+                  };
+                  if (Platform.OS === "ios") {
+                    ActionSheetIOS.showActionSheetWithOptions(
+                      { options, cancelButtonIndex: 0 },
+                      apply
+                    );
+                  } else {
+                    Alert.alert("만료일 오버라이드", undefined, [
+                      { text: options[1], onPress: () => apply(1) },
+                      { text: options[2], onPress: () => apply(2) },
+                      { text: options[3], onPress: () => apply(3) },
+                      { text: options[4], onPress: () => apply(4) },
+                      { text: options[0], style: "cancel" },
+                    ]);
+                  }
+                }}
+              />
+            </View>
+          </>
         )}
       </ScrollView>
 
@@ -727,41 +745,86 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  section: {
-    marginTop: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingBottom: 8,
+  scrollContent: {
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.xxxl,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: "600",
     color: colors.textSecondary,
-    marginBottom: 8,
-    paddingHorizontal: 24,
-  },
-  item: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-  },
-  itemText: {
-    fontSize: 16,
-    color: colors.white,
-  },
-  versionText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  deleteText: {
-    color: colors.error,
+    letterSpacing: 0.3,
+    marginTop: spacing.xxl,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
   },
   devSectionTitle: {
-    color: "#f5a623",
+    color: colors.warning,
   },
-  devItemText: {
-    color: "#f5a623",
+  card: {
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    overflow: "hidden",
+  },
+  devCard: {
+    borderColor: "rgba(245,166,35,0.25)",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
+    minHeight: 56,
+  },
+  rowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: surfaces.hairline,
+  },
+  chip: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.md,
+  },
+  chipDefault: {
+    backgroundColor: accent.soft,
+  },
+  chipDanger: {
+    backgroundColor: "rgba(231,76,60,0.15)",
+  },
+  chipDev: {
+    backgroundColor: "rgba(245,166,35,0.15)",
+  },
+  label: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  labelDanger: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.error,
+  },
+  labelDev: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.warning,
+  },
+  trailing: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: spacing.sm,
+    flexShrink: 1,
+  },
+  value: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginRight: spacing.xs,
+    flexShrink: 1,
   },
   promoModalOverlay: {
     flex: 1,
@@ -770,8 +833,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   promoModalCard: {
-    backgroundColor: colors.surface1,
-    borderRadius: 16,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
     padding: 24,
   },
   promoModalTitle: {
@@ -789,17 +854,17 @@ const styles = StyleSheet.create({
   },
   promoModalInput: {
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderColor: surfaces.hairlineStrong,
+    borderRadius: radius.md,
+    paddingHorizontal: 14,
     paddingVertical: 12,
     color: colors.white,
     fontSize: 16,
     marginBottom: 16,
-    backgroundColor: colors.background,
+    backgroundColor: surfaces.raised,
   },
   promoModalError: {
-    color: "#FF6B6B",
+    color: colors.error,
     fontSize: 13,
     marginTop: -10,
     marginBottom: 12,
@@ -809,19 +874,19 @@ const styles = StyleSheet.create({
   },
   promoModalButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 13,
+    borderRadius: radius.md,
     alignItems: "center",
     justifyContent: "center",
   },
   promoModalButtonPrimary: {
-    backgroundColor: colors.primary,
+    backgroundColor: accent.base,
     marginLeft: 8,
   },
   promoModalButtonSecondary: {
     backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairlineStrong,
     marginRight: 8,
   },
   promoModalButtonDisabled: {
