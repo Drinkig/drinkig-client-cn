@@ -32,7 +32,9 @@ export function getWineTypeColor(type?: string | null): string {
     t.includes("디저트") ||
     t.includes("dessert") ||
     t.includes("주정강화") ||
-    t.includes("fortified")
+    t.includes("fortified") ||
+    t.includes("포트") ||
+    t.includes("port")
   )
     return wineTypeColors.dessert;
   return wineTypeColors.default;

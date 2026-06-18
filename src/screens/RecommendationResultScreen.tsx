@@ -9,7 +9,6 @@ import {
   Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserContext";
@@ -19,6 +18,7 @@ import {
 } from "../api/wine";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
 
 const RecommendationResultScreen = () => {
@@ -103,7 +103,7 @@ const RecommendationResultScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={accent.base} />
         <Text style={styles.loadingText}>
           {t("recommendationResult.loading")}
         </Text>
@@ -177,20 +177,12 @@ const RecommendationResultScreen = () => {
               ]}
             >
               <View style={styles.cardHeader}>
-                <View style={styles.headerTitleContainer}>
-                  <Text style={styles.cardTitle}>
-                    {t(`recommendationResult.rankTitle${index}`)}
-                  </Text>
+                <View style={styles.rankBadge}>
+                  <Text style={styles.rankBadgeText}>{index + 1}</Text>
                 </View>
-              </View>
-
-              <View style={styles.cardBody}>
-                <View style={styles.textContainer}>
-                  <Text style={styles.styleText}>
-                    {item.country} {item.region}
-                  </Text>
-                  <Text style={styles.varietyText}>{item.variety}</Text>
-                </View>
+                <Text style={styles.cardTitle} numberOfLines={1}>
+                  {t(`recommendationResult.rankTitle${index}`)}
+                </Text>
                 <View
                   style={[
                     styles.typeChip,
@@ -200,13 +192,28 @@ const RecommendationResultScreen = () => {
                   <Text style={styles.typeChipText}>{item.sort}</Text>
                 </View>
               </View>
+
+              <View style={styles.cardBody}>
+                <Text style={styles.varietyText} numberOfLines={1}>
+                  {item.variety}
+                </Text>
+                {(item.country || item.region) && (
+                  <Text style={styles.styleText} numberOfLines={1}>
+                    {[item.country, item.region].filter(Boolean).join(" · ")}
+                  </Text>
+                )}
+              </View>
             </Animated.View>
           );
         })}
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.button} onPress={handleComplete}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleComplete}
+          activeOpacity={0.85}
+        >
           <Text style={styles.buttonText}>
             {fromReset
               ? t("recommendationResult.buttonReset")
@@ -221,166 +228,147 @@ const RecommendationResultScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#121212",
+    backgroundColor: colors.background,
   },
   loadingText: {
-    color: colors.white,
-    marginTop: 16,
-    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: spacing.lg,
+    fontSize: 15,
   },
   header: {
-    padding: 24,
-    paddingTop: 40,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.lg,
   },
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 8,
+    fontWeight: "800",
+    color: colors.textPrimary,
+    marginBottom: spacing.sm,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
+    lineHeight: 21,
     color: colors.textSecondary,
   },
   content: {
     flex: 1,
   },
   scrollContent: {
-    padding: 24,
-    paddingTop: 0,
-    gap: 12,
+    paddingHorizontal: spacing.xxl,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
   },
   chartContainer: {
     alignItems: "center",
-    marginBottom: 10,
-    backgroundColor: colors.background,
-    paddingTop: 24,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    marginBottom: spacing.xs,
+    backgroundColor: surfaces.card,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
   },
   chartTitle: {
-    color: colors.white,
+    color: colors.textPrimary,
     fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontWeight: "700",
+    marginBottom: spacing.md,
   },
   chartHelperText: {
     color: colors.textSecondary,
     fontSize: 13,
-    marginTop: 4,
-    marginBottom: 8,
+    lineHeight: 19,
+    marginTop: spacing.md,
     textAlign: "center",
-    fontWeight: "500",
   },
   card: {
-    backgroundColor: "#1e1e1e",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingTop: 15,
-    paddingBottom: 15,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: spacing.md,
+  },
+  rankBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.pill,
+    backgroundColor: accent.soft,
+    borderWidth: 1,
+    borderColor: accent.border,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: spacing.sm,
+  },
+  rankBadgeText: {
+    color: accent.text,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  cardTitle: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
   },
   typeChip: {
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radius.sm,
+    marginLeft: spacing.sm,
   },
   typeChipText: {
     color: colors.white,
     fontSize: 10,
-    fontWeight: "bold",
-  },
-  headerTitleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  rankBadge: {
-    fontSize: 20,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: colors.white,
-    marginLeft: 10,
+    fontWeight: "800",
   },
   cardBody: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 0,
+    backgroundColor: surfaces.raised,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.border,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
+  varietyText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   styleText: {
     fontSize: 13,
     color: colors.textSecondary,
-    marginBottom: 6,
-  },
-  varietyText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.white,
-  },
-  tagContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: colors.border,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  tagText: {
-    fontSize: 13,
-    color: colors.textSecondary,
   },
   footer: {
-    padding: 24,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
     borderTopWidth: 1,
-    borderTopColor: "#222",
+    borderTopColor: surfaces.hairline,
   },
   button: {
-    backgroundColor: colors.primary,
+    backgroundColor: accent.base,
     height: 56,
-    borderRadius: 12,
+    borderRadius: radius.md,
     justifyContent: "center",
     alignItems: "center",
   },
   buttonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
+    color: accent.onAccent,
+    fontSize: 17,
+    fontWeight: "700",
   },
 });
 

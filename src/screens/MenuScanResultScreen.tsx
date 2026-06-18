@@ -15,6 +15,8 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Svg, { Circle } from "react-native-svg";
 import { colors } from "../constants/colors";
+import { radius, accent } from "../constants/theme";
+import { getWineTypeColor } from "../constants/wineColors";
 import client from "../api/client";
 import { useTranslation } from "react-i18next";
 import { incrementScanCount } from "./CameraScreen";
@@ -57,15 +59,6 @@ export interface MenuScanResponse {
 
 // --- Helpers ----------------------------------------------------------------
 
-const SORT_COLORS: Record<string, string> = {
-  RED: "#C0392B",
-  WHITE: "#C8A84B",
-  SPARKLING: "#5DADE2",
-  ROSE: "#D4748A",
-  PORT: "#922B21",
-  OTHER: "#7F8C8D",
-};
-
 // Animated SVG circle wrapper
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -75,9 +68,9 @@ const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 function scoreColor(score: number) {
-  if (score >= 70) return "#4CAF50"; // 초록 — 좋음
-  if (score >= 55) return "#E67E22"; // 오렌지 — 준수
-  return colors.textTertiary; // 회색 — 낮음
+  if (score >= 70) return colors.success; // 좋음
+  if (score >= 55) return colors.warning; // 준수
+  return colors.textTertiary; // 낮음
 }
 
 function ScoreRing({ score }: { score: number }) {
@@ -303,7 +296,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
               <View
                 style={[
                   styles.sortBar,
-                  { backgroundColor: SORT_COLORS[item.sort] },
+                  { backgroundColor: getWineTypeColor(item.sort) },
                 ]}
               />
             </View>
@@ -372,7 +365,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         <View style={styles.stateContainer}>
           <ActivityIndicator
             size="large"
-            color={colors.primary}
+            color={accent.base}
             style={{ marginBottom: 20 }}
           />
           <Text style={styles.stateTitle}>
@@ -537,7 +530,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           <Ionicons
             name="heart"
             size={16}
-            color={colors.primary}
+            color={accent.text}
             style={{ marginRight: 8 }}
           />
           <Text style={styles.toastText}>{toastMessage}</Text>
@@ -577,11 +570,11 @@ const styles = StyleSheet.create({
     marginTop: 28,
     paddingHorizontal: 32,
     paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    backgroundColor: accent.base,
   },
   retryButtonText: {
-    color: colors.white,
+    color: accent.onAccent,
     fontWeight: "600",
     fontSize: 15,
   },
@@ -612,15 +605,15 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   wineCardHighlight: {
-    borderColor: colors.primary,
-    backgroundColor: "rgba(142, 68, 173, 0.08)",
+    borderColor: accent.border,
+    backgroundColor: accent.soft,
   },
   bestBadge: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: colors.primary,
-    borderRadius: 10,
+    backgroundColor: accent.base,
+    borderRadius: radius.sm,
     paddingHorizontal: 8,
     paddingVertical: 3,
     marginBottom: 10,
