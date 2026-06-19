@@ -72,6 +72,15 @@ const splitTags = (value: string) =>
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
+// Vintage must be a plausible past harvest year — no future years.
+const MIN_VINTAGE = 1900;
+const MAX_VINTAGE = new Date().getFullYear();
+const isVintageComplete = (year: string) => {
+  if (year.length !== 4 || year === "NV") return false;
+  const n = parseInt(year, 10);
+  return n >= MIN_VINTAGE && n <= MAX_VINTAGE;
+};
+
 export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
@@ -467,7 +476,7 @@ export default function TastingNoteWriteScreen() {
         vintageYear:
           vintageYear === "NV"
             ? 0
-            : vintageYear
+            : isVintageComplete(vintageYear)
             ? parseInt(vintageYear, 10)
             : undefined,
         color: color,
@@ -684,9 +693,7 @@ export default function TastingNoteWriteScreen() {
           <View
             style={[
               styles.vintageWrapper,
-              vintageYear.length === 4 &&
-                vintageYear !== "NV" &&
-                styles.vintageWrapperValid,
+              isVintageComplete(vintageYear) && styles.vintageWrapperValid,
             ]}
           >
             <TextInput
@@ -696,15 +703,20 @@ export default function TastingNoteWriteScreen() {
               keyboardType="numeric"
               value={vintageYear}
               onChangeText={(text) => {
-                if (text !== "NV") {
-                  setVintageYear(text.replace(/[^0-9]/g, ""));
-                } else {
-                  setVintageYear(text);
+                if (text === "NV") {
+                  setVintageYear("NV");
+                  return;
                 }
+                const digits = text.replace(/[^0-9]/g, "");
+                // Reject future years outright (e.g. typing past 2026 → 2412).
+                if (digits.length === 4 && parseInt(digits, 10) > MAX_VINTAGE) {
+                  return;
+                }
+                setVintageYear(digits);
               }}
               maxLength={4}
             />
-            {vintageYear.length === 4 && vintageYear !== "NV" ? (
+            {isVintageComplete(vintageYear) ? (
               <Icon
                 name="checkmark-circle"
                 size={20}
@@ -896,8 +908,12 @@ export default function TastingNoteWriteScreen() {
           total: TOTAL_STEPS,
         })}
         left={
-          <TouchableOpacity onPress={handleClose} style={styles.headerSide}>
-            <Icon name="close" size={24} color={colors.white} />
+          <TouchableOpacity onPress={handleBack} style={styles.headerSide}>
+            <Icon
+              name={currentStep === STEP_WINE ? "close" : "chevron-back"}
+              size={24}
+              color={colors.white}
+            />
           </TouchableOpacity>
         }
         right={
@@ -939,17 +955,6 @@ export default function TastingNoteWriteScreen() {
         </ScrollView>
 
         <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={handleBack}
-            disabled={isSubmitting}
-          >
-            <Icon name="chevron-back" size={20} color={colors.textSecondary} />
-            <Text style={styles.backButtonText}>
-              {t("tastingNoteWrite.nav.back")}
-            </Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={[
               styles.nextButton,
@@ -1288,17 +1293,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: surfaces.hairline,
     backgroundColor: colors.background,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-  },
-  backButtonText: {
-    color: colors.textSecondary,
-    fontSize: 15,
-    fontWeight: "600",
   },
   nextButton: {
     flex: 1,
