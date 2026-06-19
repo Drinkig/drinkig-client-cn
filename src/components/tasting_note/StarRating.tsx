@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../constants/colors";
-import { spacing, accent, surfaces } from "../../constants/theme";
+import { spacing, surfaces } from "../../constants/theme";
 import { useTranslation } from "react-i18next";
 
 interface StarRatingProps {
@@ -11,6 +11,7 @@ interface StarRatingProps {
 }
 
 const STAR = 44;
+const STAR_GOLD = "#F5C518";
 
 export default function StarRating({
   rating,
@@ -31,7 +32,7 @@ export default function StarRating({
         <Icon
           name={iconName}
           size={STAR}
-          color={rating >= index - 0.5 ? "#F5C518" : surfaces.hairlineStrong}
+          color={rating >= index - 0.5 ? STAR_GOLD : surfaces.hairlineStrong}
         />
         <View style={styles.touchOverlay}>
           <TouchableOpacity
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     backgroundColor: surfaces.card,
   },
   scorePillActive: {
-    backgroundColor: accent.soft,
+    backgroundColor: "rgba(245,197,24,0.16)",
   },
   scoreText: {
     color: colors.textTertiary,
@@ -109,6 +110,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   scoreTextActive: {
-    color: accent.text,
+    color: STAR_GOLD,
   },
 });

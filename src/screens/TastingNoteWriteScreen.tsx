@@ -2,16 +2,12 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Image,
-  KeyboardAvoidingView,
-  LayoutAnimation,
-  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  UIManager,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -45,13 +41,6 @@ import {
   clearDraft,
   TastingNoteDraft,
 } from "../utils/tastingNoteDraftStorage";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 type TastingNoteWriteScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -364,8 +353,6 @@ export default function TastingNoteWriteScreen() {
   const mapLevelToValue = (level: number) => level * 20;
 
   const handleSelectWine = (wine: WineUserDTO) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
     let imageUrl = wine.imageUrl;
     if (!imageUrl && wine.wineId) {
       imageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wine.wineId}.png`;
@@ -384,7 +371,6 @@ export default function TastingNoteWriteScreen() {
   };
 
   const resetSelection = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelectedWine({});
     setSearchText("");
   };
@@ -410,7 +396,6 @@ export default function TastingNoteWriteScreen() {
   })();
 
   const goToStep = (step: number) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setCurrentStep(step);
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   };
@@ -496,10 +481,10 @@ export default function TastingNoteWriteScreen() {
       if (response.isSuccess) {
         await clearDraft();
         logEvent("tasting_note_save_success");
-        showToast(t("tastingNoteWrite.success.saveMsg"), {
-          type: "success",
-          onHide: () => navigation.goBack(),
-        });
+        // Navigate back immediately; the global toast stays visible over the
+        // destination screen, so we don't wait for it to auto-hide.
+        navigation.goBack();
+        showToast(t("tastingNoteWrite.success.saveMsg"), { type: "success" });
       } else {
         showToast(response.message || t("tastingNoteWrite.error.saveFail"), {
           type: "error",
@@ -940,49 +925,39 @@ export default function TastingNoteWriteScreen() {
         </View>
       )}
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
+      <ScrollView
+        ref={scrollRef}
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
       >
-        <ScrollView
-          ref={scrollRef}
-          style={styles.content}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {renderStep()}
-        </ScrollView>
+        {renderStep()}
+      </ScrollView>
 
-        <View style={styles.footer}>
-          <TouchableOpacity
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            (!canProceed || isSubmitting) && styles.nextButtonDisabled,
+          ]}
+          onPress={handleNext}
+          disabled={!canProceed || isSubmitting}
+        >
+          <Text
             style={[
-              styles.nextButton,
-              (!canProceed || isSubmitting) && styles.nextButtonDisabled,
+              styles.nextButtonText,
+              (!canProceed || isSubmitting) && styles.nextButtonTextDisabled,
             ]}
-            onPress={handleNext}
-            disabled={!canProceed || isSubmitting}
           >
-            <Text
-              style={[
-                styles.nextButtonText,
-                (!canProceed || isSubmitting) && styles.nextButtonTextDisabled,
-              ]}
-            >
-              {isLastStep
-                ? t("tastingNoteWrite.nav.complete")
-                : t("tastingNoteWrite.nav.next")}
-            </Text>
-            {!isLastStep && (
-              <Icon
-                name="chevron-forward"
-                size={20}
-                color={canProceed ? accent.onAccent : colors.textTertiary}
-              />
-            )}
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+            {isLastStep
+              ? t("tastingNoteWrite.nav.complete")
+              : t("tastingNoteWrite.nav.next")}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       <HelpModal
         visible={tipModalVisible}
