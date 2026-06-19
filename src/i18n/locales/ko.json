@@ -536,6 +536,10 @@
     },
     "tastingNoteDetail": {
         "header": "테이스팅 노트",
+        "menu": {
+            "delete": "삭제",
+            "cancel": "취소"
+        },
         "error": {
             "fetchFailTitle": "오류",
             "fetchFailMsg": "테이스팅 노트를 불러올 수 없습니다.",

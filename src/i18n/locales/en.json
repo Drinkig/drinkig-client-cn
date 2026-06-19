@@ -536,6 +536,10 @@
     },
     "tastingNoteDetail": {
         "header": "Tasting Note",
+        "menu": {
+            "delete": "Delete",
+            "cancel": "Cancel"
+        },
         "error": {
             "fetchFailTitle": "Error",
             "fetchFailMsg": "Failed to load tasting note.",

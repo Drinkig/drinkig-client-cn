@@ -7,7 +7,6 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
-  Alert,
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,9 +22,13 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
 import { colors } from "../constants/colors";
+import { spacing, radius, accent, surfaces } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
+import ActionMenuSheet from "../components/common/ActionMenuSheet";
+
+const RATING_GOLD = "#F5C518";
 
 type TastingNoteDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -41,9 +44,11 @@ export default function TastingNoteDetailScreen() {
 
   const [note, setNote] = useState<TastingNoteDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     fetchNoteDetail();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tastingNoteId]);
 
   const fetchNoteDetail = async () => {
@@ -150,8 +155,16 @@ export default function TastingNoteDetailScreen() {
           </TouchableOpacity>
         }
         right={
-          <TouchableOpacity onPress={handleDelete} style={{ padding: 4 }}>
-            <Ionicons name="trash-outline" size={24} color={colors.error} />
+          <TouchableOpacity
+            onPress={() => setMenuVisible(true)}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ padding: 4 }}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={24}
+              color={colors.white}
+            />
           </TouchableOpacity>
         }
       />
@@ -161,23 +174,21 @@ export default function TastingNoteDetailScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.topSection}>
-          <View style={styles.wineImageContainer}>
+        <View style={styles.hero}>
+          <View style={styles.heroImageBox}>
             {note.imageUrl ? (
               <Image
                 source={{ uri: note.imageUrl }}
-                style={styles.wineImage}
+                style={styles.heroImage}
                 resizeMode="contain"
               />
             ) : (
-              <View style={styles.wineImagePlaceholder}>
-                <Ionicons name="wine" size={40} color={colors.textTertiary} />
-              </View>
+              <Ionicons name="wine" size={40} color={colors.textTertiary} />
             )}
           </View>
 
-          <View style={styles.wineInfoContainer}>
-            <View style={styles.wineHeaderRow}>
+          <View style={styles.heroInfo}>
+            <View style={styles.heroTopRow}>
               <View
                 style={[
                   styles.typeBadge,
@@ -189,7 +200,7 @@ export default function TastingNoteDetailScreen() {
               <Text style={styles.dateText}>{note.tasteDate}</Text>
             </View>
 
-            <Text style={styles.wineName} numberOfLines={2}>
+            <Text style={styles.wineName} numberOfLines={3}>
               {i18n.language === "en"
                 ? note.wineNameEng || note.wineName
                 : note.wineName}
@@ -201,102 +212,113 @@ export default function TastingNoteDetailScreen() {
                     year: note.vintageYear,
                   })}
             </Text>
-
-            <View style={styles.metaRow}>
-              <View style={styles.colorWrapper}>
-                <Text style={styles.metaLabel}>
-                  {t("tastingNoteDetail.info.color")}
-                </Text>
-                <View
-                  style={[
-                    styles.colorCircle,
-                    { backgroundColor: getHexColorFromValue(note.color) },
-                  ]}
-                />
-              </View>
-              <View style={styles.ratingWrapper}>
-                <Ionicons name="star" size={16} color="#f1c40f" />
-                <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
-              </View>
-            </View>
           </View>
         </View>
 
-        <View style={styles.divider} />
-
-        <View style={styles.middleSection}>
-          <View style={[styles.palateColumn, styles.infoBox]}>
-            <Text style={styles.boxTitle}>
-              {t("tastingNoteDetail.info.palate")}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>
+              {t("tastingNoteWrite.conclusion.ratingLabel")}
             </Text>
-            <View style={styles.chartContainer}>
-              <PentagonRadarChart
-                data={{
-                  acidity: note.acidity / 20,
-                  sweetness: note.sweetness / 20,
-                  tannin: note.tannin / 20,
-                  body: note.body / 20,
-                  alcohol: note.alcohol / 20,
-                }}
-                size={140}
-              />
+            <View style={styles.statValueRow}>
+              <Ionicons name="star" size={20} color={RATING_GOLD} />
+              <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
             </View>
           </View>
 
-          <View style={styles.rightColumn}>
-            <View style={styles.infoBox}>
-              <Text style={styles.boxTitle}>
-                {t("tastingNoteDetail.info.nose")}
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>
+              {t("tastingNoteDetail.info.color")}
+            </Text>
+            <View style={styles.statValueRow}>
+              <View
+                style={[
+                  styles.colorSwatch,
+                  { backgroundColor: getHexColorFromValue(note.color) },
+                ]}
+              />
+              <Text style={styles.colorLabel} numberOfLines={1}>
+                {getColorLabel(note.color) || "-"}
               </Text>
-              <View>
-                <View style={styles.noseTagsContainer}>
-                  {note.noseList && note.noseList.length > 0 ? (
-                    note.noseList.map((scent, index) => (
-                      <View key={index} style={styles.noseTag}>
-                        <Text style={styles.noseText}>{scent}</Text>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={styles.emptyText}>-</Text>
-                  )}
-                </View>
-              </View>
-            </View>
-
-            <View style={[styles.infoBox, { flex: 1 }]}>
-              <Text style={styles.boxTitle}>
-                {t("tastingNoteDetail.info.finish")}
-              </Text>
-              <View>
-                <View style={styles.noseTagsContainer}>
-                  {finishTags.length > 0 ? (
-                    finishTags.map((tag, index) => (
-                      <View key={index} style={styles.noseTag}>
-                        <Text style={styles.noseText}>{tag}</Text>
-                      </View>
-                    ))
-                  ) : (
-                    <Text style={styles.emptyText}>-</Text>
-                  )}
-                </View>
-              </View>
             </View>
           </View>
         </View>
 
-        <View style={styles.divider} />
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {t("tastingNoteDetail.info.palate")}
+          </Text>
+          <View style={styles.chartContainer}>
+            <PentagonRadarChart
+              data={{
+                acidity: note.acidity / 20,
+                sweetness: note.sweetness / 20,
+                tannin: note.tannin / 20,
+                body: note.body / 20,
+                alcohol: note.alcohol / 20,
+              }}
+              size={180}
+            />
+          </View>
+        </View>
 
-        <View style={styles.bottomSectionWrapper}>
-          <Text style={styles.sectionHeader}>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {t("tastingNoteDetail.info.nose")}
+          </Text>
+          <View style={styles.chipWrap}>
+            {note.noseList && note.noseList.length > 0 ? (
+              note.noseList.map((scent, index) => (
+                <View key={index} style={styles.chip}>
+                  <Text style={styles.chipText}>{scent}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>-</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {t("tastingNoteDetail.info.finish")}
+          </Text>
+          <View style={styles.chipWrap}>
+            {finishTags.length > 0 ? (
+              finishTags.map((tag, index) => (
+                <View key={index} style={styles.chip}>
+                  <Text style={styles.chipText}>{tag}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>-</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
             {t("tastingNoteDetail.info.review")}
           </Text>
-          <View style={styles.bottomContent}>
-            <Text style={styles.bodyText}>
-              {reviewText || t("tastingNoteDetail.info.emptyReview")}
-            </Text>
-          </View>
+          <Text style={styles.bodyText}>
+            {reviewText || t("tastingNoteDetail.info.emptyReview")}
+          </Text>
         </View>
       </ScrollView>
+
+      <ActionMenuSheet
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        cancelLabel={t("tastingNoteDetail.menu.cancel")}
+        actions={[
+          {
+            label: t("tastingNoteDetail.menu.delete"),
+            icon: "trash-outline",
+            destructive: true,
+            onPress: handleDelete,
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }
@@ -311,6 +333,17 @@ const getHexColorFromValue = (value: string) => {
   return value.startsWith("#") ? value : "transparent";
 };
 
+const getColorLabel = (value: string) => {
+  if (!value) return "";
+  for (const paletteKey in COLOR_PALETTES) {
+    const found = COLOR_PALETTES[paletteKey].find(
+      (item) => item.value === value
+    );
+    if (found) return found.label;
+  }
+  return value;
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -322,53 +355,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.background,
   },
-  placeholder: {
-    width: 32,
-  },
   scrollContent: {
-    padding: 16,
-    gap: 16,
-    paddingBottom: 40,
+    padding: spacing.xl,
+    gap: spacing.lg,
+    paddingBottom: spacing.xxxl,
   },
 
-  topSection: {
+  // Hero
+  hero: {
     flexDirection: "row",
-    height: 120,
+    gap: spacing.lg,
   },
-  wineImageContainer: {
-    width: 90,
-    height: 120,
-    borderRadius: 8,
+  heroImageBox: {
+    width: 96,
+    height: 128,
+    borderRadius: radius.sm,
     overflow: "hidden",
-    backgroundColor: colors.surface1,
-    marginRight: 16,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
     justifyContent: "center",
     alignItems: "center",
-    padding: 4,
+    padding: spacing.sm,
   },
-  wineImage: {
+  heroImage: {
     width: "100%",
     height: "100%",
   },
-  wineImagePlaceholder: {
+  heroInfo: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    gap: spacing.sm,
   },
-  wineInfoContainer: {
-    flex: 1,
-    justifyContent: "space-between",
-    paddingVertical: 4,
-  },
-  wineHeaderRow: {
+  heroTopRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   typeBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radius.sm,
   },
   typeText: {
     color: colors.white,
@@ -380,124 +407,105 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   wineName: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
-    lineHeight: 24,
+    color: colors.textPrimary,
+    fontSize: 20,
+    fontWeight: "800",
+    lineHeight: 26,
+    letterSpacing: -0.3,
   },
   vintageText: {
     color: colors.textSecondary,
     fontSize: 14,
   },
-  metaRow: {
+
+  // Stat cards
+  statsRow: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
+    gap: spacing.md,
   },
-  colorWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  statCard: {
+    flex: 1,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
   },
-  metaLabel: {
+  statLabel: {
     color: colors.textSecondary,
     fontSize: 12,
+    fontWeight: "600",
   },
-  colorCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.white,
-  },
-  ratingWrapper: {
+  statValueRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: spacing.sm,
   },
   ratingValue: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
+    color: colors.textPrimary,
+    fontSize: 18,
+    fontWeight: "800",
   },
-
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
+  colorSwatch: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: surfaces.hairlineStrong,
   },
-
-  middleSection: {
-    flexDirection: "row",
-    minHeight: 220,
-    gap: 16,
-  },
-  palateColumn: {
+  colorLabel: {
     flex: 1,
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+
+  // Cards
+  card: {
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  cardTitle: {
+    color: accent.text,
+    fontSize: 14,
+    fontWeight: "700",
   },
   chartContainer: {
-    flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    marginTop: -10,
+    justifyContent: "center",
+    paddingVertical: spacing.sm,
   },
-
-  rightColumn: {
-    flex: 1,
-    gap: 12,
-  },
-  infoBox: {
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
-    padding: 12,
-    gap: 8,
-  },
-  boxTitle: {
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-
-  noseTagsContainer: {
+  chipWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
+    gap: spacing.sm,
   },
-  noseTag: {
-    backgroundColor: colors.border,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+  chip: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: accent.soft,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: accent.border,
   },
-  noseText: {
-    color: colors.textSecondary,
-    fontSize: 11,
+  chipText: {
+    color: accent.text,
+    fontSize: 13,
+    fontWeight: "600",
   },
   emptyText: {
     color: colors.textTertiary,
-    fontSize: 12,
-    fontStyle: "italic",
+    fontSize: 13,
   },
-
   bodyText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 20,
-  },
-
-  bottomSectionWrapper: {
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
-    padding: 16,
-  },
-  sectionHeader: {
-    color: colors.primary,
     fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  bottomContent: {
-    paddingBottom: 0,
+    lineHeight: 22,
   },
 });
