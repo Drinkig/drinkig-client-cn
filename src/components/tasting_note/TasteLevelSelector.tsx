@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { colors } from '../../constants/colors';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { colors } from "../../constants/colors";
+import { spacing, radius, accent, surfaces } from "../../constants/theme";
+import { useTranslation } from "react-i18next";
 
 interface TasteLevelSelectorProps {
   label: string;
@@ -11,99 +12,132 @@ interface TasteLevelSelectorProps {
   onHelpPress?: () => void;
 }
 
-export default function TasteLevelSelector({ label, value, onChange, onHelpPress }: TasteLevelSelectorProps) {
+export default function TasteLevelSelector({
+  label,
+  value,
+  onChange,
+  onHelpPress,
+}: TasteLevelSelectorProps) {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.levelContainer}>
+    <View style={styles.container}>
       <View style={styles.labelRow}>
-        <Text style={styles.levelLabel}>{label}</Text>
-        {onHelpPress && (
-          <TouchableOpacity onPress={onHelpPress} style={styles.helpIconContainer}>
-            <Icon name="help-circle-outline" size={18} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={styles.levelButtonsWrapper}>
-        <View style={styles.levelButtons}>
-          {[1, 2, 3, 4, 5].map((level) => (
-            <TouchableOpacity
-              key={level}
-              style={[
-                styles.levelButton,
-                value === level && styles.levelButtonSelected,
-              ]}
-              onPress={() => onChange(level)}
-            >
-              <Text style={[styles.levelButtonText, value === level && { color: colors.white }]}>{level}</Text>
+        <View style={styles.labelLeft}>
+          <Text style={styles.label}>{label}</Text>
+          {onHelpPress && (
+            <TouchableOpacity onPress={onHelpPress} style={styles.helpButton}>
+              <Icon
+                name="help-circle-outline"
+                size={18}
+                color={colors.textTertiary}
+              />
             </TouchableOpacity>
-          ))}
+          )}
         </View>
-        <View style={styles.levelRangeLabels}>
-          <View style={styles.levelRangeLabelContainer}>
-            <Text style={styles.levelRangeText}>{t('tastingNoteWrite.tasteLevel.weak')}</Text>
-          </View>
-          <View style={styles.levelRangeLabelContainer}>
-            <Text style={styles.levelRangeText}>{t('tastingNoteWrite.tasteLevel.strong')}</Text>
-          </View>
+        <View style={[styles.valueBadge, value > 0 && styles.valueBadgeActive]}>
+          <Text style={[styles.valueText, value > 0 && styles.valueTextActive]}>
+            {value > 0 ? value : "-"}
+          </Text>
         </View>
+      </View>
+
+      <View style={styles.segments}>
+        {[1, 2, 3, 4, 5].map((level) => (
+          <TouchableOpacity
+            key={level}
+            style={styles.segmentTouch}
+            onPress={() => onChange(level)}
+            activeOpacity={0.7}
+          >
+            <View
+              style={[styles.segment, level <= value && styles.segmentFilled]}
+            />
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      <View style={styles.rangeRow}>
+        <Text style={styles.rangeText}>
+          {t("tastingNoteWrite.tasteLevel.weak")}
+        </Text>
+        <Text style={styles.rangeText}>
+          {t("tastingNoteWrite.tasteLevel.strong")}
+        </Text>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  levelContainer: {
-    marginBottom: 24,
+  container: {
+    marginBottom: spacing.xxl,
   },
   labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.md,
   },
-  levelLabel: {
-    color: '#ccc',
-    fontSize: 14,
+  labelLeft: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  helpIconContainer: {
-    marginLeft: 6,
+  label: {
+    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  helpButton: {
+    marginLeft: spacing.xs,
     padding: 2,
   },
-  levelButtonsWrapper: {
-    paddingHorizontal: 4,
+  valueBadge: {
+    minWidth: 26,
+    height: 26,
+    borderRadius: 13,
+    paddingHorizontal: spacing.sm,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: surfaces.card,
   },
-  levelButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+  valueBadgeActive: {
+    backgroundColor: accent.soft,
   },
-  levelButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.border,
+  valueText: {
+    color: colors.textTertiary,
+    fontSize: 13,
+    fontWeight: "700",
   },
-  levelButtonSelected: {
-    backgroundColor: colors.primary,
+  valueTextActive: {
+    color: accent.text,
   },
-  levelButtonText: {
-    color: colors.textSecondary,
-    fontSize: 18,
-    fontWeight: 'bold',
+  segments: {
+    flexDirection: "row",
+    gap: spacing.sm,
   },
-  levelRangeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  segmentTouch: {
+    flex: 1,
+    paddingVertical: spacing.xs,
   },
-  levelRangeLabelContainer: {
-    width: 48,
-    alignItems: 'center',
+  segment: {
+    height: 10,
+    borderRadius: radius.pill,
+    backgroundColor: surfaces.card,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
   },
-  levelRangeText: {
-    color: '#666',
+  segmentFilled: {
+    backgroundColor: accent.base,
+    borderColor: accent.base,
+  },
+  rangeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: spacing.sm,
+  },
+  rangeText: {
+    color: colors.textTertiary,
     fontSize: 12,
   },
 });
-

@@ -129,11 +129,18 @@ const PaywallScreen = () => {
                 purchase.originalTransactionIdentifierIOS || transactionId;
               const productId = purchase.productId;
 
-              await verifyReceipt(
+              const verifyResult = await verifyReceipt(
                 transactionId,
                 originalTransactionId,
                 productId
               );
+
+              // 서버(Apple) 검증이 실패하면 거래를 finish하지 않고 에러 처리
+              // (finish하지 않으면 Apple이 거래를 재전송하므로 추후 재검증 가능)
+              if (!verifyResult?.result?.success) {
+                throw new Error(verifyResult?.message || "verification failed");
+              }
+
               await finishTransaction({ purchase, isConsumable: false });
               await refreshSubscription();
 
@@ -225,11 +232,18 @@ const PaywallScreen = () => {
         const originalTransactionId =
           latestPurchase.originalTransactionIdentifierIOS || transactionId;
 
-        await verifyReceipt(
+        const verifyResult = await verifyReceipt(
           transactionId,
           originalTransactionId,
           latestPurchase.productId
         );
+
+        if (!verifyResult?.result?.success) {
+          showToast(t("paywall.restoreEmptyMessage"), { type: "info" });
+          setIsProcessing(false);
+          return;
+        }
+
         await refreshSubscription();
 
         showToast(t("paywall.restoreSuccessMessage"), {

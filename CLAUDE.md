@@ -90,6 +90,7 @@ npm start            # Metro
 | 2026-04-09 | 초기화 | — | — | CLAUDE.md, `/check_drinkig` 스킬, PostToolUse 훅 초기 설정 |
 | 2026-06-10 | iOS 빌드 | `npm run ios` 시 fmt/glog 컴파일 실패 (`call to consteval function 'fmt::basic_format_string' is not a constant expression`, xcodebuild code 65) | Xcode 26.5 Clang에서 fmt 11.0.2의 consteval 포맷 검사가 깨짐. `base.h`가 `FMT_USE_CONSTEVAL`을 `#ifndef` 가드 없이 무조건 `#define`해서 `-D` 컴파일 플래그가 무시됨 | `ios/Podfile` `post_install`에서 `Pods/fmt/include/fmt/base.h`의 `#define FMT_USE_CONSTEVAL 1` → `0` 치환 (pod install마다 자동 재적용, 런타임 영향 없음) |
 | 2026-06-10 | Metro | 앱 실행 후 `Unable to resolve module ./index from /Users/wiseungju/salary-fyi/.` 빨간 화면 | 8081 포트에 **다른 프로젝트(salary-fyi)의 Metro**가 떠있어 엉뚱한 번들을 서빙. run-ios의 "8082 쓸까요?" 프롬프트는 이 충돌 신호 | 8081 점유 프로세스(`lsof -iTCP:8081`) kill 후 `npm start`로 drinkig Metro 재기동, 앱 재실행 |
+| 2026-06-19 | 결제(IAP) | 실제 구매가 활성화 안 됨 + 실패인데 "구독 성공" 토스트 | (1) 클라가 보내는 product ID는 `.v2`인데 백엔드(`SubscriptionPlan.fromProductId`)는 `.v2` 없는 ID만 인식 → 무조건 `FREE`/`INVALID_RECEIPT`. (2) 클라 `verifyReceipt`가 응답의 `result.success`를 검사 안 함 → 실패해도 성공 처리. (3) 백엔드가 Apple에 영수증 검증을 전혀 안 하고 클라 값 그대로 신뢰(보안 구멍), 웹훅도 서명 미검증 | 백엔드 `.v2` ID 추가 + Apple `app-store-server-library 5.2.0`로 `getTransactionInfo`+서명검증(프로덕션→샌드박스 폴백) 도입(`AppleAppStoreClient`), 실제 만료일 반영, 웹훅 `signedPayload` 서명검증. 클라는 `result.success` 확인 후에만 `finishTransaction`/성공 토스트. **운영 전 `apple.iap.*`(In-App Purchase 키 .p8/issuer/key-id/app-apple-id) 환경변수 설정 필요** |
 
 ## 8. 자동화 훅 요약
 

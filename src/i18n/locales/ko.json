@@ -415,6 +415,20 @@
     "tastingNoteWrite": {
         "header": "테이스팅 노트 작성",
         "save": "저장",
+        "step": {
+            "wine": "와인",
+            "appearance": "외관",
+            "nose": "향",
+            "palate": "맛",
+            "conclusion": "총평",
+            "count": "{{current}} / {{total}} 단계"
+        },
+        "nav": {
+            "next": "다음",
+            "back": "이전",
+            "skip": "건너뛰기",
+            "complete": "노트 저장"
+        },
         "error": {
             "noWine": "와인을 선택해주세요.",
             "noDate": "시음 날짜를 입력해주세요.",
@@ -437,10 +451,18 @@
             "finish": "피니쉬 (Finish)",
             "conclusion": "총평 (Conclusion)"
         },
+        "wineSelection": {
+            "title": "어떤 와인을 마셨나요?",
+            "subtitle": "기록할 와인을 검색해 선택하세요"
+        },
         "wineSearch": {
             "changeButton": "와인 변경",
             "placeholder": "와인 이름을 검색하세요",
             "noResult": "검색 결과가 없습니다."
+        },
+        "appearance": {
+            "title": "외관을 기록하세요",
+            "subtitle": "빈티지와 시음 날짜, 와인의 색을 골라주세요"
         },
         "basicInfo": {
             "vintage": "빈티지 (연도)",
@@ -449,10 +471,17 @@
             "datePlaceholder": "날짜 선택"
         },
         "nose": {
+            "title": "어떤 향이 느껴졌나요?",
+            "subtitle": "떠오르는 향을 태그로 추가하세요",
             "label": "느껴지는 향을 쉼표(,)로 구분하여 적어주세요",
-            "placeholder": "예: 체리, 오크, 바닐라, 가죽"
+            "placeholder": "예: 체리, 오크, 바닐라, 가죽",
+            "addPlaceholder": "향 직접 입력 후 추가",
+            "suggestionsTitle": "추천 향",
+            "suggestions": ["체리", "자두", "블랙베리", "딸기", "레몬", "사과", "복숭아", "꽃향", "바닐라", "오크", "후추", "계피", "가죽", "담배", "흙내음", "초콜릿"]
         },
         "palate": {
+            "title": "맛은 어땠나요?",
+            "subtitle": "각 항목의 강도를 1~5로 평가하세요",
             "sweetness": "당도 (Sweetness)",
             "acidity": "산도 (Acidity)",
             "tannin": "탄닌 (Tannin)",
@@ -461,9 +490,16 @@
         },
         "finish": {
             "label": "와인을 삼킨 후의 느낌이나 여운을 적어주세요",
-            "placeholder": "예: 깔끔한 산미가 오래 남음, 씁쓸한 끝맛"
+            "placeholder": "예: 깔끔한 산미가 오래 남음, 씁쓸한 끝맛",
+            "addPlaceholder": "여운 직접 입력 후 추가",
+            "suggestionsTitle": "추천 여운",
+            "suggestions": ["길게 남는 여운", "깔끔한 마무리", "부드러운 끝맛", "드라이한 피니시", "산뜻한 산미", "떫은 여운", "스파이시한 끝맛", "과일 향의 여운"]
         },
         "conclusion": {
+            "title": "총평을 남겨주세요",
+            "subtitle": "별점과 한 줄 감상을 기록하세요",
+            "finishLabel": "피니시 (Finish)",
+            "ratingLabel": "별점",
             "reviewLabel": "상세 리뷰 (선택)",
             "reviewPlaceholder": "와인에 대한 전체적인 감상을 자유롭게 적어주세요."
         },
@@ -471,7 +507,8 @@
             "title": "시음 날짜 선택"
         },
         "color": {
-            "title": "와인 색상"
+            "title": "와인 색상",
+            "prompt": "가장 가까운 색을 선택하세요"
         },
         "help": {
             "confirm": "확인"

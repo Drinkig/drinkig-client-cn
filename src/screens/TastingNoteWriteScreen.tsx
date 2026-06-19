@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import GlassHeader from "../components/common/GlassHeader";
+import TagInput from "../components/common/TagInput";
 import { logEvent, logScreen } from "utils/analytics";
 import {
   createTastingNote,
@@ -29,11 +30,13 @@ import CalendarModal from "../components/tasting_note/CalendarModal";
 import ColorSelector from "../components/tasting_note/ColorSelector";
 import HelpModal from "../components/tasting_note/HelpModal";
 import StarRating from "../components/tasting_note/StarRating";
+import StepProgress from "../components/tasting_note/StepProgress";
 import TasteLevelSelector from "../components/tasting_note/TasteLevelSelector";
 import { TASTE_TIPS } from "../components/tasting_note/constants";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
+import { spacing, radius, accent, surfaces } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import {
@@ -55,6 +58,20 @@ type TastingNoteWriteScreenRouteProp = RouteProp<
   "TastingNoteWrite"
 >;
 
+// Wizard step indices
+const STEP_WINE = 0;
+const STEP_APPEARANCE = 1;
+const STEP_NOSE = 2;
+const STEP_PALATE = 3;
+const STEP_CONCLUSION = 4;
+const TOTAL_STEPS = 5;
+
+const splitTags = (value: string) =>
+  value
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+
 export default function TastingNoteWriteScreen() {
   const navigation = useNavigation();
   const route = useRoute<TastingNoteWriteScreenRouteProp>();
@@ -75,6 +92,9 @@ export default function TastingNoteWriteScreen() {
     wineType: params.wineType,
   });
 
+  const [currentStep, setCurrentStep] = useState(
+    params.wineId ? STEP_APPEARANCE : STEP_WINE
+  );
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<WineUserDTO[]>([]);
 
@@ -207,6 +227,8 @@ export default function TastingNoteWriteScreen() {
         setDraftLoaded(true);
       }
     })();
+    // Run once on mount to restore any saved draft.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Build current draft data
@@ -248,24 +270,42 @@ export default function TastingNoteWriteScreen() {
     ]
   );
 
+  const hasAnyData = useCallback(
+    () =>
+      !!(
+        selectedWine.wineId ||
+        vintageYear ||
+        color ||
+        nose ||
+        finish ||
+        review ||
+        sweetness > 0 ||
+        acidity > 0 ||
+        tannin > 0 ||
+        body > 0 ||
+        alcohol > 0 ||
+        rating > 0
+      ),
+    [
+      selectedWine,
+      vintageYear,
+      color,
+      nose,
+      finish,
+      review,
+      sweetness,
+      acidity,
+      tannin,
+      body,
+      alcohol,
+      rating,
+    ]
+  );
+
   // Auto-save draft (debounced 3s)
   useEffect(() => {
     if (!draftLoaded) return;
-    // Only auto-save if user has started filling in data
-    const hasData =
-      selectedWine.wineId ||
-      vintageYear ||
-      color ||
-      nose ||
-      finish ||
-      review ||
-      sweetness > 0 ||
-      acidity > 0 ||
-      tannin > 0 ||
-      body > 0 ||
-      alcohol > 0 ||
-      rating > 0;
-    if (!hasData) return;
+    if (!hasAnyData()) return;
 
     if (autoSaveTimer.current) {
       clearTimeout(autoSaveTimer.current);
@@ -279,7 +319,7 @@ export default function TastingNoteWriteScreen() {
         clearTimeout(autoSaveTimer.current);
       }
     };
-  }, [draftLoaded, getCurrentDraft]);
+  }, [draftLoaded, getCurrentDraft, hasAnyData]);
 
   // Manual draft save
   const handleSaveDraft = useCallback(async () => {
@@ -291,21 +331,7 @@ export default function TastingNoteWriteScreen() {
 
   // Close with confirmation if there's unsaved data
   const handleClose = useCallback(() => {
-    const hasData =
-      selectedWine.wineId ||
-      vintageYear ||
-      color ||
-      nose ||
-      finish ||
-      review ||
-      sweetness > 0 ||
-      acidity > 0 ||
-      tannin > 0 ||
-      body > 0 ||
-      alcohol > 0 ||
-      rating > 0;
-
-    if (hasData) {
+    if (hasAnyData()) {
       showAlert({
         title: t("tastingNoteWrite.draft.closeTitle"),
         message: t("tastingNoteWrite.draft.closeMsg"),
@@ -324,39 +350,7 @@ export default function TastingNoteWriteScreen() {
     } else {
       navigation.goBack();
     }
-  }, [
-    selectedWine,
-    vintageYear,
-    color,
-    nose,
-    finish,
-    review,
-    sweetness,
-    acidity,
-    tannin,
-    body,
-    alcohol,
-    rating,
-    getCurrentDraft,
-    navigation,
-    showAlert,
-    t,
-  ]);
-
-  const isFormValid =
-    selectedWine.wineId &&
-    color !== "" &&
-    tasteDate !== "" &&
-    sweetness > 0 &&
-    acidity > 0 &&
-    tannin > 0 &&
-    body > 0 &&
-    alcohol > 0 &&
-    rating > 0;
-
-  const handleRating = (value: number) => {
-    setRating(value);
-  };
+  }, [hasAnyData, getCurrentDraft, navigation, showAlert, t]);
 
   const mapLevelToValue = (level: number) => level * 20;
 
@@ -384,6 +378,50 @@ export default function TastingNoteWriteScreen() {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelectedWine({});
     setSearchText("");
+  };
+
+  // Per-step gate for the primary "Next" button
+  const canProceed = (() => {
+    switch (currentStep) {
+      case STEP_WINE:
+        return !!selectedWine.wineId;
+      case STEP_APPEARANCE:
+        return color !== "" && tasteDate !== "";
+      case STEP_NOSE:
+        return true; // optional
+      case STEP_PALATE:
+        return (
+          sweetness > 0 && acidity > 0 && tannin > 0 && body > 0 && alcohol > 0
+        );
+      case STEP_CONCLUSION:
+        return rating > 0;
+      default:
+        return false;
+    }
+  })();
+
+  const goToStep = (step: number) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setCurrentStep(step);
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  };
+
+  const scrollRef = useRef<ScrollView>(null);
+
+  const handleNext = () => {
+    if (currentStep < STEP_CONCLUSION) {
+      goToStep(currentStep + 1);
+    } else {
+      handleSubmit();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > STEP_WINE) {
+      goToStep(currentStep - 1);
+    } else {
+      handleClose();
+    }
   };
 
   const handleSubmit = async () => {
@@ -439,10 +477,7 @@ export default function TastingNoteWriteScreen() {
         tannin: mapLevelToValue(tannin),
         body: mapLevelToValue(body),
         alcohol: mapLevelToValue(alcohol),
-        nose: nose
-          .split(",")
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0),
+        nose: splitTags(nose),
         rating,
         review: finalReview,
       };
@@ -483,13 +518,383 @@ export default function TastingNoteWriteScreen() {
     }
   };
 
+  const stepLabels = [
+    t("tastingNoteWrite.step.wine"),
+    t("tastingNoteWrite.step.appearance"),
+    t("tastingNoteWrite.step.nose"),
+    t("tastingNoteWrite.step.palate"),
+    t("tastingNoteWrite.step.conclusion"),
+  ];
+
+  const wineDisplayName =
+    i18n.language === "en"
+      ? selectedWine.wineNameEng || selectedWine.wineName
+      : selectedWine.wineName;
+
+  const renderStepHeader = (title: string, subtitle: string) => (
+    <View style={styles.stepHeader}>
+      <Text style={styles.stepTitle}>{title}</Text>
+      <Text style={styles.stepSubtitle}>{subtitle}</Text>
+    </View>
+  );
+
+  const renderWineStep = () => (
+    <View>
+      {renderStepHeader(
+        t("tastingNoteWrite.wineSelection.title"),
+        t("tastingNoteWrite.wineSelection.subtitle")
+      )}
+
+      {selectedWine.wineId ? (
+        <View style={styles.selectedWineCard}>
+          {selectedWine.wineImage ? (
+            <Image
+              source={{ uri: selectedWine.wineImage }}
+              style={styles.selectedWineImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.selectedWineImagePlaceholder}>
+              <Icon name="wine" size={28} color={colors.textTertiary} />
+            </View>
+          )}
+          <View style={styles.selectedWineInfo}>
+            <Text style={styles.selectedWineName} numberOfLines={2}>
+              {wineDisplayName}
+            </Text>
+            {selectedWine.wineType ? (
+              <View
+                style={[
+                  styles.typeChip,
+                  { backgroundColor: getWineTypeColor(selectedWine.wineType) },
+                ]}
+              >
+                <Text style={styles.typeChipText}>{selectedWine.wineType}</Text>
+              </View>
+            ) : null}
+          </View>
+          <TouchableOpacity
+            style={styles.changeButton}
+            onPress={resetSelection}
+          >
+            <Text style={styles.changeButtonText}>
+              {t("tastingNoteWrite.wineSearch.changeButton")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View>
+          <View style={styles.searchBar}>
+            <Icon name="search" size={20} color={colors.textSecondary} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t("tastingNoteWrite.wineSearch.placeholder")}
+              placeholderTextColor={colors.textTertiary}
+              value={searchText}
+              onChangeText={setSearchText}
+              returnKeyType="search"
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setSearchText("");
+                  setSearchResults([]);
+                }}
+              >
+                <Icon
+                  name="close-circle"
+                  size={18}
+                  color={colors.textTertiary}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {searchResults.length > 0
+            ? searchResults.map((item) => (
+                <TouchableOpacity
+                  key={item.wineId}
+                  style={styles.resultItem}
+                  onPress={() => handleSelectWine(item)}
+                >
+                  <View style={styles.resultImageBox}>
+                    {item.imageUrl ? (
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={styles.resultImage}
+                        resizeMode="contain"
+                      />
+                    ) : (
+                      <Icon name="wine" size={20} color={accent.text} />
+                    )}
+                  </View>
+                  <View style={styles.resultText}>
+                    {i18n.language === "en" ? (
+                      <Text style={styles.resultName} numberOfLines={2}>
+                        {item.nameEng || item.name}
+                      </Text>
+                    ) : (
+                      <>
+                        <Text style={styles.resultName} numberOfLines={2}>
+                          {item.name}
+                        </Text>
+                        <Text style={styles.resultNameEng} numberOfLines={1}>
+                          {item.nameEng}
+                        </Text>
+                      </>
+                    )}
+                    <View style={styles.resultInfoRow}>
+                      <View
+                        style={[
+                          styles.typeChip,
+                          { backgroundColor: getWineTypeColor(item.sort) },
+                        ]}
+                      >
+                        <Text style={styles.typeChipText}>{item.sort}</Text>
+                      </View>
+                      <Text style={styles.resultCountry}>{item.country}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))
+            : searchText.length > 0 && (
+                <View style={styles.emptyBox}>
+                  <Text style={styles.emptyText}>
+                    {t("tastingNoteWrite.wineSearch.noResult")}
+                  </Text>
+                </View>
+              )}
+        </View>
+      )}
+    </View>
+  );
+
+  const renderAppearanceStep = () => (
+    <View>
+      {renderStepHeader(
+        t("tastingNoteWrite.appearance.title"),
+        t("tastingNoteWrite.appearance.subtitle")
+      )}
+
+      <View style={styles.row}>
+        <View style={[styles.fieldGroup, { flex: 1, marginRight: spacing.md }]}>
+          <Text style={styles.fieldLabel}>
+            {t("tastingNoteWrite.basicInfo.vintage")}
+          </Text>
+          <View
+            style={[
+              styles.vintageWrapper,
+              vintageYear.length === 4 &&
+                vintageYear !== "NV" &&
+                styles.vintageWrapperValid,
+            ]}
+          >
+            <TextInput
+              style={styles.vintageInput}
+              placeholder={t("tastingNoteWrite.basicInfo.vintagePlaceholder")}
+              placeholderTextColor={colors.textTertiary}
+              keyboardType="numeric"
+              value={vintageYear}
+              onChangeText={(text) => {
+                if (text !== "NV") {
+                  setVintageYear(text.replace(/[^0-9]/g, ""));
+                } else {
+                  setVintageYear(text);
+                }
+              }}
+              maxLength={4}
+            />
+            {vintageYear.length === 4 && vintageYear !== "NV" ? (
+              <Icon
+                name="checkmark-circle"
+                size={20}
+                color={accent.base}
+                style={{ marginRight: spacing.xs }}
+              />
+            ) : (
+              <TouchableOpacity
+                style={[
+                  styles.nvButton,
+                  vintageYear === "NV" && styles.nvButtonActive,
+                ]}
+                onPress={() => setVintageYear(vintageYear === "NV" ? "" : "NV")}
+              >
+                <Text
+                  style={[
+                    styles.nvButtonText,
+                    vintageYear === "NV" && styles.nvButtonTextActive,
+                  ]}
+                >
+                  NV
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <View style={[styles.fieldGroup, { flex: 1 }]}>
+          <Text style={styles.fieldLabel}>
+            {t("tastingNoteWrite.basicInfo.tasteDate")}
+          </Text>
+          <TouchableOpacity
+            style={styles.dateButton}
+            onPress={() => setCalendarVisible(true)}
+          >
+            <Text style={styles.dateButtonText}>
+              {tasteDate || t("tastingNoteWrite.basicInfo.datePlaceholder")}
+            </Text>
+            <Icon name="calendar-outline" size={20} color={accent.text} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.colorBlock}>
+        <Text style={styles.fieldLabel}>
+          {t("tastingNoteWrite.color.title")}
+        </Text>
+        <ColorSelector
+          wineType={selectedWine.wineType}
+          selectedColor={color}
+          onSelectColor={setColor}
+        />
+      </View>
+    </View>
+  );
+
+  const renderNoseStep = () => (
+    <View>
+      {renderStepHeader(
+        t("tastingNoteWrite.nose.title"),
+        t("tastingNoteWrite.nose.subtitle")
+      )}
+      <TagInput
+        tags={splitTags(nose)}
+        onChange={(tags) => setNose(tags.join(", "))}
+        placeholder={t("tastingNoteWrite.nose.addPlaceholder")}
+        suggestions={
+          t("tastingNoteWrite.nose.suggestions", {
+            returnObjects: true,
+          }) as string[]
+        }
+        suggestionsTitle={t("tastingNoteWrite.nose.suggestionsTitle")}
+      />
+    </View>
+  );
+
+  const renderPalateStep = () => (
+    <View>
+      {renderStepHeader(
+        t("tastingNoteWrite.palate.title"),
+        t("tastingNoteWrite.palate.subtitle")
+      )}
+      <TasteLevelSelector
+        label={t("tastingNoteWrite.palate.sweetness")}
+        value={sweetness}
+        onChange={setSweetness}
+        onHelpPress={() => showTip("sweetness")}
+      />
+      <TasteLevelSelector
+        label={t("tastingNoteWrite.palate.acidity")}
+        value={acidity}
+        onChange={setAcidity}
+        onHelpPress={() => showTip("acidity")}
+      />
+      <TasteLevelSelector
+        label={t("tastingNoteWrite.palate.tannin")}
+        value={tannin}
+        onChange={setTannin}
+        onHelpPress={() => showTip("tannin")}
+      />
+      <TasteLevelSelector
+        label={t("tastingNoteWrite.palate.body")}
+        value={body}
+        onChange={setBody}
+        onHelpPress={() => showTip("body")}
+      />
+      <TasteLevelSelector
+        label={t("tastingNoteWrite.palate.alcohol")}
+        value={alcohol}
+        onChange={setAlcohol}
+        onHelpPress={() => showTip("alcohol")}
+      />
+    </View>
+  );
+
+  const renderConclusionStep = () => (
+    <View>
+      {renderStepHeader(
+        t("tastingNoteWrite.conclusion.title"),
+        t("tastingNoteWrite.conclusion.subtitle")
+      )}
+
+      <Text style={styles.fieldLabel}>
+        {t("tastingNoteWrite.conclusion.finishLabel")}
+      </Text>
+      <TagInput
+        tags={splitTags(finish)}
+        onChange={(tags) => setFinish(tags.join(", "))}
+        placeholder={t("tastingNoteWrite.finish.addPlaceholder")}
+        suggestions={
+          t("tastingNoteWrite.finish.suggestions", {
+            returnObjects: true,
+          }) as string[]
+        }
+        suggestionsTitle={t("tastingNoteWrite.finish.suggestionsTitle")}
+      />
+
+      <View style={styles.ratingBlock}>
+        <Text style={styles.fieldLabel}>
+          {t("tastingNoteWrite.conclusion.ratingLabel")}
+        </Text>
+        <StarRating rating={rating} onRatingChange={setRating} />
+      </View>
+
+      <View style={styles.fieldGroup}>
+        <Text style={styles.fieldLabel}>
+          {t("tastingNoteWrite.conclusion.reviewLabel")}
+        </Text>
+        <TextInput
+          style={styles.textArea}
+          placeholder={t("tastingNoteWrite.conclusion.reviewPlaceholder")}
+          placeholderTextColor={colors.textTertiary}
+          multiline
+          numberOfLines={4}
+          value={review}
+          onChangeText={setReview}
+        />
+      </View>
+    </View>
+  );
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case STEP_WINE:
+        return renderWineStep();
+      case STEP_APPEARANCE:
+        return renderAppearanceStep();
+      case STEP_NOSE:
+        return renderNoseStep();
+      case STEP_PALATE:
+        return renderPalateStep();
+      case STEP_CONCLUSION:
+        return renderConclusionStep();
+      default:
+        return null;
+    }
+  };
+
+  const isLastStep = currentStep === STEP_CONCLUSION;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       <GlassHeader
         floating={false}
-        title={t("tastingNoteWrite.header")}
+        title={t("tastingNoteWrite.step.count", {
+          current: currentStep + 1,
+          total: TOTAL_STEPS,
+        })}
         left={
           <TouchableOpacity onPress={handleClose} style={styles.headerSide}>
             <Icon name="close" size={24} color={colors.white} />
@@ -497,28 +902,22 @@ export default function TastingNoteWriteScreen() {
         }
         right={
           <TouchableOpacity
-            onPress={isFormValid ? handleSubmit : handleSaveDraft}
+            onPress={handleSaveDraft}
             disabled={isSubmitting}
             style={styles.headerSide}
           >
-            <Text
-              style={[
-                styles.saveButton,
-                !isFormValid && styles.draftSaveButton,
-                isSubmitting && { opacity: 0.4 },
-              ]}
-            >
-              {isFormValid
-                ? t("tastingNoteWrite.save")
-                : t("tastingNoteWrite.draft.save")}
+            <Text style={styles.draftButton}>
+              {t("tastingNoteWrite.draft.save")}
             </Text>
           </TouchableOpacity>
         }
       />
 
+      <StepProgress steps={stepLabels} current={currentStep} />
+
       {draftSavedMessage && (
         <View style={styles.draftSavedToast}>
-          <Icon name="checkmark-circle" size={16} color={colors.primary} />
+          <Icon name="checkmark-circle" size={16} color={accent.text} />
           <Text style={styles.draftSavedToastText}>
             {t("tastingNoteWrite.draft.savedMsg")}
           </Text>
@@ -530,340 +929,54 @@ export default function TastingNoteWriteScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView
+          ref={scrollRef}
           style={styles.content}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <View style={[styles.section, { zIndex: 100 }]}>
-            <Text style={styles.sectionTitle}>
-              {t("tastingNoteWrite.section.wineSelection")}
-            </Text>
-
-            {selectedWine.wineId ? (
-              <View style={styles.selectedWineContainer}>
-                <View style={styles.wineInfoRow}>
-                  {selectedWine.wineImage ? (
-                    <Image
-                      source={{ uri: selectedWine.wineImage }}
-                      style={styles.wineThumbnail}
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <View style={styles.wineThumbnailPlaceholder}>
-                      <Icon name="wine" size={30} color={colors.textTertiary} />
-                    </View>
-                  )}
-                  <View style={styles.wineTextInfo}>
-                    <Text style={styles.wineName} numberOfLines={2}>
-                      {i18n.language === "en"
-                        ? selectedWine.wineNameEng || selectedWine.wineName
-                        : selectedWine.wineName}
-                    </Text>
-                    <Text style={styles.wineType}>{selectedWine.wineType}</Text>
-                  </View>
-                </View>
-                <TouchableOpacity
-                  style={styles.changeButton}
-                  onPress={resetSelection}
-                >
-                  <Text style={styles.changeButtonText}>
-                    {t("tastingNoteWrite.wineSearch.changeButton")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.searchSection}>
-                <View style={styles.searchBarContainer}>
-                  <Icon
-                    name="search"
-                    size={20}
-                    color={colors.textSecondary}
-                    style={styles.searchIcon}
-                  />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder={t("tastingNoteWrite.wineSearch.placeholder")}
-                    placeholderTextColor={colors.textTertiary}
-                    value={searchText}
-                    onChangeText={setSearchText}
-                    returnKeyType="search"
-                  />
-                  {searchText.length > 0 && (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setSearchText("");
-                        setSearchResults([]);
-                      }}
-                      style={styles.clearButton}
-                    >
-                      <Icon
-                        name="close-circle"
-                        size={18}
-                        color={colors.textTertiary}
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
-
-                {searchResults.length > 0 ? (
-                  searchResults.map((item) => (
-                    <TouchableOpacity
-                      key={item.wineId}
-                      style={styles.resultItem}
-                      onPress={() => handleSelectWine(item)}
-                    >
-                      <View style={styles.resultIconContainer}>
-                        {item.imageUrl ? (
-                          <Image
-                            source={{ uri: item.imageUrl }}
-                            style={styles.resultImage}
-                            resizeMode="contain"
-                          />
-                        ) : (
-                          <Icon name="wine" size={20} color={colors.primary} />
-                        )}
-                      </View>
-                      <View style={styles.resultTextContainer}>
-                        {i18n.language === "en" ? (
-                          <Text style={styles.resultNameKor} numberOfLines={2}>
-                            {item.nameEng || item.name}
-                          </Text>
-                        ) : (
-                          <>
-                            <Text
-                              style={styles.resultNameKor}
-                              numberOfLines={2}
-                            >
-                              {item.name}
-                            </Text>
-                            <Text style={styles.resultNameEng}>
-                              {item.nameEng}
-                            </Text>
-                          </>
-                        )}
-                        <View style={styles.resultInfoRow}>
-                          <View
-                            style={[
-                              styles.typeChip,
-                              { backgroundColor: getWineTypeColor(item.sort) },
-                            ]}
-                          >
-                            <Text style={styles.typeChipText}>{item.sort}</Text>
-                          </View>
-                          <Text style={styles.resultCountryText}>
-                            {item.country}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                ) : searchText.length > 0 ? (
-                  <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>
-                      {t("tastingNoteWrite.wineSearch.noResult")}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
-            )}
-          </View>
-
-          {selectedWine.wineId && (
-            <>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("tastingNoteWrite.section.basicInfo")}
-                </Text>
-
-                <View style={styles.row}>
-                  <View
-                    style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}
-                  >
-                    <Text style={styles.label}>
-                      {t("tastingNoteWrite.basicInfo.vintage")}
-                    </Text>
-                    <View
-                      style={[
-                        styles.vintageInputWrapper,
-                        vintageYear.length === 4 &&
-                          vintageYear !== "NV" &&
-                          styles.vintageInputWrapperValid,
-                      ]}
-                    >
-                      <TextInput
-                        style={styles.vintageInput}
-                        placeholder={t(
-                          "tastingNoteWrite.basicInfo.vintagePlaceholder"
-                        )}
-                        placeholderTextColor={colors.textTertiary}
-                        keyboardType="numeric"
-                        value={vintageYear}
-                        onChangeText={(text) => {
-                          if (text !== "NV") {
-                            setVintageYear(text.replace(/[^0-9]/g, ""));
-                          } else {
-                            setVintageYear(text);
-                          }
-                        }}
-                        maxLength={4}
-                      />
-                      {vintageYear.length === 4 && vintageYear !== "NV" ? (
-                        <Icon
-                          name="checkmark-circle"
-                          size={20}
-                          color={colors.primary}
-                          style={{ marginRight: 4 }}
-                        />
-                      ) : (
-                        <TouchableOpacity
-                          style={[
-                            styles.nvButton,
-                            vintageYear === "NV" && styles.nvButtonActive,
-                          ]}
-                          onPress={() =>
-                            setVintageYear(vintageYear === "NV" ? "" : "NV")
-                          }
-                        >
-                          <Text
-                            style={[
-                              styles.nvButtonText,
-                              vintageYear === "NV" && styles.nvButtonTextActive,
-                            ]}
-                          >
-                            NV
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-
-                  <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                    <Text style={styles.label}>
-                      {t("tastingNoteWrite.basicInfo.tasteDate")}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.dateButton}
-                      onPress={() => setCalendarVisible(true)}
-                    >
-                      <Text style={styles.dateButtonText}>
-                        {tasteDate ||
-                          t("tastingNoteWrite.basicInfo.datePlaceholder")}
-                      </Text>
-                      <Icon
-                        name="calendar-outline"
-                        size={20}
-                        color={colors.primary}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-
-              <ColorSelector
-                wineType={selectedWine.wineType}
-                selectedColor={color}
-                onSelectColor={setColor}
-              />
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("tastingNoteWrite.section.nose")}
-                </Text>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    {t("tastingNoteWrite.nose.label")}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t("tastingNoteWrite.nose.placeholder")}
-                    placeholderTextColor={colors.textTertiary}
-                    value={nose}
-                    onChangeText={setNose}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("tastingNoteWrite.section.palate")}
-                </Text>
-                <TasteLevelSelector
-                  label={t("tastingNoteWrite.palate.sweetness")}
-                  value={sweetness}
-                  onChange={setSweetness}
-                  onHelpPress={() => showTip("sweetness")}
-                />
-                <TasteLevelSelector
-                  label={t("tastingNoteWrite.palate.acidity")}
-                  value={acidity}
-                  onChange={setAcidity}
-                  onHelpPress={() => showTip("acidity")}
-                />
-                <TasteLevelSelector
-                  label={t("tastingNoteWrite.palate.tannin")}
-                  value={tannin}
-                  onChange={setTannin}
-                  onHelpPress={() => showTip("tannin")}
-                />
-                <TasteLevelSelector
-                  label={t("tastingNoteWrite.palate.body")}
-                  value={body}
-                  onChange={setBody}
-                  onHelpPress={() => showTip("body")}
-                />
-                <TasteLevelSelector
-                  label={t("tastingNoteWrite.palate.alcohol")}
-                  value={alcohol}
-                  onChange={setAlcohol}
-                  onHelpPress={() => showTip("alcohol")}
-                />
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("tastingNoteWrite.section.finish")}
-                </Text>
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    {t("tastingNoteWrite.finish.label")}
-                  </Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder={t("tastingNoteWrite.finish.placeholder")}
-                    placeholderTextColor={colors.textTertiary}
-                    value={finish}
-                    onChangeText={setFinish}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                  {t("tastingNoteWrite.section.conclusion")}
-                </Text>
-
-                <StarRating rating={rating} onRatingChange={handleRating} />
-
-                <View style={styles.inputGroup}>
-                  <Text style={styles.label}>
-                    {t("tastingNoteWrite.conclusion.reviewLabel")}
-                  </Text>
-                  <TextInput
-                    style={[styles.input, styles.textArea]}
-                    placeholder={t(
-                      "tastingNoteWrite.conclusion.reviewPlaceholder"
-                    )}
-                    placeholderTextColor={colors.textTertiary}
-                    multiline
-                    numberOfLines={4}
-                    value={review}
-                    onChangeText={setReview}
-                  />
-                </View>
-              </View>
-            </>
-          )}
+          {renderStep()}
         </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBack}
+            disabled={isSubmitting}
+          >
+            <Icon name="chevron-back" size={20} color={colors.textSecondary} />
+            <Text style={styles.backButtonText}>
+              {t("tastingNoteWrite.nav.back")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.nextButton,
+              (!canProceed || isSubmitting) && styles.nextButtonDisabled,
+            ]}
+            onPress={handleNext}
+            disabled={!canProceed || isSubmitting}
+          >
+            <Text
+              style={[
+                styles.nextButtonText,
+                (!canProceed || isSubmitting) && styles.nextButtonTextDisabled,
+              ]}
+            >
+              {isLastStep
+                ? t("tastingNoteWrite.nav.complete")
+                : t("tastingNoteWrite.nav.next")}
+            </Text>
+            {!isLastStep && (
+              <Icon
+                name="chevron-forward"
+                size={20}
+                color={canProceed ? accent.onAccent : colors.textTertiary}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
 
       <HelpModal
@@ -889,27 +1002,27 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   headerSide: {
-    width: 60,
+    minWidth: 56,
     alignItems: "center",
     justifyContent: "center",
-    padding: 4,
+    padding: spacing.xs,
   },
-  draftSaveButton: {
+  draftButton: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: "normal",
+    fontSize: 14,
+    fontWeight: "600",
   },
   draftSavedToast: {
     position: "absolute",
-    top: 100,
+    top: 120,
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    gap: 6,
+    backgroundColor: surfaces.card,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: radius.pill,
+    gap: spacing.xs,
     zIndex: 999,
     elevation: 10,
     shadowColor: "#000",
@@ -918,90 +1031,82 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   draftSavedToastText: {
-    color: colors.white,
+    color: colors.textPrimary,
     fontSize: 14,
     fontWeight: "500",
-  },
-  saveButton: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: "bold",
   },
   content: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.primary,
-    paddingLeft: 10,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxxl,
   },
 
-  searchSection: {},
-  searchBarContainer: {
+  stepHeader: {
+    marginBottom: spacing.xxl,
+  },
+  stepTitle: {
+    color: colors.textPrimary,
+    fontSize: 24,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  stepSubtitle: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginTop: spacing.sm,
+    lineHeight: 20,
+  },
+
+  // Wine search
+  searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 48,
-    marginBottom: 12,
-  },
-  searchIcon: {
-    marginRight: 8,
+    gap: spacing.sm,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    paddingHorizontal: spacing.lg,
+    height: 52,
+    marginBottom: spacing.md,
   },
   searchInput: {
     flex: 1,
-    color: colors.white,
+    color: colors.textPrimary,
     fontSize: 16,
     padding: 0,
     height: "100%",
   },
-  clearButton: {
-    padding: 4,
-  },
-  searchResultList: {
-    maxHeight: 320,
-  },
   resultItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    borderRadius: 8,
+    borderBottomColor: surfaces.hairline,
   },
-  resultIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 8,
-    backgroundColor: colors.surface1,
+  resultImageBox: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.card,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 14,
     overflow: "hidden",
   },
   resultImage: {
     width: "85%",
     height: "85%",
   },
-  resultTextContainer: {
+  resultText: {
     flex: 1,
     gap: 3,
   },
-  resultNameKor: {
-    color: colors.white,
+  resultName: {
+    color: colors.textPrimary,
     fontSize: 15,
     fontWeight: "600",
   },
@@ -1012,25 +1117,26 @@ const styles = StyleSheet.create({
   resultInfoRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: spacing.sm,
     marginTop: 2,
   },
-  resultCountryText: {
+  resultCountry: {
     color: colors.textTertiary,
     fontSize: 12,
   },
   typeChip: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: radius.sm,
+    alignSelf: "flex-start",
   },
   typeChipText: {
     color: colors.white,
     fontSize: 10,
     fontWeight: "bold",
   },
-  emptyContainer: {
-    padding: 40,
+  emptyBox: {
+    padding: spacing.xxxl,
     alignItems: "center",
   },
   emptyText: {
@@ -1038,122 +1144,95 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  selectedWineContainer: {
-    backgroundColor: colors.surface1,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  wineInfoRow: {
+  // Selected wine card
+  selectedWineCard: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    padding: spacing.lg,
+    gap: spacing.lg,
   },
-  wineThumbnail: {
+  selectedWineImage: {
     width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: colors.border,
+    height: 72,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.base,
   },
-  wineThumbnailPlaceholder: {
+  selectedWineImagePlaceholder: {
     width: 60,
-    height: 60,
-    borderRadius: 8,
-    backgroundColor: colors.border,
+    height: 72,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.base,
     justifyContent: "center",
     alignItems: "center",
   },
-  wineTextInfo: {
+  selectedWineInfo: {
     flex: 1,
-    marginLeft: 12,
+    gap: spacing.sm,
   },
-  wineName: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  wineType: {
-    color: colors.textSecondary,
-    fontSize: 14,
+  selectedWineName: {
+    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: "700",
+    lineHeight: 22,
   },
   changeButton: {
-    backgroundColor: colors.border,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: "center",
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: surfaces.hairlineStrong,
   },
   changeButtonText: {
-    color: colors.white,
-    fontSize: 14,
-    fontWeight: "500",
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "600",
   },
 
+  // Fields
   row: {
     flexDirection: "row",
   },
-  inputGroup: {
-    marginBottom: 16,
+  fieldGroup: {
+    marginBottom: spacing.xl,
   },
-  label: {
+  fieldLabel: {
     color: colors.textSecondary,
     fontSize: 14,
-    marginBottom: 8,
+    fontWeight: "600",
+    marginBottom: spacing.md,
   },
-  input: {
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
-    padding: 12,
-    color: colors.white,
-    fontSize: 16,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  ratingContainer: {
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  stars: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 8,
-  },
-  ratingValue: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-
-  vintageInputWrapper: {
+  vintageWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
-    paddingRight: 8,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.sm,
+    paddingRight: spacing.sm,
     borderWidth: 1,
-    borderColor: "transparent",
+    borderColor: surfaces.hairline,
   },
-  vintageInputWrapperValid: {
-    borderColor: colors.primary,
-    backgroundColor: "rgba(142, 68, 173, 0.05)",
+  vintageWrapperValid: {
+    borderColor: accent.border,
+    backgroundColor: accent.soft,
   },
   vintageInput: {
     flex: 1,
-    padding: 12,
-    color: colors.white,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
+    color: colors.textPrimary,
     fontSize: 16,
   },
   nvButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    backgroundColor: colors.surface2,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.base,
   },
   nvButtonActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: accent.base,
   },
   nvButtonText: {
     color: colors.textSecondary,
@@ -1163,17 +1242,83 @@ const styles = StyleSheet.create({
   nvButtonTextActive: {
     color: colors.white,
   },
-
   dateButton: {
-    backgroundColor: colors.surface1,
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   dateButtonText: {
-    color: colors.white,
+    color: colors.textPrimary,
+    fontSize: 15,
+  },
+  colorBlock: {
+    marginTop: spacing.sm,
+  },
+
+  ratingBlock: {
+    marginTop: spacing.xxl,
+    marginBottom: spacing.xl,
+  },
+  textArea: {
+    backgroundColor: surfaces.card,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    padding: spacing.lg,
+    color: colors.textPrimary,
+    fontSize: 15,
+    height: 120,
+    textAlignVertical: "top",
+  },
+
+  // Footer
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: surfaces.hairline,
+    backgroundColor: colors.background,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  backButtonText: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  nextButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.xs,
+    height: 54,
+    borderRadius: radius.md,
+    backgroundColor: accent.base,
+  },
+  nextButtonDisabled: {
+    backgroundColor: surfaces.card,
+  },
+  nextButtonText: {
+    color: accent.onAccent,
     fontSize: 16,
+    fontWeight: "700",
+  },
+  nextButtonTextDisabled: {
+    color: colors.textTertiary,
   },
 });

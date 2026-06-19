@@ -415,6 +415,20 @@
     "tastingNoteWrite": {
         "header": "Write Tasting Note",
         "save": "Save",
+        "step": {
+            "wine": "Wine",
+            "appearance": "Appearance",
+            "nose": "Nose",
+            "palate": "Palate",
+            "conclusion": "Conclusion",
+            "count": "Step {{current}} / {{total}}"
+        },
+        "nav": {
+            "next": "Next",
+            "back": "Back",
+            "skip": "Skip",
+            "complete": "Save Note"
+        },
         "error": {
             "noWine": "Please select a wine.",
             "noDate": "Please enter a tasting date.",
@@ -437,10 +451,18 @@
             "finish": "Finish",
             "conclusion": "Conclusion"
         },
+        "wineSelection": {
+            "title": "Which wine did you taste?",
+            "subtitle": "Search and pick the wine to record"
+        },
         "wineSearch": {
             "changeButton": "Change Wine",
             "placeholder": "Search for wine name",
             "noResult": "No results found."
+        },
+        "appearance": {
+            "title": "Record the appearance",
+            "subtitle": "Pick the vintage, tasting date and color"
         },
         "basicInfo": {
             "vintage": "Vintage (Year)",
@@ -449,10 +471,17 @@
             "datePlaceholder": "Select Date"
         },
         "nose": {
+            "title": "What aromas did you notice?",
+            "subtitle": "Add the aromas that come to mind as tags",
             "label": "Enter aromas separated by commas",
-            "placeholder": "e.g., Cherry, Oak, Vanilla, Leather"
+            "placeholder": "e.g., Cherry, Oak, Vanilla, Leather",
+            "addPlaceholder": "Type an aroma and add",
+            "suggestionsTitle": "Suggested aromas",
+            "suggestions": ["Cherry", "Plum", "Blackberry", "Strawberry", "Lemon", "Apple", "Peach", "Floral", "Vanilla", "Oak", "Pepper", "Cinnamon", "Leather", "Tobacco", "Earth", "Chocolate"]
         },
         "palate": {
+            "title": "How did it taste?",
+            "subtitle": "Rate the intensity of each from 1 to 5",
             "sweetness": "Sweetness",
             "acidity": "Acidity",
             "tannin": "Tannin",
@@ -461,9 +490,16 @@
         },
         "finish": {
             "label": "Describe the aftertaste or finish",
-            "placeholder": "e.g., Clean lingering acidity, Bitter end"
+            "placeholder": "e.g., Clean lingering acidity, Bitter end",
+            "addPlaceholder": "Type a finish note and add",
+            "suggestionsTitle": "Suggested finish",
+            "suggestions": ["Long finish", "Clean finish", "Smooth finish", "Dry finish", "Crisp acidity", "Tannic finish", "Spicy finish", "Fruity finish"]
         },
         "conclusion": {
+            "title": "Leave your verdict",
+            "subtitle": "Record a rating and a short impression",
+            "finishLabel": "Finish",
+            "ratingLabel": "Rating",
             "reviewLabel": "Detailed Review (Optional)",
             "reviewPlaceholder": "Write your overall impression of the wine."
         },
@@ -471,7 +507,8 @@
             "title": "Select Tasting Date"
         },
         "color": {
-            "title": "Wine Color"
+            "title": "Wine Color",
+            "prompt": "Pick the closest color"
         },
         "help": {
             "confirm": "OK"

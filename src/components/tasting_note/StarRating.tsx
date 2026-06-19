@@ -1,42 +1,48 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { colors } from '../../constants/colors';
-import { useTranslation } from 'react-i18next';
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { colors } from "../../constants/colors";
+import { spacing, accent, surfaces } from "../../constants/theme";
+import { useTranslation } from "react-i18next";
 
 interface StarRatingProps {
   rating: number;
   onRatingChange: (rating: number) => void;
 }
 
-export default function StarRating({ rating, onRatingChange }: StarRatingProps) {
+const STAR = 44;
+
+export default function StarRating({
+  rating,
+  onRatingChange,
+}: StarRatingProps) {
   const { t } = useTranslation();
+
   const renderStar = (index: number) => {
-    let iconName = 'star-outline';
+    let iconName = "star-outline";
     if (rating >= index) {
-      iconName = 'star';
+      iconName = "star";
     } else if (rating >= index - 0.5) {
-      iconName = 'star-half';
+      iconName = "star-half";
     }
 
     return (
       <View key={index} style={styles.starWrapper}>
         <Icon
           name={iconName}
-          size={40}
-          color={rating >= index - 0.5 ? colors.primary : "#555"}
-          style={styles.starIcon}
+          size={STAR}
+          color={rating >= index - 0.5 ? "#F5C518" : surfaces.hairlineStrong}
         />
         <View style={styles.touchOverlay}>
           <TouchableOpacity
             style={styles.halfStarTouch}
             onPress={() => onRatingChange(index - 0.5)}
-            activeOpacity={0.5} // 터치 피드백을 위해 약간 투명하게
+            activeOpacity={0.6}
           />
           <TouchableOpacity
             style={styles.halfStarTouch}
             onPress={() => onRatingChange(index)}
-            activeOpacity={0.5}
+            activeOpacity={0.6}
           />
         </View>
       </View>
@@ -48,58 +54,61 @@ export default function StarRating({ rating, onRatingChange }: StarRatingProps) 
       <View style={styles.starsContainer}>
         {[1, 2, 3, 4, 5].map((index) => renderStar(index))}
       </View>
-      <Text style={styles.ratingText}>
-        {rating > 0 ? t('tastingNoteWrite.starRating.score', { rating }) : t('tastingNoteWrite.starRating.placeholder')}
-      </Text>
+      <View style={[styles.scorePill, rating > 0 && styles.scorePillActive]}>
+        <Text style={[styles.scoreText, rating > 0 && styles.scoreTextActive]}>
+          {rating > 0
+            ? t("tastingNoteWrite.starRating.score", { rating })
+            : t("tastingNoteWrite.starRating.placeholder")}
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    marginBottom: 24,
-    paddingVertical: 10,
+    alignItems: "center",
+    paddingVertical: spacing.md,
   },
   starsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: spacing.md,
   },
   starWrapper: {
-    position: 'relative',
-    marginHorizontal: 4,
-    width: 40, // Icon size와 동일하게
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  starIcon: {
-
-    shadowColor: colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    position: "relative",
+    marginHorizontal: spacing.xs,
+    width: STAR,
+    height: STAR,
+    justifyContent: "center",
+    alignItems: "center",
   },
   touchOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   halfStarTouch: {
     flex: 1,
-
   },
-  ratingText: {
-    color: '#ccc',
+  scorePill: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 999,
+    backgroundColor: surfaces.card,
+  },
+  scorePillActive: {
+    backgroundColor: accent.soft,
+  },
+  scoreText: {
+    color: colors.textTertiary,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "600",
+  },
+  scoreTextActive: {
+    color: accent.text,
   },
 });
