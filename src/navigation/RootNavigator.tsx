@@ -56,7 +56,7 @@ export default function RootNavigator() {
           <>
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen
-              name="RecommendationResult"
+              name="OnboardingResult"
               component={RecommendationResultScreen}
             />
           </>

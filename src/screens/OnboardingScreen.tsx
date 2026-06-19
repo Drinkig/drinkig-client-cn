@@ -471,7 +471,7 @@ const OnboardingScreen = () => {
 
       setTimeout(() => {
         setAnalyzing(false);
-        (navigation as any).navigate("RecommendationResult", {
+        (navigation as any).navigate("OnboardingResult", {
           flavorProfile: formData.flavorProfile,
           nickname: formData.name,
         });
