@@ -1,4 +1,7 @@
 {
+    "common": {
+        "cancel": "Cancel"
+    },
     "tab": {
         "home": "Home",
         "search": "Search",

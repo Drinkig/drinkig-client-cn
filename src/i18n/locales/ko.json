@@ -1,4 +1,7 @@
 {
+    "common": {
+        "cancel": "취소"
+    },
     "tab": {
         "home": "홈",
         "search": "검색",

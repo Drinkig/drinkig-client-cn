@@ -25,6 +25,7 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import MenuBottomSheet from "../components/common/MenuBottomSheet";
 import SelectionModal from "../components/common/SelectionModal";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 
@@ -145,8 +146,8 @@ export default function MyWineDetailScreen() {
       <View style={styles.imagePlaceholder}>
         <MaterialCommunityIcons
           name="bottle-wine"
-          size={60}
-          color={colors.textSecondary}
+          size={48}
+          color={colors.textTertiary}
         />
       </View>
     );
@@ -159,12 +160,9 @@ export default function MyWineDetailScreen() {
   ) => (
     <View style={styles.infoRow}>
       <View style={styles.labelContainer}>
-        <MaterialCommunityIcons
-          name={icon}
-          size={20}
-          color={colors.primary}
-          style={styles.icon}
-        />
+        <View style={styles.iconBadge}>
+          <MaterialCommunityIcons name={icon} size={18} color={accent.text} />
+        </View>
         <Text style={styles.label}>{label}</Text>
       </View>
       <Text style={styles.value}>{value || "-"}</Text>
@@ -234,6 +232,12 @@ export default function MyWineDetailScreen() {
             </View>
             <Text style={styles.grapeText}>{wine.wineVariety}</Text>
           </View>
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={colors.textTertiary}
+            style={styles.cardChevron}
+          />
         </TouchableOpacity>
 
         <View style={styles.section}>
@@ -374,26 +378,29 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   content: {
-    padding: 16,
-    paddingBottom: 100,
+    padding: spacing.lg,
+    paddingBottom: 120,
   },
   card: {
     flexDirection: "row",
-    backgroundColor: colors.surface1,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 24,
+    alignItems: "center",
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    padding: spacing.lg,
+    marginBottom: spacing.xxl,
   },
   imageContainer: {
-    marginRight: 16,
+    marginRight: spacing.lg,
     width: 80,
     height: 120,
-    borderRadius: 8,
+    borderRadius: radius.sm,
     overflow: "hidden",
-    backgroundColor: colors.background,
+    backgroundColor: surfaces.raised,
     justifyContent: "center",
     alignItems: "center",
-    padding: 4,
+    padding: spacing.xs,
   },
   wineImage: {
     width: "100%",
@@ -402,8 +409,8 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: 80,
     height: 120,
-    borderRadius: 8,
-    backgroundColor: colors.border,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.raised,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -415,89 +422,110 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: colors.white,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
+    lineHeight: 24,
   },
   badges: {
     flexDirection: "row",
-    gap: 8,
-    marginBottom: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   badge: {
-    backgroundColor: colors.border,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
+    backgroundColor: accent.soft,
+    borderWidth: 1,
+    borderColor: accent.border,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
   },
   badgeText: {
-    color: colors.textSecondary,
+    color: accent.text,
     fontSize: 12,
+    fontWeight: "600",
   },
   grapeText: {
     color: colors.textSecondary,
     fontSize: 14,
   },
+  cardChevron: {
+    marginLeft: spacing.sm,
+  },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: colors.white,
-    marginBottom: 12,
-    marginLeft: 4,
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textSecondary,
+    letterSpacing: 0.3,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
   },
   infoContainer: {
-    backgroundColor: colors.surface1,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xs,
   },
   infoRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
   },
   labelContainer: {
     flexDirection: "row",
     alignItems: "center",
+    flexShrink: 1,
   },
-  icon: {
-    marginRight: 12,
+  iconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
+    backgroundColor: accent.soft,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: spacing.md,
   },
   label: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textSecondary,
   },
   value: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.white,
     fontWeight: "500",
+    flexShrink: 1,
+    textAlign: "right",
+    marginLeft: spacing.md,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.hairline,
   },
   bottomButtonContainer: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 16,
+    padding: spacing.lg,
     paddingBottom: 34,
     backgroundColor: colors.background,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: surfaces.hairline,
   },
   editButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    height: 50,
+    backgroundColor: accent.base,
+    borderRadius: radius.md,
+    height: 52,
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
   },
   editButtonText: {
-    color: colors.white,
+    color: accent.onAccent,
     fontSize: 16,
     fontWeight: "bold",
   },

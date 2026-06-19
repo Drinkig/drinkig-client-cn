@@ -2,10 +2,12 @@ import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import {
   Image,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
@@ -21,6 +23,7 @@ import PhotoOptionsBottomSheet from "../components/common/PhotoOptionsBottomShee
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useUser } from "../context/UserContext";
 import { colors } from "../constants/colors";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 
@@ -45,6 +48,7 @@ const ProfileEditScreen = () => {
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = profileImage !== (user?.profileImage || null);
@@ -200,83 +204,108 @@ const ProfileEditScreen = () => {
         }
       />
 
-      <View style={styles.content}>
-        <View style={styles.imageSection}>
-          <TouchableOpacity
-            onPress={handleOpenImageOptions}
-            style={styles.imageContainer}
-          >
-            <View style={styles.imageMask}>
-              <Image
-                source={
-                  profileImage
-                    ? { uri: profileImage }
-                    : require("../assets/Standard_profile.png")
-                }
-                style={styles.profileImage}
-              />
-            </View>
-            <View style={styles.cameraIconContainer}>
-              <Icon name="camera" size={20} color={colors.white} />
-            </View>
-          </TouchableOpacity>
-        </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.content}>
+          <View style={styles.imageSection}>
+            <TouchableOpacity
+              onPress={handleOpenImageOptions}
+              style={styles.imageContainer}
+              activeOpacity={0.85}
+            >
+              <View style={styles.imageMask}>
+                <Image
+                  source={
+                    profileImage
+                      ? { uri: profileImage }
+                      : require("../assets/Standard_profile.png")
+                  }
+                  style={styles.profileImage}
+                />
+              </View>
+              <View style={styles.cameraIconContainer}>
+                <Icon name="camera" size={18} color={accent.onAccent} />
+              </View>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.inputSection}>
-          <Text style={styles.label}>{t("profileEdit.nickname.label")}</Text>
-          <View style={styles.inputRow}>
-            <TextInput
+          <View style={styles.inputSection}>
+            <Text style={styles.label}>{t("profileEdit.nickname.label")}</Text>
+            <View
               style={[
                 styles.input,
+                isInputFocused && styles.inputFocused,
                 nicknameError
                   ? styles.inputError
                   : nicknameAvailable && nickname !== user?.nickname
                   ? styles.inputSuccess
                   : null,
               ]}
-              value={nickname}
-              onChangeText={setNickname}
-              placeholder={t("profileEdit.nickname.placeholder")}
-              placeholderTextColor={colors.textTertiary}
-              maxLength={10}
-            />
+            >
+              <TextInput
+                style={styles.inputText}
+                value={nickname}
+                onChangeText={setNickname}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
+                placeholder={t("profileEdit.nickname.placeholder")}
+                placeholderTextColor={colors.textTertiary}
+                maxLength={10}
+              />
+              {nickname !== user?.nickname &&
+                !isCheckingNickname &&
+                (nicknameError ? (
+                  <Icon name="close-circle" size={20} color={colors.error} />
+                ) : nicknameAvailable ? (
+                  <Icon
+                    name="checkmark-circle"
+                    size={20}
+                    color={colors.success}
+                  />
+                ) : null)}
+            </View>
+
+            <View style={styles.helperRow}>
+              <View style={styles.helperTextWrapper}>
+                {isCheckingNickname ? (
+                  <Text style={styles.helperText}>
+                    {t("profileEdit.nickname.checking")}
+                  </Text>
+                ) : nicknameError ? (
+                  <Text style={styles.errorText}>{nicknameError}</Text>
+                ) : nicknameAvailable && nickname !== user?.nickname ? (
+                  <Text style={styles.successText}>
+                    {t("profileEdit.nickname.success")}
+                  </Text>
+                ) : null}
+              </View>
+              <Text style={styles.counterText}>{nickname.length}/10</Text>
+            </View>
           </View>
 
-          <View style={styles.helperRow}>
-            {isCheckingNickname ? (
-              <Text style={styles.helperText}>
-                {t("profileEdit.nickname.checking")}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                (!canSave || isSaving) && styles.saveButtonDisabled,
+              ]}
+              onPress={handleSave}
+              disabled={!canSave || isSaving}
+              activeOpacity={0.85}
+            >
+              <Text
+                style={[
+                  styles.saveButtonText,
+                  (!canSave || isSaving) && styles.saveButtonTextDisabled,
+                ]}
+              >
+                {isSaving
+                  ? t("profileEdit.button.saving")
+                  : t("profileEdit.button.save")}
               </Text>
-            ) : nicknameError ? (
-              <Text style={styles.errorText}>{nicknameError}</Text>
-            ) : nicknameAvailable && nickname !== user?.nickname ? (
-              <Text style={styles.successText}>
-                {t("profileEdit.nickname.success")}
-              </Text>
-            ) : null}
+            </TouchableOpacity>
           </View>
         </View>
-
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            (!canSave || isSaving) && styles.saveButtonDisabled,
-          ]}
-          onPress={handleSave}
-          disabled={!canSave || isSaving}
-        >
-          <Text
-            style={[
-              styles.saveButtonText,
-              (!canSave || isSaving) && styles.saveButtonTextDisabled,
-            ]}
-          >
-            {isSaving
-              ? t("profileEdit.button.saving")
-              : t("profileEdit.button.save")}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      </TouchableWithoutFeedback>
 
       <PhotoOptionsBottomSheet
         visible={isImageOptionsVisible}
@@ -296,12 +325,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.xxxl,
   },
   imageSection: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: spacing.xxxl,
   },
   imageContainer: {
     position: "relative",
@@ -313,7 +342,8 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 60,
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: accent.border,
+    backgroundColor: surfaces.card,
     overflow: "hidden",
   },
   profileImage: {
@@ -323,39 +353,47 @@ const styles = StyleSheet.create({
   },
   cameraIconContainer: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: colors.primary,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    bottom: 2,
+    right: 2,
+    backgroundColor: accent.base,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: colors.background,
   },
   inputSection: {
-    marginBottom: 40,
+    marginBottom: spacing.xxl,
   },
   label: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: "600",
     color: colors.textSecondary,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  inputRow: {
-    flexDirection: "row",
-    gap: 8,
+    letterSpacing: 0.3,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
   },
   input: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    backgroundColor: surfaces.raised,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairlineStrong,
+  },
+  inputText: {
     flex: 1,
-    backgroundColor: colors.border,
-    borderRadius: 12,
-    padding: 16,
     fontSize: 16,
     color: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
+    padding: 0,
+  },
+  inputFocused: {
+    borderColor: accent.border,
   },
   inputError: {
     borderColor: colors.error,
@@ -363,28 +401,15 @@ const styles = StyleSheet.create({
   inputSuccess: {
     borderColor: colors.success,
   },
-  checkButton: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    backgroundColor: colors.border,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  checkButtonDisabled: {
-    borderColor: colors.border,
-    opacity: 0.5,
-  },
-  checkButtonText: {
-    color: colors.primary,
-    fontWeight: "bold",
-  },
   helperRow: {
     flexDirection: "row",
-    justifyContent: "flex-start",
-    marginTop: 6,
-    marginLeft: 4,
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: spacing.sm,
+    marginHorizontal: spacing.xs,
+  },
+  helperTextWrapper: {
+    flex: 1,
   },
   helperText: {
     fontSize: 12,
@@ -398,19 +423,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.success,
   },
+  counterText: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginLeft: spacing.sm,
+  },
+  footer: {
+    marginTop: "auto",
+    paddingBottom: spacing.lg,
+  },
   saveButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: accent.base,
+    borderRadius: radius.md,
+    paddingVertical: spacing.lg,
     alignItems: "center",
   },
   saveButtonDisabled: {
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.card,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: surfaces.hairline,
   },
   saveButtonText: {
-    color: colors.white,
+    color: accent.onAccent,
     fontSize: 16,
     fontWeight: "bold",
   },
