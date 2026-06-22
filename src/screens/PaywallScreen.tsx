@@ -12,6 +12,7 @@ import {
   Animated,
   Easing,
   Dimensions,
+  Linking,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -658,13 +659,27 @@ const PaywallScreen = () => {
         </TouchableOpacity>
         <Text style={styles.ctaMicrocopy}>{t("paywall.ctaMicrocopy")}</Text>
 
-        <TouchableOpacity
-          onPress={handleRestore}
-          style={styles.restoreButton}
-          disabled={isProcessing}
-        >
-          <Text style={styles.restoreText}>{t("paywall.restore")}</Text>
-        </TouchableOpacity>
+        <Text style={styles.renewalDisclosure}>
+          {t("paywall.renewalDisclosure")}
+        </Text>
+
+        <View style={styles.legalRow}>
+          <TouchableOpacity
+            onPress={() => Linking.openURL("https://web.drinkig.com/terms")}
+          >
+            <Text style={styles.legalLink}>{t("paywall.terms")}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}>·</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL("https://web.drinkig.com/privacy")}
+          >
+            <Text style={styles.legalLink}>{t("paywall.privacy")}</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalSeparator}>·</Text>
+          <TouchableOpacity onPress={handleRestore} disabled={isProcessing}>
+            <Text style={styles.legalLink}>{t("paywall.restore")}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -989,13 +1004,29 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "bold",
   },
-  restoreButton: {
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  restoreText: {
+  renewalDisclosure: {
+    textAlign: "center",
     color: colors.textSecondary,
-    fontSize: 13,
+    fontSize: 10,
+    lineHeight: 14,
+    marginTop: 8,
+    opacity: 0.8,
+  },
+  legalRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  legalLink: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    textDecorationLine: "underline",
+  },
+  legalSeparator: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginHorizontal: 8,
   },
 });
 
