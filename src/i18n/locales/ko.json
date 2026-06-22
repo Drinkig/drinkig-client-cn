@@ -871,13 +871,16 @@
     },
     "menuScanResult": {
         "header": "메뉴판 스캔 결과",
+        "headerLabel": "라벨 스캔 결과",
         "loading": {
             "title": "AI가 메뉴판을 분석 중이에요",
+            "titleLabel": "AI가 라벨을 분석 중이에요",
             "subtitle": "취향에 맞는 와인을 찾고 있어요..."
         },
         "error": {
             "limitReached": "오늘 스캔 횟수를 모두 사용했습니다.\n내일 다시 시도해 주세요.",
             "recognition": "메뉴판을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",
+            "recognitionLabel": "와인 라벨을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",
             "unknown": "알 수 없는 오류가 발생했습니다.",
             "goBack": "돌아가기"
         },
@@ -887,7 +890,8 @@
         "empty": "DB에서 일치하는 와인을 찾지 못했어요",
         "unmatched": {
             "title": "정보를 찾지 못한 와인 ({{count}}개)",
-            "subtitle": "메뉴판에서 인식했지만 상세 정보를 찾지 못했어요."
+            "subtitle": "메뉴판에서 인식했지만 상세 정보를 찾지 못했어요.",
+            "subtitleLabel": "라벨에서 인식했지만 상세 정보를 찾지 못했어요."
         },
         "wishlist": {
             "added": "위시리스트에 추가했어요",

@@ -138,6 +138,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     scanType?: "label" | "list";
   };
   const { t } = useTranslation();
+  // 라벨/메뉴판 스캔이 한 화면을 공유하므로 scanType에 맞춰 안내 문구를 분기한다.
+  const isLabel = scanType === "label";
+  const headerTitle = t(
+    isLabel ? "menuScanResult.headerLabel" : "menuScanResult.header"
+  );
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MenuScanResultDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -183,7 +188,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         const msg =
           e?.response?.status === 429
             ? t("menuScanResult.error.limitReached")
-            : t("menuScanResult.error.recognition");
+            : t(
+                scanType === "label"
+                  ? "menuScanResult.error.recognitionLabel"
+                  : "menuScanResult.error.recognition"
+              );
         setError(msg);
       } finally {
         if (cancelled) return;
@@ -352,7 +361,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         />
         <GlassHeader
           floating={false}
-          title={t("menuScanResult.header")}
+          title={headerTitle}
           left={
             <TouchableOpacity
               onPress={() => navigation.goBack()}
@@ -369,7 +378,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             style={{ marginBottom: 20 }}
           />
           <Text style={styles.stateTitle}>
-            {t("menuScanResult.loading.title")}
+            {t(
+              isLabel
+                ? "menuScanResult.loading.titleLabel"
+                : "menuScanResult.loading.title"
+            )}
           </Text>
           <Text style={styles.stateSubtitle}>
             {t("menuScanResult.loading.subtitle")}
@@ -389,7 +402,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         />
         <GlassHeader
           floating={false}
-          title={t("menuScanResult.header")}
+          title={headerTitle}
           left={
             <TouchableOpacity
               onPress={() => navigation.goBack()}
@@ -435,7 +448,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         {/* Header */}
         <GlassHeader
           floating={false}
-          title={t("menuScanResult.header")}
+          title={headerTitle}
           left={
             <TouchableOpacity
               onPress={() => navigation.goBack()}
@@ -484,7 +497,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
                   })}
                 </Text>
                 <Text style={styles.unmatchedSubtitle}>
-                  {t("menuScanResult.unmatched.subtitle")}
+                  {t(
+                    isLabel
+                      ? "menuScanResult.unmatched.subtitleLabel"
+                      : "menuScanResult.unmatched.subtitle"
+                  )}
                 </Text>
                 {data.unmatchedWines.map((w, i) => (
                   <View key={i} style={styles.unmatchedItem}>

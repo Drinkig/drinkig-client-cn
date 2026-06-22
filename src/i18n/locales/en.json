@@ -871,13 +871,16 @@
     },
     "menuScanResult": {
         "header": "Menu Scan Result",
+        "headerLabel": "Label Scan Result",
         "loading": {
             "title": "Analyzing your menu...",
+            "titleLabel": "Analyzing the label...",
             "subtitle": "Finding wines that match your taste..."
         },
         "error": {
             "limitReached": "You've used all scans for today.\nPlease try again tomorrow.",
             "recognition": "Failed to recognize the menu.\nPlease take a clearer photo and try again.",
+            "recognitionLabel": "Failed to recognize the wine label.\nPlease take a clearer photo and try again.",
             "unknown": "An unknown error occurred.",
             "goBack": "Go Back"
         },
@@ -887,7 +890,8 @@
         "empty": "No matching wines found in our database",
         "unmatched": {
             "title": "Wines without details ({{count}})",
-            "subtitle": "Recognized from the menu but details couldn't be found."
+            "subtitle": "Recognized from the menu but details couldn't be found.",
+            "subtitleLabel": "Recognized from the label but details couldn't be found."
         },
         "wishlist": {
             "added": "Added to wishlist",

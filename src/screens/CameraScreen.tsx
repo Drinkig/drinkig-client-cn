@@ -93,6 +93,33 @@ async function cropToFrame(
   );
 }
 
+/**
+ * 갤러리에서 고른 사진은 가이드 프레임에 맞춰 구성된 게 아니므로 중앙 크롭하면
+ * 라벨/메뉴가 잘려나가 OCR 인식이 실패한다. 따라서 크롭 없이 전체 이미지를 유지한 채
+ * 긴 변이 maxEdge가 되도록 다운사이즈만 해서 서버로 보낸다.
+ */
+async function downscaleToMaxEdge(
+  uri: string,
+  photoWidth: number,
+  photoHeight: number,
+  type: ScanType
+): Promise<string> {
+  const { maxEdge, quality } = SCAN_CONFIG[type];
+  const longEdge = Math.max(photoWidth, photoHeight);
+  const scale = Math.min(1, maxEdge / longEdge);
+  const targetW = Math.max(1, Math.round(photoWidth * scale));
+  const targetH = Math.max(1, Math.round(photoHeight * scale));
+
+  return PhotoManipulator.batch(
+    uri,
+    [],
+    { x: 0, y: 0, width: photoWidth, height: photoHeight },
+    { width: targetW, height: targetH },
+    quality,
+    MimeType.JPEG
+  );
+}
+
 async function getScanUsage(): Promise<{ date: string; count: number }> {
   const raw = await AsyncStorage.getItem(SCAN_USAGE_KEY);
   if (!raw) return { date: "", count: 0 };
@@ -298,16 +325,21 @@ export default function CameraScreen({ navigation }: Props) {
     if (!(await checkDailyLimit())) return;
     const result = await launchImageLibrary({ mediaType: "photo" });
     const asset = result.assets?.[0];
-    if (!asset?.uri || !asset.width || !asset.height) return;
+    if (!asset?.uri) return;
     try {
-      const croppedUri = await cropToFrame(
-        asset.uri,
-        asset.width,
-        asset.height,
-        scanType
-      );
+      // 갤러리 사진은 프레임 크롭 없이 다운사이즈만 한다 (위 downscaleToMaxEdge 참고).
+      // 크기 정보가 없으면(일부 에셋) 원본 그대로 서버에 맡긴다.
+      const processedUri =
+        asset.width && asset.height
+          ? await downscaleToMaxEdge(
+              asset.uri,
+              asset.width,
+              asset.height,
+              scanType
+            )
+          : asset.uri;
       navigation.replace("MenuScanResult", {
-        imageUri: croppedUri,
+        imageUri: processedUri,
         scanType,
       });
     } catch (e) {
