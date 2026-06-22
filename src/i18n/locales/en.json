@@ -879,6 +879,7 @@
         },
         "error": {
             "limitReached": "You've used all scans for today.\nPlease try again tomorrow.",
+            "tooLarge": "The image is too large.\nPlease try again in a moment.",
             "recognition": "Failed to recognize the menu.\nPlease take a clearer photo and try again.",
             "recognitionLabel": "Failed to recognize the wine label.\nPlease take a clearer photo and try again.",
             "unknown": "An unknown error occurred.",

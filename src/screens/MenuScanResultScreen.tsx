@@ -185,14 +185,21 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         feedbackTimer = setTimeout(() => setShowFeedback(true), 2000);
       } catch (e: any) {
         if (cancelled) return;
-        const msg =
-          e?.response?.status === 429
-            ? t("menuScanResult.error.limitReached")
-            : t(
-                scanType === "label"
-                  ? "menuScanResult.error.recognitionLabel"
-                  : "menuScanResult.error.recognition"
-              );
+        const status = e?.response?.status;
+        let msg: string;
+        if (status === 429) {
+          msg = t("menuScanResult.error.limitReached");
+        } else if (status === 413) {
+          // nginx 등 게이트웨이 업로드 용량 제한 초과. "더 또렷하게 찍으세요"는
+          // 오해를 부르므로 용량 문제임을 별도로 안내한다.
+          msg = t("menuScanResult.error.tooLarge");
+        } else {
+          msg = t(
+            scanType === "label"
+              ? "menuScanResult.error.recognitionLabel"
+              : "menuScanResult.error.recognition"
+          );
+        }
         setError(msg);
       } finally {
         if (cancelled) return;
