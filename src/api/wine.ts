@@ -105,6 +105,11 @@ export interface WineInfoDTO {
   avgTannin: number;
   avgBody: number;
   avgAlcohol: number;
+  // 공식(소믈리에 입력) 맛 수치 — 없으면 avg* 값으로 폴백해 사용한다.
+  officialSweetness?: number | null;
+  officialAcidity?: number | null;
+  officialTannin?: number | null;
+  officialBody?: number | null;
   nose1: string | null;
   nose2: string | null;
   nose3: string | null;

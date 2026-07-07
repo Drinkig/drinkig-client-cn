@@ -852,6 +852,7 @@
         "permissionAllow": "Continue",
         "permissionAlertTitle": "Camera Permission Required",
         "permissionAlertMessage": "Please allow camera access in Settings.",
+        "permissionOpenSettings": "Allow in Settings",
         "close": "Close",
         "scanTypeLabel": "Wine Label",
         "scanTypeList": "Wine List",
@@ -883,6 +884,7 @@
             "recognition": "Failed to recognize the menu.\nPlease take a clearer photo and try again.",
             "recognitionLabel": "Failed to recognize the wine label.\nPlease take a clearer photo and try again.",
             "unknown": "An unknown error occurred.",
+            "rescan": "Scan Again",
             "goBack": "Go Back"
         },
         "bestBadge": "Perfect Match",
@@ -1284,6 +1286,8 @@
         "verifyFailed": "Purchase verification failed. Please try again.",
         "purchaseFailed": "Purchase failed. Please try again.",
         "productNotFound": "Product not available. Please try again later.",
+        "priceLoadFailed": "Couldn't load pricing.\nPlease check your network connection.",
+        "priceLoadRetry": "Try Again",
         "restoreEmpty": "No Purchases Found",
         "restoreEmptyMessage": "No previous subscriptions found for this account.",
         "restoreSuccessMessage": "Your subscription has been restored!",
@@ -1306,6 +1310,12 @@
             "tasteReset": "Taste Reset",
             "tasteResetDesc": "Changed your palate? Reset your profile anytime"
         }
+    },
+    "withdraw": {
+        "subscriptionNoticeTitle": "About Your Subscription",
+        "subscriptionNoticeMessage": "Deleting your account does not cancel your App Store subscription.\n\nTo avoid being charged, please cancel your subscription in the App Store first.",
+        "subscriptionNoticeManage": "Manage Subscription",
+        "subscriptionNoticeContinue": "Continue"
     },
     "subscription": {
         "title": "Subscription",

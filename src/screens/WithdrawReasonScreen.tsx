@@ -6,12 +6,14 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
-  Alert,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useUser } from "../context/UserContext";
+import { useSubscription } from "../context/SubscriptionContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { deleteMember, deleteAppleMember } from "../api/member";
 import appleAuth from "@invertase/react-native-apple-authentication";
@@ -29,7 +31,9 @@ const WithdrawReasonScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<WithdrawReasonRouteProp>();
   const { authType } = route.params;
+  const { t } = useTranslation();
   const { logout } = useUser();
+  const { isPremium } = useSubscription();
   const { showLoading, hideLoading, showAlert, showToast, closeAlert } =
     useGlobalUI();
 
@@ -66,16 +70,40 @@ const WithdrawReasonScreen = () => {
       return;
     }
 
-    showAlert({
-      title: "회원 탈퇴",
-      message: "정말 탈퇴하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.",
-      confirmText: "탈퇴하기",
-      singleButton: false,
-      onConfirm: () => {
-        closeAlert();
-        processWithdrawal();
-      },
-    });
+    const confirmWithdrawal = () => {
+      showAlert({
+        title: "회원 탈퇴",
+        message: "정말 탈퇴하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.",
+        confirmText: "탈퇴하기",
+        singleButton: false,
+        onConfirm: () => {
+          closeAlert();
+          processWithdrawal();
+        },
+      });
+    };
+
+    // 계정을 삭제해도 Apple 자동갱신 구독은 해지되지 않으므로,
+    // 구독 중이라면 먼저 App Store 해지 안내를 거치게 한다.
+    if (isPremium) {
+      showAlert({
+        title: t("withdraw.subscriptionNoticeTitle"),
+        message: t("withdraw.subscriptionNoticeMessage"),
+        confirmText: t("withdraw.subscriptionNoticeContinue"),
+        cancelText: t("withdraw.subscriptionNoticeManage"),
+        singleButton: false,
+        onConfirm: () => {
+          closeAlert();
+          setTimeout(confirmWithdrawal, 300);
+        },
+        onCancel: () => {
+          closeAlert();
+          Linking.openURL("https://apps.apple.com/account/subscriptions");
+        },
+      });
+    } else {
+      confirmWithdrawal();
+    }
   };
 
   const processWithdrawal = async () => {

@@ -110,6 +110,8 @@ const PaywallScreen = () => {
   const [isRedeemingPromo, setIsRedeemingPromo] = useState(false);
   const [products, setProducts] = useState<Subscription[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  // 상품 로드 실패 시 "다시 시도"가 IAP 초기화 전체를 재실행하게 하는 트리거
+  const [iapRetryNonce, setIapRetryNonce] = useState(0);
 
   useEffect(() => {
     let purchaseUpdateSubscription: any;
@@ -117,6 +119,7 @@ const PaywallScreen = () => {
     let iapAvailable = false;
 
     const init = async () => {
+      setIsLoadingProducts(true);
       try {
         await initConnection();
         iapAvailable = true;
@@ -187,7 +190,8 @@ const PaywallScreen = () => {
       purchaseUpdateSubscription?.remove();
       purchaseErrorSubscription?.remove();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [iapRetryNonce]);
 
   const getProductId = (plan: PlanType): string => {
     return plan === "YEARLY"
@@ -286,24 +290,15 @@ const PaywallScreen = () => {
     }
   };
 
-  const getDisplayPrice = (plan: PlanType): string | null => {
-    const productId = getProductId(plan);
-    const product = products.find((p) => p.productId === productId);
-    if (!product) return null;
-    return (product as any).localizedPrice ?? null;
-  };
-
-  // Fallback prices (KRW) matching the i18n defaults
-  const MONTHLY_FALLBACK_PRICE = 5900;
-  const YEARLY_FALLBACK_PRICE = 39000;
-
-  const getNumericPrice = (plan: PlanType): number => {
+  // 스토어 상품이 없으면 null — 임의의 KRW 폴백 가격을 보여주면
+  // 표시가와 실제 청구가가 달라질 수 있어(해외 스토어프론트, 심사 리젝 사유)
+  // 가격 미로드 상태를 그대로 노출하고 구매를 막는다.
+  const getNumericPrice = (plan: PlanType): number | null => {
     const productId = getProductId(plan);
     const product = products.find((p) => p.productId === productId);
     const priceStr = (product as any)?.price;
     const n = priceStr ? parseFloat(priceStr) : NaN;
-    if (!isNaN(n) && n > 0) return n;
-    return plan === "YEARLY" ? YEARLY_FALLBACK_PRICE : MONTHLY_FALLBACK_PRICE;
+    return !isNaN(n) && n > 0 ? n : null;
   };
 
   const getCurrencyCode = (): string => {
@@ -328,11 +323,12 @@ const PaywallScreen = () => {
 
   const monthlyNum = getNumericPrice("MONTHLY");
   const yearlyNum = getNumericPrice("YEARLY");
-  const yearlyOriginal = monthlyNum * 12;
-  const saveAmount = Math.max(0, yearlyOriginal - yearlyNum);
+  const pricesAvailable = monthlyNum !== null && yearlyNum !== null;
+  const yearlyOriginal = (monthlyNum ?? 0) * 12;
+  const saveAmount = Math.max(0, yearlyOriginal - (yearlyNum ?? 0));
   const savePercent =
     yearlyOriginal > 0 ? Math.round((saveAmount / yearlyOriginal) * 100) : 0;
-  const monthlyEquivalent = yearlyNum / 12;
+  const monthlyEquivalent = (yearlyNum ?? 0) / 12;
   const hasDiscount = savePercent > 0;
 
   const allFeatures = [
@@ -485,84 +481,115 @@ const PaywallScreen = () => {
         </View>
 
         <View style={styles.planSection}>
-          <TouchableOpacity
-            style={[
-              styles.planCard,
-              selectedPlan === "YEARLY" && styles.planCardSelected,
-            ]}
-            onPress={() => setSelectedPlan("YEARLY")}
-          >
-            {selectedPlan === "YEARLY" && (
-              <LinearGradient
-                colors={[colors.primaryDark, "#4A086B"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFillObject}
-              />
-            )}
-            <View style={styles.planBadgeRow}>
-              <Text style={styles.planBestBadge}>{t("paywall.bestBadge")}</Text>
-              {hasDiscount && (
-                <Text style={styles.planBadgeFloat}>
-                  {t("paywall.plan.savePercent", { percent: savePercent })}
-                </Text>
-              )}
+          {isLoadingProducts && (
+            <View style={styles.planStateBox}>
+              <ActivityIndicator color={colors.primary} />
             </View>
-            <View style={styles.planRow}>
-              <Text style={styles.planName}>{t("paywall.plan.yearly")}</Text>
-              <View style={styles.planPriceColumn}>
-                {hasDiscount && (
-                  <Text style={styles.planPriceOriginal}>
-                    {formatPrice(yearlyOriginal)}
-                  </Text>
-                )}
-                <Text style={styles.planPrice}>
-                  {formatPrice(yearlyNum)}
-                  <Text style={styles.planPriceUnit}>
-                    {t("paywall.plan.perYearSuffix")}
-                  </Text>
-                </Text>
-                <Text style={styles.planMonthlyEquivalent}>
-                  {t("paywall.monthlyEquivalent", {
-                    amount: formatPrice(monthlyEquivalent),
-                  })}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.planCard,
-              styles.planCardCompact,
-              selectedPlan === "MONTHLY" && styles.planCardSelected,
-            ]}
-            onPress={() => setSelectedPlan("MONTHLY")}
-          >
-            {selectedPlan === "MONTHLY" && (
-              <LinearGradient
-                colors={[colors.primaryDark, "#4A086B"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFillObject}
-              />
-            )}
-            <View style={styles.planRow}>
-              <Text style={[styles.planName, styles.planNameCompact]}>
-                {t("paywall.plan.monthly")}
+          )}
+          {!isLoadingProducts && !pricesAvailable && (
+            <View style={styles.planStateBox}>
+              <Text style={styles.planStateText}>
+                {t("paywall.priceLoadFailed")}
               </Text>
-              <View style={styles.planPriceCluster}>
-                <Text style={[styles.planPrice, styles.planPriceCompact]}>
-                  {formatPrice(monthlyNum)}
-                  <Text
-                    style={[styles.planPriceUnit, styles.planPriceUnitCompact]}
-                  >
-                    {t("paywall.plan.perMonthSuffix")}
-                  </Text>
+              <TouchableOpacity
+                style={styles.planRetryButton}
+                onPress={() => setIapRetryNonce((n) => n + 1)}
+              >
+                <Text style={styles.planRetryButtonText}>
+                  {t("paywall.priceLoadRetry")}
                 </Text>
-              </View>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          )}
+          {!isLoadingProducts && pricesAvailable && (
+            <>
+              <TouchableOpacity
+                style={[
+                  styles.planCard,
+                  selectedPlan === "YEARLY" && styles.planCardSelected,
+                ]}
+                onPress={() => setSelectedPlan("YEARLY")}
+              >
+                {selectedPlan === "YEARLY" && (
+                  <LinearGradient
+                    colors={[colors.primaryDark, "#4A086B"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                )}
+                <View style={styles.planBadgeRow}>
+                  <Text style={styles.planBestBadge}>
+                    {t("paywall.bestBadge")}
+                  </Text>
+                  {hasDiscount && (
+                    <Text style={styles.planBadgeFloat}>
+                      {t("paywall.plan.savePercent", { percent: savePercent })}
+                    </Text>
+                  )}
+                </View>
+                <View style={styles.planRow}>
+                  <Text style={styles.planName}>
+                    {t("paywall.plan.yearly")}
+                  </Text>
+                  <View style={styles.planPriceColumn}>
+                    {hasDiscount && (
+                      <Text style={styles.planPriceOriginal}>
+                        {formatPrice(yearlyOriginal)}
+                      </Text>
+                    )}
+                    <Text style={styles.planPrice}>
+                      {formatPrice(yearlyNum ?? 0)}
+                      <Text style={styles.planPriceUnit}>
+                        {t("paywall.plan.perYearSuffix")}
+                      </Text>
+                    </Text>
+                    <Text style={styles.planMonthlyEquivalent}>
+                      {t("paywall.monthlyEquivalent", {
+                        amount: formatPrice(monthlyEquivalent),
+                      })}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.planCard,
+                  styles.planCardCompact,
+                  selectedPlan === "MONTHLY" && styles.planCardSelected,
+                ]}
+                onPress={() => setSelectedPlan("MONTHLY")}
+              >
+                {selectedPlan === "MONTHLY" && (
+                  <LinearGradient
+                    colors={[colors.primaryDark, "#4A086B"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFillObject}
+                  />
+                )}
+                <View style={styles.planRow}>
+                  <Text style={[styles.planName, styles.planNameCompact]}>
+                    {t("paywall.plan.monthly")}
+                  </Text>
+                  <View style={styles.planPriceCluster}>
+                    <Text style={[styles.planPrice, styles.planPriceCompact]}>
+                      {formatPrice(monthlyNum ?? 0)}
+                      <Text
+                        style={[
+                          styles.planPriceUnit,
+                          styles.planPriceUnitCompact,
+                        ]}
+                      >
+                        {t("paywall.plan.perMonthSuffix")}
+                      </Text>
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
 
         {showPromoInput ? (
@@ -610,11 +637,11 @@ const PaywallScreen = () => {
           activeOpacity={0.9}
           style={[
             styles.purchaseButton,
-            (isProcessing || isLoadingProducts) &&
+            (isProcessing || isLoadingProducts || !pricesAvailable) &&
               styles.purchaseButtonDisabled,
           ]}
           onPress={handlePurchase}
-          disabled={isProcessing || isLoadingProducts}
+          disabled={isProcessing || isLoadingProducts || !pricesAvailable}
           onLayout={(e) => setCtaWidth(e.nativeEvent.layout.width)}
         >
           <LinearGradient
@@ -820,6 +847,31 @@ const styles = StyleSheet.create({
   planSection: {
     gap: 12,
     marginBottom: 20,
+  },
+  planStateBox: {
+    backgroundColor: colors.surface1,
+    borderRadius: 16,
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    gap: 12,
+  },
+  planStateText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  planRetryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  planRetryButtonText: {
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: "600",
   },
   planCard: {
     backgroundColor: colors.surface1,

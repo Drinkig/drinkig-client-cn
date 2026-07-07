@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Dimensions,
+  Linking,
   Platform,
   StatusBar,
   ActivityIndicator,
@@ -158,7 +159,7 @@ const { width, height } = Dimensions.get("window");
 
 type Props = NativeStackScreenProps<any, "Camera">;
 
-export default function CameraScreen({ navigation }: Props) {
+export default function CameraScreen({ navigation, route }: Props) {
   const { t } = useTranslation();
   const { isPremium } = useSubscription();
   const { showToast } = useGlobalUI();
@@ -168,7 +169,10 @@ export default function CameraScreen({ navigation }: Props) {
   const cameraRef = useRef<Camera>(null);
 
   const [flashOn, setFlashOn] = useState(false);
-  const [scanType, setScanType] = useState<ScanType>("label");
+  // 스캔 실패 화면의 "다시 스캔"이 직전 모드를 유지한 채 재진입할 수 있게 한다.
+  const [scanType, setScanType] = useState<ScanType>(
+    (route.params as { scanType?: ScanType } | undefined)?.scanType ?? "label"
+  );
   const [capturing, setCapturing] = useState(false);
   const [remainingScans, setRemainingScans] = useState(DAILY_SCAN_LIMIT);
   const [timeUntilReset, setTimeUntilReset] = useState("");
@@ -398,6 +402,18 @@ export default function CameraScreen({ navigation }: Props) {
           backgroundColor="transparent"
           translucent
         />
+        <TouchableOpacity
+          style={[
+            styles.closeButton,
+            { position: "absolute", top: 56, left: 20 },
+          ]}
+          onPress={handleClose}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.close")}
+        >
+          <Ionicons name="close" size={28} color={colors.white} />
+        </TouchableOpacity>
         <Ionicons
           name="camera-outline"
           size={64}
@@ -412,6 +428,14 @@ export default function CameraScreen({ navigation }: Props) {
         >
           <Text style={styles.permissionButtonText}>
             {t("camera.permissionAllow")}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.permissionClose}
+          onPress={() => Linking.openSettings()}
+        >
+          <Text style={styles.permissionCloseText}>
+            {t("camera.permissionOpenSettings")}
           </Text>
         </TouchableOpacity>
       </View>

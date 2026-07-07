@@ -431,9 +431,17 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           </Text>
           <TouchableOpacity
             style={styles.retryButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.replace("Camera", { scanType })}
           >
             <Text style={styles.retryButtonText}>
+              {t("menuScanResult.error.rescan")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.goBackButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.goBackButtonText}>
               {t("menuScanResult.error.goBack")}
             </Text>
           </TouchableOpacity>
@@ -599,6 +607,16 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: accent.onAccent,
+    fontWeight: "600",
+    fontSize: 15,
+  },
+  goBackButton: {
+    marginTop: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+  },
+  goBackButtonText: {
+    color: colors.textSecondary,
     fontWeight: "600",
     fontSize: 15,
   },

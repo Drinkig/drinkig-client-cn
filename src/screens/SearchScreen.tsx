@@ -77,6 +77,7 @@ export default function SearchScreen() {
   useFocusEffect(
     useCallback(() => {
       loadRecentWines();
+      loadRecentSearches();
     }, [])
   );
 
@@ -89,6 +90,27 @@ export default function SearchScreen() {
     } catch (e) {
       console.error("Failed to load recent wines", e);
     }
+  };
+
+  const loadRecentSearches = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("recent_searches");
+      if (jsonValue != null) {
+        const parsed = JSON.parse(jsonValue);
+        if (Array.isArray(parsed)) {
+          setRecentSearches(parsed.filter((v) => typeof v === "string"));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load recent searches", e);
+    }
+  };
+
+  const updateRecentSearches = (next: string[]) => {
+    setRecentSearches(next);
+    AsyncStorage.setItem("recent_searches", JSON.stringify(next)).catch((e) =>
+      console.error("Failed to save recent searches", e)
+    );
   };
 
   useEffect(() => {
@@ -173,9 +195,12 @@ export default function SearchScreen() {
   const handleSearchSubmit = () => {
     const trimmedText = searchText.trim();
     if (trimmedText) {
-      if (!recentSearches.includes(trimmedText)) {
-        setRecentSearches((prev) => [trimmedText, ...prev].slice(0, 10));
-      }
+      updateRecentSearches(
+        [trimmedText, ...recentSearches.filter((v) => v !== trimmedText)].slice(
+          0,
+          10
+        )
+      );
       navigation.navigate("SearchResult", {
         searchKeyword: trimmedText,
         returnScreen,
@@ -334,8 +359,8 @@ export default function SearchScreen() {
                       <TouchableOpacity
                         style={styles.removeTagButton}
                         onPress={() =>
-                          setRecentSearches((prev) =>
-                            prev.filter((_, i) => i !== index)
+                          updateRecentSearches(
+                            recentSearches.filter((_, i) => i !== index)
                           )
                         }
                       >
