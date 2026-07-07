@@ -16,16 +16,69 @@ import Icon from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../types";
+import { WineDBItem } from "../types/Wine";
 import { HeroSection } from "../components/home/HeroSection";
-import { getMyWines, MyWineDTO } from "../api/wine";
+import {
+  getMyWines,
+  MyWineDTO,
+  searchWinesPublic,
+  WineUserDTO,
+} from "../api/wine";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
+import { getWineTypeColor, wineTypeColors } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useUser, RecommendedWine } from "../context/UserContext";
 import { RecentReviewsSection } from "../components/home/RecentReviewsSection";
+import { RecommendedSection } from "../components/home/RecommendedSection";
 
 const FLIP_DURATION = 550;
+
+const normalize = (s?: string | null) =>
+  (s ?? "").toLowerCase().replace(/\s+/g, "");
+
+// 서버가 wineVariety/wineSort 필터를 지원하지 않을 가능성에 대비해
+// 클라이언트에서 한 번 더 스타일 일치 여부를 확인한다.
+// (필터가 무시되면 무관한 와인이 "취향 추천"으로 나가는 것을 막는 안전망)
+const matchesStyle = (item: WineUserDTO, style: RecommendedWine): boolean => {
+  const itemVariety = normalize(item.variety);
+  const styleVariety = normalize(style.variety);
+  const styleVarietyEng = normalize(style.varietyEng);
+  if (itemVariety && styleVariety) {
+    if (
+      itemVariety.includes(styleVariety) ||
+      styleVariety.includes(itemVariety) ||
+      (styleVarietyEng && itemVariety.includes(styleVarietyEng))
+    ) {
+      return true;
+    }
+  }
+  // 품종 매칭 실패 시 와인 타입(레드/화이트 등)이라도 일치하면 통과 —
+  // 한/영 표기가 섞여 있어 getWineTypeColor의 정규화 로직을 재사용한다.
+  const itemColor = getWineTypeColor(item.sort);
+  const styleColor = getWineTypeColor(style.sort);
+  return itemColor === styleColor && itemColor !== wineTypeColors.default;
+};
+
+const toWineDBItem = (item: WineUserDTO): WineDBItem => ({
+  id: item.wineId,
+  nameKor: item.name,
+  nameEng: item.nameEng,
+  type: item.sort,
+  country: item.country,
+  grape: item.variety,
+  // 응답에 이미지가 없으면 S3 병 이미지 규칙으로 폴백 (MyWineScreen과 동일)
+  imageUri:
+    item.imageUrl ||
+    `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${item.wineId}.png`,
+  vivinoRating: item.vivinoRating,
+});
+
+// 홈 재진입마다 추천을 다시 계산하지 않도록 세션 단위 캐시
+let recommendedWinesCache: WineDBItem[] | null = null;
 
 export default function HomeScreen() {
   const navigation =
@@ -37,6 +90,84 @@ export default function HomeScreen() {
 
   // null = 아직 로드 전 → 카운트를 0으로 단정하지 않고 "—"로 표시
   const [myWines, setMyWines] = useState<MyWineDTO[] | null>(null);
+  const { recommendations } = useUser();
+  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[]>(
+    recommendedWinesCache ?? []
+  );
+  const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
+
+  // 온보딩/취향 재설정에서 받아둔 추천 스타일로 실제 와인을 찾아 보여준다.
+  useEffect(() => {
+    if (recommendedWinesCache) return; // 세션 내 재계산 방지
+    if (!recommendations || recommendations.length === 0) return;
+    let alive = true;
+    (async () => {
+      try {
+        const styleTargets = recommendations.slice(0, 2);
+        const responses = await Promise.all(
+          styleTargets.map((style) =>
+            searchWinesPublic({ wineVariety: style.variety, size: 10 }).catch(
+              () => null
+            )
+          )
+        );
+        const seen = new Set<number>();
+        const wines: WineDBItem[] = [];
+        responses.forEach((res, i) => {
+          if (!res?.isSuccess) return;
+          res.result.content.forEach((item: WineUserDTO) => {
+            if (seen.has(item.wineId)) return;
+            if (!matchesStyle(item, styleTargets[i])) return;
+            seen.add(item.wineId);
+            wines.push(toWineDBItem(item));
+          });
+        });
+
+        // 품종 검색이 빈약하면 대표 스타일의 타입(레드 등)으로 한 번 더 시도
+        if (wines.length < 3) {
+          const fallback = await searchWinesPublic({
+            wineSort: styleTargets[0].sort,
+            size: 10,
+          }).catch(() => null);
+          if (fallback?.isSuccess) {
+            fallback.result.content.forEach((item: WineUserDTO) => {
+              if (seen.has(item.wineId)) return;
+              if (!matchesStyle(item, styleTargets[0])) return;
+              seen.add(item.wineId);
+              wines.push(toWineDBItem(item));
+            });
+          }
+        }
+
+        if (alive && wines.length >= 3) {
+          const sliced = wines.slice(0, 10);
+          recommendedWinesCache = sliced;
+          setRecommendedWines(sliced);
+        }
+      } catch (e) {
+        console.warn("Failed to build home recommendations:", e);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [recommendations]);
+
+  // 최근 본 와인 (검색/상세에서 이미 저장 중인 recent_wines 재사용)
+  useEffect(() => {
+    if (!isFocused) return;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem("recent_wines");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) setRecentWines(parsed);
+        }
+      } catch (e) {
+        console.warn("Failed to load recent wines for home:", e);
+      }
+    })();
+  }, [isFocused]);
 
   // Flip transition state
   const heroRef = useRef<View>(null);
@@ -205,6 +336,20 @@ export default function HomeScreen() {
               </View>
             </TouchableOpacity>
           </View>
+
+          {/* 온보딩 취향 데이터를 홈에서 처음으로 활용하는 개인화 섹션 */}
+          <RecommendedSection
+            data={recommendedWines}
+            title={t("home.recommended.title")}
+            onPressMore={() => navigation.navigate("RecommendationList")}
+            onPressWine={(wine) => navigation.navigate("WineDetail", { wine })}
+          />
+
+          <RecommendedSection
+            data={recentWines}
+            title={t("home.recentWines.title")}
+            onPressWine={(wine) => navigation.navigate("WineDetail", { wine })}
+          />
 
           {/* Discovery feed sits below the user's own tools. */}
           <RecentReviewsSection />

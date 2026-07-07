@@ -50,6 +50,13 @@
             "menuScanTitle": "Scan Menu",
             "menuScanSub": "Snap to get picks"
         },
+        "sectionMore": "See All",
+        "recommended": {
+            "title": "Picked for Your Taste"
+        },
+        "recentWines": {
+            "title": "Recently Viewed"
+        },
         "recentReviews": {
             "title": "Recent Reviews"
         },

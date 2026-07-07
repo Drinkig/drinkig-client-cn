@@ -50,6 +50,13 @@
             "menuScanTitle": "메뉴판 스캔",
             "menuScanSub": "찍어서 추천받기"
         },
+        "sectionMore": "더보기",
+        "recommended": {
+            "title": "내 취향 추천 와인"
+        },
+        "recentWines": {
+            "title": "최근 본 와인"
+        },
         "recentReviews": {
             "title": "최근 리뷰"
         },
