@@ -12,3 +12,12 @@ export const getErrorMessageKey = (error: unknown): string => {
   }
   return "common.error.generic";
 };
+
+// 소셜 로그인 시 "이미 다른 방식으로 가입된 이메일" 충돌.
+// 백엔드가 /login/apple, /login/kakao/firebase에서 409 + code "MEMBER4091"로 내려준다.
+// (status 409만으로 잡아도 되지만 code로 정확히 구분한다.)
+export const isEmailAlreadyRegistered = (error: unknown): boolean => {
+  const e = error as AxiosError<{ code?: string }>;
+  if (!e || !e.isAxiosError || !e.response) return false;
+  return e.response.data?.code === "MEMBER4091" || e.response.status === 409;
+};

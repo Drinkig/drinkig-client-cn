@@ -1,19 +1,18 @@
-import React, { useEffect } from 'react';
-import {
-  View,
-  StyleSheet,
-  Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors } from '../constants/colors';
+import React, { useEffect } from "react";
+import { View, StyleSheet, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { colors } from "../constants/colors";
 
 const SplashScreen = () => {
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right", "bottom"]}
+    >
       <View style={styles.contentContainer}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/Drinkig-App-Logo.png')}
+            source={require("../assets/Drinkig-App-Logo.png")}
             style={styles.logo}
             resizeMode="contain"
           />
@@ -26,17 +25,17 @@ const SplashScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.primaryDark,
+    backgroundColor: colors.logoTile,
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   logoContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   logo: {
     width: 150,
@@ -45,4 +44,3 @@ const styles = StyleSheet.create({
 });
 
 export default SplashScreen;
-

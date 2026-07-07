@@ -1,6 +1,9 @@
 export const colors = {
   primary: "#9231BF",
   primaryDark: "#7C2AA2",
+  // 앱 로고 PNG(Drinkig-App-Logo)에 박힌 라운드 사각형 타일과 '동일한' 보라색.
+  // 스플래시 배경에 이 값을 써야 로고 타일이 배경에 녹아들어 네모 이음새가 안 보인다.
+  logoTile: "#7E13B1",
   background: "#1A191B", // 거의 #1a1a1a에 가까운 아주 미세한 틴트
   surface1: "#2A292B", // 거의 #2a2a2a에 가까운 아주 미세한 틴트
   surface2: "#343335", // Elevated elements

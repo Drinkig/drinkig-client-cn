@@ -75,13 +75,24 @@ client.interceptors.request.use(
   }
 );
 
+// 로그인/사인업 엔드포인트: 아직 세션(refresh token)이 없는 단계라 여기서 나는
+// 401/409 등은 토큰 재발급·세션만료 로직을 타면 안 되고, 원본 에러가 그대로
+// 화면(LoginScreen)까지 전달돼야 한다. (예: 409 MEMBER4091 = 이메일 중복 안내)
+const AUTH_ENDPOINTS = ["/login/apple", "/login/kakao/firebase"];
+const isAuthEndpoint = (url?: string) =>
+  !!url && AUTH_ENDPOINTS.some((path) => url.includes(path));
+
 client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
     // Check if error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthEndpoint(originalRequest.url)
+    ) {
       // Prevent infinite loop: if the failed request was the refresh attempt itself, stop.
       if (originalRequest.url?.includes("/reissue")) {
         console.log(

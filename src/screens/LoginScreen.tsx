@@ -23,6 +23,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { exchangeKakaoToken, appleLogin } from "../api/member";
+import { isEmailAlreadyRegistered } from "../utils/apiError";
 import { useUser } from "../context/UserContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
@@ -157,6 +158,8 @@ const LoginScreen = () => {
       }
     } catch (error: any) {
       if (error.code === appleAuth.Error.CANCELED) {
+      } else if (isEmailAlreadyRegistered(error)) {
+        showToast(t("login.toast.emailAlreadyRegistered"), { type: "error" });
       } else {
         console.error("Apple Login Error:", error);
         showToast(
@@ -206,6 +209,8 @@ const LoginScreen = () => {
     } catch (error: any) {
       if (error.code === "E_CANCELLED_OPERATION") {
         showToast(t("login.toast.kakaoCancelled"), { type: "info" });
+      } else if (isEmailAlreadyRegistered(error)) {
+        showToast(t("login.toast.emailAlreadyRegistered"), { type: "error" });
       } else {
         console.error("Kakao Login Error:", error);
         showToast(t("login.toast.kakaoFailed"), {

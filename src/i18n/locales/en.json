@@ -1445,7 +1445,8 @@
             "appleFailed": "Apple sign-in failed: {{reason}}",
             "appleUnknownError": "Unknown error",
             "kakaoCancelled": "Kakao sign-in was cancelled.",
-            "kakaoFailed": "Kakao sign-in failed. Please contact support."
+            "kakaoFailed": "Kakao sign-in failed. Please contact support.",
+            "emailAlreadyRegistered": "This email is already registered with a different sign-in method. Please sign in with the method you originally used."
         }
     },
     "notification": {
