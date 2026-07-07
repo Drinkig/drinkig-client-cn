@@ -35,7 +35,8 @@ export default function HomeScreen() {
   const { refreshSubscription } = useSubscription();
   const { width: SCREEN_W, height: SCREEN_H } = useWindowDimensions();
 
-  const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
+  // null = 아직 로드 전 → 카운트를 0으로 단정하지 않고 "—"로 표시
+  const [myWines, setMyWines] = useState<MyWineDTO[] | null>(null);
 
   // Flip transition state
   const heroRef = useRef<View>(null);
@@ -137,6 +138,8 @@ export default function HomeScreen() {
             style={styles.iconButton}
             onPress={() => navigation.navigate("Wishlist" as never)}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel={t("wishlist.header")}
           >
             <Icon name="heart-outline" size={22} color={colors.textPrimary} />
           </TouchableOpacity>
@@ -196,7 +199,7 @@ export default function HomeScreen() {
                   {t("home.quickMenu.myWineTitle")}
                 </Text>
                 <Text style={styles.quickCardSub}>
-                  {myWines.length}
+                  {myWines === null ? "—" : myWines.length}
                   {t("home.quickMenu.bottlesUnit")}
                 </Text>
               </View>

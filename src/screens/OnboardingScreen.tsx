@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  BackHandler,
   Easing,
   Keyboard,
   StyleSheet,
@@ -625,6 +626,23 @@ const OnboardingScreen = () => {
       animateTransition(prev, "prev");
     }
   };
+
+  // Android 하드웨어 백버튼: 앱 종료(온보딩이 스택 루트) 대신 이전 스텝으로.
+  // INTRO에서는 기본 동작(앱 종료)을 허용한다.
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        if (step !== "INTRO" && !analyzing && !loading) {
+          prevStep();
+          return true;
+        }
+        return false;
+      }
+    );
+    return () => subscription.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, analyzing, loading]);
 
   const getProgress = () => {
     if (step === "PROFILE") return 0.15;

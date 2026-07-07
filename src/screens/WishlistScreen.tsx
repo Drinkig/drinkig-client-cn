@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   FlatList,
   StatusBar,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { getWishlist, WishlistItemDTO } from "../api/wine";
 import { WineDBItem } from "../types/Wine";
 import GlassHeader from "../components/common/GlassHeader";
+import ListStateView from "../components/common/ListStateView";
+import { getErrorMessageKey } from "../utils/apiError";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
@@ -22,8 +25,12 @@ import { getWineTypeColor } from "../constants/wineColors";
 export default function WishlistScreen() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<WishlistItemDTO[]>([]);
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     if (isFocused) {
@@ -31,17 +38,31 @@ export default function WishlistScreen() {
     }
   }, [isFocused]);
 
-  const fetchWishlist = async () => {
-    setIsLoading(true);
+  const fetchWishlist = async (viaPullToRefresh = false) => {
+    // 재방문 시에는 기존 목록을 유지한 채 백그라운드 갱신 (깜빡임 방지)
+    if (viaPullToRefresh) {
+      setIsRefreshing(true);
+    } else if (!hasLoadedOnce.current) {
+      setIsLoading(true);
+    }
     try {
       const response = await getWishlist();
       if (response.isSuccess) {
         setWishlist(response.result || []);
+        setErrorKey(null);
+        hasLoadedOnce.current = true;
+      } else {
+        throw new Error(response.message);
       }
     } catch (error) {
       console.error("Failed to fetch wishlist:", error);
+      // 에러를 빈 상태로 위장하지 않는다 — 기존 데이터가 없을 때만 에러 뷰 표시
+      if (!hasLoadedOnce.current) {
+        setErrorKey(getErrorMessageKey(error));
+      }
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -111,17 +132,19 @@ export default function WishlistScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
       {/* 헤더 */}
       <GlassHeader
         floating={false}
-        title="위시리스트"
+        title={t("wishlist.header")}
         left={
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.back")}
           >
             <Icon name="arrow-back" size={22} color={colors.white} />
           </TouchableOpacity>
@@ -131,22 +154,33 @@ export default function WishlistScreen() {
       {/* 컨텐츠 */}
       <View style={styles.content}>
         {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#E50914" />
-          </View>
+          <ListStateView state="loading" />
+        ) : errorKey ? (
+          <ListStateView
+            state="error"
+            subtitle={t(errorKey)}
+            onAction={() => fetchWishlist()}
+          />
         ) : (
           <FlatList
             data={wishlist}
             renderItem={renderItem}
             keyExtractor={(item) => item.wineId.toString()}
             contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={() => fetchWishlist(true)}
+                tintColor={colors.textSecondary}
+              />
+            }
             ListHeaderComponent={
               wishlist.length > 0 ? (
                 <View style={styles.listHeader}>
                   <Text style={styles.countText}>
-                    총{" "}
+                    {t("wishlist.countPrefix")}
                     <Text style={styles.countHighlight}>{wishlist.length}</Text>
-                    개의 와인
+                    {t("wishlist.countSuffix")}
                   </Text>
                 </View>
               ) : null
@@ -159,10 +193,21 @@ export default function WishlistScreen() {
                   style={styles.emptyImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.emptyText}>위시리스트가 비어있습니다.</Text>
+                <Text style={styles.emptyText}>{t("wishlist.emptyTitle")}</Text>
                 <Text style={styles.emptySubText}>
-                  마음에 드는 와인을 찜해보세요!
+                  {t("wishlist.emptyDesc")}
                 </Text>
+                <TouchableOpacity
+                  style={styles.emptyCta}
+                  onPress={() =>
+                    // @ts-ignore
+                    navigation.navigate("Main", { screen: "Search" })
+                  }
+                >
+                  <Text style={styles.emptyCtaText}>
+                    {t("wishlist.exploreCta")}
+                  </Text>
+                </TouchableOpacity>
               </View>
             }
           />
@@ -179,11 +224,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   listContent: {
     paddingHorizontal: spacing.lg,
@@ -289,5 +329,17 @@ const styles = StyleSheet.create({
   emptySubText: {
     color: colors.textSecondary,
     fontSize: 14,
+  },
+  emptyCta: {
+    marginTop: spacing.xl,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+  },
+  emptyCtaText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
   },
 });

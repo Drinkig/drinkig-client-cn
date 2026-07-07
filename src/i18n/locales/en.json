@@ -1,6 +1,17 @@
 {
     "common": {
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "close": "Close",
+        "back": "Back",
+        "retry": "Try Again",
+        "sessionExpired": "Your session has expired. Please sign in again.",
+        "error": {
+            "loadFailed": "Couldn't load",
+            "network": "Please check your network connection.",
+            "timeout": "The request timed out. Please try again shortly.",
+            "server": "Temporary server error. Please try again shortly.",
+            "generic": "Something went wrong. Please try again shortly."
+        }
     },
     "tab": {
         "home": "Home",
@@ -103,6 +114,8 @@
     "search": {
         "placeholder": "Search wines...",
         "emptyResult": "No results found.",
+        "registerPrompt": "Can't find the wine you're looking for?",
+        "registerCta": "Request a Wine",
         "recentSearch": "Recent Searches",
         "emptyRecentSearch": "No recent search history.",
         "recentWine": "Recently Viewed",
@@ -143,7 +156,8 @@
         },
         "empty": {
             "title": "Your cellar is empty",
-            "desc": "Tap the + button to\nadd your first wine!"
+            "desc": "Tap the + button to\nadd your first wine!",
+            "addCta": "Add a Wine"
         }
     },
     "profile": {
@@ -254,6 +268,11 @@
     "wineAdd": {
         "headerAdd": "Add to Cellar",
         "headerEdit": "Edit Wine Info",
+        "exitConfirm": {
+            "title": "Discard changes?",
+            "message": "Your input will be lost and not saved.",
+            "leave": "Leave"
+        },
         "step1": {
             "title": "Which wine are you adding?",
             "subtitle": "Please search by name",
@@ -654,7 +673,8 @@
         "countPrefix": "Total ",
         "countSuffix": " wines",
         "emptyTitle": "Wishlist is empty.",
-        "emptyDesc": "Save your favorite wines!"
+        "emptyDesc": "Save your favorite wines!",
+        "exploreCta": "Explore Wines"
     },
     "recommendationList": {
         "header": "Recommended Styles",

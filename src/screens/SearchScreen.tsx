@@ -9,6 +9,7 @@ import {
   StatusBar,
   Image,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -31,6 +32,7 @@ import { getWineTypeColor } from "../constants/wineColors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
+import { getErrorMessageKey } from "../utils/apiError";
 import { useUser } from "../context/UserContext";
 import {
   calculateCompatibilityScore,
@@ -71,6 +73,8 @@ export default function SearchScreen() {
 
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchErrorKey, setSearchErrorKey] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
 
@@ -114,6 +118,11 @@ export default function SearchScreen() {
   };
 
   useEffect(() => {
+    if (searchText.trim().length > 0) {
+      // 디바운스+응답 대기 동안 "결과 없음"이 먼저 보이지 않도록 검색 중 상태를 켠다
+      setIsSearching(true);
+      setSearchErrorKey(null);
+    }
     const timer = setTimeout(async () => {
       if (searchText.trim().length > 0) {
         try {
@@ -137,12 +146,19 @@ export default function SearchScreen() {
               })
             );
             setSearchResults(rankByRelevance(mappedResults, searchText.trim()));
+          } else {
+            throw new Error(response.message);
           }
         } catch (error) {
           console.error("Wine search failed:", error);
+          // 에러를 "검색 결과 없음"으로 위장하지 않는다
+          setSearchErrorKey(getErrorMessageKey(error));
+        } finally {
+          setIsSearching(false);
         }
       } else {
         setSearchResults([]);
+        setIsSearching(false);
       }
     }, 500);
 
@@ -332,10 +348,34 @@ export default function SearchScreen() {
             renderItem={renderSearchResult}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.listContent}
+            keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>{t("search.emptyResult")}</Text>
-              </View>
+              isSearching ? (
+                <View style={styles.emptyContainer}>
+                  <ActivityIndicator color={colors.primary} />
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyText}>
+                    {searchErrorKey
+                      ? t(searchErrorKey)
+                      : t("search.emptyResult")}
+                  </Text>
+                  {!searchErrorKey && (
+                    <TouchableOpacity
+                      style={styles.registerCta}
+                      onPress={() =>
+                        // @ts-ignore
+                        navigation.navigate("WineRegister")
+                      }
+                    >
+                      <Text style={styles.registerCtaText}>
+                        {t("search.registerCta")}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )
             }
           />
         ) : (
@@ -561,8 +601,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: colors.textTertiary,
+    color: colors.textSecondary,
     fontSize: 16,
+    textAlign: "center",
+  },
+  registerCta: {
+    marginTop: spacing.xl,
+    paddingHorizontal: 24,
+    paddingVertical: 11,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: surfaces.card,
+  },
+  registerCtaText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
   },
   recentSearchContainer: {
     padding: spacing.xxl,

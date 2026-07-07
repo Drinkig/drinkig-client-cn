@@ -31,6 +31,8 @@ import {
 } from "../utils/compatibility";
 import { useSubscription } from "../context/SubscriptionContext";
 import GlassHeader from "../components/common/GlassHeader";
+import ListStateView from "../components/common/ListStateView";
+import { getErrorMessageKey } from "../utils/apiError";
 
 type SearchResultScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -48,6 +50,7 @@ export default function SearchResultScreen() {
   const { isPremium } = useSubscription();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [compatScores, setCompatScores] = useState<{
@@ -86,9 +89,14 @@ export default function SearchResultScreen() {
           })
         );
         setSearchResults(rankByRelevance(mappedResults, searchKeyword));
+        setErrorKey(null);
+      } else {
+        throw new Error(response.message);
       }
     } catch (error) {
       console.error("Search result fetch failed:", error);
+      // 에러를 "검색 결과 없음"으로 위장하지 않는다
+      setErrorKey(getErrorMessageKey(error));
     } finally {
       setIsLoading(false);
     }
@@ -247,6 +255,12 @@ export default function SearchResultScreen() {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
+        ) : errorKey ? (
+          <ListStateView
+            state="error"
+            subtitle={t(errorKey)}
+            onAction={() => fetchSearchResults()}
+          />
         ) : (
           <FlatList
             showsVerticalScrollIndicator={false}
@@ -264,6 +278,20 @@ export default function SearchResultScreen() {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>{t("search.emptyResult")}</Text>
+                <Text style={styles.emptySubText}>
+                  {t("search.registerPrompt")}
+                </Text>
+                <TouchableOpacity
+                  style={styles.registerCta}
+                  onPress={() =>
+                    // @ts-ignore
+                    navigation.navigate("WineRegister")
+                  }
+                >
+                  <Text style={styles.registerCtaText}>
+                    {t("search.registerCta")}
+                  </Text>
+                </TouchableOpacity>
               </View>
             }
           />
@@ -399,7 +427,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: colors.textTertiary,
+    color: colors.textSecondary,
     fontSize: 16,
+  },
+  emptySubText: {
+    color: colors.textTertiary,
+    fontSize: 13,
+    marginTop: spacing.sm,
+    textAlign: "center",
+  },
+  registerCta: {
+    marginTop: spacing.xl,
+    paddingHorizontal: 24,
+    paddingVertical: 11,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: surfaces.card,
+  },
+  registerCtaText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

@@ -1,6 +1,12 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const DRAFT_KEY = 'tasting_note_draft';
+// 특정 와인으로 바로 진입한 작성(딥링크/상세→작성)과 일반 진입 작성이
+// 서로의 드래프트를 덮어쓰지 않도록 와인별로 키를 분리한다.
+// draftId 없음 = 일반 진입("tasting_note_draft", 기존 키와 호환).
+const DRAFT_KEY_PREFIX = "tasting_note_draft";
+
+const keyFor = (draftId?: number): string =>
+  draftId ? `${DRAFT_KEY_PREFIX}_${draftId}` : DRAFT_KEY_PREFIX;
 
 export interface TastingNoteDraft {
   wineId?: number;
@@ -23,31 +29,36 @@ export interface TastingNoteDraft {
   savedAt: string;
 }
 
-export const saveDraft = async (draft: TastingNoteDraft): Promise<void> => {
+export const saveDraft = async (
+  draft: TastingNoteDraft,
+  draftId?: number
+): Promise<void> => {
   try {
-    await AsyncStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    await AsyncStorage.setItem(keyFor(draftId), JSON.stringify(draft));
   } catch (error) {
-    console.error('Failed to save tasting note draft', error);
+    console.error("Failed to save tasting note draft", error);
   }
 };
 
-export const loadDraft = async (): Promise<TastingNoteDraft | null> => {
+export const loadDraft = async (
+  draftId?: number
+): Promise<TastingNoteDraft | null> => {
   try {
-    const json = await AsyncStorage.getItem(DRAFT_KEY);
+    const json = await AsyncStorage.getItem(keyFor(draftId));
     if (json) {
       return JSON.parse(json) as TastingNoteDraft;
     }
     return null;
   } catch (error) {
-    console.error('Failed to load tasting note draft', error);
+    console.error("Failed to load tasting note draft", error);
     return null;
   }
 };
 
-export const clearDraft = async (): Promise<void> => {
+export const clearDraft = async (draftId?: number): Promise<void> => {
   try {
-    await AsyncStorage.removeItem(DRAFT_KEY);
+    await AsyncStorage.removeItem(keyFor(draftId));
   } catch (error) {
-    console.error('Failed to clear tasting note draft', error);
+    console.error("Failed to clear tasting note draft", error);
   }
 };

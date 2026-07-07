@@ -11,6 +11,7 @@ import {
   Dimensions,
   Modal,
   TouchableWithoutFeedback,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -23,6 +24,8 @@ import {
 } from "../api/wine";
 import { colors } from "../constants/colors";
 import { useTranslation, Trans } from "react-i18next";
+import ListStateView from "../components/common/ListStateView";
+import { getErrorMessageKey } from "../utils/apiError";
 
 const MyWineScreen = () => {
   const navigation = useNavigation();
@@ -30,6 +33,9 @@ const MyWineScreen = () => {
 
   const [myWines, setMyWines] = useState<MyWineDTO[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
   const [selectedType, setSelectedType] = useState("전체");
 
   const [sortType, setSortType] = useState("latest");
@@ -65,9 +71,14 @@ const MyWineScreen = () => {
     }
   }, [isFocused]);
 
-  const fetchMyWines = async () => {
-    try {
+  const fetchMyWines = async (viaPullToRefresh = false) => {
+    // 재방문 시에는 기존 목록을 유지한 채 백그라운드 갱신 (깜빡임 방지)
+    if (viaPullToRefresh) {
+      setIsRefreshing(true);
+    } else if (!hasLoadedOnce.current) {
       setIsLoading(true);
+    }
+    try {
       const response = await getMyWines();
 
       if (response.isSuccess) {
@@ -83,15 +94,20 @@ const MyWineScreen = () => {
         });
 
         setMyWines(updatedWines);
+        setErrorKey(null);
+        hasLoadedOnce.current = true;
       } else {
-        setMyWines([]);
+        throw new Error(response.message);
       }
     } catch (error) {
       console.error("Failed to fetch my wines:", error);
-
-      setMyWines([]);
+      // 에러를 빈 셀러로 위장하지 않는다 — 기존 데이터가 없을 때만 에러 뷰 표시
+      if (!hasLoadedOnce.current) {
+        setErrorKey(getErrorMessageKey(error));
+      }
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -315,55 +331,80 @@ const MyWineScreen = () => {
         </View>
       )}
 
-      <FlatList
-        key={viewMode}
-        data={isLoading ? [] : sortedWines}
-        renderItem={viewMode === "list" ? renderListItem : renderCardItem}
-        keyExtractor={(item) => item.myWineId.toString()}
-        contentContainerStyle={styles.flatListContent}
-        showsVerticalScrollIndicator={false}
-        {...(viewMode === "card"
-          ? { numColumns: 2, columnWrapperStyle: { gap: cardGap } }
-          : {})}
-        ListFooterComponent={null}
-        ListEmptyComponent={() => {
-          if (isLoading) {
+      {errorKey && !isLoading ? (
+        <ListStateView
+          state="error"
+          subtitle={t(errorKey)}
+          onAction={() => fetchMyWines()}
+        />
+      ) : (
+        <FlatList
+          key={viewMode}
+          data={isLoading ? [] : sortedWines}
+          renderItem={viewMode === "list" ? renderListItem : renderCardItem}
+          keyExtractor={(item) => item.myWineId.toString()}
+          contentContainerStyle={styles.flatListContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={() => fetchMyWines(true)}
+              tintColor={colors.textSecondary}
+            />
+          }
+          {...(viewMode === "card"
+            ? { numColumns: 2, columnWrapperStyle: { gap: cardGap } }
+            : {})}
+          ListFooterComponent={null}
+          ListEmptyComponent={() => {
+            if (isLoading) {
+              return (
+                <View style={styles.centerContent}>
+                  <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+              );
+            }
             return (
-              <View style={styles.centerContent}>
-                <ActivityIndicator size="large" color={colors.primary} />
+              <View style={styles.emptyContent}>
+                <View style={styles.emptyInner}>
+                  <Image
+                    source={require("../assets/Drinky_no_wine_1.png")}
+                    style={styles.emptyImage}
+                    resizeMode="contain"
+                  />
+                  {myWines.length > 0 ? (
+                    <>
+                      <Text style={styles.emptyText}>
+                        {t("myWine.emptyType.title")}
+                      </Text>
+                      <Text style={styles.subText}>
+                        {t("myWine.emptyType.desc")}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.emptyText}>
+                        {t("myWine.empty.title")}
+                      </Text>
+                      <Text style={styles.subText}>
+                        {t("myWine.empty.desc")}
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.emptyCta}
+                        onPress={() => navigation.navigate("WineAdd" as never)}
+                      >
+                        <Text style={styles.emptyCtaText}>
+                          {t("myWine.empty.addCta")}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
               </View>
             );
-          }
-          return (
-            <View style={styles.emptyContent}>
-              <View style={styles.emptyInner}>
-                <Image
-                  source={require("../assets/Drinky_no_wine_1.png")}
-                  style={styles.emptyImage}
-                  resizeMode="contain"
-                />
-                {myWines.length > 0 ? (
-                  <>
-                    <Text style={styles.emptyText}>
-                      {t("myWine.emptyType.title")}
-                    </Text>
-                    <Text style={styles.subText}>
-                      {t("myWine.emptyType.desc")}
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.emptyText}>
-                      {t("myWine.empty.title")}
-                    </Text>
-                    <Text style={styles.subText}>{t("myWine.empty.desc")}</Text>
-                  </>
-                )}
-              </View>
-            </View>
-          );
-        }}
-      />
+          }}
+        />
+      )}
 
       {isSortModalVisible && (
         <View style={[styles.sortModalOverlay, { top: 70 }]}>
@@ -599,6 +640,18 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
     lineHeight: 20,
+  },
+  emptyCta: {
+    marginTop: 20,
+    paddingHorizontal: 28,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: colors.primary,
+  },
+  emptyCtaText: {
+    color: colors.white,
+    fontSize: 15,
+    fontWeight: "600",
   },
   // shared
   wineImage: {

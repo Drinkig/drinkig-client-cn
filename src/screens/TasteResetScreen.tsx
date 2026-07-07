@@ -15,6 +15,7 @@ import LinearGradient from "react-native-linear-gradient";
 import Svg, { Defs, RadialGradient, Stop, Circle } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
+import { useExitGuard } from "../hooks/useExitGuard";
 import { MemberInitRequest, updateMemberInitInfo } from "../api/member";
 import { useUser } from "../context/UserContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
@@ -309,6 +310,7 @@ const TasteResetScreen = () => {
       setTimeout(() => {
         setAnalyzing(false);
         saveFlavorProfile(flavorProfile);
+        skipGuardRef.current = true; // 제출 완료 — 이탈 가드 없이 결과 화면으로
         (navigation as any).replace("RecommendationResult", {
           flavorProfile,
           nickname: user?.nickname,
@@ -339,6 +341,13 @@ const TasteResetScreen = () => {
       navigation.goBack();
     }
   };
+
+  // 하드웨어 백/스와이프 백이 멀티스텝 진행을 통째로 버리지 않도록,
+  // 중간 스텝에서는 화면 이탈 대신 이전 스텝으로 이동시킨다.
+  const skipGuardRef = useExitGuard(
+    STEPS.indexOf(currentStep) > 0 && !analyzing && !loading,
+    () => prevStep()
+  );
 
   // Single-select steps advance on tap and have no footer button.
   const isAutoAdvanceStep =

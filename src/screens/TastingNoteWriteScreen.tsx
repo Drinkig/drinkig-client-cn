@@ -1,4 +1,5 @@
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useExitGuard } from "../hooks/useExitGuard";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Image,
@@ -176,15 +177,10 @@ export default function TastingNoteWriteScreen() {
   const [draftSavedMessage, setDraftSavedMessage] = useState(false);
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load draft on mount
+  // Load draft on mount — 특정 와인 진입은 와인별 키, 일반 진입은 공용 키에서 복원
   useEffect(() => {
-    if (params.wineId) {
-      // If opened with a specific wine, don't load draft
-      setDraftLoaded(true);
-      return;
-    }
     (async () => {
-      const draft = await loadDraft();
+      const draft = await loadDraft(params.wineId);
       if (draft) {
         showAlert({
           title: t("tastingNoteWrite.draft.restoreTitle"),
@@ -217,7 +213,7 @@ export default function TastingNoteWriteScreen() {
             setDraftLoaded(true);
           },
           onCancel: () => {
-            clearDraft();
+            clearDraft(params.wineId);
             setDraftLoaded(true);
           },
         });
@@ -309,7 +305,7 @@ export default function TastingNoteWriteScreen() {
       clearTimeout(autoSaveTimer.current);
     }
     autoSaveTimer.current = setTimeout(() => {
-      saveDraft(getCurrentDraft());
+      saveDraft(getCurrentDraft(), params.wineId);
     }, 3000);
 
     return () => {
@@ -317,19 +313,19 @@ export default function TastingNoteWriteScreen() {
         clearTimeout(autoSaveTimer.current);
       }
     };
-  }, [draftLoaded, getCurrentDraft, hasAnyData]);
+  }, [draftLoaded, getCurrentDraft, hasAnyData, params.wineId]);
 
   // Manual draft save
   const handleSaveDraft = useCallback(async () => {
-    await saveDraft(getCurrentDraft());
+    await saveDraft(getCurrentDraft(), params.wineId);
     setDraftSavedMessage(true);
     setTimeout(() => setDraftSavedMessage(false), 2000);
     logEvent("tasting_note_draft_save");
-  }, [getCurrentDraft]);
+  }, [getCurrentDraft, params.wineId]);
 
-  // Close with confirmation if there's unsaved data
-  const handleClose = useCallback(() => {
-    if (hasAnyData()) {
+  // 하드웨어 백/스와이프 백/헤더 백 모두 여기서 가로채 확인 다이얼로그를 띄운다
+  const confirmExit = useCallback(
+    (proceed: () => void) => {
       showAlert({
         title: t("tastingNoteWrite.draft.closeTitle"),
         message: t("tastingNoteWrite.draft.closeMsg"),
@@ -337,18 +333,23 @@ export default function TastingNoteWriteScreen() {
         confirmText: t("tastingNoteWrite.draft.closeSave"),
         cancelText: t("tastingNoteWrite.draft.closeDiscard"),
         onConfirm: async () => {
-          await saveDraft(getCurrentDraft());
-          navigation.goBack();
+          await saveDraft(getCurrentDraft(), params.wineId);
+          proceed();
         },
         onCancel: async () => {
-          await clearDraft();
-          navigation.goBack();
+          await clearDraft(params.wineId);
+          proceed();
         },
       });
-    } else {
-      navigation.goBack();
-    }
-  }, [hasAnyData, getCurrentDraft, navigation, showAlert, t]);
+    },
+    [getCurrentDraft, params.wineId, showAlert, t]
+  );
+
+  const skipGuardRef = useExitGuard(draftLoaded && hasAnyData(), confirmExit);
+
+  const handleClose = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
 
   const mapLevelToValue = (level: number) => level * 20;
 
@@ -479,10 +480,11 @@ export default function TastingNoteWriteScreen() {
       const response = await createTastingNote(requestData);
 
       if (response.isSuccess) {
-        await clearDraft();
+        await clearDraft(params.wineId);
         logEvent("tasting_note_save_success");
         // Navigate back immediately; the global toast stays visible over the
         // destination screen, so we don't wait for it to auto-hide.
+        skipGuardRef.current = true; // 저장 완료 — 이탈 가드 없이 나간다
         navigation.goBack();
         showToast(t("tastingNoteWrite.success.saveMsg"), { type: "success" });
       } else {

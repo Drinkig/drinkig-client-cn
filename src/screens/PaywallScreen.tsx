@@ -20,17 +20,16 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LinearGradient from "react-native-linear-gradient";
 import {
-  initConnection,
   getSubscriptions,
   requestSubscription,
   getAvailablePurchases,
-  finishTransaction,
   Subscription,
-  SubscriptionPurchase,
-  purchaseUpdatedListener,
-  purchaseErrorListener,
   PurchaseError,
 } from "react-native-iap";
+import {
+  ensureIapConnection,
+  setPurchaseUiHandlers,
+} from "../utils/iapManager";
 import { colors } from "../constants/colors";
 import {
   MatchScoreIllust,
@@ -113,67 +112,17 @@ const PaywallScreen = () => {
   // 상품 로드 실패 시 "다시 시도"가 IAP 초기화 전체를 재실행하게 하는 트리거
   const [iapRetryNonce, setIapRetryNonce] = useState(0);
 
+  // 구매 리스너는 SubscriptionContext(iapManager)에 전역 등록되어 있다.
+  // 이 화면은 상품 로드와 UI 피드백(토스트/스피너 해제)만 담당한다.
   useEffect(() => {
-    let purchaseUpdateSubscription: any;
-    let purchaseErrorSubscription: any;
-    let iapAvailable = false;
-
-    const init = async () => {
+    const loadProducts = async () => {
       setIsLoadingProducts(true);
       try {
-        await initConnection();
-        iapAvailable = true;
-
-        // Only register listeners after successful connection
-        purchaseUpdateSubscription = purchaseUpdatedListener(
-          async (purchase: SubscriptionPurchase) => {
-            try {
-              const transactionId = purchase.transactionId || "";
-              const originalTransactionId =
-                purchase.originalTransactionIdentifierIOS || transactionId;
-              const productId = purchase.productId;
-
-              const verifyResult = await verifyReceipt(
-                transactionId,
-                originalTransactionId,
-                productId
-              );
-
-              // 서버(Apple) 검증이 실패하면 거래를 finish하지 않고 에러 처리
-              // (finish하지 않으면 Apple이 거래를 재전송하므로 추후 재검증 가능)
-              if (!verifyResult?.result?.success) {
-                throw new Error(verifyResult?.message || "verification failed");
-              }
-
-              await finishTransaction({ purchase, isConsumable: false });
-              await refreshSubscription();
-
-              setIsProcessing(false);
-              showToast(t("paywall.subscribeSuccess"), {
-                type: "success",
-                onHide: () => navigation.goBack(),
-              });
-            } catch (error) {
-              console.error("Purchase verification failed:", error);
-              setIsProcessing(false);
-              showToast(t("paywall.verifyFailed"), { type: "error" });
-            }
-          }
-        );
-
-        purchaseErrorSubscription = purchaseErrorListener(
-          (error: PurchaseError) => {
-            setIsProcessing(false);
-            if (error.code !== "E_USER_CANCELLED") {
-              showToast(error.message || t("paywall.purchaseFailed"), {
-                type: "error",
-              });
-            }
-          }
-        );
-
-        const subs = await getSubscriptions({ skus: PRODUCT_IDS! });
-        setProducts(subs);
+        const ok = await ensureIapConnection();
+        if (ok) {
+          const subs = await getSubscriptions({ skus: PRODUCT_IDS! });
+          setProducts(subs);
+        }
       } catch (error) {
         console.warn(
           "IAP not available (simulator or unsupported device):",
@@ -184,14 +133,33 @@ const PaywallScreen = () => {
       }
     };
 
-    init();
-
-    return () => {
-      purchaseUpdateSubscription?.remove();
-      purchaseErrorSubscription?.remove();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadProducts();
   }, [iapRetryNonce]);
+
+  useEffect(() => {
+    setPurchaseUiHandlers({
+      onSuccess: () => {
+        setIsProcessing(false);
+        showToast(t("paywall.subscribeSuccess"), {
+          type: "success",
+          onHide: () => navigation.goBack(),
+        });
+      },
+      onVerifyFailed: () => {
+        setIsProcessing(false);
+        showToast(t("paywall.verifyFailed"), { type: "error" });
+      },
+      onError: (error: PurchaseError) => {
+        setIsProcessing(false);
+        if (error.code !== "E_USER_CANCELLED") {
+          showToast(error.message || t("paywall.purchaseFailed"), {
+            type: "error",
+          });
+        }
+      },
+    });
+    return () => setPurchaseUiHandlers(null);
+  }, [navigation, showToast, t]);
 
   const getProductId = (plan: PlanType): string => {
     return plan === "YEARLY"

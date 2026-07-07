@@ -12,6 +12,7 @@ import {
   SubscriptionFeatures,
 } from "../api/subscription";
 import { isDevAccessEnabled } from "../utils/devAccess";
+import { initIap } from "../utils/iapManager";
 import { useUser } from "./UserContext";
 
 export type SubscriptionPlan = "FREE" | "MONTHLY" | "YEARLY";
@@ -153,6 +154,14 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     if (!overrideHydrated) return;
     refreshSubscription();
   }, [devOverride, overrideHydrated, refreshSubscription]);
+
+  // IAP 연결·구매 리스너를 전역 1회 등록.
+  // Paywall이 닫힌 뒤 재전송되는 거래(강제종료/Ask to Buy 등)도
+  // 여기서 검증·finish·구독 갱신까지 처리된다.
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    initIap(refreshSubscription);
+  }, [isLoggedIn, refreshSubscription]);
 
   const setDevOverride = useCallback(
     async (override: DevSubscriptionOverride) => {

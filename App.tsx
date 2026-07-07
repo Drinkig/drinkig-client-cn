@@ -18,6 +18,7 @@ TextInput.defaultProps = TextInput.defaultProps || {};
 // @ts-expect-error
 TextInput.defaultProps.allowFontScaling = false;
 import GlobalComponents from "./src/components/GlobalComponents";
+import SessionExpiredHandler from "./src/components/SessionExpiredHandler";
 import { GlobalUIProvider } from "./src/context/GlobalUIContext";
 import { UserProvider } from "./src/context/UserContext";
 import { WineProvider } from "./src/context/WineContext";
@@ -81,6 +82,7 @@ function App(): React.JSX.Element {
               </NavigationContainer>
             </SafeAreaProvider>
             <GlobalComponents />
+            <SessionExpiredHandler />
           </GlobalUIProvider>
         </WineProvider>
       </SubscriptionProvider>

@@ -28,6 +28,8 @@ import {
 } from "../api/wine";
 import CustomAlert from "../components/CustomAlert";
 import CalendarModal from "../components/tasting_note/CalendarModal";
+import { useExitGuard } from "../hooks/useExitGuard";
+import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
 import GlassHeader from "../components/common/GlassHeader";
 import { getWineTypeColor } from "../constants/wineColors";
@@ -101,6 +103,28 @@ const WineAddScreen = () => {
     setAlertConfig({ title, message, onConfirm });
     setAlertVisible(true);
   };
+
+  const { showAlert } = useGlobalUI();
+
+  // 새 와인 추가 중 입력값이 있으면 백버튼/스와이프/뒤로 버튼 어디로 나가든
+  // 확인 없이 사라지지 않게 한다. (수정 모드는 저장 전 원본이 남아있어 제외)
+  const hasUnsavedInput =
+    !isEditMode &&
+    (vintage !== "" ||
+      purchasePrice !== "" ||
+      purchaseShop !== "" ||
+      (selectedWineId !== null && !initialWine));
+
+  const skipGuardRef = useExitGuard(hasUnsavedInput && !isSaving, (proceed) => {
+    showAlert({
+      title: t("wineAdd.exitConfirm.title"),
+      message: t("wineAdd.exitConfirm.message"),
+      singleButton: false,
+      confirmText: t("wineAdd.exitConfirm.leave"),
+      cancelText: t("common.cancel"),
+      onConfirm: proceed,
+    });
+  });
 
   useEffect(() => {
     if (!isEditMode) logScreen("wine_add");
@@ -252,6 +276,7 @@ const WineAddScreen = () => {
             t("wineAdd.alert.success"),
             t("wineAdd.alert.editSuccess"),
             () => {
+              skipGuardRef.current = true; // 저장 완료 — 이탈 가드 없이 나간다
               navigation.goBack();
             }
           );
@@ -302,6 +327,7 @@ const WineAddScreen = () => {
               : t("wineAdd.alert.addSuccessSingular");
 
           handleShowAlert(t("wineAdd.alert.success"), message, () => {
+            skipGuardRef.current = true; // 저장 완료 — 이탈 가드 없이 나간다
             navigation.goBack();
           });
         } else {
