@@ -19,7 +19,10 @@ import { useNavigation } from "@react-navigation/native";
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
-import { getWineTypeColor as getTypeColor } from "../constants/wineColors";
+import {
+  getWineTypeColor as getTypeColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 import GlassHeader from "../components/common/GlassHeader";
 import { submitWineRequest } from "../api/wine";
 import { useGlobalUI } from "../context/GlobalUIContext";
@@ -472,7 +475,7 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   typeChipTextActive: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontWeight: "600",
   },
   footer: {

@@ -20,7 +20,7 @@ import ListStateView from "../components/common/ListStateView";
 import { getErrorMessageKey } from "../utils/apiError";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 
 export default function WishlistScreen() {
   const navigation = useNavigation();
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   typeChipText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 10,
     fontWeight: "bold",
   },

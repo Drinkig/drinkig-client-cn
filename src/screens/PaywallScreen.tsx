@@ -367,6 +367,9 @@ const PaywallScreen = () => {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.closeButton}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.close")}
         >
           <Icon name="close" size={28} color={colors.white} />
         </TouchableOpacity>
@@ -379,6 +382,8 @@ const PaywallScreen = () => {
           { paddingBottom: footerHeight + 24 },
         ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
       >
         <View style={styles.titleSection}>
           <View style={styles.premiumBadge}>

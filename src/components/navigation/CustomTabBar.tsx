@@ -9,6 +9,7 @@ import {
   LayoutChangeEvent,
 } from "react-native";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { useTranslation } from "react-i18next";
 import { BlurView } from "@react-native-community/blur";
 import LinearGradient from "react-native-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -39,6 +40,7 @@ export const CustomTabBar = ({
   descriptors,
   navigation,
 }: BottomTabBarProps) => {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [containerWidth, setContainerWidth] = useState(0);
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -145,7 +147,7 @@ export const CustomTabBar = ({
         key={route.key}
         accessibilityRole="button"
         accessibilityState={isFocused ? { selected: true } : {}}
-        accessibilityLabel={options.tabBarAccessibilityLabel}
+        accessibilityLabel={options.tabBarAccessibilityLabel ?? label}
         onPress={onPress}
         style={styles.tabButton}
         activeOpacity={0.8}
@@ -230,6 +232,8 @@ export const CustomTabBar = ({
           onPress={handleCameraPress}
           activeOpacity={0.85}
           style={styles.cameraButton}
+          accessibilityRole="button"
+          accessibilityLabel={t("tab.scan")}
         >
           <LinearGradient
             colors={["#CBABEC", accent.base, "#9B6FD4"]}

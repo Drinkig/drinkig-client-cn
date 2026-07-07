@@ -19,7 +19,10 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
-import { getWineTypeColor as getWineColor } from "../constants/wineColors";
+import {
+  getWineTypeColor as getWineColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 import {
   getFoodPairingRecommendation,
   FoodRecommendationDTO,
@@ -1348,7 +1351,7 @@ const styles = StyleSheet.create({
   wineSortText: {
     fontSize: 9,
     fontWeight: "bold",
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
   },
   wineVariety: {
     color: colors.white,
@@ -1403,7 +1406,7 @@ const styles = StyleSheet.create({
   },
   upsellSheetBadge: {
     alignSelf: "flex-start",
-    color: "#FFD86B",
+    color: colors.ratingGold,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.5,

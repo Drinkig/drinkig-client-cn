@@ -23,12 +23,12 @@ import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent, surfaces } from "../constants/theme";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 import ActionMenuSheet from "../components/common/ActionMenuSheet";
 
-const RATING_GOLD = "#F5C518";
+const RATING_GOLD = colors.ratingGold;
 
 type TastingNoteDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   typeText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 10,
     fontWeight: "bold",
   },

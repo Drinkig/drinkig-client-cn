@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import {
   Image,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -204,108 +206,115 @@ const ProfileEditScreen = () => {
         }
       />
 
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.content}>
-          <View style={styles.imageSection}>
-            <TouchableOpacity
-              onPress={handleOpenImageOptions}
-              style={styles.imageContainer}
-              activeOpacity={0.85}
-            >
-              <View style={styles.imageMask}>
-                <Image
-                  source={
-                    profileImage
-                      ? { uri: profileImage }
-                      : require("../assets/Standard_profile.png")
-                  }
-                  style={styles.profileImage}
-                />
-              </View>
-              <View style={styles.cameraIconContainer}>
-                <Icon name="camera" size={18} color={accent.onAccent} />
-              </View>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.inputSection}>
-            <Text style={styles.label}>{t("profileEdit.nickname.label")}</Text>
-            <View
-              style={[
-                styles.input,
-                isInputFocused && styles.inputFocused,
-                nicknameError
-                  ? styles.inputError
-                  : nicknameAvailable && nickname !== user?.nickname
-                  ? styles.inputSuccess
-                  : null,
-              ]}
-            >
-              <TextInput
-                style={styles.inputText}
-                value={nickname}
-                onChangeText={setNickname}
-                onFocus={() => setIsInputFocused(true)}
-                onBlur={() => setIsInputFocused(false)}
-                placeholder={t("profileEdit.nickname.placeholder")}
-                placeholderTextColor={colors.textTertiary}
-                maxLength={10}
-              />
-              {nickname !== user?.nickname &&
-                !isCheckingNickname &&
-                (nicknameError ? (
-                  <Icon name="close-circle" size={20} color={colors.error} />
-                ) : nicknameAvailable ? (
-                  <Icon
-                    name="checkmark-circle"
-                    size={20}
-                    color={colors.success}
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoiding}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          <View style={styles.content}>
+            <View style={styles.imageSection}>
+              <TouchableOpacity
+                onPress={handleOpenImageOptions}
+                style={styles.imageContainer}
+                activeOpacity={0.85}
+              >
+                <View style={styles.imageMask}>
+                  <Image
+                    source={
+                      profileImage
+                        ? { uri: profileImage }
+                        : require("../assets/Standard_profile.png")
+                    }
+                    style={styles.profileImage}
                   />
-                ) : null)}
+                </View>
+                <View style={styles.cameraIconContainer}>
+                  <Icon name="camera" size={18} color={accent.onAccent} />
+                </View>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.helperRow}>
-              <View style={styles.helperTextWrapper}>
-                {isCheckingNickname ? (
-                  <Text style={styles.helperText}>
-                    {t("profileEdit.nickname.checking")}
-                  </Text>
-                ) : nicknameError ? (
-                  <Text style={styles.errorText}>{nicknameError}</Text>
-                ) : nicknameAvailable && nickname !== user?.nickname ? (
-                  <Text style={styles.successText}>
-                    {t("profileEdit.nickname.success")}
-                  </Text>
-                ) : null}
-              </View>
-              <Text style={styles.counterText}>{nickname.length}/10</Text>
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                (!canSave || isSaving) && styles.saveButtonDisabled,
-              ]}
-              onPress={handleSave}
-              disabled={!canSave || isSaving}
-              activeOpacity={0.85}
-            >
-              <Text
+            <View style={styles.inputSection}>
+              <Text style={styles.label}>
+                {t("profileEdit.nickname.label")}
+              </Text>
+              <View
                 style={[
-                  styles.saveButtonText,
-                  (!canSave || isSaving) && styles.saveButtonTextDisabled,
+                  styles.input,
+                  isInputFocused && styles.inputFocused,
+                  nicknameError
+                    ? styles.inputError
+                    : nicknameAvailable && nickname !== user?.nickname
+                    ? styles.inputSuccess
+                    : null,
                 ]}
               >
-                {isSaving
-                  ? t("profileEdit.button.saving")
-                  : t("profileEdit.button.save")}
-              </Text>
-            </TouchableOpacity>
+                <TextInput
+                  style={styles.inputText}
+                  value={nickname}
+                  onChangeText={setNickname}
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
+                  placeholder={t("profileEdit.nickname.placeholder")}
+                  placeholderTextColor={colors.textTertiary}
+                  maxLength={10}
+                />
+                {nickname !== user?.nickname &&
+                  !isCheckingNickname &&
+                  (nicknameError ? (
+                    <Icon name="close-circle" size={20} color={colors.error} />
+                  ) : nicknameAvailable ? (
+                    <Icon
+                      name="checkmark-circle"
+                      size={20}
+                      color={colors.success}
+                    />
+                  ) : null)}
+              </View>
+
+              <View style={styles.helperRow}>
+                <View style={styles.helperTextWrapper}>
+                  {isCheckingNickname ? (
+                    <Text style={styles.helperText}>
+                      {t("profileEdit.nickname.checking")}
+                    </Text>
+                  ) : nicknameError ? (
+                    <Text style={styles.errorText}>{nicknameError}</Text>
+                  ) : nicknameAvailable && nickname !== user?.nickname ? (
+                    <Text style={styles.successText}>
+                      {t("profileEdit.nickname.success")}
+                    </Text>
+                  ) : null}
+                </View>
+                <Text style={styles.counterText}>{nickname.length}/10</Text>
+              </View>
+            </View>
+
+            <View style={styles.footer}>
+              <TouchableOpacity
+                style={[
+                  styles.saveButton,
+                  (!canSave || isSaving) && styles.saveButtonDisabled,
+                ]}
+                onPress={handleSave}
+                disabled={!canSave || isSaving}
+                activeOpacity={0.85}
+              >
+                <Text
+                  style={[
+                    styles.saveButtonText,
+                    (!canSave || isSaving) && styles.saveButtonTextDisabled,
+                  ]}
+                >
+                  {isSaving
+                    ? t("profileEdit.button.saving")
+                    : t("profileEdit.button.save")}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
 
       <PhotoOptionsBottomSheet
         visible={isImageOptionsVisible}
@@ -322,6 +331,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  keyboardAvoiding: {
+    flex: 1,
   },
   content: {
     flex: 1,

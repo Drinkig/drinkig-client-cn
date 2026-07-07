@@ -11,7 +11,7 @@ interface StarRatingProps {
 }
 
 const STAR = 44;
-const STAR_GOLD = "#F5C518";
+const STAR_GOLD = colors.ratingGold;
 
 export default function StarRating({
   rating,
@@ -52,7 +52,24 @@ export default function StarRating({
 
   return (
     <View style={styles.container}>
-      <View style={styles.starsContainer}>
+      <View
+        style={styles.starsContainer}
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel={t("tastingNoteWrite.starRating.a11yLabel")}
+        accessibilityValue={{
+          text: t("tastingNoteWrite.starRating.a11yValue", { rating }),
+        }}
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={(event) => {
+          // VoiceOver 스와이프 업/다운으로 0.5점 단위 조절
+          if (event.nativeEvent.actionName === "increment") {
+            onRatingChange(Math.min(5, rating + 0.5));
+          } else if (event.nativeEvent.actionName === "decrement") {
+            onRatingChange(Math.max(0, rating - 0.5));
+          }
+        }}
+      >
         {[1, 2, 3, 4, 5].map((index) => renderStar(index))}
       </View>
       <View style={[styles.scorePill, rating > 0 && styles.scorePillActive]}>

@@ -284,7 +284,7 @@ export default function WineDetailScreen() {
     } catch (error) {
       console.error("Wishlist toggle failed:", error);
       setIsLiked(previousState);
-      showToast("위시리스트 변경에 실패했습니다.", { type: "error" });
+      showToast(t("menuScanResult.wishlist.failed"), { type: "error" });
     }
   };
 
@@ -691,7 +691,7 @@ export default function WineDetailScreen() {
               <MaterialCommunityIcons
                 name="star"
                 size={16}
-                color={userRating ? "#E8C94A" : colors.textSecondary}
+                color={userRating ? colors.ratingGold : colors.textSecondary}
               />
               <Text style={styles.ratingText}>
                 {userRating ? userRating.avg.toFixed(1) : "-"}

@@ -61,6 +61,9 @@ export default function ColorSelector({
               style={styles.swatchSlot}
               onPress={() => onSelectColor(option.value)}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={option.label}
+              accessibilityState={{ selected: isSelected }}
             >
               <View
                 style={[

@@ -17,7 +17,8 @@
         "home": "홈",
         "search": "검색",
         "myWine": "내 와인",
-        "profile": "프로필"
+        "profile": "프로필",
+        "scan": "와인 스캔"
     },
     "flavorAxes": {
         "acidity": "산도",
@@ -537,7 +538,9 @@
         },
         "starRating": {
             "score": "{{rating}}점",
-            "placeholder": "별점을 선택해주세요"
+            "placeholder": "별점을 선택해주세요",
+            "a11yLabel": "별점",
+            "a11yValue": "5점 만점에 {{rating}}점"
         },
         "tasteLevel": {
             "weak": "약함",
@@ -918,7 +921,8 @@
         },
         "wishlist": {
             "added": "위시리스트에 추가했어요",
-            "removed": "위시리스트에서 제거했어요"
+            "removed": "위시리스트에서 제거했어요",
+            "failed": "위시리스트 변경에 실패했어요. 다시 시도해 주세요."
         },
         "sortLabels": {
             "RED": "레드",

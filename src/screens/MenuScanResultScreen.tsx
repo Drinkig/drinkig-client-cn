@@ -23,6 +23,7 @@ import { incrementScanCount } from "./CameraScreen";
 import ScanFeedbackSheet from "../components/common/ScanFeedbackSheet";
 import GlassHeader from "../components/common/GlassHeader";
 import { addToWishlist, removeFromWishlist } from "../api/wine";
+import { getErrorMessageKey } from "../utils/apiError";
 
 // --- Types ------------------------------------------------------------------
 
@@ -193,6 +194,14 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           // nginx 등 게이트웨이 업로드 용량 제한 초과. "더 또렷하게 찍으세요"는
           // 오해를 부르므로 용량 문제임을 별도로 안내한다.
           msg = t("menuScanResult.error.tooLarge");
+        } else if (
+          !e?.response ||
+          e?.code === "ECONNABORTED" ||
+          status >= 500
+        ) {
+          // 오프라인/타임아웃/서버 오류를 "인식 실패"로 뭉개면 사용자가
+          // 사진 탓을 하며 재촬영을 반복하게 된다 (§7 413 사건과 동일 패턴)
+          msg = t(getErrorMessageKey(e));
         } else {
           msg = t(
             scanType === "label"
@@ -257,13 +266,14 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           showToast(t("menuScanResult.wishlist.added"));
         }
       } catch {
-        // Rollback
+        // Rollback — 무통보로 하트만 원복하면 "탭이 씹혔나?"로 읽히므로 안내
         setWishedIds((prev) => {
           const next = new Set(prev);
           if (wasWished) next.add(wine.wineId);
           else next.delete(wine.wineId);
           return next;
         });
+        showToast(t("menuScanResult.wishlist.failed"));
       }
     },
     [wishedIds, showToast, t]

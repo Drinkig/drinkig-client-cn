@@ -26,7 +26,10 @@ import { FlavorProfile } from "../components/onboarding/FlavorProfileStep";
 import AnalyzingRadarChart from "../components/common/AnalyzingRadarChart";
 import RollingCandidates from "../components/common/RollingCandidates";
 import { colors } from "../constants/colors";
-import { getWineTypeColor as getWineColor } from "../constants/wineColors";
+import {
+  getWineTypeColor as getWineColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 
 const RANK_BADGES = ["🥇", "🥈", "🥉"];
 
@@ -564,7 +567,7 @@ const styles = StyleSheet.create({
   wineTypeText: {
     fontSize: 10,
     fontWeight: "bold",
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
   },
   wineName: {
     fontSize: 16,

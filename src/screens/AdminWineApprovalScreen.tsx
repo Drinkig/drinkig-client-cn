@@ -16,7 +16,10 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
-import { getWineTypeColor as getTypeColor } from "../constants/wineColors";
+import {
+  getWineTypeColor as getTypeColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 import {
   WineRequestDTO,
   WineRequestStatus,
@@ -417,7 +420,7 @@ const styles = StyleSheet.create({
   sortBadgeText: {
     fontSize: 10,
     fontWeight: "bold",
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
   },
   cardMetaText: {
     fontSize: 12,

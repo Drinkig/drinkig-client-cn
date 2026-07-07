@@ -32,7 +32,7 @@ import { useExitGuard } from "../hooks/useExitGuard";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
 import GlassHeader from "../components/common/GlassHeader";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 
@@ -908,7 +908,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   typeChipText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 10,
     fontWeight: "bold",
   },

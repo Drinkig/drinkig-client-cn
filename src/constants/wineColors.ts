@@ -19,6 +19,10 @@ export const wineTypeColors = {
   default: "#95A5A6",
 } as const;
 
+// 타입 색상 배경 위에 얹는 텍스트 색 — 밝은 타입색(화이트/디저트 등) 위에서
+// 흰 텍스트는 최악 1.5:1로 판독 불가라 어두운 색으로 통일 (6종 전부 AA 통과).
+export const WINE_TYPE_ON_COLOR = "#1A191B";
+
 export function getWineTypeColor(type?: string | null): string {
   if (!type) return wineTypeColors.default;
   const t = type.toLowerCase();

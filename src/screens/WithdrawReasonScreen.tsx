@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -178,68 +180,74 @@ const WithdrawReasonScreen = () => {
         }
       />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.questionText}>
-          떠나시는 이유를 알려주세요.{"\n"}더 나은 서비스를 만드는 데 도움이
-          됩니다.
-        </Text>
-
-        <Text style={styles.subQuestionText}>(중복 선택 가능)</Text>
-
-        <View style={styles.reasonsContainer}>
-          {reasons.map((reason, index) => {
-            const isSelected = selectedReasons.includes(reason);
-            return (
-              <View key={index}>
-                <TouchableOpacity
-                  style={styles.reasonItem}
-                  onPress={() => toggleReason(reason)}
-                >
-                  <View
-                    style={[
-                      styles.checkbox,
-                      isSelected && styles.checkboxSelected,
-                    ]}
-                  >
-                    {isSelected && (
-                      <Icon name="checkmark" size={16} color={colors.white} />
-                    )}
-                  </View>
-                  <Text style={styles.reasonText}>{reason}</Text>
-                </TouchableOpacity>
-                {reason === "기타" && isSelected && (
-                  <TextInput
-                    style={styles.otherInput}
-                    placeholder="이유를 입력해주세요"
-                    placeholderTextColor={colors.textTertiary}
-                    multiline
-                    value={otherReason}
-                    onChangeText={setOtherReason}
-                  />
-                )}
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.withdrawButton,
-            (!selectedReasons.length ||
-              (selectedReasons.includes("기타") && !otherReason.trim())) &&
-              styles.withdrawButtonDisabled,
-          ]}
-          onPress={handleWithdraw}
-          disabled={
-            !selectedReasons.length ||
-            (selectedReasons.includes("기타") && !otherReason.trim())
-          }
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoiding}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.withdrawButtonText}>탈퇴하기</Text>
-        </TouchableOpacity>
-      </View>
+          <Text style={styles.questionText}>
+            떠나시는 이유를 알려주세요.{"\n"}더 나은 서비스를 만드는 데 도움이
+            됩니다.
+          </Text>
+
+          <Text style={styles.subQuestionText}>(중복 선택 가능)</Text>
+
+          <View style={styles.reasonsContainer}>
+            {reasons.map((reason, index) => {
+              const isSelected = selectedReasons.includes(reason);
+              return (
+                <View key={index}>
+                  <TouchableOpacity
+                    style={styles.reasonItem}
+                    onPress={() => toggleReason(reason)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        isSelected && styles.checkboxSelected,
+                      ]}
+                    >
+                      {isSelected && (
+                        <Icon name="checkmark" size={16} color={colors.white} />
+                      )}
+                    </View>
+                    <Text style={styles.reasonText}>{reason}</Text>
+                  </TouchableOpacity>
+                  {reason === "기타" && isSelected && (
+                    <TextInput
+                      style={styles.otherInput}
+                      placeholder="이유를 입력해주세요"
+                      placeholderTextColor={colors.textTertiary}
+                      multiline
+                      value={otherReason}
+                      onChangeText={setOtherReason}
+                    />
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={[
+              styles.withdrawButton,
+              selectedReasons.includes("기타") &&
+                !otherReason.trim() &&
+                styles.withdrawButtonDisabled,
+            ]}
+            onPress={handleWithdraw}
+            disabled={selectedReasons.includes("기타") && !otherReason.trim()}
+          >
+            <Text style={styles.withdrawButtonText}>탈퇴하기</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -248,6 +256,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  keyboardAvoiding: {
+    flex: 1,
   },
   content: {
     flex: 1,

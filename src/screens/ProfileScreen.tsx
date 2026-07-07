@@ -213,7 +213,7 @@ const ProfileScreen = () => {
         <Text style={styles.listNoteDate}>{item.tasteDate}</Text>
       </View>
       <View style={styles.listRatingBadge}>
-        <Icon name="star" size={12} color="#E8C94A" />
+        <Icon name="star" size={12} color={colors.ratingGold} />
         <Text style={styles.listRatingText}>{item.rating.toFixed(1)}</Text>
       </View>
     </TouchableOpacity>
@@ -248,7 +248,7 @@ const ProfileScreen = () => {
           </View>
         )}
         <View style={styles.cardRatingBadge}>
-          <Icon name="star" size={10} color="#E8C94A" />
+          <Icon name="star" size={10} color={colors.ratingGold} />
           <Text style={styles.cardRatingText}>{item.rating.toFixed(1)}</Text>
         </View>
       </View>

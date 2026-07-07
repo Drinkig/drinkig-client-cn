@@ -27,11 +27,11 @@ export default function MyRecordTab({ wine, features }: MyRecordTabProps) {
           <View style={styles.myRatingHeader}>
             <Text style={styles.myRatingDate}>{wine.purchaseDate || t('wineDetail.myRecord.noDate')}</Text>
             <View style={styles.ratingContainer}>
-              <Ionicons name="star" size={20} color="#f1c40f" />
-              <Ionicons name="star" size={20} color="#f1c40f" />
-              <Ionicons name="star" size={20} color="#f1c40f" />
-              <Ionicons name="star" size={20} color="#f1c40f" />
-              <Ionicons name="star-outline" size={20} color="#f1c40f" />
+              <Ionicons name="star" size={20} color={colors.ratingGold} />
+              <Ionicons name="star" size={20} color={colors.ratingGold} />
+              <Ionicons name="star" size={20} color={colors.ratingGold} />
+              <Ionicons name="star" size={20} color={colors.ratingGold} />
+              <Ionicons name="star-outline" size={20} color={colors.ratingGold} />
               <Text style={[styles.ratingText, { fontSize: 18, marginLeft: 4 }]}>4.0</Text>
             </View>
           </View>

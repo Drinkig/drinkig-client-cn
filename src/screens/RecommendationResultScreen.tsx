@@ -19,7 +19,7 @@ import {
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 
 const RecommendationResultScreen = () => {
   const navigation = useNavigation();
@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
   },
   typeChipText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 10,
     fontWeight: "800",
   },

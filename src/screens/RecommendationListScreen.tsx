@@ -15,7 +15,7 @@ import { useSubscription } from "../context/SubscriptionContext";
 import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 
 const COOLDOWN_DAYS = 7;
 const RANK_BADGES = ["🥇", "🥈", "🥉"];
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   typeText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 11,
     fontWeight: "bold",
   },

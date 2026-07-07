@@ -17,7 +17,8 @@
         "home": "Home",
         "search": "Search",
         "myWine": "My Wine",
-        "profile": "Profile"
+        "profile": "Profile",
+        "scan": "Scan Wine"
     },
     "flavorAxes": {
         "acidity": "Acidity",
@@ -537,7 +538,9 @@
         },
         "starRating": {
             "score": "{{rating}} pts",
-            "placeholder": "Please select a rating"
+            "placeholder": "Please select a rating",
+            "a11yLabel": "Rating",
+            "a11yValue": "{{rating}} out of 5 stars"
         },
         "tasteLevel": {
             "weak": "Weak",
@@ -918,7 +921,8 @@
         },
         "wishlist": {
             "added": "Added to wishlist",
-            "removed": "Removed from wishlist"
+            "removed": "Removed from wishlist",
+            "failed": "Couldn't update wishlist. Please try again."
         },
         "sortLabels": {
             "RED": "Red",

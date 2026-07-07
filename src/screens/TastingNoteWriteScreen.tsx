@@ -34,7 +34,7 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent, surfaces } from "../constants/theme";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import {
   saveDraft,
@@ -1113,7 +1113,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   typeChipText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 10,
     fontWeight: "bold",
   },

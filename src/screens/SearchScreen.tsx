@@ -28,7 +28,7 @@ import {
 } from "../api/wine";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
-import { getWineTypeColor } from "../constants/wineColors";
+import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   typeChipText: {
-    color: colors.white,
+    color: WINE_TYPE_ON_COLOR,
     fontSize: 10,
     fontWeight: "bold",
   },
