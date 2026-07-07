@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -161,7 +162,7 @@ const OnboardingScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { completeOnboarding } = useUser();
-  const { showToast } = useGlobalUI();
+  const { showToast, showAlert } = useGlobalUI();
   const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   const BUDGET_OPTIONS = [
@@ -437,8 +438,12 @@ const OnboardingScreen = () => {
           );
           console.log("✅ Profile image upload successful");
         } catch (e) {
-          console.error("❌ Profile image upload failed:", e);
-          throw e;
+          // 프로필 사진 업로드 실패가 온보딩 제출 전체를 막지 않게 한다.
+          // 사진은 나중에 프로필 수정에서 다시 등록할 수 있다.
+          console.warn("❌ Profile image upload failed (non-fatal):", e);
+          showToast(t("onboarding.error.imageUploadSkipped"), {
+            type: "info",
+          });
         }
       }
 
@@ -466,6 +471,12 @@ const OnboardingScreen = () => {
 
       await updateMemberInitInfo(requestData);
       console.log("✅ Member info update successful");
+
+      // 서버 저장 성공 — 결과 화면 도달 전에 앱이 종료돼도 온보딩을
+      // 처음부터 다시 시키지 않도록 완료 플래그를 남기고 드래프트를 지운다.
+      // (UserContext.checkLoginStatus가 이 플래그를 보고 온보딩을 건너뜀)
+      await AsyncStorage.setItem("onboardingSubmitted", "true");
+      await AsyncStorage.removeItem("onboardingDraft");
 
       setLoading(false);
       setAnalyzing(true);
@@ -626,6 +637,47 @@ const OnboardingScreen = () => {
       animateTransition(prev, "prev");
     }
   };
+
+  // 온보딩 진행 상태 영속화 — 12스텝 도중 앱이 종료돼도 이어서 할 수 있게 한다.
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem("onboardingDraft");
+        if (!raw) return;
+        const draft = JSON.parse(raw);
+        if (!draft?.step || draft.step === "INTRO") return;
+        showAlert({
+          title: t("onboarding.resume.title"),
+          message: t("onboarding.resume.message"),
+          singleButton: false,
+          confirmText: t("onboarding.resume.confirm"),
+          cancelText: t("onboarding.resume.restart"),
+          onConfirm: () => {
+            setFormData((prev) => ({ ...prev, ...draft.formData }));
+            setStep(draft.step);
+          },
+          onCancel: () => {
+            AsyncStorage.removeItem("onboardingDraft");
+          },
+        });
+      } catch (e) {
+        console.warn("Failed to restore onboarding draft", e);
+      }
+    })();
+    // Run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (step === "INTRO") return;
+    const timer = setTimeout(() => {
+      AsyncStorage.setItem(
+        "onboardingDraft",
+        JSON.stringify({ step, formData })
+      ).catch((e) => console.warn("Failed to save onboarding draft", e));
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [step, formData]);
 
   // Android 하드웨어 백버튼: 앱 종료(온보딩이 스택 루트) 대신 이전 스텝으로.
   // INTRO에서는 기본 동작(앱 종료)을 허용한다.

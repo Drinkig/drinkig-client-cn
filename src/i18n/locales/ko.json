@@ -851,7 +851,14 @@
         },
         "error": {
             "title": "오류",
-            "saveMessage": "정보 저장 중 문제가 발생했습니다."
+            "saveMessage": "정보 저장 중 문제가 발생했습니다.",
+            "imageUploadSkipped": "프로필 사진 등록에 실패했어요. 나중에 프로필 수정에서 다시 등록할 수 있어요."
+        },
+        "resume": {
+            "title": "이어서 할까요?",
+            "message": "진행 중이던 온보딩이 있어요.\n이어서 진행할 수 있어요.",
+            "confirm": "이어서 하기",
+            "restart": "처음부터"
         },
         "button": {
             "saving": "저장 중...",

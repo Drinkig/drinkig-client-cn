@@ -1,14 +1,18 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getMemberInfo, logout as apiLogout } from '../api/member';
-import { getOnboardingRecommendation } from '../api/wine';
-import client from '../api/client';
-import auth from '@react-native-firebase/auth';
-import { getAccessToken, saveTokens, clearTokens } from '../utils/tokenStorage';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  ReactNode,
+  useEffect,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getMemberInfo, logout as apiLogout } from "../api/member";
+import { getOnboardingRecommendation } from "../api/wine";
+import client from "../api/client";
+import auth from "@react-native-firebase/auth";
+import { getAccessToken, saveTokens, clearTokens } from "../utils/tokenStorage";
 
-
-import { FlavorProfile } from '../components/onboarding/FlavorProfileStep';
-
+import { FlavorProfile } from "../components/onboarding/FlavorProfileStep";
 
 export interface User {
   nickname: string;
@@ -27,7 +31,6 @@ export interface RecommendedWine {
   varietyEng?: string;
 }
 
-
 interface UserContextType {
   user: User | null;
   recommendations: RecommendedWine[];
@@ -35,7 +38,11 @@ interface UserContextType {
   isLoggedIn: boolean;
   isLoading: boolean;
   isNewUser: boolean;
-  login: (accessToken: string, refreshToken?: string, isFirst?: boolean) => Promise<void>;
+  login: (
+    accessToken: string,
+    refreshToken?: string,
+    isFirst?: boolean
+  ) => Promise<void>;
   loginGuest: () => void;
   logout: (skipServerLogout?: boolean) => Promise<void>;
   updateUser: (updates: Partial<User>) => void;
@@ -48,32 +55,45 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [recommendations, setRecommendationsState] = useState<RecommendedWine[]>([]);
-  const [flavorProfile, setFlavorProfileState] = useState<FlavorProfile | null>(null);
+  const [recommendations, setRecommendationsState] = useState<
+    RecommendedWine[]
+  >([]);
+  const [flavorProfile, setFlavorProfileState] = useState<FlavorProfile | null>(
+    null
+  );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
-
-
 
   // ...
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       const token = await getAccessToken();
-      const isNewUserStored = await AsyncStorage.getItem('isNewUser');
-      if (isNewUserStored === 'true') {
-        setIsNewUser(true);
+      const isNewUserStored = await AsyncStorage.getItem("isNewUser");
+      if (isNewUserStored === "true") {
+        // 온보딩 API 제출까지 마쳤지만 결과 화면 도달 전에 종료된 경우 —
+        // 온보딩을 다시 시키지 않고 완료 처리한다. (닉네임이 이미 서버에
+        // 등록돼 있어 재온보딩 시 "중복"으로 진행이 막히는 문제 방지)
+        const submitted = await AsyncStorage.getItem("onboardingSubmitted");
+        if (submitted === "true") {
+          await AsyncStorage.multiRemove([
+            "isNewUser",
+            "onboardingSubmitted",
+            "onboardingDraft",
+          ]);
+        } else {
+          setIsNewUser(true);
+        }
       }
 
       if (token) {
         try {
           await refreshUserInfo();
 
-          const savedRecs = await AsyncStorage.getItem('recommendations');
+          const savedRecs = await AsyncStorage.getItem("recommendations");
           if (savedRecs) {
             setRecommendationsState(JSON.parse(savedRecs));
           } else {
@@ -83,11 +103,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 setRecommendations(recResponse.result);
               }
             } catch (recError) {
-              console.warn('Failed to restore recommendations from server', recError);
+              console.warn(
+                "Failed to restore recommendations from server",
+                recError
+              );
             }
           }
         } catch (e: any) {
-          console.error('UserContext: Failed to refresh user info with token', e);
+          console.error(
+            "UserContext: Failed to refresh user info with token",
+            e
+          );
 
           if (e.response && e.response.status === 401) {
             await logout(true);
@@ -108,7 +134,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           // For now, let's just refresh.
           await refreshUserInfo();
         } catch (e) {
-          console.error('UserContext: Failed to fetch user profile', e);
+          console.error("UserContext: Failed to fetch user profile", e);
         }
       } else {
         // Check if we have a backend token before logging out
@@ -140,7 +166,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           authType: response.result.authType,
         });
 
-
         if (
           response.result.acidity !== undefined &&
           response.result.sweetness !== undefined &&
@@ -158,22 +183,26 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
       } else {
         // API 호출은 성공했지만 비즈니스 로직 실패 (예: 유저 없음)
-        throw new Error(response.message || 'Failed to fetch user info');
+        throw new Error(response.message || "Failed to fetch user info");
       }
     } catch (error) {
-      console.error('Failed to fetch user info:', error);
+      console.error("Failed to fetch user info:", error);
       throw error; // initAuth에서 잡아서 로그아웃 처리할 수 있도록 에러 전파
     }
   };
 
-  const login = async (accessToken: string, refreshToken?: string, isFirst: boolean = false) => {
+  const login = async (
+    accessToken: string,
+    refreshToken?: string,
+    isFirst: boolean = false
+  ) => {
     if (accessToken && refreshToken) {
       await saveTokens(accessToken, refreshToken);
     }
 
     if (isFirst) {
       setIsNewUser(true);
-      await AsyncStorage.setItem('isNewUser', 'true');
+      await AsyncStorage.setItem("isNewUser", "true");
     }
 
     setIsLoggedIn(true);
@@ -186,14 +215,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setRecommendations(recResponse.result);
       }
     } catch (recError) {
-      console.warn('Failed to fetch recommendations on login', recError);
+      console.warn("Failed to fetch recommendations on login", recError);
     }
   };
 
   const loginGuest = () => {
     setIsLoggedIn(true);
     setUser({
-      nickname: 'Guest',
+      nickname: "Guest",
       profileImage: null,
     });
   };
@@ -204,27 +233,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           await apiLogout();
         } catch (e) {
-          console.warn('Server logout failed:', e);
+          console.warn("Server logout failed:", e);
         }
       }
 
       try {
         await auth().signOut();
       } catch (e) {
-        console.warn('Firebase signOut failed (probably no user):', e);
+        console.warn("Firebase signOut failed (probably no user):", e);
       }
 
       await clearTokens();
 
-      await AsyncStorage.removeItem('recommendations');
-      await AsyncStorage.removeItem('flavorProfile');
+      await AsyncStorage.removeItem("recommendations");
+      await AsyncStorage.removeItem("flavorProfile");
 
       setUser(null);
       setRecommendationsState([]);
       setFlavorProfileState(null);
       setIsLoggedIn(false);
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
       // Ensure we clean up locally even if everything explodes
       await clearTokens();
       setIsLoggedIn(false);
@@ -233,15 +262,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const completeOnboarding = async () => {
     setIsNewUser(false);
-    await AsyncStorage.removeItem('isNewUser');
+    await AsyncStorage.multiRemove([
+      "isNewUser",
+      "onboardingSubmitted",
+      "onboardingDraft",
+    ]);
 
     refreshUserInfo();
   };
 
   const resetToOnboarding = async () => {
-    await AsyncStorage.setItem('isNewUser', 'true');
-    await AsyncStorage.removeItem('recommendations');
-    await AsyncStorage.removeItem('flavorProfile');
+    await AsyncStorage.setItem("isNewUser", "true");
+    // 이전 온보딩의 완료 플래그/드래프트가 남아있으면 재온보딩이 건너뛰어지므로 제거
+    await AsyncStorage.multiRemove(["onboardingSubmitted", "onboardingDraft"]);
+    await AsyncStorage.removeItem("recommendations");
+    await AsyncStorage.removeItem("flavorProfile");
     setRecommendationsState([]);
     setFlavorProfileState(null);
     setIsNewUser(true);
@@ -253,26 +288,43 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const setRecommendations = async (recs: RecommendedWine[]) => {
     setRecommendationsState(recs);
-    await AsyncStorage.setItem('recommendations', JSON.stringify(recs));
+    await AsyncStorage.setItem("recommendations", JSON.stringify(recs));
   };
 
   const setFlavorProfile = async (profile: FlavorProfile) => {
     setFlavorProfileState(profile);
-    await AsyncStorage.setItem('flavorProfile', JSON.stringify(profile));
+    await AsyncStorage.setItem("flavorProfile", JSON.stringify(profile));
   };
 
   return (
-    <UserContext.Provider value={{ user, recommendations, flavorProfile, isLoggedIn, isLoading, isNewUser, login, loginGuest, logout, updateUser, setRecommendations, setFlavorProfile, refreshUserInfo, completeOnboarding, resetToOnboarding }}>
+    <UserContext.Provider
+      value={{
+        user,
+        recommendations,
+        flavorProfile,
+        isLoggedIn,
+        isLoading,
+        isNewUser,
+        login,
+        loginGuest,
+        logout,
+        updateUser,
+        setRecommendations,
+        setFlavorProfile,
+        refreshUserInfo,
+        completeOnboarding,
+        resetToOnboarding,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
 };
 
-
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error('useUser must be used within a UserProvider');
+    throw new Error("useUser must be used within a UserProvider");
   }
   return context;
 };

@@ -851,7 +851,14 @@
         },
         "error": {
             "title": "Error",
-            "saveMessage": "A problem occurred while saving your information."
+            "saveMessage": "A problem occurred while saving your information.",
+            "imageUploadSkipped": "Couldn't upload your profile photo. You can add it later in profile settings."
+        },
+        "resume": {
+            "title": "Pick up where you left off?",
+            "message": "You have onboarding in progress.\nYou can continue from where you stopped.",
+            "confirm": "Continue",
+            "restart": "Start Over"
         },
         "button": {
             "saving": "Saving...",
