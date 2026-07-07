@@ -42,13 +42,29 @@ const WithdrawReasonScreen = () => {
   const [selectedReasons, setSelectedReasons] = useState<string[]>([]);
   const [otherReason, setOtherReason] = useState<string>("");
 
+  // value는 서버로 전송되는 원문(한국어) — 변경 금지. 화면 표시는 labelKey로 번역.
   const reasons = [
-    "앱을 자주 사용하지 않아요",
-    "원하는 정보가 부족해요",
-    "오류가 잦아요",
-    "다른 서비스를 이용할래요",
-    "새 계정을 만들고 싶어요",
-    "기타",
+    {
+      value: "앱을 자주 사용하지 않아요",
+      labelKey: "withdraw.reason.reasons.notOften",
+    },
+    {
+      value: "원하는 정보가 부족해요",
+      labelKey: "withdraw.reason.reasons.lackOfInfo",
+    },
+    {
+      value: "오류가 잦아요",
+      labelKey: "withdraw.reason.reasons.frequentBugs",
+    },
+    {
+      value: "다른 서비스를 이용할래요",
+      labelKey: "withdraw.reason.reasons.otherService",
+    },
+    {
+      value: "새 계정을 만들고 싶어요",
+      labelKey: "withdraw.reason.reasons.newAccount",
+    },
+    { value: "기타", labelKey: "withdraw.reason.reasons.other" },
   ];
 
   const toggleReason = (reason: string) => {
@@ -62,21 +78,17 @@ const WithdrawReasonScreen = () => {
   };
 
   const handleWithdraw = () => {
-    if (selectedReasons.length === 0) {
-      showToast("탈퇴 사유를 하나 이상 선택해주세요.", { type: "info" });
-      return;
-    }
-
+    // 탈퇴 사유는 선택 사항 — 미선택도 진행 가능 (Apple 5.1.1(v) 관점)
     if (selectedReasons.includes("기타") && !otherReason.trim()) {
-      showToast("기타 사유를 입력해주세요.", { type: "info" });
+      showToast(t("withdraw.reason.toastEnterOtherReason"), { type: "info" });
       return;
     }
 
     const confirmWithdrawal = () => {
       showAlert({
-        title: "회원 탈퇴",
-        message: "정말 탈퇴하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.",
-        confirmText: "탈퇴하기",
+        title: t("withdraw.reason.confirmTitle"),
+        message: t("withdraw.reason.confirmMessage"),
+        confirmText: t("withdraw.reason.confirmButton"),
         singleButton: false,
         onConfirm: () => {
           closeAlert();
@@ -127,13 +139,18 @@ const WithdrawReasonScreen = () => {
         if (response.isSuccess) {
           logout(true);
         } else {
-          showToast(`회원 탈퇴 실패: ${response.message}`, { type: "error" });
+          showToast(
+            t("withdraw.reason.toastWithdrawFailed", {
+              message: response.message,
+            }),
+            { type: "error" }
+          );
         }
       }
     } catch (error: any) {
       hideLoading();
       console.error("Delete member error:", error);
-      showToast("회원 탈퇴 처리 중 문제가 발생했습니다.", { type: "error" });
+      showToast(t("withdraw.reason.toastWithdrawError"), { type: "error" });
     }
   };
 
@@ -152,15 +169,23 @@ const WithdrawReasonScreen = () => {
       if (response.isSuccess) {
         logout(true);
       } else {
-        showToast(`회원 탈퇴 실패: ${response.message}`, { type: "error" });
+        showToast(
+          t("withdraw.reason.toastWithdrawFailed", {
+            message: response.message,
+          }),
+          { type: "error" }
+        );
       }
     } catch (error: any) {
       hideLoading();
       if (error.code === appleAuth.Error.CANCELED) return;
       console.error("Apple delete member error:", error);
-      showToast(`Apple 인증/탈퇴 실패: ${error.message || "알 수 없는 오류"}`, {
-        type: "error",
-      });
+      showToast(
+        t("withdraw.reason.toastAppleFailed", {
+          message: error.message || t("withdraw.reason.unknownError"),
+        }),
+        { type: "error" }
+      );
       throw error;
     }
   };
@@ -169,7 +194,7 @@ const WithdrawReasonScreen = () => {
     <SafeAreaView style={styles.container}>
       <GlassHeader
         floating={false}
-        title="회원 탈퇴"
+        title={t("withdraw.reason.headerTitle")}
         left={
           <TouchableOpacity
             onPress={() => navigation.goBack()}
@@ -190,20 +215,21 @@ const WithdrawReasonScreen = () => {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.questionText}>
-            떠나시는 이유를 알려주세요.{"\n"}더 나은 서비스를 만드는 데 도움이
-            됩니다.
+            {t("withdraw.reason.question")}
           </Text>
 
-          <Text style={styles.subQuestionText}>(중복 선택 가능)</Text>
+          <Text style={styles.subQuestionText}>
+            {t("withdraw.reason.multiSelectHint")}
+          </Text>
 
           <View style={styles.reasonsContainer}>
             {reasons.map((reason, index) => {
-              const isSelected = selectedReasons.includes(reason);
+              const isSelected = selectedReasons.includes(reason.value);
               return (
                 <View key={index}>
                   <TouchableOpacity
                     style={styles.reasonItem}
-                    onPress={() => toggleReason(reason)}
+                    onPress={() => toggleReason(reason.value)}
                   >
                     <View
                       style={[
@@ -215,12 +241,12 @@ const WithdrawReasonScreen = () => {
                         <Icon name="checkmark" size={16} color={colors.white} />
                       )}
                     </View>
-                    <Text style={styles.reasonText}>{reason}</Text>
+                    <Text style={styles.reasonText}>{t(reason.labelKey)}</Text>
                   </TouchableOpacity>
-                  {reason === "기타" && isSelected && (
+                  {reason.value === "기타" && isSelected && (
                     <TextInput
                       style={styles.otherInput}
-                      placeholder="이유를 입력해주세요"
+                      placeholder={t("withdraw.reason.otherPlaceholder")}
                       placeholderTextColor={colors.textTertiary}
                       multiline
                       value={otherReason}
@@ -244,7 +270,9 @@ const WithdrawReasonScreen = () => {
             onPress={handleWithdraw}
             disabled={selectedReasons.includes("기타") && !otherReason.trim()}
           >
-            <Text style={styles.withdrawButtonText}>탈퇴하기</Text>
+            <Text style={styles.withdrawButtonText}>
+              {t("withdraw.reason.withdrawButton")}
+            </Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

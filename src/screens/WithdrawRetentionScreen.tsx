@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
 
 type WithdrawRetentionRouteProp = RouteProp<
@@ -15,6 +16,7 @@ const WithdrawRetentionScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<WithdrawRetentionRouteProp>();
   const { authType } = route.params;
+  const { t } = useTranslation();
 
   const handleStay = () => {
     navigation.goBack();
@@ -32,18 +34,20 @@ const WithdrawRetentionScreen = () => {
           style={styles.image}
           resizeMode="contain"
         />
-        <Text style={styles.title}>잠시만요!{"\n"}정말 떠나시나요?</Text>
-        <Text style={styles.subtitle}>
-          지금 탈퇴하시면{"\n"}드링키지와 함께한 추억이 모두 사라져요...
-        </Text>
+        <Text style={styles.title}>{t("withdraw.retention.title")}</Text>
+        <Text style={styles.subtitle}>{t("withdraw.retention.subtitle")}</Text>
       </View>
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.stayButton} onPress={handleStay}>
-          <Text style={styles.stayButtonText}>다음에 하기</Text>
+          <Text style={styles.stayButtonText}>
+            {t("withdraw.retention.stay")}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.leaveButton} onPress={handleLeave}>
-          <Text style={styles.leaveButtonText}>탈퇴할래요</Text>
+          <Text style={styles.leaveButtonText}>
+            {t("withdraw.retention.leave")}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

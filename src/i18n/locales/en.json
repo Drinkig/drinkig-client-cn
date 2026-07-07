@@ -1,6 +1,7 @@
 {
     "common": {
         "cancel": "Cancel",
+        "confirm": "OK",
         "close": "Close",
         "back": "Back",
         "retry": "Try Again",
@@ -70,6 +71,7 @@
     "sommelierChat": {
         "headerTitle": "Sommelier Drinky",
         "headerSubtitle": "Online",
+        "empty": "No recommendations found 😢",
         "greeting": "Hi {{nickname}}! What are you planning to eat with your wine today?",
         "askSub": "Which type sounds good?",
         "askFood": "Nice choice! Which {{cuisine}} dish specifically?",
@@ -1351,7 +1353,36 @@
         "subscriptionNoticeTitle": "About Your Subscription",
         "subscriptionNoticeMessage": "Deleting your account does not cancel your App Store subscription.\n\nTo avoid being charged, please cancel your subscription in the App Store first.",
         "subscriptionNoticeManage": "Manage Subscription",
-        "subscriptionNoticeContinue": "Continue"
+        "subscriptionNoticeContinue": "Continue",
+        "retention": {
+            "title": "Wait!\nAre you really leaving?",
+            "subtitle": "If you leave now,\nall your memories with Drinkig will disappear...",
+            "stay": "Maybe Later",
+            "leave": "I Want to Leave"
+        },
+        "reason": {
+            "headerTitle": "Delete Account",
+            "question": "Please tell us why you're leaving.\nIt helps us build a better service.",
+            "multiSelectHint": "(Select all that apply)",
+            "reasons": {
+                "notOften": "I don't use the app often",
+                "lackOfInfo": "It lacks the information I want",
+                "frequentBugs": "Too many bugs",
+                "otherService": "I'll use another service",
+                "newAccount": "I want to create a new account",
+                "other": "Other"
+            },
+            "otherPlaceholder": "Please tell us why",
+            "withdrawButton": "Delete Account",
+            "toastEnterOtherReason": "Please enter your reason.",
+            "confirmTitle": "Delete Account",
+            "confirmMessage": "Are you sure you want to delete your account?\nDeleted accounts cannot be recovered.",
+            "confirmButton": "Delete",
+            "toastWithdrawFailed": "Failed to delete account: {{message}}",
+            "toastWithdrawError": "Something went wrong while deleting your account.",
+            "toastAppleFailed": "Apple authentication/deletion failed: {{message}}",
+            "unknownError": "Unknown error"
+        }
     },
     "subscription": {
         "title": "Subscription",

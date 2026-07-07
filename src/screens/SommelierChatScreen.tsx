@@ -1002,7 +1002,7 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
               })}
             </View>
           ) : (
-            <Text style={styles.winesEmpty}>추천 결과가 없어요 😢</Text>
+            <Text style={styles.winesEmpty}>{t("sommelierChat.empty")}</Text>
           )}
         </View>
       </Animated.View>

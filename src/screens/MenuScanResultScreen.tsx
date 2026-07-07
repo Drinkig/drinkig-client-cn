@@ -158,6 +158,8 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
   useEffect(() => {
     let cancelled = false;
     let feedbackTimer: ReturnType<typeof setTimeout> | null = null;
+    // 사용자가 로딩 중 화면을 떠나면 최대 60초짜리 업로드/OCR 요청도 끊는다
+    const abortController = new AbortController();
     const scanMenu = async () => {
       try {
         const formData = new FormData();
@@ -176,6 +178,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
               "Content-Type": "multipart/form-data",
             },
             timeout: 60000,
+            signal: abortController.signal,
           }
         );
 
@@ -223,6 +226,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     scanMenu();
     return () => {
       cancelled = true;
+      abortController.abort();
       if (feedbackTimer) clearTimeout(feedbackTimer);
     };
   }, [imageUri, scanType, t, fadeAnim]);

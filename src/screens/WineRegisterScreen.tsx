@@ -82,7 +82,7 @@ const WineRegisterScreen = () => {
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["취소", cameraOption, galleryOption],
+          options: [t("common.cancel"), cameraOption, galleryOption],
           cancelButtonIndex: 0,
         },
         (idx) => {
@@ -94,7 +94,7 @@ const WineRegisterScreen = () => {
       Alert.alert(t("wineRegister.image.label"), undefined, [
         { text: cameraOption, onPress: openCamera },
         { text: galleryOption, onPress: openGallery },
-        { text: "취소", style: "cancel" },
+        { text: t("common.cancel"), style: "cancel" },
       ]);
     }
   };
@@ -152,7 +152,7 @@ const WineRegisterScreen = () => {
           t("wineRegister.alert.successMsg"),
           [
             {
-              text: "OK",
+              text: t("common.confirm"),
               onPress: () => {
                 navigation.goBack();
               },

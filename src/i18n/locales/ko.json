@@ -1,6 +1,7 @@
 {
     "common": {
         "cancel": "취소",
+        "confirm": "확인",
         "close": "닫기",
         "back": "뒤로",
         "retry": "다시 시도",
@@ -70,6 +71,7 @@
     "sommelierChat": {
         "headerTitle": "소믈리에 드링키",
         "headerSubtitle": "온라인",
+        "empty": "추천 결과가 없어요 😢",
         "greeting": "안녕하세요 {{nickname}}님! 오늘은 어떤 요리와 함께 와인을 드시나요?",
         "askSub": "어떤 종류로 할까요?",
         "askFood": "{{cuisine}} 중에서도 어떤 메뉴인가요?",
@@ -1351,7 +1353,36 @@
         "subscriptionNoticeTitle": "구독 해지 안내",
         "subscriptionNoticeMessage": "계정을 삭제해도 App Store 구독은 자동으로 해지되지 않아요.\n\n과금이 계속되지 않도록 App Store에서 구독을 먼저 해지해 주세요.",
         "subscriptionNoticeManage": "구독 관리 열기",
-        "subscriptionNoticeContinue": "계속 진행"
+        "subscriptionNoticeContinue": "계속 진행",
+        "retention": {
+            "title": "잠시만요!\n정말 떠나시나요?",
+            "subtitle": "지금 탈퇴하시면\n드링키지와 함께한 추억이 모두 사라져요...",
+            "stay": "다음에 하기",
+            "leave": "탈퇴할래요"
+        },
+        "reason": {
+            "headerTitle": "회원 탈퇴",
+            "question": "떠나시는 이유를 알려주세요.\n더 나은 서비스를 만드는 데 도움이 됩니다.",
+            "multiSelectHint": "(중복 선택 가능)",
+            "reasons": {
+                "notOften": "앱을 자주 사용하지 않아요",
+                "lackOfInfo": "원하는 정보가 부족해요",
+                "frequentBugs": "오류가 잦아요",
+                "otherService": "다른 서비스를 이용할래요",
+                "newAccount": "새 계정을 만들고 싶어요",
+                "other": "기타"
+            },
+            "otherPlaceholder": "이유를 입력해주세요",
+            "withdrawButton": "탈퇴하기",
+            "toastEnterOtherReason": "기타 사유를 입력해주세요.",
+            "confirmTitle": "회원 탈퇴",
+            "confirmMessage": "정말 탈퇴하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.",
+            "confirmButton": "탈퇴하기",
+            "toastWithdrawFailed": "회원 탈퇴 실패: {{message}}",
+            "toastWithdrawError": "회원 탈퇴 처리 중 문제가 발생했습니다.",
+            "toastAppleFailed": "Apple 인증/탈퇴 실패: {{message}}",
+            "unknownError": "알 수 없는 오류"
+        }
     },
     "subscription": {
         "title": "구독",
