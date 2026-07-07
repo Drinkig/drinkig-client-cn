@@ -1,8 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useEffect, useState } from "react";
 import { useUser } from "../context/UserContext";
-import FoodPairingResultScreen from "../screens/FoodPairingResultScreen";
-import FoodSelectionScreen from "../screens/FoodSelectionScreen";
 import SommelierChatScreen from "../screens/SommelierChatScreen";
 import LoginScreen from "../screens/LoginScreen";
 import MyWineDetailScreen from "../screens/MyWineDetailScreen";
@@ -12,7 +10,6 @@ import ProfileEditScreen from "../screens/ProfileEditScreen";
 import RecommendationListScreen from "../screens/RecommendationListScreen";
 import RecommendationResultScreen from "../screens/RecommendationResultScreen";
 import SearchResultScreen from "../screens/SearchResultScreen";
-import SearchScreen from "../screens/SearchScreen";
 import SettingScreen from "../screens/SettingScreen";
 import TasteResetScreen from "../screens/TasteResetScreen";
 import SplashScreen from "../screens/SplashScreen";
@@ -86,7 +83,6 @@ export default function RootNavigator() {
               component={RecommendationListScreen}
             />
             <Stack.Screen name="SearchResult" component={SearchResultScreen} />
-            <Stack.Screen name="WineSearch" component={SearchScreen} />
             <Stack.Screen name="Wishlist" component={WishlistScreen} />
             <Stack.Screen
               name="TastingNoteWrite"
@@ -107,24 +103,12 @@ export default function RootNavigator() {
 
             {/* Food Pairing Flow */}
             <Stack.Screen
-              name="FoodSelection"
-              component={FoodSelectionScreen}
-            />
-            <Stack.Screen
               name="SommelierChat"
               component={SommelierChatScreen}
               options={{
                 animation: "fade",
                 animationDuration: 200,
               }}
-            />
-            <Stack.Screen
-              name="FoodPairingResult"
-              component={FoodPairingResultScreen}
-            />
-            <Stack.Screen
-              name="WineCompatibility"
-              component={require("../screens/WineCompatibilityScreen").default}
             />
             <Stack.Screen
               name="Paywall"

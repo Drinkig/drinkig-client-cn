@@ -13,6 +13,11 @@
             "generic": "문제가 발생했어요. 잠시 후 다시 시도해 주세요."
         }
     },
+    "photoOptions": {
+        "title": "프로필 사진 설정",
+        "selectLibrary": "라이브러리에서 선택",
+        "resetToDefault": "기본 이미지로 변경"
+    },
     "tab": {
         "home": "홈",
         "search": "검색",

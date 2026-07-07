@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -141,19 +141,21 @@ const RecommendationListScreen = () => {
                     </View>
                   </View>
 
-                  <Text style={styles.wineVariety}>
+                  <Text style={styles.wineVariety} numberOfLines={2}>
                     {i18n.language === "en"
                       ? item.varietyEng || item.variety
                       : item.variety}
                   </Text>
                   {item.varietyEng && i18n.language !== "en" && (
-                    <Text style={styles.wineVarietyEng}>{item.varietyEng}</Text>
+                    <Text style={styles.wineVarietyEng} numberOfLines={1}>
+                      {item.varietyEng}
+                    </Text>
                   )}
 
                   <View style={{ height: 4 }} />
 
                   {i18n.language === "en" ? (
-                    <Text style={styles.wineRegionEng}>
+                    <Text style={styles.wineRegionEng} numberOfLines={1}>
                       {item.countryEng || item.country}
                       {(item.countryEng || item.country) &&
                       (item.regionEng || item.region)
@@ -163,11 +165,11 @@ const RecommendationListScreen = () => {
                     </Text>
                   ) : (
                     <>
-                      <Text style={styles.wineRegion}>
+                      <Text style={styles.wineRegion} numberOfLines={1}>
                         {item.country} · {item.region}
                       </Text>
                       {(item.countryEng || item.regionEng) && (
-                        <Text style={styles.wineRegionEng}>
+                        <Text style={styles.wineRegionEng} numberOfLines={1}>
                           {item.countryEng || ""}
                           {item.countryEng && item.regionEng ? " · " : ""}
                           {item.regionEng || ""}

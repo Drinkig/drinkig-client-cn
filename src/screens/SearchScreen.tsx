@@ -40,9 +40,7 @@ import {
 } from "../utils/compatibility";
 import { useSubscription } from "../context/SubscriptionContext";
 
-type SearchScreenRouteProp =
-  | RouteProp<RootStackParamList, "Search">
-  | RouteProp<RootStackParamList, "WineSearch">;
+type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
 
 // Module-level cache to avoid re-fetching across re-renders
 const scoreCache: { [wineId: number]: number | null } = {};
@@ -302,12 +300,8 @@ export default function SearchScreen() {
 
       <View style={styles.headerContainer}>
         <View style={styles.headerPill}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Icon name="arrow-back" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
+          {/* 탭 루트라 뒤로 갈 곳이 없음 — back 화살표를 없애고 검색바만 노출.
+              autoFocus도 제거: 탭 전환마다 키보드가 강제로 올라오던 문제. */}
           <View style={styles.searchBarContainer}>
             <Icon
               name="search"
@@ -322,12 +316,14 @@ export default function SearchScreen() {
               value={searchText}
               onChangeText={setSearchText}
               onSubmitEditing={handleSearchSubmit}
-              autoFocus={true}
             />
             {searchText.length > 0 && (
               <TouchableOpacity
                 onPress={() => setSearchText("")}
                 style={styles.clearButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("common.close")}
               >
                 <Icon
                   name="close-circle"

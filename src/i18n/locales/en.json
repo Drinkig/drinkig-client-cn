@@ -13,6 +13,11 @@
             "generic": "Something went wrong. Please try again shortly."
         }
     },
+    "photoOptions": {
+        "title": "Profile Photo",
+        "selectLibrary": "Choose from Library",
+        "resetToDefault": "Use Default Image"
+    },
     "tab": {
         "home": "Home",
         "search": "Search",

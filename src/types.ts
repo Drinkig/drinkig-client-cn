@@ -17,7 +17,6 @@ export type RootStackParamList = {
   Notification: undefined;
   Wishlist: undefined;
   Search: { returnScreen?: keyof RootStackParamList } | undefined;
-  WineSearch: { returnScreen?: keyof RootStackParamList } | undefined;
   SearchResult: {
     searchKeyword: string;
     returnScreen?: keyof RootStackParamList;
@@ -35,11 +34,16 @@ export type RootStackParamList = {
   TastingNoteDetail: { tastingNoteId: number };
   WithdrawRetention: { authType: string };
   WithdrawReason: { authType: string };
-  FoodSelection: undefined;
   SommelierChat: undefined;
-  FoodPairingResult: { foodName?: string };
-  WineCompatibility: { userProfile: any; wineStats: any; wineName?: string };
+  RecommendationList:
+    | { flavorProfile?: any; nickname?: string; fromReset?: boolean }
+    | undefined;
+  Paywall: undefined;
   PremiumWelcome: undefined;
+  WineRegister: undefined;
+  AdminWineApproval: undefined;
+  Camera: { scanType?: "label" | "list" } | undefined;
+  MenuScanResult: { imageUri: string; scanType?: "label" | "list" };
 };
 
 declare global {

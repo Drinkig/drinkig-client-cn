@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { colors } from '../../constants/colors';
+import { colors } from "../../constants/colors";
 
 interface PhotoOptionsBottomSheetProps {
   visible: boolean;
@@ -24,6 +26,8 @@ const PhotoOptionsBottomSheet = ({
   onDelete,
   hasProfileImage,
 }: PhotoOptionsBottomSheetProps) => {
+  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [isVisible, setIsVisible] = useState(visible);
   const animation = useRef(new Animated.Value(0)).current;
 
@@ -65,10 +69,15 @@ const PhotoOptionsBottomSheet = ({
       </Animated.View>
 
       <Animated.View
-        style={[styles.sheetContainer, { transform: [{ translateY }] }]}
+        style={[
+          styles.sheetContainer,
+          // 홈 인디케이터/제스처 영역과 겹치지 않게 하단 inset 반영
+          { paddingBottom: 20 + insets.bottom },
+          { transform: [{ translateY }] },
+        ]}
       >
         <View style={styles.header}>
-          <Text style={styles.title}>프로필 사진 설정</Text>
+          <Text style={styles.title}>{t("photoOptions.title")}</Text>
         </View>
 
         <View style={styles.optionsContainer}>
@@ -87,7 +96,9 @@ const PhotoOptionsBottomSheet = ({
               color={colors.white}
               style={styles.icon}
             />
-            <Text style={styles.optionText}>라이브러리에서 선택</Text>
+            <Text style={styles.optionText}>
+              {t("photoOptions.selectLibrary")}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -106,7 +117,7 @@ const PhotoOptionsBottomSheet = ({
             <Ionicons
               name="trash-outline"
               size={24}
-              color={hasProfileImage ? colors.error : "#666"}
+              color={hasProfileImage ? colors.error : colors.textTertiary}
               style={styles.icon}
             />
             <Text
@@ -116,13 +127,13 @@ const PhotoOptionsBottomSheet = ({
                 !hasProfileImage && styles.disabledText,
               ]}
             >
-              기본 이미지로 변경
+              {t("photoOptions.resetToDefault")}
             </Text>
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-          <Text style={styles.cancelButtonText}>취소</Text>
+          <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -186,7 +197,7 @@ const styles = StyleSheet.create({
     color: colors.error,
   },
   disabledText: {
-    color: "#666",
+    color: colors.textTertiary,
   },
   cancelButton: {
     backgroundColor: colors.border,

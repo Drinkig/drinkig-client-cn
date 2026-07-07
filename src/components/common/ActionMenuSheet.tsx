@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { colors } from "../../constants/colors";
 import { spacing, radius, surfaces } from "../../constants/theme";
@@ -34,6 +35,7 @@ const ActionMenuSheet = ({
   actions,
   cancelLabel,
 }: ActionMenuSheetProps) => {
+  const insets = useSafeAreaInsets();
   const [isVisible, setIsVisible] = useState(visible);
   const animation = useRef(new Animated.Value(0)).current;
 
@@ -71,7 +73,14 @@ const ActionMenuSheet = ({
         <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
-      <Animated.View style={[styles.sheet, { transform: [{ translateY }] }]}>
+      <Animated.View
+        style={[
+          styles.sheet,
+          // 홈 인디케이터/제스처 영역과 겹치지 않게 하단 inset 반영
+          { paddingBottom: spacing.xxl + insets.bottom },
+          { transform: [{ translateY }] },
+        ]}
+      >
         <View style={styles.actions}>
           {actions.map((action, index) => (
             <TouchableOpacity
