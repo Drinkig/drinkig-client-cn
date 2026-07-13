@@ -15,7 +15,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Svg, { Circle } from "react-native-svg";
 import { colors } from "../constants/colors";
-import { radius, accent } from "../constants/theme";
+import { radius, accent, surfaces } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
 import client from "../api/client";
 import { useTranslation } from "react-i18next";
@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 64,
     borderRadius: 8,
-    backgroundColor: colors.surface2,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14,
@@ -696,8 +696,8 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   wineImage: {
-    width: "85%",
-    height: "90%",
+    width: "100%",
+    height: "100%",
   },
   wineInfo: {
     flex: 1,

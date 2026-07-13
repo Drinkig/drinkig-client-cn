@@ -393,14 +393,13 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginRight: spacing.lg,
-    width: 80,
-    height: 120,
+    width: 90,
+    height: 130,
     borderRadius: radius.sm,
     overflow: "hidden",
-    backgroundColor: surfaces.raised,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
-    padding: spacing.xs,
   },
   wineImage: {
     width: "100%",

@@ -371,12 +371,11 @@ const styles = StyleSheet.create({
     height: 128,
     borderRadius: radius.sm,
     overflow: "hidden",
-    backgroundColor: surfaces.card,
+    backgroundColor: surfaces.imageWell,
     borderWidth: 1,
     borderColor: surfaces.hairline,
     justifyContent: "center",
     alignItems: "center",
-    padding: spacing.sm,
   },
   heroImage: {
     width: "100%",

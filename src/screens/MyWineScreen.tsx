@@ -23,6 +23,7 @@ import {
   searchWinesPublic,
 } from "../api/wine";
 import { colors } from "../constants/colors";
+import { surfaces } from "../constants/theme";
 import { useTranslation, Trans } from "react-i18next";
 import ListStateView from "../components/common/ListStateView";
 import { getErrorMessageKey } from "../utils/apiError";
@@ -678,7 +679,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 70,
     borderRadius: 8,
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
@@ -724,10 +725,9 @@ const styles = StyleSheet.create({
   cardImageContainer: {
     width: "100%",
     aspectRatio: 1,
-    backgroundColor: colors.border,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
-    padding: 10,
   },
   cardPeriodBadge: {
     position: "absolute",

@@ -146,14 +146,14 @@ const styles = StyleSheet.create({
   },
   wineImageContainer: {
     height: 140,
-    backgroundColor: surfaces.raised,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
   },
   wineImage: {
-    width: "65%",
-    height: "85%",
+    width: "100%",
+    height: "100%",
   },
   wineInfo: {
     padding: spacing.md,

@@ -48,7 +48,7 @@ const RecommendedWinesScreen = () => {
             resizeMode="contain"
           />
         ) : (
-          <Icon name="wine" size={26} color={colors.textTertiary} />
+          <Icon name="wine" size={26} color={surfaces.onImageWell} />
         )}
       </View>
       <View style={styles.wineTextContainer}>
@@ -155,15 +155,15 @@ const styles = StyleSheet.create({
     width: 56,
     height: 70,
     borderRadius: radius.sm,
-    backgroundColor: surfaces.raised,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
     marginRight: spacing.lg,
     overflow: "hidden",
   },
   wineImage: {
-    width: "85%",
-    height: "85%",
+    width: "100%",
+    height: "100%",
   },
   wineTextContainer: {
     flex: 1,

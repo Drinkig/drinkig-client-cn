@@ -1171,10 +1171,10 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   imageContainer: {
-    width: 110,
-    height: 140,
+    width: 120,
+    height: 150,
     borderRadius: radius.sm,
-    backgroundColor: surfaces.card,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",

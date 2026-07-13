@@ -84,7 +84,7 @@ export const RecentReviewsSection = () => {
               <Image
                 source={{ uri: review.wineImageUrl }}
                 style={styles.image}
-                resizeMode="cover"
+                resizeMode="contain"
               />
               <View style={styles.rating}>
                 <Icon name="star" size={11} color={accent.base} />
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   imageWrap: {
     width: "100%",
     height: 132,
-    backgroundColor: surfaces.raised,
+    backgroundColor: surfaces.imageWell,
   },
   image: {
     width: "100%",

@@ -31,6 +31,7 @@ import CalendarModal from "../components/tasting_note/CalendarModal";
 import { useExitGuard } from "../hooks/useExitGuard";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
+import { surfaces } from "../constants/theme";
 import GlassHeader from "../components/common/GlassHeader";
 import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
@@ -872,15 +873,15 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 8,
-    backgroundColor: colors.surface1,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
     overflow: "hidden",
   },
   resultImage: {
-    width: "85%",
-    height: "85%",
+    width: "100%",
+    height: "100%",
   },
   resultTextContainer: {
     flex: 1,

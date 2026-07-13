@@ -34,6 +34,11 @@ export const surfaces = {
   card: "#242327", // card / tile surface
   hairline: "rgba(255,255,255,0.08)", // 1px separators & borders
   hairlineStrong: "rgba(255,255,255,0.12)",
+  // 와인 이미지 전용 밝은 표면. 데이터셋 이미지가 흰 배경의 라벨 위주라
+  // 다크 표면 위에서는 흰 사각형이 뜬 것처럼 보임 — 웰 자체를 흰색으로
+  // 맞춰 이미지와 배경이 이어져 보이게 한다. 폴백 아이콘은 onImageWell 사용.
+  imageWell: "#FFFFFF",
+  onImageWell: "#9C9BA1", // fallback icons/placeholders on the white well
 } as const;
 
 // Vivid violet accent with explicit emphasis tiers. The old #B98CE6 lavender

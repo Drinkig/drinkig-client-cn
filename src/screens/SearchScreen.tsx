@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -21,43 +21,25 @@ import {
 } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WineDBItem } from "../types/Wine";
-import {
-  searchWinesPublic,
-  getWineDetailPublic,
-  WineUserDTO,
-} from "../api/wine";
+import { searchWinesPublic, WineUserDTO } from "../api/wine";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import { getWineTypeColor } from "../constants/wineColors";
+import HighlightedText from "../components/common/HighlightedText";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
 import { getErrorMessageKey } from "../utils/apiError";
-import { useUser } from "../context/UserContext";
-import {
-  calculateCompatibilityScore,
-  getScoreColor,
-} from "../utils/compatibility";
-import { useSubscription } from "../context/SubscriptionContext";
 
 type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
-
-// Module-level cache to avoid re-fetching across re-renders
-const scoreCache: { [wineId: number]: number | null } = {};
 
 export default function SearchScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchScreenRouteProp>();
   const { t, i18n } = useTranslation();
-  const { flavorProfile } = useUser();
-  const { isPremium } = useSubscription();
   const [returnScreen, setReturnScreen] = useState<
     keyof RootStackParamList | undefined
   >(undefined);
-  const [compatScores, setCompatScores] = useState<{
-    [wineId: number]: number | null;
-  }>({});
-  const fetchingRef = useRef<Set<number>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -163,49 +145,6 @@ export default function SearchScreen() {
     return () => clearTimeout(timer);
   }, [searchText]);
 
-  // Auto-fetch compatibility scores for search results
-  useEffect(() => {
-    if (!isPremium || !flavorProfile || searchResults.length === 0) return;
-
-    searchResults.forEach((wine) => {
-      if (scoreCache[wine.id] !== undefined) {
-        setCompatScores((prev) => ({
-          ...prev,
-          [wine.id]: scoreCache[wine.id],
-        }));
-        return;
-      }
-      if (fetchingRef.current.has(wine.id)) return;
-      fetchingRef.current.add(wine.id);
-
-      getWineDetailPublic(wine.id)
-        .then((response) => {
-          if (response.isSuccess) {
-            const detail = response.result.wineInfoResponse;
-            const result = calculateCompatibilityScore(
-              flavorProfile,
-              {
-                sweetness: detail.officialSweetness ?? detail.avgSweetness,
-                acidity: detail.officialAcidity ?? detail.avgAcidity,
-                tannin: detail.officialTannin ?? detail.avgTannin,
-                body: detail.officialBody ?? detail.avgBody,
-              },
-              t
-            );
-            const score = result?.score ?? null;
-            scoreCache[wine.id] = score;
-            setCompatScores((prev) => ({ ...prev, [wine.id]: score }));
-          }
-        })
-        .catch(() => {
-          scoreCache[wine.id] = null;
-        })
-        .finally(() => {
-          fetchingRef.current.delete(wine.id);
-        });
-    });
-  }, [searchResults, flavorProfile, isPremium, t]);
-
   const handleSearchSubmit = () => {
     const trimmedText = searchText.trim();
     if (trimmedText) {
@@ -222,74 +161,38 @@ export default function SearchScreen() {
     }
   };
 
+  // 타이핑 중 자동완성: 이미지 없이 텍스트만. 와인 타입은 칩 대신
+  // 이름 텍스트 색으로 구분하고, 검색어와 겹치는 부분은 자동 볼드 처리.
+  // 궁합 점수는 엔터 후 검색 결과 화면에서만 노출한다.
   const renderSearchResult = ({ item }: { item: WineDBItem }) => {
-    const score = compatScores[item.id];
+    const typeColor = getWineTypeColor(item.type);
+    const primaryName =
+      i18n.language === "en"
+        ? item.nameEng || item.nameKor
+        : item.nameKor || item.nameEng;
+    const secondaryName = i18n.language === "en" ? "" : item.nameEng;
 
     return (
       <TouchableOpacity
         style={styles.resultItem}
         onPress={() => navigation.navigate("WineDetail", { wine: item })}
       >
-        <View style={styles.resultIconContainer}>
-          {item.imageUri ? (
-            <Image
-              source={{ uri: item.imageUri }}
-              style={styles.resultImage}
-              resizeMode="contain"
-            />
-          ) : (
-            <Icon name="wine" size={20} color={accent.base} />
-          )}
-        </View>
         <View style={styles.resultTextContainer}>
-          {i18n.language === "en" ? (
-            <Text style={styles.resultNameKor} numberOfLines={2}>
-              {item.nameEng || item.nameKor}
-            </Text>
-          ) : (
-            <>
-              <Text style={styles.resultNameKor} numberOfLines={2}>
-                {item.nameKor}
-              </Text>
-              <Text style={styles.resultNameEng} numberOfLines={1}>
-                {item.nameEng}
-              </Text>
-            </>
-          )}
-          <View style={styles.resultInfoContainer}>
-            <View
-              style={[
-                styles.typeChip,
-                { backgroundColor: getWineTypeColor(item.type) },
-              ]}
-            >
-              <Text style={styles.typeChipText}>{item.type}</Text>
-            </View>
-            <Text style={styles.resultCountryText}>{item.country}</Text>
-          </View>
+          <HighlightedText
+            text={primaryName}
+            query={searchText}
+            style={[styles.resultName, { color: typeColor }]}
+            numberOfLines={2}
+          />
+          {secondaryName ? (
+            <HighlightedText
+              text={secondaryName}
+              query={searchText}
+              style={styles.resultNameEng}
+              numberOfLines={1}
+            />
+          ) : null}
         </View>
-        {isPremium &&
-          flavorProfile &&
-          score !== undefined &&
-          score !== null && (
-            <View style={styles.scoreContainer}>
-              <View
-                style={[
-                  styles.scoreBadge,
-                  {
-                    borderColor: getScoreColor(score),
-                    backgroundColor: `${getScoreColor(score)}1F`,
-                  },
-                ]}
-              >
-                <Text
-                  style={[styles.scoreValue, { color: getScoreColor(score) }]}
-                >
-                  {score}
-                </Text>
-              </View>
-            </View>
-          )}
       </TouchableOpacity>
     );
   };
@@ -522,75 +425,23 @@ const styles = StyleSheet.create({
   resultItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: surfaces.hairline,
-  },
-  resultIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.md,
-    backgroundColor: surfaces.card,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: spacing.lg,
-    overflow: "hidden",
-  },
-  resultImage: {
-    width: "85%",
-    height: "85%",
   },
   resultTextContainer: {
     flex: 1,
     gap: spacing.xs,
-    paddingVertical: 2,
   },
-  resultNameKor: {
-    color: colors.textPrimary,
+  resultName: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "400",
+    lineHeight: 22,
   },
   resultNameEng: {
     color: colors.textSecondary,
     fontSize: 13,
-  },
-  resultInfoContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginTop: 2,
-  },
-  typeChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-  },
-  typeChipText: {
-    color: WINE_TYPE_ON_COLOR,
-    fontSize: 10,
-    fontWeight: "bold",
-  },
-  resultCountryText: {
-    color: colors.textTertiary,
-    fontSize: 12,
-  },
-  scoreContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: spacing.md,
-  },
-  scoreBadge: {
-    minWidth: 34,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scoreValue: {
-    fontSize: 13,
-    fontWeight: "700",
+    fontWeight: "400",
   },
   emptyContainer: {
     padding: spacing.xxxl,
@@ -633,15 +484,16 @@ const styles = StyleSheet.create({
   recentWineImageContainer: {
     width: 100,
     height: 100,
-    backgroundColor: surfaces.card,
+    backgroundColor: surfaces.imageWell,
     borderRadius: radius.md,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: spacing.sm,
+    overflow: "hidden",
   },
   recentWineImage: {
-    width: "80%",
-    height: "80%",
+    width: "100%",
+    height: "100%",
   },
   recentWineName: {
     color: colors.textPrimary,

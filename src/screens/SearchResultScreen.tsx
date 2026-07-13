@@ -20,8 +20,8 @@ import {
 import { WineDBItem } from "../types/Wine";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
-import { spacing, radius, surfaces, accent } from "../constants/theme";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import { spacing, radius, surfaces } from "../constants/theme";
+import { getWineTypeColor, getWineTypeLabel } from "../constants/wineColors";
 import { useTranslation, Trans } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
 import { useUser } from "../context/UserContext";
@@ -41,6 +41,8 @@ type SearchResultScreenRouteProp = RouteProp<
 
 const scoreCache: { [wineId: number]: number | null } = {};
 
+const PAGE_SIZE = 50;
+
 export default function SearchResultScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchResultScreenRouteProp>();
@@ -50,17 +52,65 @@ export default function SearchResultScreen() {
   const { isPremium } = useSubscription();
 
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [compatScores, setCompatScores] = useState<{
     [wineId: number]: number | null;
   }>({});
+  // 이미지 URL이 있어도 404인 와인은 빈 흰 박스 대신 아이콘 폴백으로
+  const [failedImageIds, setFailedImageIds] = useState<Set<number>>(new Set());
   const fetchingRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     fetchSearchResults();
   }, [searchKeyword]);
+
+  const mapResults = (content: WineUserDTO[]): WineDBItem[] =>
+    content.map((item: WineUserDTO) => ({
+      id: item.wineId,
+      nameKor: item.name,
+      nameEng: item.nameEng,
+      type: item.sort,
+      country: item.country,
+      grape: item.variety,
+      imageUri: item.imageUrl,
+      vivinoRating: item.vivinoRating,
+    }));
+
+  // 서버가 totalElements를 안 내려주는 경우(현재 프로드) 마지막 페이지를 한 번
+  // 조회해 정확한 총 개수를 계산한다: (totalPages-1)*size + 마지막 페이지 건수
+  const resolveTotalCount = async (
+    tp: number,
+    firstPageCount: number,
+    totalElements?: number
+  ) => {
+    if (typeof totalElements === "number") {
+      setTotalCount(totalElements);
+      return;
+    }
+    if (!tp || tp <= 1) {
+      setTotalCount(firstPageCount);
+      return;
+    }
+    try {
+      const last = await searchWinesPublic({
+        searchName: searchKeyword,
+        page: tp - 1,
+        size: PAGE_SIZE,
+      });
+      if (last.isSuccess) {
+        setTotalCount((tp - 1) * PAGE_SIZE + last.result.content.length);
+      } else {
+        setTotalCount((tp - 1) * PAGE_SIZE);
+      }
+    } catch {
+      setTotalCount((tp - 1) * PAGE_SIZE);
+    }
+  };
 
   const fetchSearchResults = async () => {
     setIsLoading(true);
@@ -68,27 +118,15 @@ export default function SearchResultScreen() {
       const response = await searchWinesPublic({
         searchName: searchKeyword,
         page: 0,
-        size: 50,
+        size: PAGE_SIZE,
       });
 
       if (response.isSuccess) {
-        const total =
-          response.result.totalElements ?? response.result.content.length;
-        setTotalCount(total);
-
-        const mappedResults: WineDBItem[] = response.result.content.map(
-          (item: WineUserDTO) => ({
-            id: item.wineId,
-            nameKor: item.name,
-            nameEng: item.nameEng,
-            type: item.sort,
-            country: item.country,
-            grape: item.variety,
-            imageUri: item.imageUrl,
-            vivinoRating: item.vivinoRating,
-          })
-        );
-        setSearchResults(rankByRelevance(mappedResults, searchKeyword));
+        const { content, totalPages: tp, totalElements } = response.result;
+        setTotalPages(tp ?? 1);
+        setPage(0);
+        resolveTotalCount(tp, content.length, totalElements);
+        setSearchResults(rankByRelevance(mapResults(content), searchKeyword));
         setErrorKey(null);
       } else {
         throw new Error(response.message);
@@ -99,6 +137,37 @@ export default function SearchResultScreen() {
       setErrorKey(getErrorMessageKey(error));
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 무한 스크롤: 스크롤 하단 도달 시 다음 페이지를 이어 붙인다.
+  // 이미 로드된 목록은 재정렬하지 않고(스크롤 위치 보존) 새 페이지만 랭킹한다.
+  const loadMoreResults = async () => {
+    if (isLoading || isLoadingMore || page + 1 >= totalPages) return;
+    setIsLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const response = await searchWinesPublic({
+        searchName: searchKeyword,
+        page: nextPage,
+        size: PAGE_SIZE,
+      });
+      if (response.isSuccess) {
+        const chunk = rankByRelevance(
+          mapResults(response.result.content),
+          searchKeyword
+        );
+        setSearchResults((prev) => {
+          const seen = new Set(prev.map((w) => w.id));
+          return [...prev, ...chunk.filter((w) => !seen.has(w.id))];
+        });
+        setPage(nextPage);
+      }
+    } catch (error) {
+      // 추가 로드 실패는 치명적이지 않다 — 다음 스크롤에서 재시도된다
+      console.error("Load more results failed:", error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -158,77 +227,80 @@ export default function SearchResultScreen() {
     }
   };
 
+  // 라벨 이미지가 주인공인 큰 카드 — 좌측 정보 컬럼 + 우측 대형 화이트 이미지 웰.
+  // 타입은 칩 대신 타입 색 텍스트로 구분한다.
   const renderSearchResult = ({ item }: { item: WineDBItem }) => {
     const score = compatScores[item.id];
+    const typeColor = getWineTypeColor(item.type);
 
     return (
       <TouchableOpacity
-        style={styles.resultItem}
+        style={styles.resultCard}
         onPress={() => handleWinePress(item)}
         activeOpacity={0.85}
       >
-        <View style={styles.resultIconContainer}>
-          {item.imageUri ? (
+        <View style={styles.resultImageWell}>
+          {item.imageUri && !failedImageIds.has(item.id) ? (
             <Image
               source={{ uri: item.imageUri }}
               style={styles.resultImage}
               resizeMode="contain"
+              onError={() =>
+                setFailedImageIds((prev) => new Set(prev).add(item.id))
+              }
             />
           ) : (
-            <Icon name="wine" size={26} color={accent.text} />
+            <Icon name="wine" size={36} color={surfaces.onImageWell} />
           )}
         </View>
         <View style={styles.resultTextContainer}>
           {i18n.language === "en" ? (
-            <Text style={styles.resultNameKor} numberOfLines={2}>
+            <Text style={styles.resultNameKor} numberOfLines={3}>
               {item.nameEng || item.nameKor}
             </Text>
           ) : (
             <>
-              <Text style={styles.resultNameKor} numberOfLines={2}>
+              <Text style={styles.resultNameKor} numberOfLines={3}>
                 {item.nameKor}
               </Text>
               {item.nameEng ? (
-                <Text style={styles.resultNameEng} numberOfLines={1}>
+                <Text style={styles.resultNameEng} numberOfLines={2}>
                   {item.nameEng}
                 </Text>
               ) : null}
             </>
           )}
           <View style={styles.resultInfoContainer}>
-            <View
-              style={[
-                styles.typeChip,
-                { backgroundColor: getWineTypeColor(item.type) },
-              ]}
-            >
-              <Text style={styles.typeChipText}>{item.type}</Text>
-            </View>
-            <Text style={styles.resultCountryText}>{item.country}</Text>
+            <Text style={[styles.typeText, { color: typeColor }]}>
+              {getWineTypeLabel(item.type, t)}
+            </Text>
+            {item.country ? (
+              <Text style={styles.resultCountryText}>· {item.country}</Text>
+            ) : null}
           </View>
-        </View>
-        {isPremium &&
-          flavorProfile &&
-          score !== undefined &&
-          score !== null && (
-            <View style={styles.scoreContainer}>
-              <View
-                style={[
-                  styles.scoreBadge,
-                  {
-                    borderColor: getScoreColor(score),
-                    backgroundColor: `${getScoreColor(score)}1F`,
-                  },
-                ]}
-              >
-                <Text
-                  style={[styles.scoreValue, { color: getScoreColor(score) }]}
+          {isPremium &&
+            flavorProfile &&
+            score !== undefined &&
+            score !== null && (
+              <View style={styles.resultMetaRow}>
+                <View
+                  style={[
+                    styles.scoreBadge,
+                    {
+                      borderColor: getScoreColor(score),
+                      backgroundColor: `${getScoreColor(score)}1F`,
+                    },
+                  ]}
                 >
-                  {score}
-                </Text>
+                  <Text
+                    style={[styles.scoreValue, { color: getScoreColor(score) }]}
+                  >
+                    {score}
+                  </Text>
+                </View>
               </View>
-            </View>
-          )}
+            )}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -268,6 +340,15 @@ export default function SearchResultScreen() {
             renderItem={renderSearchResult}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.listContent}
+            onEndReached={loadMoreResults}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <View style={styles.loadingMoreContainer}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : null
+            }
             ListHeaderComponent={
               <View>
                 {!isLoading && searchResults.length > 0 ? (
@@ -329,6 +410,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  loadingMoreContainer: {
+    paddingVertical: spacing.xl,
+    alignItems: "center",
+  },
   resultCountContainer: {
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
@@ -346,68 +431,63 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 110,
   },
-  resultItem: {
+  resultCard: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     backgroundColor: surfaces.card,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: surfaces.hairline,
-    padding: spacing.md,
     marginBottom: spacing.md,
+    overflow: "hidden",
+    minHeight: 172,
   },
-  resultIconContainer: {
-    width: 56,
-    height: 70,
-    borderRadius: radius.sm,
-    backgroundColor: surfaces.raised,
+  resultImageWell: {
+    width: "42%",
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: spacing.lg,
-    overflow: "hidden",
   },
+  // 주의: width/height "100%"를 쓰면 웰 높이(행 높이에 의존)를 다시 참조하는
+  // 순환 레이아웃이 되어 카드가 화면 전체로 폭주한다 — 절대 배치로 계산에서 뺀다.
   resultImage: {
-    width: "85%",
-    height: "85%",
+    ...StyleSheet.absoluteFillObject,
   },
   resultTextContainer: {
     flex: 1,
-    gap: 4,
-    paddingVertical: 2,
+    padding: spacing.lg,
+    justifyContent: "center",
+    gap: spacing.xs,
   },
   resultNameKor: {
     color: colors.textPrimary,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "700",
+    lineHeight: 22,
   },
   resultNameEng: {
     color: colors.textSecondary,
     fontSize: 12,
+    lineHeight: 17,
   },
   resultInfoContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: spacing.xs,
     marginTop: spacing.xs,
   },
-  typeChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-  },
-  typeChipText: {
-    color: WINE_TYPE_ON_COLOR,
-    fontSize: 10,
-    fontWeight: "bold",
+  typeText: {
+    fontSize: 13,
+    fontWeight: "700",
   },
   resultCountryText: {
     color: colors.textTertiary,
-    fontSize: 12,
+    fontSize: 13,
   },
-  scoreContainer: {
+  resultMetaRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingLeft: spacing.md,
+    marginTop: spacing.sm,
   },
   scoreBadge: {
     minWidth: 34,

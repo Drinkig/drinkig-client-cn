@@ -16,6 +16,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
+import { surfaces } from "../constants/theme";
 import {
   getWineTypeColor as getTypeColor,
   WINE_TYPE_ON_COLOR,
@@ -382,13 +383,13 @@ const styles = StyleSheet.create({
     width: 56,
     height: 72,
     borderRadius: 8,
-    backgroundColor: colors.surface2,
+    backgroundColor: surfaces.imageWell,
   },
   cardImagePlaceholder: {
     width: 56,
     height: 72,
     borderRadius: 8,
-    backgroundColor: colors.surface2,
+    backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
   },
