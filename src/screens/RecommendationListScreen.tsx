@@ -15,9 +15,14 @@ import { useSubscription } from "../context/SubscriptionContext";
 import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import {
+  getWineTypeColor,
+  getWineTypeLabel,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 
-const COOLDOWN_DAYS = 7;
+// 정책(2026-07-13): 프리미엄은 언제든 재설정 가능, 무료는 30일에 1회.
+const COOLDOWN_DAYS = 30;
 const RANK_BADGES = ["🥇", "🥈", "🥉"];
 
 const RecommendationListScreen = () => {
@@ -37,12 +42,19 @@ const RecommendationListScreen = () => {
       setCooldownRemaining(null);
       return;
     }
-    const lastReset = await AsyncStorage.getItem("lastTasteResetTime");
-    if (!lastReset) {
+    // 서버 기록(재설치로 우회 불가)과 로컬 기록 중 더 최근 값을 쓴다.
+    // 서버 값은 refreshUserInfo 시점 기준이라 방금 재설정한 직후엔
+    // 로컬 값이 더 최신일 수 있다.
+    const localReset = await AsyncStorage.getItem("lastTasteResetTime");
+    const candidates = [user?.lastTasteResetAt, localReset]
+      .map((v) => (v ? new Date(v).getTime() : NaN))
+      .filter((ts) => !Number.isNaN(ts));
+    if (candidates.length === 0) {
       setCooldownRemaining(null);
       return;
     }
-    const elapsed = Date.now() - new Date(lastReset).getTime();
+    const lastResetTs = Math.max(...candidates);
+    const elapsed = Date.now() - lastResetTs;
     const cooldownMs = COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
     const remaining = cooldownMs - elapsed;
     if (remaining <= 0) {
@@ -58,7 +70,7 @@ const RecommendationListScreen = () => {
         setCooldownRemaining(t("recommendationList.cooldownHours", { hours }));
       }
     }
-  }, [t, isPremium]);
+  }, [t, isPremium, user?.lastTasteResetAt]);
 
   useFocusEffect(
     useCallback(() => {
@@ -67,26 +79,6 @@ const RecommendationListScreen = () => {
       return () => clearInterval(interval);
     }, [checkCooldown])
   );
-
-  const getWineTypeLabel = (type: string, lang: string) => {
-    if (lang !== "en") return type;
-    switch (type) {
-      case "레드":
-        return "Red";
-      case "화이트":
-        return "White";
-      case "스파클링":
-        return "Sparkling";
-      case "로제":
-        return "Rosé";
-      case "디저트":
-        return "Dessert";
-      case "주정강화":
-        return "Fortified";
-      default:
-        return type;
-    }
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -136,7 +128,7 @@ const RecommendationListScreen = () => {
                       ]}
                     >
                       <Text style={styles.typeText}>
-                        {getWineTypeLabel(item.sort, i18n.language)}
+                        {getWineTypeLabel(item.sort, t)}
                       </Text>
                     </View>
                   </View>
@@ -191,31 +183,39 @@ const RecommendationListScreen = () => {
       </ScrollView>
 
       <View style={styles.footer}>
+        {/* 프리미엄: 항상 재설정 가능. 무료: 30일 쿨다운 —
+            쿨다운 중에는 남은 시간을 보여주고, 탭하면 페이월(즉시 재설정 업셀)로 보낸다. */}
         <TouchableOpacity
           style={[
             styles.resetCtaButton,
-            isPremium && cooldownRemaining && styles.resetCtaButtonDisabled,
+            !!cooldownRemaining && styles.resetCtaButtonDisabled,
           ]}
           onPress={() => {
-            if (isPremium) {
-              navigation.navigate("TasteReset" as never);
-            } else {
+            if (cooldownRemaining) {
               navigation.navigate("Paywall" as never);
+            } else {
+              navigation.navigate("TasteReset" as never);
             }
           }}
-          disabled={isPremium && !!cooldownRemaining}
+          accessibilityRole="button"
+          accessibilityLabel={
+            cooldownRemaining ?? t("recommendationList.resetButton")
+          }
         >
           <Text
             style={[
               styles.resetCtaText,
-              isPremium && cooldownRemaining && styles.resetCtaTextDisabled,
+              !!cooldownRemaining && styles.resetCtaTextDisabled,
             ]}
           >
-            {isPremium && cooldownRemaining
-              ? cooldownRemaining
-              : t("recommendationList.resetButton")}
+            {cooldownRemaining ?? t("recommendationList.resetButton")}
           </Text>
         </TouchableOpacity>
+        {!!cooldownRemaining && (
+          <Text style={styles.cooldownUpsellText}>
+            {t("recommendationList.cooldownUpsell")}
+          </Text>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -339,6 +339,12 @@ const styles = StyleSheet.create({
   },
   resetCtaButtonDisabled: {
     backgroundColor: colors.surface2,
+  },
+  cooldownUpsellText: {
+    marginTop: 8,
+    textAlign: "center",
+    color: colors.textSecondary,
+    fontSize: 12,
   },
   resetCtaTextDisabled: {
     color: colors.textSecondary,

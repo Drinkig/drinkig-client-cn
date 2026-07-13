@@ -46,10 +46,6 @@ export interface MemberInitRequest {
   isNewbie?: boolean;
   monthPrice: number;
   wineSort: string[];
-  // Expert only
-  wineArea?: string[] | null;
-  wineVariety?: string[] | null;
-  // Newbie only
   preferredAlcohols?: string[] | null;
   preferredFoods?: string[] | null;
   acidity?: number | null;
@@ -81,6 +77,8 @@ export interface MemberInfoResponse {
     tannin?: number;
     body?: number;
     alcohol?: number;
+    // 마지막 취향 재설정 시각(ISO). 구버전 서버는 안 내려주므로 optional.
+    lastTasteResetAt?: string | null;
   };
 }
 

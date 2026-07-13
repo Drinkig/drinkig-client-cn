@@ -78,10 +78,6 @@ interface OnboardingData {
   isNewbie: boolean | null;
   monthPrice: number;
   wineSort: string[];
-
-  wineArea: string[];
-  wineVariety: string[];
-
   preferredAlcohols: string[];
   flavorProfile: FlavorProfile;
 }
@@ -93,8 +89,6 @@ const INITIAL_DATA: OnboardingData = {
   isNewbie: null,
   monthPrice: 0,
   wineSort: [],
-  wineArea: [],
-  wineVariety: [],
   preferredAlcohols: [],
   flavorProfile: {
     acidity: undefined,
@@ -136,25 +130,6 @@ const ALCOHOL_CATEGORIES = [
 ];
 
 const WINE_SORTS = ["레드", "화이트", "스파클링", "로제", "주정강화", "디저트"];
-const WINE_AREAS = [
-  "FRANCE",
-  "ITALY",
-  "USA",
-  "CHILE",
-  "SPAIN",
-  "AUSTRALIA",
-  "NEW_ZEALAND",
-  "ARGENTINA",
-];
-const WINE_VARIETIES = [
-  "CABERNET_SAUVIGNON",
-  "MERLOT",
-  "PINOT_NOIR",
-  "CHARDONNAY",
-  "SAUVIGNON_BLANC",
-  "SYRAH",
-  "RIESLING",
-];
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -276,7 +251,7 @@ const OnboardingScreen = () => {
   };
 
   const toggleSelection = (
-    key: "wineSort" | "wineArea" | "wineVariety" | "preferredAlcohols",
+    key: "wineSort" | "preferredAlcohols",
     value: string
   ) => {
     setFormData((prev) => {
@@ -460,9 +435,6 @@ const OnboardingScreen = () => {
       requestData.tannin = formData.flavorProfile.tannin ?? null;
       requestData.body = formData.flavorProfile.body ?? null;
       requestData.alcohol = formData.flavorProfile.alcohol ?? null;
-
-      requestData.wineArea = null;
-      requestData.wineVariety = null;
 
       console.log(
         "🔍 Onboarding Request Payload:",

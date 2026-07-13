@@ -144,19 +144,22 @@ interface PublicSearchParams {
   sort?: string[];
 }
 
-export interface RecommendedWineResponse {
+// GET /wine/recommend/wines — 취향 기반 "실제 와인" 추천 (홈 개인화 섹션)
+export interface RecommendedBottlesResponse {
   isSuccess: boolean;
   code: string;
   message: string;
-  result: RecommendedWineDTO[];
+  result: RecommendedBottleDTO[];
 }
 
-export interface RecommendedWineDTO {
+export interface RecommendedBottleDTO {
   wineId: number;
-  imageUrl: string;
+  imageUrl: string | null;
   wineName: string;
   wineNameEng: string;
   sort: string;
+  country: string;
+  variety: string;
   price: number;
   vivinoRating: number;
 }
@@ -356,8 +359,10 @@ export const getWineDetailPublic = async (
   return response.data;
 };
 
-export const getRecommendedWines = async () => {
-  const response = await client.get<RecommendedWineResponse>("/wine/recommend");
+export const getRecommendedBottles = async () => {
+  const response = await client.get<RecommendedBottlesResponse>(
+    "/wine/recommend/wines"
+  );
   return response.data;
 };
 

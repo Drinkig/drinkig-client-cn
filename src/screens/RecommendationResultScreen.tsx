@@ -21,7 +21,11 @@ import ListStateView from "../components/common/ListStateView";
 import { getErrorMessageKey } from "../utils/apiError";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import {
+  getWineTypeColor,
+  getWineTypeLabel,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 
 const RecommendationResultScreen = () => {
   const navigation = useNavigation();
@@ -217,7 +221,9 @@ const RecommendationResultScreen = () => {
                     { backgroundColor: getWineTypeColor(item.sort) },
                   ]}
                 >
-                  <Text style={styles.typeChipText}>{item.sort}</Text>
+                  <Text style={styles.typeChipText}>
+                    {getWineTypeLabel(item.sort, t)}
+                  </Text>
                 </View>
               </View>
 

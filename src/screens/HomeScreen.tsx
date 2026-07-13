@@ -22,7 +22,9 @@ import { WineDBItem } from "../types/Wine";
 import { HeroSection } from "../components/home/HeroSection";
 import {
   getMyWines,
+  getRecommendedBottles,
   MyWineDTO,
+  RecommendedBottleDTO,
   searchWinesPublic,
   WineUserDTO,
 } from "../api/wine";
@@ -77,8 +79,24 @@ const toWineDBItem = (item: WineUserDTO): WineDBItem => ({
   vivinoRating: item.vivinoRating,
 });
 
-// 홈 재진입마다 추천을 다시 계산하지 않도록 세션 단위 캐시
+const bottleToWineDBItem = (item: RecommendedBottleDTO): WineDBItem => ({
+  id: item.wineId,
+  nameKor: item.wineName,
+  nameEng: item.wineNameEng,
+  type: item.sort,
+  country: item.country,
+  grape: item.variety,
+  imageUri:
+    item.imageUrl ||
+    `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${item.wineId}.png`,
+  vivinoRating: item.vivinoRating,
+});
+
+// 홈 재진입마다 추천을 다시 계산하지 않도록 세션 단위 캐시.
+// 캐시 키를 추천 스타일 시그니처로 잡아 취향 재설정으로 추천이 바뀌면
+// 자동으로 무효화되고, 이전 취향 기준 와인이 계속 보이지 않는다.
 let recommendedWinesCache: WineDBItem[] | null = null;
+let recommendedWinesCacheKey: string | null = null;
 
 export default function HomeScreen() {
   const navigation =
@@ -91,18 +109,40 @@ export default function HomeScreen() {
   // null = 아직 로드 전 → 카운트를 0으로 단정하지 않고 "—"로 표시
   const [myWines, setMyWines] = useState<MyWineDTO[] | null>(null);
   const { recommendations } = useUser();
-  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[]>(
-    recommendedWinesCache ?? []
-  );
+  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[]>([]);
   const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
 
   // 온보딩/취향 재설정에서 받아둔 추천 스타일로 실제 와인을 찾아 보여준다.
   useEffect(() => {
-    if (recommendedWinesCache) return; // 세션 내 재계산 방지
     if (!recommendations || recommendations.length === 0) return;
+    const cacheKey = JSON.stringify(
+      recommendations.map((r) => [r.variety, r.sort])
+    );
+    if (recommendedWinesCache && recommendedWinesCacheKey === cacheKey) {
+      setRecommendedWines(recommendedWinesCache); // 세션 내 재계산 방지
+      return;
+    }
     let alive = true;
+    const commit = (wines: WineDBItem[]) => {
+      const sliced = wines.slice(0, 10);
+      recommendedWinesCache = sliced;
+      recommendedWinesCacheKey = cacheKey;
+      if (alive) setRecommendedWines(sliced);
+    };
     (async () => {
       try {
+        // 1순위: 서버의 취향 기반 실와인 추천 API.
+        // 미배포(404)·실패 시엔 아래 품종 검색 폴백으로 조용히 넘어간다.
+        try {
+          const bottles = await getRecommendedBottles();
+          if (bottles?.isSuccess && bottles.result.length >= 3) {
+            commit(bottles.result.map(bottleToWineDBItem));
+            return;
+          }
+        } catch {
+          // 폴백 진행
+        }
+
         const styleTargets = recommendations.slice(0, 2);
         const responses = await Promise.all(
           styleTargets.map((style) =>
@@ -139,10 +179,8 @@ export default function HomeScreen() {
           }
         }
 
-        if (alive && wines.length >= 3) {
-          const sliced = wines.slice(0, 10);
-          recommendedWinesCache = sliced;
-          setRecommendedWines(sliced);
+        if (wines.length >= 3) {
+          commit(wines);
         }
       } catch (e) {
         console.warn("Failed to build home recommendations:", e);

@@ -288,8 +288,6 @@ const TasteResetScreen = () => {
         tannin: flavorProfile.tannin ?? null,
         body: flavorProfile.body ?? null,
         alcohol: flavorProfile.alcohol ?? null,
-        wineArea: null,
-        wineVariety: null,
         preferredAlcohols,
         preferredFoods,
       };

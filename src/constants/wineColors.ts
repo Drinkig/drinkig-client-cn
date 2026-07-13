@@ -23,6 +23,33 @@ export const wineTypeColors = {
 // 흰 텍스트는 최악 1.5:1로 판독 불가라 어두운 색으로 통일 (6종 전부 AA 통과).
 export const WINE_TYPE_ON_COLOR = "#1A191B";
 
+// 타입 라벨 i18n — 서버 데이터가 한글("레드")로 오므로 다른 언어 UI에서
+// 그대로 노출되지 않도록 공용 매핑으로 번역한다. 매칭 실패 시 원문 유지.
+// (색상과 달리 라벨은 주정강화/디저트를 구분한다)
+export function getWineTypeLabel(
+  type: string | null | undefined,
+  t: (key: string) => string
+): string {
+  if (!type) return "";
+  const s = type.toLowerCase();
+  if (s.includes("레드") || s.includes("red")) return t("wineType.red");
+  if (s.includes("화이트") || s.includes("white")) return t("wineType.white");
+  if (s.includes("스파클링") || s.includes("sparkling"))
+    return t("wineType.sparkling");
+  if (s.includes("로제") || s.includes("rosé") || s.includes("rose"))
+    return t("wineType.rose");
+  if (
+    s.includes("주정강화") ||
+    s.includes("fortified") ||
+    s.includes("포트") ||
+    s.includes("port")
+  )
+    return t("wineType.fortified");
+  if (s.includes("디저트") || s.includes("dessert"))
+    return t("wineType.dessert");
+  return type;
+}
+
 export function getWineTypeColor(type?: string | null): string {
   if (!type) return wineTypeColors.default;
   const t = type.toLowerCase();

@@ -19,6 +19,8 @@ export interface User {
   profileImage: string | null;
   email?: string;
   authType?: string;
+  // 서버가 기록한 마지막 취향 재설정 시각(ISO) — 쿨다운 검증의 1차 소스
+  lastTasteResetAt?: string | null;
 }
 
 export interface RecommendedWine {
@@ -73,6 +75,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const checkLoginStatus = async () => {
       const token = await getAccessToken();
       const isNewUserStored = await AsyncStorage.getItem("isNewUser");
+      let needsOnboarding = false;
       if (isNewUserStored === "true") {
         // 온보딩 API 제출까지 마쳤지만 결과 화면 도달 전에 종료된 경우 —
         // 온보딩을 다시 시키지 않고 완료 처리한다. (닉네임이 이미 서버에
@@ -86,6 +89,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           ]);
         } else {
           setIsNewUser(true);
+          needsOnboarding = true;
         }
       }
 
@@ -93,20 +97,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         try {
           await refreshUserInfo();
 
-          const savedRecs = await AsyncStorage.getItem("recommendations");
-          if (savedRecs) {
-            setRecommendationsState(JSON.parse(savedRecs));
-          } else {
+          // 온보딩 미완료 유저는 취향이 없어 서버 추천이 무의미하므로 건너뛴다.
+          if (!needsOnboarding) {
+            // 추천은 서버를 source of truth로 — 다른 기기에서 재설정해도
+            // 최신을 따라간다. 서버 실패 시에만 로컬 저장본으로 폴백.
             try {
               const recResponse = await getOnboardingRecommendation();
-              if (recResponse.isSuccess) {
+              if (recResponse.isSuccess && recResponse.result.length > 0) {
                 setRecommendations(recResponse.result);
+              } else {
+                throw new Error("empty recommendations");
               }
             } catch (recError) {
               console.warn(
-                "Failed to restore recommendations from server",
+                "Failed to restore recommendations from server, using local cache",
                 recError
               );
+              try {
+                const savedRecs = await AsyncStorage.getItem("recommendations");
+                if (savedRecs) {
+                  setRecommendationsState(JSON.parse(savedRecs));
+                }
+              } catch (parseError) {
+                console.warn(
+                  "Failed to parse local recommendations",
+                  parseError
+                );
+              }
             }
           }
         } catch (e: any) {
@@ -164,6 +181,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           profileImage: response.result.imageUrl,
           email: response.result.email,
           authType: response.result.authType,
+          lastTasteResetAt: response.result.lastTasteResetAt ?? null,
         });
 
         if (
@@ -209,13 +227,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
     await refreshUserInfo();
 
-    try {
-      const recResponse = await getOnboardingRecommendation();
-      if (recResponse.isSuccess) {
-        setRecommendations(recResponse.result);
+    // 온보딩 전(isFirst) 유저는 취향이 없어 서버가 기본값 기준의 무의미한
+    // 추천을 반환하므로 저장하지 않는다 — 온보딩 결과 화면에서 채워진다.
+    if (!isFirst) {
+      try {
+        const recResponse = await getOnboardingRecommendation();
+        if (recResponse.isSuccess && recResponse.result.length > 0) {
+          setRecommendations(recResponse.result);
+        }
+      } catch (recError) {
+        console.warn("Failed to fetch recommendations on login", recError);
       }
-    } catch (recError) {
-      console.warn("Failed to fetch recommendations on login", recError);
     }
   };
 
