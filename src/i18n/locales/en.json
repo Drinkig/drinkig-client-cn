@@ -1306,7 +1306,7 @@
             "foodPairing": "Grape variety recommendations for any meal",
             "compatibility": "A taste-match score for every wine, unlimited",
             "compatibilityReport": "A full report on why this wine fits your taste",
-            "tasteReset": "Reset your taste profile anytime"
+            "tasteReset": "Reset your taste anytime — no 30-day wait"
         },
         "moreBenefitsTitle": "And more",
         "plan": {
@@ -1364,7 +1364,7 @@
             "report": "Match Report",
             "reportDesc": "See exactly why a wine fits your taste",
             "tasteReset": "Taste Reset",
-            "tasteResetDesc": "Changed your palate? Reset your profile anytime"
+            "tasteResetDesc": "Free resets once every 30 days — Premium is unlimited"
         }
     },
     "withdraw": {

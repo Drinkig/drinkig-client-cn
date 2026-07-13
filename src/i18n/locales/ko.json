@@ -1306,7 +1306,7 @@
             "foodPairing": "오늘 메뉴에 어울리는 와인 품종 추천",
             "compatibility": "와인마다 내 취향 점수, 무제한으로 확인",
             "compatibilityReport": "왜 이 와인이 내 취향인지, 리포트로 알려줘요",
-            "tasteReset": "입맛이 바뀌어도 언제든 취향 재설정"
+            "tasteReset": "30일 기다림 없이 언제든 취향 재설정"
         },
         "moreBenefitsTitle": "이 외에도",
         "plan": {
@@ -1364,7 +1364,7 @@
             "report": "궁합 분석 리포트",
             "reportDesc": "왜 이 와인이 내 취향인지 자세히 알려줘요",
             "tasteReset": "취향 재설정",
-            "tasteResetDesc": "입맛이 바뀌어도 언제든 다시 설정할 수 있어요"
+            "tasteResetDesc": "무료는 30일에 한 번, 프리미엄은 기다림 없이 무제한이에요"
         }
     },
     "withdraw": {
