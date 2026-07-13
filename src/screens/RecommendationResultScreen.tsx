@@ -17,6 +17,8 @@ import {
   OnboardingRecommendationDTO,
 } from "../api/wine";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
+import ListStateView from "../components/common/ListStateView";
+import { getErrorMessageKey } from "../utils/apiError";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
@@ -32,6 +34,7 @@ const RecommendationResultScreen = () => {
     setFlavorProfile: saveFlavorProfile,
   } = useUser();
   const [loading, setLoading] = useState(true);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<
     OnboardingRecommendationDTO[]
   >([]);
@@ -79,14 +82,23 @@ const RecommendationResultScreen = () => {
   }, []);
 
   const fetchRecommendations = async () => {
+    setLoading(true);
+    setErrorKey(null);
     try {
       const response = await getOnboardingRecommendation();
       if (response.isSuccess) {
         setRecommendations(response.result);
-        saveRecommendations(response.result);
+        // 빈 배열로는 저장하지 않는다 — 재설정 직후 서버가 0건을 주면
+        // 기존에 저장된 멀쩡한 추천(홈 개인화 섹션의 원천)이 지워진다.
+        if (response.result.length > 0) {
+          saveRecommendations(response.result);
+        }
+      } else {
+        setErrorKey("common.error.generic");
       }
     } catch (error) {
       console.error(error);
+      setErrorKey(getErrorMessageKey(error));
     } finally {
       setLoading(false);
     }
@@ -152,6 +164,22 @@ const RecommendationResultScreen = () => {
               {t("recommendationResult.chartHelper")}
             </Text>
           </Animated.View>
+        )}
+
+        {/* 에러/빈 결과를 빈 화면으로 위장하지 않는다 (dead-end 방지) */}
+        {errorKey && (
+          <ListStateView
+            state="error"
+            subtitle={t(errorKey)}
+            onAction={fetchRecommendations}
+          />
+        )}
+        {!errorKey && recommendations.length === 0 && (
+          <ListStateView
+            state="empty"
+            title={t("recommendationResult.emptyTitle")}
+            subtitle={t("recommendationResult.emptySubtitle")}
+          />
         )}
 
         {recommendations.map((item, index) => {

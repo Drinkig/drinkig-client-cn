@@ -888,6 +888,8 @@
         "rankTitle0": "Top Recommendation",
         "rankTitle1": "You Might Also Like",
         "rankTitle2": "Try Something Different",
+        "emptyTitle": "No matching styles found",
+        "emptySubtitle": "Your preferences are saved. Try widening your wine types in Taste Reset.",
         "button": "Start Drinkig",
         "buttonReset": "Done"
     },

@@ -278,9 +278,9 @@ const TasteResetScreen = () => {
     const finalPrice = priceOverride ?? monthPrice;
     setLoading(true);
     try {
+      // name/isNewbie는 보내지 않는다 — 서버가 name=""로 닉네임을 지우거나
+      // 전문가 유저를 뉴비로 덮어쓰는 것을 막는다 (취향 필드만 갱신).
       const requestData: MemberInitRequest = {
-        name: user?.nickname || "",
-        isNewbie: true,
         monthPrice: finalPrice,
         wineSort,
         acidity: flavorProfile.acidity ?? null,

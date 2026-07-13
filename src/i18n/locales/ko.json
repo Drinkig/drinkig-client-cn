@@ -888,6 +888,8 @@
         "rankTitle0": "가장 추천하는 스타일",
         "rankTitle1": "이런 스타일도 좋아요",
         "rankTitle2": "색다른 시도라면",
+        "emptyTitle": "조건에 맞는 스타일을 찾지 못했어요",
+        "emptySubtitle": "취향은 저장되었어요. 취향 재설정에서 종류를 넓혀 다시 받아보세요.",
         "button": "드링키지 시작하기",
         "buttonReset": "확인"
     },

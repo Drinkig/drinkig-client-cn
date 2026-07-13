@@ -1,5 +1,4 @@
-import client from './client';
-
+import client from "./client";
 
 export interface KakaoFirebaseResponse {
   customToken?: string;
@@ -26,8 +25,6 @@ export interface LogoutResponse {
   result: string;
 }
 
-
-
 export interface CheckNicknameResponse {
   isSuccess: boolean;
   code: string;
@@ -43,8 +40,10 @@ export interface ProfileImageResponse {
 }
 
 export interface MemberInitRequest {
-  name: string;
-  isNewbie: boolean;
+  // 서버(updateFirstUser)는 null/미포함 필드를 기존 값으로 유지한다.
+  // 취향 재설정처럼 취향만 갱신하는 호출은 name/isNewbie를 보내지 않는다.
+  name?: string;
+  isNewbie?: boolean;
   monthPrice: number;
   wineSort: string[];
   // Expert only
@@ -113,93 +112,110 @@ export interface AppleMemberDeleteResponse {
   result: object;
 }
 
-
-
 export const exchangeKakaoToken = async (token: string) => {
-  const response = await client.post<KakaoFirebaseResponse>('/login/kakao/firebase', {
-    token,
-  });
+  const response = await client.post<KakaoFirebaseResponse>(
+    "/login/kakao/firebase",
+    {
+      token,
+    }
+  );
   return response.data;
 };
 
 export const appleLogin = async (identityToken: string) => {
-  const response = await client.post<AppleLoginResponse>('/login/apple', {
+  const response = await client.post<AppleLoginResponse>("/login/apple", {
     identityToken,
   });
   return response.data;
 };
 
 export const logout = async () => {
-  const response = await client.post<LogoutResponse>('/logout');
+  const response = await client.post<LogoutResponse>("/logout");
   return response.data;
 };
-
-
 
 export const checkNickname = async (nickname: string) => {
-  const response = await client.post<CheckNicknameResponse>(`/member/check/${nickname}`);
+  const response = await client.post<CheckNicknameResponse>(
+    `/member/check/${nickname}`
+  );
   return response.data;
 };
-export const uploadProfileImage = async (imageUri: string, type: string = 'image/jpeg', name: string = 'profile.jpg') => {
+export const uploadProfileImage = async (
+  imageUri: string,
+  type: string = "image/jpeg",
+  name: string = "profile.jpg"
+) => {
   const formData = new FormData();
 
-  formData.append('profileImg', {
+  formData.append("profileImg", {
     uri: imageUri,
     type: type,
     name: name,
   } as any);
 
-  const response = await client.post<ProfileImageResponse>('/member/profileImage', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await client.post<ProfileImageResponse>(
+    "/member/profileImage",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
   return response.data;
 };
 
 export const deleteProfileImage = async () => {
-  const response = await client.delete<ProfileImageResponse>('/member/profileImage');
+  const response = await client.delete<ProfileImageResponse>(
+    "/member/profileImage"
+  );
   return response.data;
 };
 
 export const updateMemberInitInfo = async (data: MemberInitRequest) => {
-  const response = await client.patch<MemberInitResponse>('/member', data);
+  const response = await client.patch<MemberInitResponse>("/member", data);
   return response.data;
 };
 
 export const getMemberInfo = async () => {
-  const response = await client.get<MemberInfoResponse>('/member/info');
+  const response = await client.get<MemberInfoResponse>("/member/info");
   return response.data;
 };
 
 export const updateMemberInfo = async (name: string) => {
-  const response = await client.patch<UpdateMemberInfoResponse>('/member/info', {
-    name,
-  });
+  const response = await client.patch<UpdateMemberInfoResponse>(
+    "/member/info",
+    {
+      name,
+    }
+  );
   return response.data;
 };
 
 export const getMemberName = async () => {
-  const response = await client.get<MemberNameResponse>('/member/name');
+  const response = await client.get<MemberNameResponse>("/member/name");
   return response.data;
 };
 
 export const deleteMember = async (reason?: string) => {
-  const response = await client.delete<MemberDeleteResponse>('/member/delete', {
+  const response = await client.delete<MemberDeleteResponse>("/member/delete", {
     data: { reason },
   });
   return response.data;
 };
 
 // deleteAppleMember and other functions remain if they are still supported by backend logic logic
-// or if they are to be replaced by Firebase deletion. 
-// Assuming deleteAppleMember is still an API call to server to maybe Clean up DB? 
+// or if they are to be replaced by Firebase deletion.
+// Assuming deleteAppleMember is still an API call to server to maybe Clean up DB?
 // Or maybe we should use Firebase Auth delete manually.
 // For now, keeping existing member management APIs as requested is only about Login logic.
 export const deleteAppleMember = async (authorizationCode: string) => {
-  const response = await client.delete<AppleMemberDeleteResponse>('/member/delete/apple', {
-    data: { authorizationCode },
-  });
+  const response = await client.delete<AppleMemberDeleteResponse>(
+    "/member/delete/apple",
+    {
+      data: { authorizationCode },
+    }
+  );
   return response.data;
 };
 
@@ -214,10 +230,14 @@ export interface ReissueResponse {
 }
 
 export const reissueToken = async (refreshToken: string) => {
-  const response = await client.post<ReissueResponse>('/reissue', {}, {
-    headers: {
-      'Authorization-Refresh': refreshToken.replace(/^Bearer\s+/, ''),
-    },
-  });
+  const response = await client.post<ReissueResponse>(
+    "/reissue",
+    {},
+    {
+      headers: {
+        "Authorization-Refresh": refreshToken.replace(/^Bearer\s+/, ""),
+      },
+    }
+  );
   return response.data;
 };
