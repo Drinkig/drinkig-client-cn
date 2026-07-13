@@ -711,6 +711,10 @@
         "cooldownHours": "{{hours}}시간 후 다시 받을 수 있어요",
         "cooldownUpsell": "프리미엄은 기다림 없이 바로 다시 받을 수 있어요"
     },
+    "recommendedWines": {
+        "header": "내 취향 추천 와인",
+        "intro": "온보딩에서 알려주신 맛 취향에 맞춰 고른 와인이에요."
+    },
     "onboarding": {
         "intro": {
             "title": "안녕하세요!\n저는 소믈리에 드링키에요.",

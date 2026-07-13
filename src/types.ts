@@ -38,6 +38,7 @@ export type RootStackParamList = {
   RecommendationList:
     | { flavorProfile?: any; nickname?: string; fromReset?: boolean }
     | undefined;
+  RecommendedWines: { wines: WineDBItem[] };
   Paywall: undefined;
   PremiumWelcome: undefined;
   WineRegister: undefined;

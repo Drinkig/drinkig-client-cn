@@ -711,6 +711,10 @@
         "cooldownHours": "Available in {{hours}}h",
         "cooldownUpsell": "Premium members can retake it anytime"
     },
+    "recommendedWines": {
+        "header": "Picked for Your Taste",
+        "intro": "Wines selected to match the taste profile from your onboarding."
+    },
     "onboarding": {
         "intro": {
             "title": "Hello!\nI'm Drinky, your sommelier.",

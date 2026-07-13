@@ -8,6 +8,7 @@ import NotificationScreen from "../screens/NotificationScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen";
 import RecommendationListScreen from "../screens/RecommendationListScreen";
+import RecommendedWinesScreen from "../screens/RecommendedWinesScreen";
 import RecommendationResultScreen from "../screens/RecommendationResultScreen";
 import SearchResultScreen from "../screens/SearchResultScreen";
 import SettingScreen from "../screens/SettingScreen";
@@ -81,6 +82,10 @@ export default function RootNavigator() {
             <Stack.Screen
               name="RecommendationList"
               component={RecommendationListScreen}
+            />
+            <Stack.Screen
+              name="RecommendedWines"
+              component={RecommendedWinesScreen}
             />
             <Stack.Screen name="SearchResult" component={SearchResultScreen} />
             <Stack.Screen name="Wishlist" component={WishlistScreen} />

@@ -30,7 +30,6 @@ import {
 } from "../api/wine";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
-import { getWineTypeColor, wineTypeColors } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useUser, RecommendedWine } from "../context/UserContext";
@@ -42,27 +41,20 @@ const FLIP_DURATION = 550;
 const normalize = (s?: string | null) =>
   (s ?? "").toLowerCase().replace(/\s+/g, "");
 
-// 서버가 wineVariety/wineSort 필터를 지원하지 않을 가능성에 대비해
-// 클라이언트에서 한 번 더 스타일 일치 여부를 확인한다.
-// (필터가 무시되면 무관한 와인이 "취향 추천"으로 나가는 것을 막는 안전망)
+// 공개 GET /wine은 wineVariety 파라미터를 무시하고 이름순 첫 페이지를
+// 반환하므로(어드민 전용 필터), 클라이언트에서 품종 일치를 반드시 검증한다.
+// 과거의 "타입(레드 등)만 맞으면 통과" 폴백은 취향과 무관한 와인을
+// 추천으로 노출시켜 제거했다 — 품종이 실제로 일치할 때만 통과.
 const matchesStyle = (item: WineUserDTO, style: RecommendedWine): boolean => {
   const itemVariety = normalize(item.variety);
   const styleVariety = normalize(style.variety);
   const styleVarietyEng = normalize(style.varietyEng);
-  if (itemVariety && styleVariety) {
-    if (
-      itemVariety.includes(styleVariety) ||
-      styleVariety.includes(itemVariety) ||
-      (styleVarietyEng && itemVariety.includes(styleVarietyEng))
-    ) {
-      return true;
-    }
-  }
-  // 품종 매칭 실패 시 와인 타입(레드/화이트 등)이라도 일치하면 통과 —
-  // 한/영 표기가 섞여 있어 getWineTypeColor의 정규화 로직을 재사용한다.
-  const itemColor = getWineTypeColor(item.sort);
-  const styleColor = getWineTypeColor(style.sort);
-  return itemColor === styleColor && itemColor !== wineTypeColors.default;
+  if (!itemVariety || !styleVariety) return false;
+  return (
+    itemVariety.includes(styleVariety) ||
+    styleVariety.includes(itemVariety) ||
+    (!!styleVarietyEng && itemVariety.includes(styleVarietyEng))
+  );
 };
 
 const toWineDBItem = (item: WineUserDTO): WineDBItem => ({
@@ -123,11 +115,12 @@ export default function HomeScreen() {
       return;
     }
     let alive = true;
+    // 전체 목록(서버 최대 20병)을 들고 있다가 홈에는 10병만 노출하고,
+    // "더보기" 화면에는 전체를 넘긴다.
     const commit = (wines: WineDBItem[]) => {
-      const sliced = wines.slice(0, 10);
-      recommendedWinesCache = sliced;
+      recommendedWinesCache = wines;
       recommendedWinesCacheKey = cacheKey;
-      if (alive) setRecommendedWines(sliced);
+      if (alive) setRecommendedWines(wines);
     };
     (async () => {
       try {
@@ -163,22 +156,9 @@ export default function HomeScreen() {
           });
         });
 
-        // 품종 검색이 빈약하면 대표 스타일의 타입(레드 등)으로 한 번 더 시도
-        if (wines.length < 3) {
-          const fallback = await searchWinesPublic({
-            wineSort: styleTargets[0].sort,
-            size: 10,
-          }).catch(() => null);
-          if (fallback?.isSuccess) {
-            fallback.result.content.forEach((item: WineUserDTO) => {
-              if (seen.has(item.wineId)) return;
-              if (!matchesStyle(item, styleTargets[0])) return;
-              seen.add(item.wineId);
-              wines.push(toWineDBItem(item));
-            });
-          }
-        }
-
+        // 타입(wineSort) 기반 2차 폴백은 제거 — 서버가 필터를 무시해
+        // "타입만 같은 무관한 와인"을 채워 넣는 효과밖에 없었다.
+        // 품종 일치 와인이 3개 미만이면 섹션을 숨기는 편이 낫다.
         if (wines.length >= 3) {
           commit(wines);
         }
@@ -377,9 +357,13 @@ export default function HomeScreen() {
 
           {/* 온보딩 취향 데이터를 홈에서 처음으로 활용하는 개인화 섹션 */}
           <RecommendedSection
-            data={recommendedWines}
+            data={recommendedWines.slice(0, 10)}
             title={t("home.recommended.title")}
-            onPressMore={() => navigation.navigate("RecommendationList")}
+            onPressMore={() =>
+              navigation.navigate("RecommendedWines", {
+                wines: recommendedWines,
+              })
+            }
             onPressWine={(wine) => navigation.navigate("WineDetail", { wine })}
           />
 
