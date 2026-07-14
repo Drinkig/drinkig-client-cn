@@ -82,5 +82,7 @@
 	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>와인 메뉴를 스캔하기 위해 카메라 접근 권한이 필요합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>회원님에게 알맞은 와인 정보와 맞춤형 광고를 제공하기 위해 위치 정보를 사용할 수 있습니다.</string>
 </dict>
 </plist>
