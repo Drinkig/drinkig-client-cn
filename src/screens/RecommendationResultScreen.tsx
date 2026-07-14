@@ -19,6 +19,7 @@ import {
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import ListStateView from "../components/common/ListStateView";
 import { getErrorMessageKey } from "../utils/apiError";
+import { formatOrigin } from "../utils/wineUtils";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
 import {
@@ -233,7 +234,7 @@ const RecommendationResultScreen = () => {
                 </Text>
                 {(item.country || item.region) && (
                   <Text style={styles.styleText} numberOfLines={1}>
-                    {[item.country, item.region].filter(Boolean).join(" · ")}
+                    {formatOrigin(item.country, item.region)}
                   </Text>
                 )}
               </View>

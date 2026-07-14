@@ -76,6 +76,7 @@ export default function WineDetailScreen() {
   const headerHeight = insets.top + 52;
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [showCompatBubble, setShowCompatBubble] = useState(false);
@@ -208,6 +209,8 @@ export default function WineDetailScreen() {
           }
         } catch (error: any) {
           if (error.response && error.response.status === 400) {
+            // 서버에 없는 와인(마스터 데이터 정리로 삭제된 경우 등)은 최근 본
+            // 목록에서도 제거해 dead 항목이 계속 남지 않게 한다.
             console.log(
               "Server detail not found (local/dummy data), using local data only.",
               "\nCode:",
@@ -217,11 +220,11 @@ export default function WineDetailScreen() {
               "\nParams:",
               { wineId: wine.id, vintageYear }
             );
+            removeFromRecent(wine.id);
           } else {
             console.error("Failed to fetch wine detail:", error);
+            saveToRecent(wine);
           }
-
-          saveToRecent(wine);
         } finally {
           setIsLoading(false);
         }
@@ -263,6 +266,21 @@ export default function WineDetailScreen() {
     }
   };
 
+  const removeFromRecent = async (id: WineDBItem["id"]) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("recent_wines");
+      if (jsonValue == null) return;
+      const parsed = JSON.parse(jsonValue);
+      if (!Array.isArray(parsed)) return;
+      await AsyncStorage.setItem(
+        "recent_wines",
+        JSON.stringify(parsed.filter((w: WineDBItem) => w.id !== id))
+      );
+    } catch (e) {
+      console.error("Failed to remove recent wine", e);
+    }
+  };
+
   const handleToggleWishlist = async () => {
     if (isMyWineItem) return;
     const previousState = isLiked;
@@ -299,6 +317,11 @@ export default function WineDetailScreen() {
     !isMyWineItem && apiWineDetail?.imageUrl
       ? apiWineDetail.imageUrl
       : wine.imageUri;
+
+  // 상세 응답이 오면서 imageUri가 바뀌면 이전 실패 상태를 리셋
+  useEffect(() => {
+    setImageLoadFailed(false);
+  }, [imageUri]);
 
   const features =
     !isMyWineItem && apiWineDetail
@@ -660,11 +683,12 @@ export default function WineDetailScreen() {
           <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
               <ActivityIndicator size="large" color={colors.primary} />
-            ) : imageUri ? (
+            ) : imageUri && !imageLoadFailed ? (
               <Image
                 source={{ uri: imageUri }}
                 style={styles.wineImage}
                 resizeMode="contain"
+                onError={() => setImageLoadFailed(true)}
               />
             ) : (
               <MaterialCommunityIcons

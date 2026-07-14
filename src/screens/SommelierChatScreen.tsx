@@ -19,6 +19,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
+import { formatOrigin } from "../utils/wineUtils";
 import {
   getWineTypeColor as getWineColor,
   WINE_TYPE_ON_COLOR,
@@ -992,8 +993,7 @@ const MessageBubble: React.FC<{ message: Message }> = ({ message }) => {
                       </View>
                       {(country || region) && (
                         <Text style={styles.wineRegion} numberOfLines={1}>
-                          {country}
-                          {region ? ` · ${region}` : ""}
+                          {formatOrigin(country, region)}
                         </Text>
                       )}
                     </View>

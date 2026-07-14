@@ -83,16 +83,9 @@ const MyWineScreen = () => {
       const response = await getMyWines();
 
       if (response.isSuccess) {
-        let wines = response.result || [];
-
-        const updatedWines = wines.map((wine) => {
-          if (!wine.wineImageUrl) {
-            // S3 버킷의 wine 폴더에서 직접 이미지 URL 구성
-            // 예: https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/123.png
-            wine.wineImageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wine.wineId}.png`;
-          }
-          return wine;
-        });
+        // 이미지가 없으면 그대로 둬서 아이콘 폴백이 뜨게 한다.
+        // (과거 `wine/{id}.png` 조립 폴백은 레거시 데이터 삭제로 항상 403이라 제거)
+        const updatedWines = response.result || [];
 
         setMyWines(updatedWines);
         setErrorKey(null);

@@ -59,11 +59,6 @@ export default function MyWineDetailScreen() {
           wineData = { ...wineData, wineImageUrl: route.params.wineImageUrl };
         }
 
-        if (!wineData.wineImageUrl) {
-          // S3 버킷의 wine 폴더에서 직접 이미지 URL 구성
-          wineData.wineImageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wineData.wineId}.png`;
-        }
-
         setWine(wineData);
       } else {
         showToast(t("myWineDetail.error.fetchFailMsg"), {

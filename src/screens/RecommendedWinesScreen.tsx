@@ -31,6 +31,9 @@ const RecommendedWinesScreen = () => {
   const { t, i18n } = useTranslation();
 
   const wines = route.params?.wines ?? [];
+  const [failedImageIds, setFailedImageIds] = React.useState<Set<number>>(
+    new Set()
+  );
 
   const renderWine = ({ item }: { item: WineDBItem }) => (
     <TouchableOpacity
@@ -41,11 +44,14 @@ const RecommendedWinesScreen = () => {
       accessibilityLabel={item.nameKor || item.nameEng}
     >
       <View style={styles.wineImageContainer}>
-        {item.imageUri ? (
+        {item.imageUri && !failedImageIds.has(item.id) ? (
           <Image
             source={{ uri: item.imageUri }}
             style={styles.wineImage}
             resizeMode="contain"
+            onError={() =>
+              setFailedImageIds((prev) => new Set(prev).add(item.id))
+            }
           />
         ) : (
           <Icon name="wine" size={26} color={surfaces.onImageWell} />

@@ -64,10 +64,9 @@ const toWineDBItem = (item: WineUserDTO): WineDBItem => ({
   type: item.sort,
   country: item.country,
   grape: item.variety,
-  // 응답에 이미지가 없으면 S3 병 이미지 규칙으로 폴백 (MyWineScreen과 동일)
-  imageUri:
-    item.imageUrl ||
-    `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${item.wineId}.png`,
+  // 이미지가 없으면 비워둬서 아이콘 폴백이 뜨게 한다.
+  // (과거 `wine/{id}.png` 조립 폴백은 레거시 데이터 삭제로 항상 403이라 제거)
+  imageUri: item.imageUrl || undefined,
   vivinoRating: item.vivinoRating,
 });
 
@@ -78,9 +77,7 @@ const bottleToWineDBItem = (item: RecommendedBottleDTO): WineDBItem => ({
   type: item.sort,
   country: item.country,
   grape: item.variety,
-  imageUri:
-    item.imageUrl ||
-    `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${item.wineId}.png`,
+  imageUri: item.imageUrl || undefined,
   vivinoRating: item.vivinoRating,
 });
 

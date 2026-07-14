@@ -57,6 +57,7 @@ export default function SearchScreen() {
   const [searchErrorKey, setSearchErrorKey] = useState<string | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
+  const [failedImageIds, setFailedImageIds] = useState<Set<number>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -336,11 +337,16 @@ export default function SearchScreen() {
                       }
                     >
                       <View style={styles.recentWineImageContainer}>
-                        {wine.imageUri ? (
+                        {wine.imageUri && !failedImageIds.has(wine.id) ? (
                           <Image
                             source={{ uri: wine.imageUri }}
                             style={styles.recentWineImage}
                             resizeMode="contain"
+                            onError={() =>
+                              setFailedImageIds((prev) =>
+                                new Set(prev).add(wine.id)
+                              )
+                            }
                           />
                         ) : (
                           <Icon name="wine" size={30} color={accent.base} />

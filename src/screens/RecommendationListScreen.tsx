@@ -15,6 +15,7 @@ import { useSubscription } from "../context/SubscriptionContext";
 import { colors } from "../constants/colors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
+import { formatOrigin } from "../utils/wineUtils";
 import {
   getWineTypeColor,
   getWineTypeLabel,
@@ -148,23 +149,19 @@ const RecommendationListScreen = () => {
 
                   {i18n.language === "en" ? (
                     <Text style={styles.wineRegionEng} numberOfLines={1}>
-                      {item.countryEng || item.country}
-                      {(item.countryEng || item.country) &&
-                      (item.regionEng || item.region)
-                        ? " · "
-                        : ""}
-                      {item.regionEng || item.region}
+                      {formatOrigin(
+                        item.countryEng || item.country,
+                        item.regionEng || item.region
+                      )}
                     </Text>
                   ) : (
                     <>
                       <Text style={styles.wineRegion} numberOfLines={1}>
-                        {item.country} · {item.region}
+                        {formatOrigin(item.country, item.region)}
                       </Text>
                       {(item.countryEng || item.regionEng) && (
                         <Text style={styles.wineRegionEng} numberOfLines={1}>
-                          {item.countryEng || ""}
-                          {item.countryEng && item.regionEng ? " · " : ""}
-                          {item.regionEng || ""}
+                          {formatOrigin(item.countryEng, item.regionEng)}
                         </Text>
                       )}
                     </>

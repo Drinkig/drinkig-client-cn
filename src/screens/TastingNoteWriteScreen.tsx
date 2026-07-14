@@ -132,10 +132,7 @@ export default function TastingNoteWriteScreen() {
 
   useEffect(() => {
     if (route.params?.wineId) {
-      let imageUrl = route.params.wineImage;
-      if (!imageUrl && route.params.wineId) {
-        imageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${route.params.wineId}.png`;
-      }
+      const imageUrl = route.params.wineImage;
 
       setSelectedWine({
         wineId: route.params.wineId,
@@ -354,10 +351,7 @@ export default function TastingNoteWriteScreen() {
   const mapLevelToValue = (level: number) => level * 20;
 
   const handleSelectWine = (wine: WineUserDTO) => {
-    let imageUrl = wine.imageUrl;
-    if (!imageUrl && wine.wineId) {
-      imageUrl = `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${wine.wineId}.png`;
-    }
+    const imageUrl = wine.imageUrl;
 
     setSelectedWine({
       wineId: wine.wineId,

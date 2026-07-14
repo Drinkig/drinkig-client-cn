@@ -24,6 +24,7 @@ import ScanFeedbackSheet from "../components/common/ScanFeedbackSheet";
 import GlassHeader from "../components/common/GlassHeader";
 import { addToWishlist, removeFromWishlist } from "../api/wine";
 import { getErrorMessageKey } from "../utils/apiError";
+import { formatOrigin } from "../utils/wineUtils";
 
 // --- Types ------------------------------------------------------------------
 
@@ -341,7 +342,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
               {item.nameKor}
             </Text>
             <Text style={styles.wineMeta} numberOfLines={1}>
-              {[item.country, item.region, item.variety]
+              {[formatOrigin(item.country, item.region), item.variety]
                 .filter(Boolean)
                 .join(" · ")}
             </Text>

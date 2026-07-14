@@ -66,17 +66,6 @@ const ProfileScreen = () => {
           notes = (response.result as any).content;
         }
 
-        // S3 이미지 URL Fallback 적용
-        notes = notes.map((note: any) => {
-          if (!note.imageUrl && note.wineId) {
-            return {
-              ...note,
-              imageUrl: `https://drinkeg-bucket-1.s3.ap-northeast-2.amazonaws.com/wine/${note.wineId}.png`,
-            };
-          }
-          return note;
-        });
-
         setTastingNotes(notes);
         setWineCount(notes.length);
       }
