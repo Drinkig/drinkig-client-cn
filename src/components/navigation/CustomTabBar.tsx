@@ -164,13 +164,19 @@ export const CustomTabBar = ({
     );
   };
 
+  const bottomOffset = Math.max(insets.bottom, TAB_BAR_BOTTOM_MIN);
+
   return (
-    <View
-      style={[
-        styles.container,
-        { bottom: Math.max(insets.bottom, TAB_BAR_BOTTOM_MIN) },
-      ]}
-    >
+    <View style={[styles.container, { bottom: bottomOffset }]}>
+      {/* Bottom scrim: content scrolling behind the floating pill fades into the
+          background instead of hard-stopping at the screen edge. */}
+      <LinearGradient
+        colors={["rgba(26,25,27,0)", "rgba(26,25,27,0.85)", colors.background]}
+        locations={[0, 0.45, 1]}
+        style={[styles.bottomScrim, { bottom: -bottomOffset }]}
+        pointerEvents="none"
+      />
+
       {/* Main tab bar */}
       <View style={styles.tabBarContainer}>
         <View style={styles.glassContainer}>
@@ -257,6 +263,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     zIndex: 100,
+  },
+  bottomScrim: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: -28,
   },
   tabBarContainer: {
     width: TAB_BAR_WIDTH,
