@@ -1,13 +1,20 @@
 import { Platform } from "react-native";
 import {
   initConnection,
+  getSubscriptions,
   purchaseUpdatedListener,
   purchaseErrorListener,
   finishTransaction,
+  Subscription,
   SubscriptionPurchase,
   PurchaseError,
 } from "react-native-iap";
 import { verifyReceipt } from "../api/subscription";
+
+export const PRODUCT_IDS = Platform.select({
+  ios: ["com.drinkig.premium.monthly.v2", "com.drinkig.premium.yearly.v2"],
+  default: [] as string[],
+});
 
 // IAP 연결과 구매 리스너를 앱 수명주기 동안 1회만 전역 등록한다.
 // PaywallScreen 마운트 중에만 리스너가 살아있으면, 결제 직후 강제종료·
@@ -24,6 +31,21 @@ let listenersRegistered = false;
 let connectionReady = false;
 let uiHandlers: PurchaseUiHandlers = {};
 let onPurchaseVerified: (() => void | Promise<void>) | null = null;
+let cachedSubscriptions: Subscription[] = [];
+
+// 앱 시작 시 미리 받아둔 스토어 상품. 페이월이 열릴 때 이 캐시가 있으면
+// 가격·CTA가 로딩 없이 즉시 표시된다.
+export const getCachedSubscriptions = (): Subscription[] => cachedSubscriptions;
+
+export const loadSubscriptions = async (): Promise<Subscription[]> => {
+  const ok = await ensureIapConnection();
+  if (!ok) return [];
+  const subs = await getSubscriptions({ skus: PRODUCT_IDS! });
+  if (subs.length > 0) {
+    cachedSubscriptions = subs;
+  }
+  return subs;
+};
 
 // Paywall 등 화면이 마운트 중일 때만 토스트/스피너 해제 등 UI 피드백을 받는다.
 export const setPurchaseUiHandlers = (
@@ -55,6 +77,11 @@ export const initIap = async (
   const ok = await ensureIapConnection();
   if (!ok) return; // 다음 initIap 호출에서 재시도
   listenersRegistered = true;
+
+  // 상품 정보를 미리 캐시해 페이월 진입 시 가격 로딩이 보이지 않게 한다.
+  loadSubscriptions().catch((e) =>
+    console.warn("IAP subscription preload failed:", e)
+  );
 
   purchaseUpdatedListener(async (purchase: SubscriptionPurchase) => {
     try {

@@ -12,7 +12,10 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import appleAuth from "@invertase/react-native-apple-authentication";
@@ -114,6 +117,7 @@ import { getSystemLanguage } from "../i18n";
 
 const SettingScreen = () => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { logout, resetToOnboarding } = useUser();
   const {
     isPremium,
@@ -364,7 +368,7 @@ App Version: ${DeviceInfo.getVersion()}
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <GlassHeader
         floating={false}
         title={t("setting.header")}
@@ -380,7 +384,10 @@ App Version: ${DeviceInfo.getVersion()}
 
       <ScrollView
         style={styles.content}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: insets.bottom + spacing.lg },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.sectionTitle}>{t("setting.section.account")}</Text>
@@ -747,7 +754,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
   },
   sectionTitle: {
     fontSize: 13,

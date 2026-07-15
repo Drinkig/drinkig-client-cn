@@ -8,7 +8,6 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
-  Platform,
   Animated,
   Easing,
   Dimensions,
@@ -20,7 +19,6 @@ import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import LinearGradient from "react-native-linear-gradient";
 import {
-  getSubscriptions,
   requestSubscription,
   getAvailablePurchases,
   getPendingPurchasesIOS,
@@ -28,8 +26,10 @@ import {
   PurchaseError,
 } from "react-native-iap";
 import {
-  ensureIapConnection,
+  getCachedSubscriptions,
+  loadSubscriptions,
   setPurchaseUiHandlers,
+  PRODUCT_IDS,
 } from "../utils/iapManager";
 import { colors } from "../constants/colors";
 import {
@@ -42,11 +42,6 @@ import {
 import { useSubscription } from "../context/SubscriptionContext";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { redeemPromoCode, verifyReceipt } from "../api/subscription";
-
-const PRODUCT_IDS = Platform.select({
-  ios: ["com.drinkig.premium.monthly.v2", "com.drinkig.premium.yearly.v2"],
-  default: [],
-});
 
 type PlanType = "MONTHLY" | "YEARLY";
 
@@ -108,8 +103,13 @@ const PaywallScreen = () => {
   const [showPromoInput, setShowPromoInput] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedeemingPromo, setIsRedeemingPromo] = useState(false);
-  const [products, setProducts] = useState<Subscription[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  // 앱 시작 시 미리 받아둔 캐시가 있으면 로딩 없이 즉시 표시
+  const [products, setProducts] = useState<Subscription[]>(
+    getCachedSubscriptions()
+  );
+  const [isLoadingProducts, setIsLoadingProducts] = useState(
+    getCachedSubscriptions().length === 0
+  );
   // 상품 로드 실패 시 "다시 시도"가 IAP 초기화 전체를 재실행하게 하는 트리거
   const [iapRetryNonce, setIapRetryNonce] = useState(0);
 
@@ -117,33 +117,32 @@ const PaywallScreen = () => {
   // 이 화면은 상품 로드와 UI 피드백(토스트/스피너 해제)만 담당한다.
   useEffect(() => {
     const loadProducts = async () => {
-      setIsLoadingProducts(true);
+      // 캐시가 있으면 그대로 쓰고 백그라운드에서 조용히 갱신
+      const hasCache = getCachedSubscriptions().length > 0;
+      if (!hasCache) setIsLoadingProducts(true);
       try {
-        const ok = await ensureIapConnection();
-        if (ok) {
-          const subs = await getSubscriptions({ skus: PRODUCT_IDS! });
-          setProducts(subs);
-          // DEBUG: 연간 결제창 미표시 원인 추적 — 미완료 거래가 큐에 남아있으면
-          // StoreKit이 해당 상품의 결제창을 띄우지 않는다. 확인 후 제거할 것.
+        const subs = await loadSubscriptions();
+        if (subs.length > 0) setProducts(subs);
+        // DEBUG: 연간 결제창 미표시 원인 추적 — 미완료 거래가 큐에 남아있으면
+        // StoreKit이 해당 상품의 결제창을 띄우지 않는다. 확인 후 제거할 것.
+        console.log(
+          "[IAP][debug] loaded products:",
+          subs.map((s) => s.productId)
+        );
+        try {
+          const pending = await getPendingPurchasesIOS();
           console.log(
-            "[IAP][debug] loaded products:",
-            subs.map((s) => s.productId)
+            "[IAP][debug] pending (unfinished) purchases:",
+            JSON.stringify(
+              pending.map((p) => ({
+                productId: p.productId,
+                transactionId: p.transactionId,
+                transactionDate: p.transactionDate,
+              }))
+            )
           );
-          try {
-            const pending = await getPendingPurchasesIOS();
-            console.log(
-              "[IAP][debug] pending (unfinished) purchases:",
-              JSON.stringify(
-                pending.map((p) => ({
-                  productId: p.productId,
-                  transactionId: p.transactionId,
-                  transactionDate: p.transactionDate,
-                }))
-              )
-            );
-          } catch (e) {
-            console.log("[IAP][debug] getPendingPurchasesIOS failed:", e);
-          }
+        } catch (e) {
+          console.log("[IAP][debug] getPendingPurchasesIOS failed:", e);
         }
       } catch (error) {
         console.warn(
@@ -349,7 +348,12 @@ const PaywallScreen = () => {
   // Diagonal shimmer sweep across CTA button
   const shimmerAnim = useRef(new Animated.Value(0)).current;
   const [ctaWidth, setCtaWidth] = useState(0);
+  const shimmerVisible = ctaWidth > 0 && !isProcessing && !isLoadingProducts;
+  // 네이티브 드라이버 애니메이션은 시작 시점에 붙어있는 뷰에만 적용되므로,
+  // 시머 뷰가 (재)마운트될 때마다 루프를 새로 시작해야 한다.
   useEffect(() => {
+    if (!shimmerVisible) return;
+    shimmerAnim.setValue(0);
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(shimmerAnim, {
@@ -363,7 +367,7 @@ const PaywallScreen = () => {
     );
     loop.start();
     return () => loop.stop();
-  }, [shimmerAnim]);
+  }, [shimmerAnim, shimmerVisible]);
 
   // Auto-scroll so the promo input is visible above the footer when opened
   useEffect(() => {
@@ -632,14 +636,15 @@ const PaywallScreen = () => {
       </ScrollView>
 
       <View
-        style={styles.footer}
+        style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 12) }]}
         onLayout={(e) => setFooterHeight(e.nativeEvent.layout.height)}
       >
         <TouchableOpacity
           activeOpacity={0.9}
           style={[
             styles.purchaseButton,
-            (isProcessing || isLoadingProducts || !pricesAvailable) &&
+            !isLoadingProducts &&
+              !pricesAvailable &&
               styles.purchaseButtonDisabled,
           ]}
           onPress={handlePurchase}
@@ -652,7 +657,7 @@ const PaywallScreen = () => {
             end={{ x: 1, y: 1 }}
             style={StyleSheet.absoluteFillObject}
           />
-          {ctaWidth > 0 && !isProcessing && (
+          {shimmerVisible && (
             <Animated.View
               pointerEvents="none"
               style={[
@@ -678,7 +683,7 @@ const PaywallScreen = () => {
               />
             </Animated.View>
           )}
-          {isProcessing ? (
+          {isProcessing || isLoadingProducts ? (
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <Text style={styles.purchaseButtonText}>
@@ -1022,8 +1027,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 24,
-    paddingBottom: 40,
-    paddingTop: 16,
+    paddingTop: 12,
     backgroundColor: colors.background,
   },
   purchaseButton: {
@@ -1048,7 +1052,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: colors.textSecondary,
     fontSize: 12,
-    marginTop: 10,
+    marginTop: 8,
   },
   purchaseButtonDisabled: {
     opacity: 0.6,
@@ -1063,14 +1067,14 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 10,
     lineHeight: 14,
-    marginTop: 8,
+    marginTop: 6,
     opacity: 0.8,
   },
   legalRow: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingTop: 10,
   },
   legalLink: {
     color: colors.textSecondary,
