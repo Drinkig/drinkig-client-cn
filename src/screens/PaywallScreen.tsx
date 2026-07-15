@@ -23,6 +23,7 @@ import {
   getSubscriptions,
   requestSubscription,
   getAvailablePurchases,
+  getPendingPurchasesIOS,
   Subscription,
   PurchaseError,
 } from "react-native-iap";
@@ -122,6 +123,27 @@ const PaywallScreen = () => {
         if (ok) {
           const subs = await getSubscriptions({ skus: PRODUCT_IDS! });
           setProducts(subs);
+          // DEBUG: 연간 결제창 미표시 원인 추적 — 미완료 거래가 큐에 남아있으면
+          // StoreKit이 해당 상품의 결제창을 띄우지 않는다. 확인 후 제거할 것.
+          console.log(
+            "[IAP][debug] loaded products:",
+            subs.map((s) => s.productId)
+          );
+          try {
+            const pending = await getPendingPurchasesIOS();
+            console.log(
+              "[IAP][debug] pending (unfinished) purchases:",
+              JSON.stringify(
+                pending.map((p) => ({
+                  productId: p.productId,
+                  transactionId: p.transactionId,
+                  transactionDate: p.transactionDate,
+                }))
+              )
+            );
+          } catch (e) {
+            console.log("[IAP][debug] getPendingPurchasesIOS failed:", e);
+          }
         }
       } catch (error) {
         console.warn(
@@ -180,8 +202,15 @@ const PaywallScreen = () => {
     try {
       await requestSubscription({ sku: productId });
       // Result handled in purchaseUpdatedListener
-    } catch (error) {
+    } catch (error: any) {
       setIsProcessing(false);
+      // DEBUG: 연간 결제창 미표시 원인 추적 — reject 사유를 화면에 노출. 확인 후 제거할 것.
+      console.error("[IAP][debug] requestSubscription rejected:", error);
+      if (error?.code !== "E_USER_CANCELLED") {
+        showToast(`[debug] ${error?.code ?? "?"}: ${error?.message ?? error}`, {
+          type: "error",
+        });
+      }
     }
   };
 
