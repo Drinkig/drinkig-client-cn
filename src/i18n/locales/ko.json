@@ -893,7 +893,9 @@
         }
     },
     "recommendationResult": {
-        "loading": "회원님의 취향을 분석 중입니다...",
+        "analyzing0": "취향 분석을 마무리하고 있어요",
+        "analyzing1": "딱 맞는 스타일을 고르고 있어요",
+        "analyzing2": "추천 결과가 준비됐어요",
         "header": "취향 분석 결과",
         "subtitle": "회원님께 딱 맞는 와인 스타일을 찾았어요!",
         "chartTitle": "{{nickname}}님의 입맛 취향",
@@ -971,6 +973,36 @@
             "ROSE": "로제",
             "PORT": "포트",
             "OTHER": "기타"
+        },
+        "verdict": {
+            "great": "취향에 잘 맞아요",
+            "okay": "무난해요",
+            "challenge": "평소 취향과는 달라요",
+            "caption": "내 취향 프로필과 비교한 결과예요"
+        },
+        "flavorCompare": {
+            "title": "내 취향과 비교",
+            "user": "내 취향",
+            "wine": "이 와인"
+        },
+        "aiEstimate": {
+            "badge": "AI 추정",
+            "badgeLow": "품종 기반 일반 추정"
+        },
+        "request": {
+            "cta": "이 와인 등록 요청하기",
+            "done": "등록 요청 완료",
+            "success": "등록 요청을 보냈어요. 검토 후 추가할게요!",
+            "failed": "등록 요청에 실패했어요. 다시 시도해 주세요."
+        },
+        "group": {
+            "great": "잘 맞아요",
+            "okay": "무난해요",
+            "challenge": "도전",
+            "unknown": "정보를 찾지 못한 와인"
+        },
+        "label": {
+            "others": "함께 인식된 와인 {{count}}개"
         }
     },
     "scanFeedback": {
@@ -1266,7 +1298,8 @@
             "acidity": "산미",
             "sweetness": "당도",
             "tannin": "타닌",
-            "body": "바디감"
+            "body": "바디감",
+            "alcohol": "알코올"
         },
         "detailFeedback": {
             "perfect": "취향에 딱 맞아요!",
@@ -1285,7 +1318,11 @@
             "bodyHighMuch": "취향보다 훨씬 묵직해요.",
             "bodyHighLittle": "취향보다 조금 묵직해요.",
             "bodyLowMuch": "취향보다 훨씬 가벼워요.",
-            "bodyLowLittle": "취향보다 조금 가벼워요."
+            "bodyLowLittle": "취향보다 조금 가벼워요.",
+            "alcoholHighMuch": "취향보다 도수가 훨씬 높아요.",
+            "alcoholHighLittle": "취향보다 도수가 조금 높아요.",
+            "alcoholLowMuch": "취향보다 도수가 훨씬 낮아요.",
+            "alcoholLowLittle": "취향보다 도수가 조금 낮아요."
         }
     },
     "tasteReset": {

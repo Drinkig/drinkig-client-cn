@@ -1,10 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
-  FlatList,
+  SectionList,
   TouchableOpacity,
   StatusBar,
   ActivityIndicator,
@@ -13,122 +19,55 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import Svg, { Circle } from "react-native-svg";
 import { colors } from "../constants/colors";
 import { radius, accent, surfaces } from "../constants/theme";
 import { getWineTypeColor } from "../constants/wineColors";
-import client from "../api/client";
 import { useTranslation } from "react-i18next";
 import { incrementScanCount } from "./CameraScreen";
 import { useSubscription } from "../context/SubscriptionContext";
+import { useUser } from "../context/UserContext";
 import ScanFeedbackSheet from "../components/common/ScanFeedbackSheet";
 import GlassHeader from "../components/common/GlassHeader";
 import { addToWishlist, removeFromWishlist } from "../api/wine";
+import {
+  scanWineImage,
+  requestWineFromScan,
+  toScanLang,
+  AiEstimateDTO,
+  MenuScanResultDTO,
+  ScannedWineItemDTO,
+  UnmatchedWineDTO,
+} from "../api/scan";
 import { getErrorMessageKey } from "../utils/apiError";
 import { formatOrigin } from "../utils/wineUtils";
+import ScoreRing, {
+  getScoreTier,
+  ScoreTier,
+} from "../components/camera/ScoreRing";
+import AiEstimateBadge from "../components/camera/AiEstimateBadge";
+import WineRequestButton from "../components/camera/WineRequestButton";
+import LabelScanResultView from "../components/camera/LabelScanResultView";
 
-// --- Types ------------------------------------------------------------------
+// --- Section model ------------------------------------------------------------
+// 메뉴판 결과는 점수순 단일 리스트 대신 "잘 맞아요/무난해요/도전" 그룹 섹션으로
+// 나눈다. AI 추정 항목도 점수에 따라 같은 그룹에 편입한다.
 
-export interface ScannedWineItemDTO {
-  wineId: number;
-  nameEng: string;
-  nameKor: string;
-  imageUrl: string | null;
-  vintageYear: number | null;
-  menuPrice: string | null;
-  sort: "RED" | "WHITE" | "SPARKLING" | "ROSE" | "PORT" | "OTHER";
-  country: string;
-  region: string;
-  variety: string;
-  flavorMatchScore: number; // 0–100
-}
+type MenuEntry =
+  | { kind: "matched"; wine: ScannedWineItemDTO; score: number }
+  | {
+      kind: "estimated";
+      item: UnmatchedWineDTO;
+      estimate: AiEstimateDTO;
+      score: number;
+    }
+  | { kind: "unknown"; item: UnmatchedWineDTO };
 
-export interface MenuScanResultDTO {
-  totalMatchedCount: number;
-  matchedWines: ScannedWineItemDTO[];
-  unmatchedWines: {
-    rawText: string;
-    vintageYear: number | null;
-    menuPrice: string | null;
-  }[];
-}
-
-export interface MenuScanResponse {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: MenuScanResultDTO;
-}
-
-// --- Helpers ----------------------------------------------------------------
-
-// Animated SVG circle wrapper
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-const RING_SIZE = 54;
-const STROKE_WIDTH = 4;
-const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-function scoreColor(score: number) {
-  if (score >= 70) return colors.success; // 좋음
-  if (score >= 55) return colors.warning; // 준수
-  return colors.textTertiary; // 낮음
-}
-
-function ScoreRing({ score }: { score: number }) {
-  const progress = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(progress, {
-      toValue: score / 100,
-      duration: 800,
-      useNativeDriver: false,
-    }).start();
-  }, [score]);
-
-  // dashoffset: 0 = full ring filled, CIRCUMFERENCE = empty
-  const strokeDashoffset = progress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [CIRCUMFERENCE, 0],
-  });
-
-  const color = scoreColor(score);
-
-  return (
-    <View style={styles.scoreRingWrapper}>
-      <Svg width={RING_SIZE} height={RING_SIZE} style={styles.scoreSvg}>
-        {/* Track (background) */}
-        <Circle
-          cx={RING_SIZE / 2}
-          cy={RING_SIZE / 2}
-          r={RADIUS}
-          stroke={colors.surface2}
-          strokeWidth={STROKE_WIDTH}
-          fill="transparent"
-        />
-        {/* Progress arc */}
-        <AnimatedCircle
-          cx={RING_SIZE / 2}
-          cy={RING_SIZE / 2}
-          r={RADIUS}
-          stroke={color}
-          strokeWidth={STROKE_WIDTH}
-          fill="transparent"
-          strokeDasharray={CIRCUMFERENCE}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </Svg>
-      {/* Center label */}
-      <View style={styles.scoreCenter}>
-        <Text style={[styles.scorePercent, { color }]}>
-          {score}
-          <Text style={[styles.scoreLabel, { color }]}>%</Text>
-        </Text>
-      </View>
-    </View>
-  );
+interface MenuSection {
+  key: string;
+  title: string;
+  subtitle?: string;
+  dotColor: string | null;
+  data: MenuEntry[];
 }
 
 // --- Main Screen ------------------------------------------------------------
@@ -140,9 +79,10 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     imageUri: string;
     scanType?: "label" | "list";
   };
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isPremium } = useSubscription();
-  // 라벨/메뉴판 스캔이 한 화면을 공유하므로 scanType에 맞춰 안내 문구를 분기한다.
+  const { flavorProfile } = useUser();
+  // 라벨/메뉴판 스캔이 한 화면을 공유하므로 scanType에 맞춰 뷰를 분기한다.
   const isLabel = scanType === "label";
   const headerTitle = t(
     isLabel ? "menuScanResult.headerLabel" : "menuScanResult.header"
@@ -155,6 +95,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [wishedIds, setWishedIds] = useState<Set<number>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // 등록 요청 상태 — rawText 기준으로 중복 요청을 막는다
+  const [requestedTexts, setRequestedTexts] = useState<Set<string>>(new Set());
+  const [requestingText, setRequestingText] = useState<string | null>(null);
+  // AI 추정 카드 인라인 확장 상태 (메뉴판 리스트)
+  const [expandedTexts, setExpandedTexts] = useState<Set<string>>(new Set());
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const toastAnim = useRef(new Animated.Value(0)).current;
@@ -167,28 +112,16 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     const abortController = new AbortController();
     const scanMenu = async () => {
       try {
-        const formData = new FormData();
-        formData.append("image", {
-          uri: imageUri,
-          name: "menu_scan.jpg",
-          type: "image/jpeg",
-        } as any);
-        formData.append("scanType", scanType);
-
-        const response = await client.post<MenuScanResponse>(
-          "/wine/menu-scan",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            timeout: 60000,
-            signal: abortController.signal,
-          }
-        );
+        const response = await scanWineImage({
+          imageUri,
+          scanType,
+          // AI 추정 reason 등 서버 생성 문구가 UI 언어로 오도록 lang 전달
+          lang: toScanLang(i18n.language),
+          signal: abortController.signal,
+        });
 
         if (cancelled) return;
-        const scanResult = response.data.result;
+        const scanResult = response.result;
         setData(scanResult);
         // 서버가 스캔 성공 시 횟수를 차감한다(인식 실패/네트워크 오류는 차감 없음).
         // 로컬 카운트는 /scan/remaining 조회 실패 시 폴백 표시용 — 서버와 동일하게
@@ -244,27 +177,31 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
       abortController.abort();
       if (feedbackTimer) clearTimeout(feedbackTimer);
     };
-  }, [imageUri, scanType, t, fadeAnim]);
+  }, [imageUri, scanType, t, i18n.language, fadeAnim]);
+
+  // ----- Toast -----
+  const showToast = useCallback(
+    (message: string) => {
+      setToastMessage(message);
+      toastAnim.setValue(0);
+      Animated.sequence([
+        Animated.timing(toastAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.delay(1500),
+        Animated.timing(toastAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setToastMessage(null));
+    },
+    [toastAnim]
+  );
 
   // ----- Wishlist toggle -----
-  const showToast = useCallback((message: string) => {
-    setToastMessage(message);
-    toastAnim.setValue(0);
-    Animated.sequence([
-      Animated.timing(toastAnim, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.delay(1500),
-      Animated.timing(toastAnim, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start(() => setToastMessage(null));
-  }, []);
-
   const handleToggleWishlist = useCallback(
     async (wine: ScannedWineItemDTO) => {
       const wasWished = wishedIds.has(wine.wineId);
@@ -298,27 +235,123 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     [wishedIds, showToast, t]
   );
 
-  // ----- Render helpers -----
+  // ----- 등록 요청 (미매칭 와인) -----
+  const handleRequestWine = useCallback(
+    async (item: UnmatchedWineDTO) => {
+      if (requestedTexts.has(item.rawText) || requestingText) return;
+      setRequestingText(item.rawText);
+      try {
+        const response = await requestWineFromScan(item);
+        if (response.isSuccess) {
+          setRequestedTexts((prev) => new Set(prev).add(item.rawText));
+          showToast(t("menuScanResult.request.success"));
+        } else {
+          showToast(response.message || t("menuScanResult.request.failed"));
+        }
+      } catch {
+        showToast(t("menuScanResult.request.failed"));
+      } finally {
+        setRequestingText(null);
+      }
+    },
+    [requestedTexts, requestingText, showToast, t]
+  );
 
-  const renderWineItem = ({ item }: { item: ScannedWineItemDTO }) => {
-    const isBest = item.flavorMatchScore >= 80;
+  const handleOpenWineDetail = useCallback(
+    (wine: ScannedWineItemDTO) => {
+      navigation.navigate("WineDetail", {
+        wine: {
+          id: wine.wineId,
+          nameKor: wine.nameKor,
+          nameEng: wine.nameEng,
+          type: wine.sort,
+          country: wine.country,
+          grape: wine.variety,
+          imageUri: wine.imageUrl ?? undefined,
+        },
+      });
+    },
+    [navigation]
+  );
+
+  // ----- 메뉴판 그룹 섹션 구성 -----
+  const sections = useMemo<MenuSection[]>(() => {
+    if (!data || isLabel) return [];
+    const groups: Record<ScoreTier, Exclude<MenuEntry, { kind: "unknown" }>[]> =
+      {
+        great: [],
+        okay: [],
+        challenge: [],
+      };
+    data.matchedWines.forEach((wine) => {
+      groups[getScoreTier(wine.flavorMatchScore)].push({
+        kind: "matched",
+        wine,
+        score: wine.flavorMatchScore,
+      });
+    });
+    (data.unmatchedWines ?? []).forEach((item) => {
+      // 서버 미배포 등으로 aiEstimate가 없으면 기존처럼 하단 섹션으로 폴백
+      if (!item.aiEstimate) return;
+      groups[getScoreTier(item.aiEstimate.flavorMatchScore)].push({
+        kind: "estimated",
+        item,
+        estimate: item.aiEstimate,
+        score: item.aiEstimate.flavorMatchScore,
+      });
+    });
+
+    const built: MenuSection[] = [];
+    (["great", "okay", "challenge"] as ScoreTier[]).forEach((tier) => {
+      const entries = groups[tier].sort((a, b) => b.score - a.score);
+      if (entries.length > 0) {
+        built.push({
+          key: tier,
+          title: t(`menuScanResult.group.${tier}`),
+          dotColor:
+            tier === "great"
+              ? colors.success
+              : tier === "okay"
+              ? colors.warning
+              : colors.textTertiary,
+          data: entries,
+        });
+      }
+    });
+
+    const unknown: MenuEntry[] = (data.unmatchedWines ?? [])
+      .filter((item) => !item.aiEstimate)
+      .map((item) => ({ kind: "unknown" as const, item }));
+    if (unknown.length > 0) {
+      built.push({
+        key: "unknown",
+        title: t("menuScanResult.group.unknown"),
+        subtitle: t("menuScanResult.unmatched.subtitle"),
+        dotColor: null,
+        data: unknown,
+      });
+    }
+    return built;
+  }, [data, isLabel, t]);
+
+  const toggleExpanded = useCallback((rawText: string) => {
+    setExpandedTexts((prev) => {
+      const next = new Set(prev);
+      if (next.has(rawText)) next.delete(rawText);
+      else next.add(rawText);
+      return next;
+    });
+  }, []);
+
+  // ----- Render helpers (메뉴판 리스트) -----
+
+  const renderMatchedCard = (wine: ScannedWineItemDTO) => {
+    const isBest = wine.flavorMatchScore >= 80;
     return (
       <TouchableOpacity
         style={[styles.wineCard, isBest && styles.wineCardHighlight]}
         activeOpacity={0.75}
-        onPress={() =>
-          navigation.navigate("WineDetail", {
-            wine: {
-              id: item.wineId,
-              nameKor: item.nameKor,
-              nameEng: item.nameEng,
-              type: item.sort,
-              country: item.country,
-              grape: item.variety,
-              imageUri: item.imageUrl ?? undefined,
-            },
-          })
-        }
+        onPress={() => handleOpenWineDetail(wine)}
       >
         {isBest && (
           <View style={styles.bestBadge}>
@@ -331,17 +364,17 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         )}
         <View style={styles.wineCardRow}>
           {/* Wine image + sort color bar */}
-          {item.imageUrl ? (
+          {wine.imageUrl ? (
             <View style={styles.wineImageContainer}>
               <Image
-                source={{ uri: item.imageUrl }}
+                source={{ uri: wine.imageUrl }}
                 style={styles.wineImage}
                 resizeMode="contain"
               />
               <View
                 style={[
                   styles.sortBar,
-                  { backgroundColor: getWineTypeColor(item.sort) },
+                  { backgroundColor: getWineTypeColor(wine.sort) },
                 ]}
               />
             </View>
@@ -350,13 +383,13 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           {/* Wine info */}
           <View style={styles.wineInfo}>
             <Text style={styles.wineNameEng} numberOfLines={2}>
-              {item.nameEng}
+              {wine.nameEng}
             </Text>
             <Text style={styles.wineNameKor} numberOfLines={1}>
-              {item.nameKor}
+              {wine.nameKor}
             </Text>
             <Text style={styles.wineMeta} numberOfLines={1}>
-              {[formatOrigin(item.country, item.region), item.variety]
+              {[formatOrigin(wine.country, wine.region), wine.variety]
                 .filter(Boolean)
                 .join(" · ")}
             </Text>
@@ -368,24 +401,140 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             onPress={(e) => {
               e.stopPropagation();
-              handleToggleWishlist(item);
+              handleToggleWishlist(wine);
             }}
           >
             <Ionicons
-              name={wishedIds.has(item.wineId) ? "heart" : "heart-outline"}
+              name={wishedIds.has(wine.wineId) ? "heart" : "heart-outline"}
               size={22}
               color={
-                wishedIds.has(item.wineId) ? colors.error : colors.textTertiary
+                wishedIds.has(wine.wineId) ? colors.error : colors.textTertiary
               }
             />
           </TouchableOpacity>
 
           {/* Score */}
-          <ScoreRing score={item.flavorMatchScore} />
+          <View style={styles.scoreRingSpacing}>
+            <ScoreRing score={wine.flavorMatchScore} />
+          </View>
         </View>
       </TouchableOpacity>
     );
   };
+
+  const renderEstimatedCard = (item: UnmatchedWineDTO, est: AiEstimateDTO) => {
+    const expanded = expandedTexts.has(item.rawText);
+    const chips = [
+      t(`menuScanResult.sortLabels.${est.sort}`),
+      est.variety,
+      est.country,
+    ].filter(Boolean) as string[];
+    return (
+      <TouchableOpacity
+        style={styles.wineCard}
+        activeOpacity={0.75}
+        onPress={() => toggleExpanded(item.rawText)}
+      >
+        <View style={styles.wineCardRow}>
+          <View style={styles.wineInfo}>
+            <AiEstimateBadge confidence={est.confidence} />
+            <Text style={styles.estimatedName} numberOfLines={2}>
+              {item.rawText}
+            </Text>
+            {!!est.reason && (
+              <Text
+                style={styles.estimatedReason}
+                numberOfLines={expanded ? undefined : 2}
+              >
+                {est.reason}
+              </Text>
+            )}
+          </View>
+          <View style={styles.scoreRingSpacing}>
+            <ScoreRing score={est.flavorMatchScore} />
+          </View>
+        </View>
+        {/* 탭 → 상세 이동 대신 간이 정보 + 등록 요청 CTA 인라인 확장 */}
+        {expanded && (
+          <View style={styles.estimatedExpanded}>
+            {chips.length > 0 && (
+              <View style={styles.chipRow}>
+                {chips.map((chip, i) => (
+                  <View key={i} style={styles.metaChip}>
+                    <Text style={styles.metaChipText}>{chip}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            <WineRequestButton
+              requested={requestedTexts.has(item.rawText)}
+              requesting={requestingText === item.rawText}
+              onPress={() => handleRequestWine(item)}
+            />
+          </View>
+        )}
+        <View style={styles.expandIndicator}>
+          <Ionicons
+            name={expanded ? "chevron-up" : "chevron-down"}
+            size={14}
+            color={colors.textTertiary}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderUnknownRow = (item: UnmatchedWineDTO) => (
+    <View style={styles.unmatchedItem}>
+      <Ionicons
+        name="wine-outline"
+        size={16}
+        color={colors.textTertiary}
+        style={styles.unmatchedIcon}
+      />
+      <Text style={styles.unmatchedText} numberOfLines={2}>
+        {item.rawText}
+      </Text>
+      <WineRequestButton
+        requested={requestedTexts.has(item.rawText)}
+        requesting={requestingText === item.rawText}
+        onPress={() => handleRequestWine(item)}
+      />
+    </View>
+  );
+
+  const renderEntry = ({ item }: { item: MenuEntry }) => {
+    if (item.kind === "matched") return renderMatchedCard(item.wine);
+    if (item.kind === "estimated")
+      return renderEstimatedCard(item.item, item.estimate);
+    return renderUnknownRow(item.item);
+  };
+
+  const renderSectionHeader = ({ section }: { section: MenuSection }) => (
+    <View style={styles.sectionHeader}>
+      <View style={styles.sectionTitleRow}>
+        {section.dotColor && (
+          <View
+            style={[styles.sectionDot, { backgroundColor: section.dotColor }]}
+          />
+        )}
+        <Text style={styles.sectionTitle}>{section.title}</Text>
+        <Text style={styles.sectionCount}>{section.data.length}</Text>
+      </View>
+      {!!section.subtitle && (
+        <Text style={styles.sectionSubtitle}>{section.subtitle}</Text>
+      )}
+    </View>
+  );
+
+  const renderBackButton = () => (
+    <TouchableOpacity
+      onPress={() => navigation.goBack()}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <Ionicons name="arrow-back" size={22} color={colors.white} />
+    </TouchableOpacity>
+  );
 
   // ----- Loading state -----
   if (loading) {
@@ -398,20 +547,13 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         <GlassHeader
           floating={false}
           title={headerTitle}
-          left={
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="arrow-back" size={22} color={colors.white} />
-            </TouchableOpacity>
-          }
+          left={renderBackButton()}
         />
         <View style={styles.stateContainer}>
           <ActivityIndicator
             size="large"
             color={accent.base}
-            style={{ marginBottom: 20 }}
+            style={styles.stateSpinner}
           />
           <Text style={styles.stateTitle}>
             {t(
@@ -429,7 +571,12 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
   }
 
   // ----- Error state -----
-  if (error || !data) {
+  const isEmptyResult =
+    !!data &&
+    data.matchedWines.length === 0 &&
+    (data.unmatchedWines?.length ?? 0) === 0;
+
+  if (error || !data || isEmptyResult) {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <StatusBar
@@ -439,26 +586,21 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         <GlassHeader
           floating={false}
           title={headerTitle}
-          left={
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="arrow-back" size={22} color={colors.white} />
-            </TouchableOpacity>
-          }
+          left={renderBackButton()}
         />
         <View style={styles.stateContainer}>
           <Ionicons
-            name="alert-circle-outline"
+            name={isEmptyResult ? "search-outline" : "alert-circle-outline"}
             size={52}
-            color={colors.error}
-            style={{ marginBottom: 16 }}
+            color={isEmptyResult ? colors.textTertiary : colors.error}
+            style={styles.stateIcon}
           />
-          <Text style={[styles.stateTitle, { textAlign: "center" }]}>
-            {error ?? t("menuScanResult.error.unknown")}
+          <Text style={[styles.stateTitle, styles.stateTitleCenter]}>
+            {isEmptyResult
+              ? t("menuScanResult.empty")
+              : error ?? t("menuScanResult.error.unknown")}
           </Text>
-          {!isPremium && !isLimitError && (
+          {!isPremium && !isLimitError && !isEmptyResult && (
             <Text style={styles.quotaNotice}>
               {t("menuScanResult.error.quotaNotConsumed")}
             </Text>
@@ -485,88 +627,57 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
   }
 
   // ----- Result state -----
-  const sorted = [...data.matchedWines].sort(
-    (a, b) => b.flavorMatchScore - a.flavorMatchScore
-  );
-  const hasUnmatched = data.unmatchedWines && data.unmatchedWines.length > 0;
-
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
-      <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+      <Animated.View style={[styles.flex, { opacity: fadeAnim }]}>
         {/* Header */}
         <GlassHeader
           floating={false}
           title={headerTitle}
-          left={
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Ionicons name="arrow-back" size={22} color={colors.white} />
-            </TouchableOpacity>
-          }
+          left={renderBackButton()}
         />
 
-        <FlatList
-          data={sorted}
-          keyExtractor={(item, index) => `${item.wineId}-${index}`}
-          renderItem={renderWineItem}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
-            <View style={styles.resultCountContainer}>
-              <Text style={styles.resultCountText}>
-                <Text style={styles.resultCountHighlight}>
-                  {t("menuScanResult.resultCountHighlight", {
-                    count: data.totalMatchedCount,
-                  })}
+        {isLabel ? (
+          // 라벨 스캔: 단일 와인 히어로형 (판정 헤드라인 + 5축 비교)
+          <LabelScanResultView
+            data={data}
+            userProfile={flavorProfile}
+            wishedIds={wishedIds}
+            onToggleWishlist={handleToggleWishlist}
+            onOpenWineDetail={handleOpenWineDetail}
+            requestedTexts={requestedTexts}
+            requestingText={requestingText}
+            onRequestWine={handleRequestWine}
+          />
+        ) : (
+          // 메뉴판 스캔: 궁합 그룹 섹션 리스트
+          <SectionList
+            sections={sections}
+            keyExtractor={(item, index) =>
+              item.kind === "matched"
+                ? `m-${item.wine.wineId}-${index}`
+                : `${item.kind}-${item.item.rawText}-${index}`
+            }
+            renderItem={renderEntry}
+            renderSectionHeader={renderSectionHeader}
+            stickySectionHeadersEnabled={false}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <View style={styles.resultCountContainer}>
+                <Text style={styles.resultCountText}>
+                  <Text style={styles.resultCountHighlight}>
+                    {t("menuScanResult.resultCountHighlight", {
+                      count: data.totalMatchedCount,
+                    })}
+                  </Text>
+                  {t("menuScanResult.resultCountSuffix")}
                 </Text>
-                {t("menuScanResult.resultCountSuffix")}
-              </Text>
-            </View>
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Ionicons
-                name="search-outline"
-                size={48}
-                color={colors.textTertiary}
-              />
-              <Text style={styles.emptyText}>{t("menuScanResult.empty")}</Text>
-            </View>
-          }
-          ListFooterComponent={
-            hasUnmatched ? (
-              <View style={styles.unmatchedSection}>
-                <View style={styles.unmatchedDivider} />
-                <Text style={styles.unmatchedTitle}>
-                  {t("menuScanResult.unmatched.title", {
-                    count: data.unmatchedWines.length,
-                  })}
-                </Text>
-                <Text style={styles.unmatchedSubtitle}>
-                  {t(
-                    isLabel
-                      ? "menuScanResult.unmatched.subtitleLabel"
-                      : "menuScanResult.unmatched.subtitle"
-                  )}
-                </Text>
-                {data.unmatchedWines.map((w, i) => (
-                  <View key={i} style={styles.unmatchedItem}>
-                    <Ionicons
-                      name="wine-outline"
-                      size={16}
-                      color={colors.textTertiary}
-                      style={{ marginRight: 10 }}
-                    />
-                    <Text style={styles.unmatchedText}>{w.rawText}</Text>
-                  </View>
-                ))}
               </View>
-            ) : null
-          }
-        />
+            }
+          />
+        )}
       </Animated.View>
       <ScanFeedbackSheet
         visible={showFeedback}
@@ -574,7 +685,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         scanType={scanType}
       />
 
-      {/* Wishlist toast */}
+      {/* Toast (wishlist / 등록 요청) */}
       {toastMessage && (
         <Animated.View
           style={[
@@ -593,12 +704,6 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           ]}
           pointerEvents="none"
         >
-          <Ionicons
-            name="heart"
-            size={16}
-            color={accent.text}
-            style={{ marginRight: 8 }}
-          />
           <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
@@ -613,6 +718,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  flex: {
+    flex: 1,
+  },
   // ── Loading / Error states ───────────────────────────────────────────────
   stateContainer: {
     flex: 1,
@@ -620,12 +728,21 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 32,
   },
+  stateSpinner: {
+    marginBottom: 20,
+  },
+  stateIcon: {
+    marginBottom: 16,
+  },
   stateTitle: {
     fontSize: 17,
     fontWeight: "600",
     color: colors.textPrimary,
     marginBottom: 8,
     lineHeight: 24,
+  },
+  stateTitleCenter: {
+    textAlign: "center",
   },
   stateSubtitle: {
     fontSize: 14,
@@ -668,7 +785,7 @@ const styles = StyleSheet.create({
   },
   resultCountContainer: {
     paddingTop: 16,
-    paddingBottom: 12,
+    paddingBottom: 4,
   },
   resultCountText: {
     fontSize: 14,
@@ -677,6 +794,36 @@ const styles = StyleSheet.create({
   resultCountHighlight: {
     color: colors.white,
     fontWeight: "bold",
+  },
+  // ── Section header ───────────────────────────────────────────────────────
+  sectionHeader: {
+    paddingTop: 20,
+    paddingBottom: 10,
+  },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  sectionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  sectionCount: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textTertiary,
+  },
+  sectionSubtitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: colors.textTertiary,
   },
   // ── Wine card ────────────────────────────────────────────────────────────
   wineCard: {
@@ -754,72 +901,58 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textTertiary,
   },
-  // ── Score ring ───────────────────────────────────────────────────────────
-  scoreRingWrapper: {
-    width: 54,
-    height: 54,
+  scoreRingSpacing: {
     marginLeft: 12,
-    flexShrink: 0,
     alignSelf: "center",
-    alignItems: "center",
-    justifyContent: "center",
   },
-  scoreSvg: {
-    position: "absolute",
-    // rotate so the arc starts from the top (12 o'clock)
-    transform: [{ rotate: "-90deg" }],
-  },
-  scoreCenter: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scorePercent: {
-    fontSize: 13,
-    fontWeight: "800",
-    lineHeight: 16,
-  },
-  scoreLabel: {
-    fontSize: 9,
-    fontWeight: "700",
-  },
-  // ── Empty ────────────────────────────────────────────────────────────────
-  emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 52,
-  },
-  emptyText: {
-    marginTop: 12,
+  // ── Estimated (AI 추정) card ─────────────────────────────────────────────
+  estimatedName: {
+    marginTop: 6,
     fontSize: 15,
-    color: colors.textSecondary,
-    textAlign: "center",
-  },
-  // ── Unmatched section ────────────────────────────────────────────────────
-  unmatchedSection: {
-    marginTop: 8,
-    paddingTop: 16,
-  },
-  unmatchedDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginBottom: 16,
-  },
-  unmatchedTitle: {
-    fontSize: 14,
     fontWeight: "600",
-    color: colors.textSecondary,
-    marginBottom: 4,
+    color: colors.textPrimary,
+    lineHeight: 20,
   },
-  unmatchedSubtitle: {
+  estimatedReason: {
     fontSize: 12,
-    color: colors.textTertiary,
-    marginBottom: 12,
+    color: colors.textSecondary,
+    lineHeight: 17,
   },
+  estimatedExpanded: {
+    marginTop: 12,
+    gap: 12,
+  },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  metaChip: {
+    backgroundColor: colors.surface2,
+    borderRadius: radius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  metaChipText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: "600",
+  },
+  expandIndicator: {
+    alignItems: "center",
+    marginTop: 6,
+  },
+  // ── Unknown (정보 없음) row ──────────────────────────────────────────────
   unmatchedItem: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 10,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  unmatchedIcon: {
+    flexShrink: 0,
   },
   unmatchedText: {
     flex: 1,
@@ -844,7 +977,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 24,
-    shadowColor: "#000",
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,

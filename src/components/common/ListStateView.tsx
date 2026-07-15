@@ -1,15 +1,12 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
+import Skeleton from "./Skeleton";
 import { colors } from "../../constants/colors";
 import { radius, spacing } from "../../constants/theme";
+
+const SKELETON_ROW_COUNT = 5;
 
 interface ListStateViewProps {
   state: "loading" | "empty" | "error";
@@ -35,9 +32,18 @@ const ListStateView = ({
   const { t } = useTranslation();
 
   if (state === "loading") {
+    // 스피너 대신 목록 형태를 미리 잡아주는 스켈레톤 행 (셔머 펄스)
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={styles.skeletonContainer}>
+        {Array.from({ length: SKELETON_ROW_COUNT }).map((_, i) => (
+          <View key={i} style={styles.skeletonRow}>
+            <Skeleton width={56} height={64} borderRadius={radius.sm} />
+            <View style={styles.skeletonTextColumn}>
+              <Skeleton width="68%" height={14} borderRadius={7} />
+              <Skeleton width="42%" height={12} borderRadius={6} />
+            </View>
+          </View>
+        ))}
       </View>
     );
   }
@@ -73,6 +79,21 @@ const ListStateView = ({
 };
 
 const styles = StyleSheet.create({
+  skeletonContainer: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.xl,
+    gap: spacing.lg,
+  },
+  skeletonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.lg,
+  },
+  skeletonTextColumn: {
+    flex: 1,
+    gap: spacing.sm,
+  },
   container: {
     flex: 1,
     alignItems: "center",

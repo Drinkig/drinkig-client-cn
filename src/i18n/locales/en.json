@@ -893,7 +893,9 @@
         }
     },
     "recommendationResult": {
-        "loading": "Analyzing your preferences...",
+        "analyzing0": "Finalizing your taste analysis",
+        "analyzing1": "Picking styles that fit you",
+        "analyzing2": "Your recommendations are ready",
         "header": "Taste Analysis",
         "subtitle": "We found the perfect wine styles for you!",
         "chartTitle": "{{nickname}}'s Palate Profile",
@@ -971,6 +973,36 @@
             "ROSE": "Rosé",
             "PORT": "Port",
             "OTHER": "Other"
+        },
+        "verdict": {
+            "great": "A great match for your taste",
+            "okay": "A safe choice",
+            "challenge": "Different from your usual taste",
+            "caption": "Compared against your taste profile"
+        },
+        "flavorCompare": {
+            "title": "Compared to your taste",
+            "user": "My taste",
+            "wine": "This wine"
+        },
+        "aiEstimate": {
+            "badge": "AI estimate",
+            "badgeLow": "Rough estimate by variety"
+        },
+        "request": {
+            "cta": "Request to add this wine",
+            "done": "Request sent",
+            "success": "Request sent. We'll review and add it!",
+            "failed": "Couldn't send the request. Please try again."
+        },
+        "group": {
+            "great": "Great match",
+            "okay": "Safe picks",
+            "challenge": "Adventurous",
+            "unknown": "Wines without details"
+        },
+        "label": {
+            "others": "Also recognized ({{count}})"
         }
     },
     "scanFeedback": {
@@ -1266,7 +1298,8 @@
             "acidity": "Acidity",
             "sweetness": "Sweetness",
             "tannin": "Tannin",
-            "body": "Body"
+            "body": "Body",
+            "alcohol": "Alcohol"
         },
         "detailFeedback": {
             "perfect": "A perfect match for your taste!",
@@ -1285,7 +1318,11 @@
             "bodyHighMuch": "Much fuller-bodied than your preference.",
             "bodyHighLittle": "Slightly fuller-bodied than your preference.",
             "bodyLowMuch": "Much lighter than your preference.",
-            "bodyLowLittle": "Slightly lighter than your preference."
+            "bodyLowLittle": "Slightly lighter than your preference.",
+            "alcoholHighMuch": "Much stronger in alcohol than your preference.",
+            "alcoholHighLittle": "Slightly stronger in alcohol than your preference.",
+            "alcoholLowMuch": "Much lighter in alcohol than your preference.",
+            "alcoholLowLittle": "Slightly lighter in alcohol than your preference."
         }
     },
     "tasteReset": {

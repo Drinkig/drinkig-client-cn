@@ -97,13 +97,20 @@ export default function HomeScreen() {
 
   // null = 아직 로드 전 → 카운트를 0으로 단정하지 않고 "—"로 표시
   const [myWines, setMyWines] = useState<MyWineDTO[] | null>(null);
-  const { recommendations } = useUser();
-  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[]>([]);
+  const { recommendations, isLoading: isUserLoading } = useUser();
+  // null = 로딩 중(스켈레톤), [] = 진짜 0건(섹션 숨김) — 둘을 구분한다.
+  const [recommendedWines, setRecommendedWines] = useState<WineDBItem[] | null>(
+    null
+  );
   const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
 
   // 온보딩/취향 재설정에서 받아둔 추천 스타일로 실제 와인을 찾아 보여준다.
   useEffect(() => {
-    if (!recommendations || recommendations.length === 0) return;
+    if (!recommendations || recommendations.length === 0) {
+      // 유저 데이터 복원이 끝났는데도 추천이 없으면 로딩이 아니라 0건이다.
+      if (!isUserLoading) setRecommendedWines([]);
+      return;
+    }
     const cacheKey = JSON.stringify(
       recommendations.map((r) => [r.variety, r.sort])
     );
@@ -156,17 +163,17 @@ export default function HomeScreen() {
         // 타입(wineSort) 기반 2차 폴백은 제거 — 서버가 필터를 무시해
         // "타입만 같은 무관한 와인"을 채워 넣는 효과밖에 없었다.
         // 품종 일치 와인이 3개 미만이면 섹션을 숨기는 편이 낫다.
-        if (wines.length >= 3) {
-          commit(wines);
-        }
+        // (빈 배열도 commit해서 스켈레톤이 무한히 남지 않게 한다)
+        commit(wines.length >= 3 ? wines : []);
       } catch (e) {
         console.warn("Failed to build home recommendations:", e);
+        if (alive) setRecommendedWines([]);
       }
     })();
     return () => {
       alive = false;
     };
-  }, [recommendations]);
+  }, [recommendations, isUserLoading]);
 
   // 최근 본 와인 (검색/상세에서 이미 저장 중인 recent_wines 재사용)
   useEffect(() => {
@@ -354,11 +361,12 @@ export default function HomeScreen() {
 
           {/* 온보딩 취향 데이터를 홈에서 처음으로 활용하는 개인화 섹션 */}
           <RecommendedSection
-            data={recommendedWines.slice(0, 10)}
+            loading={recommendedWines === null}
+            data={(recommendedWines ?? []).slice(0, 10)}
             title={t("home.recommended.title")}
             onPressMore={() =>
               navigation.navigate("RecommendedWines", {
-                wines: recommendedWines,
+                wines: recommendedWines ?? [],
               })
             }
             onPressWine={(wine) => navigation.navigate("WineDetail", { wine })}

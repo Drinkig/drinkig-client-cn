@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  Image,
   ActivityIndicator,
   LayoutAnimation,
   Alert,
@@ -16,6 +15,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import GlassHeader from "../components/common/GlassHeader";
+import WineImage from "../components/common/WineImage";
+import Skeleton from "../components/common/Skeleton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   useNavigation,
@@ -76,7 +77,6 @@ export default function WineDetailScreen() {
   const headerHeight = insets.top + 52;
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
-  const [imageLoadFailed, setImageLoadFailed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [showCompatBubble, setShowCompatBubble] = useState(false);
@@ -318,11 +318,6 @@ export default function WineDetailScreen() {
       ? apiWineDetail.imageUrl
       : wine.imageUri;
 
-  // 상세 응답이 오면서 imageUri가 바뀌면 이전 실패 상태를 리셋
-  useEffect(() => {
-    setImageLoadFailed(false);
-  }, [imageUri]);
-
   const features =
     !isMyWineItem && apiWineDetail
       ? {
@@ -330,6 +325,7 @@ export default function WineDetailScreen() {
           acidity: apiWineDetail.officialAcidity,
           body: apiWineDetail.officialBody,
           tannin: apiWineDetail.officialTannin,
+          alcohol: apiWineDetail.officialAlcohol,
         }
       : !isMyWineItem && wine.features
       ? wine.features
@@ -344,6 +340,7 @@ export default function WineDetailScreen() {
         acidity: features.acidity,
         tannin: features.tannin,
         body: features.body,
+        alcohol: features.alcohol,
       },
       t
     );
@@ -682,19 +679,25 @@ export default function WineDetailScreen() {
         <View style={styles.wineHeaderSection}>
           <View style={styles.imageContainer}>
             {isLoading && !apiWineDetail ? (
-              <ActivityIndicator size="large" color={colors.primary} />
-            ) : imageUri && !imageLoadFailed ? (
-              <Image
-                source={{ uri: imageUri }}
-                style={styles.wineImage}
-                resizeMode="contain"
-                onError={() => setImageLoadFailed(true)}
+              // 상세 응답 전에는 이미지 URL을 모르므로 스켈레톤으로 자리를 잡는다
+              <Skeleton
+                style={StyleSheet.absoluteFill}
+                borderRadius={0}
+                baseColor="rgba(0,0,0,0.06)"
+                highlightColor="rgba(255,255,255,0.6)"
               />
             ) : (
-              <MaterialCommunityIcons
-                name="image-off-outline"
-                size={32}
-                color={colors.textSecondary}
+              <WineImage
+                uri={imageUri}
+                style={styles.wineImage}
+                resizeMode="contain"
+                fallbackIcon={
+                  <MaterialCommunityIcons
+                    name="image-off-outline"
+                    size={32}
+                    color={colors.textSecondary}
+                  />
+                }
               />
             )}
           </View>

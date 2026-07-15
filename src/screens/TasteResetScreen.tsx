@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -11,8 +11,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
-import LinearGradient from "react-native-linear-gradient";
-import Svg, { Defs, RadialGradient, Stop, Circle } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useExitGuard } from "../hooks/useExitGuard";
@@ -24,10 +22,11 @@ import NewbieFlavorProfileStep from "../components/onboarding/NewbieFlavorProfil
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import { CategorizedSelectionStep } from "../components/onboarding/CategorizedSelectionStep";
 import BudgetStep from "../components/onboarding/BudgetStep";
+import AnalyzingOverlay from "../components/common/AnalyzingOverlay";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent } from "../constants/theme";
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 type Step =
   | "ALCOHOL_PREF"
@@ -532,241 +531,6 @@ const TasteResetScreen = () => {
   );
 };
 
-// Brand-violet glows in 5 lightness tones for the rising motion background.
-const GLOW_TONES = ["#C9A0E8", "#B47AE0", "#9231BF", "#7A2BA6", "#5E2080"];
-
-// Each blob differs in size, horizontal start, speed and delay so they drift up
-// without ever lining up — the staggered overlap is what reads as "alive".
-const GLOW_BLOBS = [
-  { size: 300, startX: SCREEN_WIDTH * 0.04, duration: 4800, delay: 0 },
-  { size: 232, startX: SCREEN_WIDTH * 0.56, duration: 3600, delay: 1200 },
-  { size: 360, startX: SCREEN_WIDTH * 0.28, duration: 5800, delay: 600 },
-  { size: 258, startX: SCREEN_WIDTH * 0.7, duration: 4200, delay: 2400 },
-  { size: 322, startX: -SCREEN_WIDTH * 0.1, duration: 5200, delay: 3200 },
-];
-
-// A single radial glow that rises bottom → top, swaying and breathing, forever.
-const GlowBlob = ({
-  size,
-  startX,
-  duration,
-  delay,
-  color,
-  gradId,
-}: {
-  size: number;
-  startX: number;
-  duration: number;
-  delay: number;
-  color: string;
-  gradId: string;
-}) => {
-  const t = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.timing(t, {
-        toValue: 1,
-        duration,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
-    );
-    const starter = setTimeout(() => loop.start(), delay);
-    return () => {
-      clearTimeout(starter);
-      loop.stop();
-    };
-  }, [t, duration, delay]);
-
-  const translateY = t.interpolate({
-    inputRange: [0, 1],
-    outputRange: [SCREEN_HEIGHT * 0.95, -size * 0.6],
-  });
-  const translateX = t.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: [0, 16, 0, -16, 0],
-  });
-  const scale = t.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0.8, 1.1, 0.85],
-  });
-  const opacity = t.interpolate({
-    inputRange: [0, 0.15, 0.5, 0.85, 1],
-    outputRange: [0, 0.26, 0.28, 0.18, 0],
-  });
-
-  return (
-    <Animated.View
-      style={{
-        position: "absolute",
-        left: startX,
-        width: size,
-        height: size,
-        opacity,
-        transform: [{ translateX }, { translateY }, { scale }],
-      }}
-    >
-      <Svg width={size} height={size}>
-        <Defs>
-          <RadialGradient id={gradId} cx="50%" cy="50%" r="50%">
-            <Stop offset="0%" stopColor={color} stopOpacity={0.3} />
-            <Stop offset="60%" stopColor={color} stopOpacity={0.22} />
-            <Stop offset="100%" stopColor={color} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={size / 2}
-          fill={`url(#${gradId})`}
-        />
-      </Svg>
-    </Animated.View>
-  );
-};
-
-// Thresholds at which the stage copy advances to the next message.
-const STAGE_THRESHOLDS = [25, 55, 80];
-
-/**
- * Analysis screen, ported from the resume-scan flow:
- *  - rising radial glow background (no progress gauge anywhere)
- *  - a static sparkles icon with a soft halo
- *  - stage copy that swaps with an up-out / down-in transition
- *  - a plain "%" text that climbs fast → slow, stalls at 92, then jumps to 100
- * Left-aligned. Self-contained — mounts while `analyzing` is true.
- */
-const AnalyzingOverlay = ({ messages }: { messages: string[] }) => {
-  const [percent, setPercent] = useState(6);
-  const [stage, setStage] = useState(0);
-  const percentRef = useRef(6);
-  const stageRef = useRef(0);
-
-  const textY = useRef(new Animated.Value(0)).current;
-  const textOpacity = useRef(new Animated.Value(1)).current;
-
-  // Stage copy transition: current line lifts up + fades out, swaps while hidden,
-  // then the new line floats up from below + fades in. translateY only, so the
-  // "%" underneath never jumps.
-  const goToStage = (next: number) => {
-    Animated.parallel([
-      Animated.timing(textOpacity, {
-        toValue: 0,
-        duration: 150,
-        easing: Easing.in(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(textY, {
-        toValue: -8,
-        duration: 150,
-        easing: Easing.in(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setStage(next);
-      textY.setValue(8);
-      Animated.parallel([
-        Animated.timing(textOpacity, {
-          toValue: 1,
-          duration: 380,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(textY, {
-          toValue: 0,
-          duration: 380,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    });
-  };
-
-  // Percentage climb: fast early, slower late, stall at 92, jump to 100 near the
-  // end (the parent navigates away ~10s in).
-  useEffect(() => {
-    const tick = setInterval(() => {
-      const p = percentRef.current;
-      if (p >= 92) return;
-      const inc = p < 60 ? 3 : p < 85 ? 2 : 1;
-      const np = Math.min(92, p + inc);
-      percentRef.current = np;
-      setPercent(np);
-      const reached = STAGE_THRESHOLDS.filter((th) => np >= th).length;
-      if (reached > stageRef.current) {
-        stageRef.current = reached;
-        goToStage(reached);
-      }
-    }, 320);
-
-    const finish = setTimeout(() => {
-      percentRef.current = 100;
-      setPercent(100);
-      if (stageRef.current < messages.length - 1) {
-        stageRef.current = messages.length - 1;
-        goToStage(messages.length - 1);
-      }
-    }, 9000);
-
-    return () => {
-      clearInterval(tick);
-      clearTimeout(finish);
-    };
-    // Runs once on mount; re-running would restart the climb each render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return (
-    <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
-      {/* Rising glow background */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {GLOW_BLOBS.map((b, i) => (
-          <GlowBlob
-            key={i}
-            size={b.size}
-            startX={b.startX}
-            duration={b.duration}
-            delay={b.delay}
-            color={GLOW_TONES[i]}
-            gradId={`glow${i}`}
-          />
-        ))}
-      </View>
-
-      {/* Foreground content (left-aligned) */}
-      <View style={styles.analyzingTop}>
-        <View style={styles.iconWrap}>
-          <View style={styles.iconHalo} />
-          <View style={styles.iconBox}>
-            <LinearGradient
-              colors={[accent.base, accent.strong]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <Icon name="sparkles" size={26} color={colors.white} />
-          </View>
-        </View>
-
-        <Animated.Text
-          style={[
-            styles.stageText,
-            { opacity: textOpacity, transform: [{ translateY: textY }] },
-          ]}
-        >
-          {messages[stage]}
-        </Animated.Text>
-
-        <Text style={styles.percentText}>
-          {percent}
-          <Text style={styles.percentSign}>%</Text>
-        </Text>
-      </View>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -826,64 +590,6 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     justifyContent: "center",
     alignItems: "center",
-  },
-  analyzingContainer: {
-    backgroundColor: colors.background,
-    zIndex: 9999,
-    paddingHorizontal: 28,
-    paddingTop: SCREEN_HEIGHT * 0.16,
-    paddingBottom: 48,
-    overflow: "hidden",
-  },
-  analyzingTop: {
-    alignItems: "flex-start",
-  },
-  iconWrap: {
-    width: 64,
-    height: 64,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xxl,
-  },
-  iconHalo: {
-    position: "absolute",
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: accent.base,
-    opacity: 0.18,
-  },
-  iconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    shadowColor: accent.base,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 14,
-    elevation: 8,
-  },
-  stageText: {
-    color: colors.textPrimary,
-    fontSize: 26,
-    fontWeight: "800",
-    letterSpacing: -0.4,
-    lineHeight: 34,
-    minHeight: 68,
-  },
-  percentText: {
-    color: accent.text,
-    fontSize: 17,
-    fontWeight: "800",
-    marginTop: spacing.sm,
-  },
-  percentSign: {
-    color: accent.text,
-    fontSize: 17,
-    fontWeight: "800",
   },
 });
 

@@ -5,7 +5,6 @@ import {
   ActivityIndicator,
   Animated,
   BackHandler,
-  Easing,
   Keyboard,
   StyleSheet,
   Text,
@@ -16,7 +15,6 @@ import {
 } from "react-native";
 import { launchImageLibrary } from "react-native-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Circle } from "react-native-svg"; // SVG import 추가
 import Icon from "react-native-vector-icons/Ionicons";
 import {
   checkNickname,
@@ -40,6 +38,7 @@ import NewbieFlavorProfileStep from "../components/onboarding/NewbieFlavorProfil
 import ProfileStep from "../components/onboarding/ProfileStep";
 import { MultiSelectionStep } from "../components/onboarding/SelectionSteps";
 import TransitionStep from "../components/onboarding/TransitionStep";
+import AnalyzingOverlay from "../components/common/AnalyzingOverlay";
 import { colors } from "../constants/colors";
 import { radius, accent } from "../constants/theme";
 import { isDevAccessEnabled } from "../utils/devAccess";
@@ -131,8 +130,6 @@ const ALCOHOL_CATEGORIES = [
 
 const WINE_SORTS = ["레드", "화이트", "스파클링", "로제", "주정강화", "디저트"];
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
 const OnboardingScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
@@ -148,14 +145,6 @@ const OnboardingScreen = () => {
     { label: t("onboarding.budget.over150"), value: 200000 },
   ];
 
-  const LOADING_MESSAGES = [
-    t("onboarding.loading.message0"),
-    t("onboarding.loading.message1"),
-    t("onboarding.loading.message2"),
-    t("onboarding.loading.message3"),
-    t("onboarding.loading.message4"),
-  ];
-
   const [step, setStep] = useState<Step>("INTRO");
   const [formData, setFormData] = useState<OnboardingData>(() => ({
     ...INITIAL_DATA,
@@ -168,12 +157,10 @@ const OnboardingScreen = () => {
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [isCheckingNickname, setIsCheckingNickname] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [analyzingIndex, setAnalyzingIndex] = useState(0);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const loadingBarAnim = useRef(new Animated.Value(0)).current;
   // 단일 선택 단계에서 탭 직후 자동으로 다음 단계로 넘어가기 위한 타이머
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -337,68 +324,6 @@ const OnboardingScreen = () => {
 
     return () => clearTimeout(timer);
   }, [formData.name]);
-
-  useEffect(() => {
-    if (analyzing) {
-      setAnalyzingIndex(0);
-      loadingBarAnim.setValue(0);
-
-      const times = [2000, 3000, 5000, 8000];
-
-      const timeout1 = setTimeout(() => setAnalyzingIndex(1), times[0]);
-      const timeout2 = setTimeout(() => setAnalyzingIndex(2), times[1]);
-      const timeout3 = setTimeout(() => setAnalyzingIndex(3), times[2]);
-      const timeout4 = setTimeout(() => setAnalyzingIndex(4), times[3]);
-
-      Animated.sequence([
-        Animated.timing(loadingBarAnim, {
-          toValue: 0.3,
-          duration: 2000,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-
-        Animated.timing(loadingBarAnim, {
-          toValue: 0.6,
-          duration: 4000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-
-        Animated.timing(loadingBarAnim, {
-          toValue: 0.85,
-          duration: 2000,
-          easing: Easing.inOut(Easing.quad),
-          useNativeDriver: true,
-        }),
-
-        Animated.timing(loadingBarAnim, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      return () => {
-        clearTimeout(timeout1);
-        clearTimeout(timeout2);
-        clearTimeout(timeout3);
-        clearTimeout(timeout4);
-        loadingBarAnim.stopAnimation();
-      };
-    }
-  }, [analyzing]);
-
-  const CIRCLE_SIZE = 120;
-  const STROKE_WIDTH = 8;
-  const RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-  const strokeDashoffset = loadingBarAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [CIRCUMFERENCE, 0],
-  });
 
   const handleFinalSubmit = async () => {
     setLoading(true);
@@ -933,49 +858,15 @@ const OnboardingScreen = () => {
       </TouchableWithoutFeedback>
 
       {analyzing && (
-        <View style={[StyleSheet.absoluteFill, styles.analyzingContainer]}>
-          {/* 원형 프로그레스 바 */}
-          <View
-            style={{
-              width: CIRCLE_SIZE,
-              height: CIRCLE_SIZE,
-              justifyContent: "center",
-              alignItems: "center",
-              marginBottom: 10,
-            }}
-          >
-            <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
-              <Circle
-                cx={CIRCLE_SIZE / 2}
-                cy={CIRCLE_SIZE / 2}
-                r={RADIUS}
-                stroke={colors.border}
-                strokeWidth={STROKE_WIDTH}
-                fill="transparent"
-              />
-
-              <AnimatedCircle
-                cx={CIRCLE_SIZE / 2}
-                cy={CIRCLE_SIZE / 2}
-                r={RADIUS}
-                stroke={colors.primary}
-                strokeWidth={STROKE_WIDTH}
-                fill="transparent"
-                strokeDasharray={CIRCUMFERENCE}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                rotation="-90"
-                origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
-              />
-            </Svg>
-          </View>
-
-          <Text style={styles.analyzingText}>
-            {analyzingIndex === 4
-              ? t("onboarding.loading.message4", { nickname: formData.name })
-              : LOADING_MESSAGES[analyzingIndex]}
-          </Text>
-        </View>
+        <AnalyzingOverlay
+          messages={[
+            t("onboarding.loading.message0"),
+            t("onboarding.loading.message1"),
+            t("onboarding.loading.message2"),
+            t("onboarding.loading.message3"),
+            t("onboarding.loading.message4", { nickname: formData.name }),
+          ]}
+        />
       )}
     </SafeAreaView>
   );
@@ -1057,23 +948,6 @@ const styles = StyleSheet.create({
     color: accent.onAccent,
     fontSize: 18,
     fontWeight: "bold",
-  },
-  analyzingContainer: {
-    backgroundColor: colors.background,
-    zIndex: 9999,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
-  },
-  analyzingText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: "500",
-    marginTop: 20,
-    marginBottom: 0,
-    textAlign: "center",
-    lineHeight: 24,
-    opacity: 0.9,
   },
 });
 

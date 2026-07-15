@@ -6,7 +6,6 @@ import {
   FlatList,
   StatusBar,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,6 +31,7 @@ import {
 import { useSubscription } from "../context/SubscriptionContext";
 import GlassHeader from "../components/common/GlassHeader";
 import ListStateView from "../components/common/ListStateView";
+import WineImage from "../components/common/WineImage";
 import { getErrorMessageKey } from "../utils/apiError";
 
 type SearchResultScreenRouteProp = RouteProp<
@@ -61,8 +61,6 @@ export default function SearchResultScreen() {
   const [compatScores, setCompatScores] = useState<{
     [wineId: number]: number | null;
   }>({});
-  // 이미지 URL이 있어도 404인 와인은 빈 흰 박스 대신 아이콘 폴백으로
-  const [failedImageIds, setFailedImageIds] = useState<Set<number>>(new Set());
   const fetchingRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
@@ -197,6 +195,8 @@ export default function SearchResultScreen() {
                 acidity: detail.officialAcidity ?? detail.avgAcidity,
                 tannin: detail.officialTannin ?? detail.avgTannin,
                 body: detail.officialBody ?? detail.avgBody,
+                // avg 폴백 없음: avgAlcohol은 1~5 스케일 보장이 없어 공식 값만 사용
+                alcohol: detail.officialAlcohol,
               },
               t
             );
@@ -240,18 +240,15 @@ export default function SearchResultScreen() {
         activeOpacity={0.85}
       >
         <View style={styles.resultImageWell}>
-          {item.imageUri && !failedImageIds.has(item.id) ? (
-            <Image
-              source={{ uri: item.imageUri }}
-              style={styles.resultImage}
-              resizeMode="contain"
-              onError={() =>
-                setFailedImageIds((prev) => new Set(prev).add(item.id))
-              }
-            />
-          ) : (
-            <Icon name="wine" size={36} color={surfaces.onImageWell} />
-          )}
+          {/* 로딩 스켈레톤 → 페이드인, 404 등 실패 시 아이콘 폴백 (WineImage 공용) */}
+          <WineImage
+            uri={item.imageUri}
+            style={styles.resultImage}
+            resizeMode="contain"
+            fallbackIcon={
+              <Icon name="wine" size={36} color={surfaces.onImageWell} />
+            }
+          />
         </View>
         <View style={styles.resultTextContainer}>
           {i18n.language === "en" ? (

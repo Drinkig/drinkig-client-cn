@@ -110,6 +110,8 @@ export interface WineInfoDTO {
   officialAcidity?: number | null;
   officialTannin?: number | null;
   officialBody?: number | null;
+  // 1~5 단계 (서버 §7 확인). 구버전 응답에는 없을 수 있다.
+  officialAlcohol?: number | null;
   nose1: string | null;
   nose2: string | null;
   nose3: string | null;

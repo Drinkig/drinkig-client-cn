@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,6 +17,7 @@ import {
 } from "../api/wine";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import ListStateView from "../components/common/ListStateView";
+import AnalyzingOverlay from "../components/common/AnalyzingOverlay";
 import { getErrorMessageKey } from "../utils/apiError";
 import { formatOrigin } from "../utils/wineUtils";
 import { colors } from "../constants/colors";
@@ -39,6 +39,9 @@ const RecommendationResultScreen = () => {
     setFlavorProfile: saveFlavorProfile,
   } = useUser();
   const [loading, setLoading] = useState(true);
+  // 분석 연출이 100%에 도달한 뒤에만 결과를 보여준다 — 데이터가 먼저 와도
+  // 퍼센트가 순간이동하지 않고 빠르게 램프업 후 자연스럽게 전환된다.
+  const [introDone, setIntroDone] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<
     OnboardingRecommendationDTO[]
@@ -57,7 +60,8 @@ const RecommendationResultScreen = () => {
   }, [flavorProfile]);
 
   useEffect(() => {
-    if (!loading && recommendations.length > 0) {
+    // 오버레이가 걷힌 뒤에 스태거 페이드인이 보이도록 introDone 기준으로 시작
+    if (introDone && recommendations.length > 0) {
       const totalItems = (flavorProfile ? 1 : 0) + recommendations.length;
       const anims = Array.from(
         { length: totalItems },
@@ -65,7 +69,7 @@ const RecommendationResultScreen = () => {
       );
       setAnimations(anims);
     }
-  }, [loading, recommendations.length, flavorProfile]);
+  }, [introDone, recommendations.length, flavorProfile]);
 
   useEffect(() => {
     if (animations.length > 0) {
@@ -117,14 +121,28 @@ const RecommendationResultScreen = () => {
     completeOnboarding();
   };
 
-  if (loading) {
+  if (!introDone) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={accent.base} />
-        <Text style={styles.loadingText}>
-          {t("recommendationResult.loading")}
-        </Text>
+        <AnalyzingOverlay
+          messages={[
+            t("recommendationResult.analyzing0"),
+            t("recommendationResult.analyzing1"),
+            t("recommendationResult.analyzing2"),
+          ]}
+          complete={!loading}
+          onDone={() => setIntroDone(true)}
+        />
       </View>
+    );
+  }
+
+  // 에러 후 "다시 시도" 재요청 중 — 연출 없이 스켈레톤 로딩만
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ListStateView state="loading" />
+      </SafeAreaView>
     );
   }
 
@@ -267,14 +285,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: colors.background,
-  },
-  loadingText: {
-    color: colors.textSecondary,
-    marginTop: spacing.lg,
-    fontSize: 15,
   },
   header: {
     paddingHorizontal: spacing.xxl,

@@ -17,6 +17,7 @@ import { getWishlist, WishlistItemDTO } from "../api/wine";
 import { WineDBItem } from "../types/Wine";
 import GlassHeader from "../components/common/GlassHeader";
 import ListStateView from "../components/common/ListStateView";
+import WineImage from "../components/common/WineImage";
 import { getErrorMessageKey } from "../utils/apiError";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
@@ -89,15 +90,12 @@ export default function WishlistScreen() {
       activeOpacity={0.85}
     >
       <View style={styles.imageContainer}>
-        {item.imageUrl ? (
-          <Image
-            source={{ uri: item.imageUrl }}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        ) : (
-          <Icon name="wine" size={26} color={accent.text} />
-        )}
+        <WineImage
+          uri={item.imageUrl}
+          style={styles.image}
+          resizeMode="contain"
+          fallbackIcon={<Icon name="wine" size={26} color={accent.text} />}
+        />
       </View>
       <View style={styles.infoContainer}>
         <Text style={styles.nameKor} numberOfLines={1}>
