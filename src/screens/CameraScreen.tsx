@@ -20,7 +20,6 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import LinearGradient from "react-native-linear-gradient";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import PhotoManipulator, { MimeType } from "react-native-photo-manipulator";
 import { launchImageLibrary } from "react-native-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -30,96 +29,10 @@ import { accent, radius, spacing } from "../constants/theme";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { useSubscription } from "../context/SubscriptionContext";
 import { getScanRemaining } from "../api/subscription";
-
-type ScanType = "label" | "list";
+import { ScanType, cropToFrame } from "../utils/scanImage";
 
 const DAILY_SCAN_LIMIT = 3;
 const SCAN_USAGE_KEY = "scanDailyUsage";
-
-// OCR 품질에 직결되므로 scanType에 따라 크롭 비율/해상도/품질을 다르게 가져간다.
-// - label: 병 라벨 근접 촬영, 텍스트 양이 적어 2048로 충분
-// - list: 메뉴판 전체, 작은 글씨가 수십 줄이라 3072 + 높은 품질 필요
-// aspectW/aspectH는 화면의 가이드 프레임 비율과 동일해야 한다 (중앙 크롭 시 사용자가
-// 프레임 안에 넣은 피사체만 서버로 전달되도록).
-const SCAN_CONFIG: Record<
-  ScanType,
-  { aspectW: number; aspectH: number; maxEdge: number; quality: number }
-> = {
-  label: { aspectW: 1, aspectH: 1.1, maxEdge: 2048, quality: 90 },
-  list: { aspectW: 1, aspectH: 1.45, maxEdge: 3072, quality: 92 },
-};
-
-/**
- * 사진의 중앙에서 scanType 프레임 비율에 맞는 영역을 잘라내고 maxEdge로 다운사이즈한다.
- * 화면의 가이드 프레임과 동일한 비율이어야 사용자가 "프레임 안"이라고 믿은 영역만
- * 서버에 전달된다. 프레임이 화면 중앙에서 약간 위쪽이긴 하지만 (dimOverlayTop flex 0.8
- * vs bottom flex 1.2) 실제 오차는 크지 않아 중앙 크롭으로 근사한다.
- */
-async function cropToFrame(
-  uri: string,
-  photoWidth: number,
-  photoHeight: number,
-  type: ScanType
-): Promise<string> {
-  const { aspectW, aspectH, maxEdge, quality } = SCAN_CONFIG[type];
-  const targetRatio = aspectW / aspectH; // width / height, 항상 < 1 (세로가 길다)
-  const photoRatio = photoWidth / photoHeight;
-
-  let cropW: number;
-  let cropH: number;
-  if (photoRatio > targetRatio) {
-    // 사진이 프레임보다 가로로 넓다 → 좌우를 깎는다
-    cropH = photoHeight;
-    cropW = Math.round(cropH * targetRatio);
-  } else {
-    // 사진이 프레임보다 세로로 길다 → 위아래를 깎는다
-    cropW = photoWidth;
-    cropH = Math.round(cropW / targetRatio);
-  }
-  const cropX = Math.round((photoWidth - cropW) / 2);
-  const cropY = Math.round((photoHeight - cropH) / 2);
-
-  // 크롭 후 긴 변이 maxEdge가 되도록 축소 (원본보다 커지지 않도록)
-  const scale = Math.min(1, maxEdge / cropH);
-  const targetW = Math.max(1, Math.round(cropW * scale));
-  const targetH = Math.max(1, Math.round(cropH * scale));
-
-  return PhotoManipulator.batch(
-    uri,
-    [],
-    { x: cropX, y: cropY, width: cropW, height: cropH },
-    { width: targetW, height: targetH },
-    quality,
-    MimeType.JPEG
-  );
-}
-
-/**
- * 갤러리에서 고른 사진은 가이드 프레임에 맞춰 구성된 게 아니므로 중앙 크롭하면
- * 라벨/메뉴가 잘려나가 OCR 인식이 실패한다. 따라서 크롭 없이 전체 이미지를 유지한 채
- * 긴 변이 maxEdge가 되도록 다운사이즈만 해서 서버로 보낸다.
- */
-async function downscaleToMaxEdge(
-  uri: string,
-  photoWidth: number,
-  photoHeight: number,
-  type: ScanType
-): Promise<string> {
-  const { maxEdge, quality } = SCAN_CONFIG[type];
-  const longEdge = Math.max(photoWidth, photoHeight);
-  const scale = Math.min(1, maxEdge / longEdge);
-  const targetW = Math.max(1, Math.round(photoWidth * scale));
-  const targetH = Math.max(1, Math.round(photoHeight * scale));
-
-  return PhotoManipulator.batch(
-    uri,
-    [],
-    { x: 0, y: 0, width: photoWidth, height: photoHeight },
-    { width: targetW, height: targetH },
-    quality,
-    MimeType.JPEG
-  );
-}
 
 async function getScanUsage(): Promise<{ date: string; count: number }> {
   const raw = await AsyncStorage.getItem(SCAN_USAGE_KEY);
@@ -331,19 +244,20 @@ export default function CameraScreen({ navigation, route }: Props) {
     const asset = result.assets?.[0];
     if (!asset?.uri) return;
     try {
-      // 갤러리 사진은 프레임 크롭 없이 다운사이즈만 한다 (위 downscaleToMaxEdge 참고).
-      // 크기 정보가 없으면(일부 에셋) 원본 그대로 서버에 맡긴다.
-      const processedUri =
-        asset.width && asset.height
-          ? await downscaleToMaxEdge(
-              asset.uri,
-              asset.width,
-              asset.height,
-              scanType
-            )
-          : asset.uri;
+      // 갤러리 사진은 프레임 구도가 없으므로 조정 화면에서 사용자가 직접
+      // 라벨/리스트를 프레임에 맞춘 뒤(핀치 확대/이동) 그 영역만 크롭해 보낸다.
+      if (asset.width && asset.height) {
+        navigation.navigate("ScanAdjust", {
+          imageUri: asset.uri,
+          imageWidth: asset.width,
+          imageHeight: asset.height,
+          scanType,
+        });
+        return;
+      }
+      // 크기 정보가 없으면(일부 에셋) 조정이 불가능하므로 원본 그대로 서버에 맡긴다.
       navigation.replace("MenuScanResult", {
-        imageUri: processedUri,
+        imageUri: asset.uri,
         scanType,
       });
     } catch (e) {

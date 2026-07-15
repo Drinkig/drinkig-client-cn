@@ -20,6 +20,7 @@ import WineAddScreen from "../screens/WineAddScreen";
 import WineDetailScreen from "../screens/WineDetailScreen";
 import WishlistScreen from "../screens/WishlistScreen";
 import MenuScanResultScreen from "../screens/MenuScanResultScreen";
+import ScanAdjustScreen from "../screens/ScanAdjustScreen";
 import CameraScreen from "../screens/CameraScreen";
 import PaywallScreen from "../screens/PaywallScreen";
 import PremiumWelcomeScreen from "../screens/PremiumWelcomeScreen";
@@ -146,6 +147,14 @@ export default function RootNavigator() {
             <Stack.Screen
               name="Camera"
               component={CameraScreen}
+              options={{
+                presentation: "fullScreenModal",
+                animation: "fade",
+              }}
+            />
+            <Stack.Screen
+              name="ScanAdjust"
+              component={ScanAdjustScreen}
               options={{
                 presentation: "fullScreenModal",
                 animation: "fade",

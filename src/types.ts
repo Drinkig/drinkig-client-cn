@@ -44,6 +44,12 @@ export type RootStackParamList = {
   WineRegister: undefined;
   AdminWineApproval: undefined;
   Camera: { scanType?: "label" | "list" } | undefined;
+  ScanAdjust: {
+    imageUri: string;
+    imageWidth: number;
+    imageHeight: number;
+    scanType: "label" | "list";
+  };
   MenuScanResult: { imageUri: string; scanType?: "label" | "list" };
 };
 

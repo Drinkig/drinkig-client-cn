@@ -927,7 +927,10 @@
         "limitAlertMessage": "You can scan up to {{limit}} times per day.\nPlease try again tomorrow.",
         "resetTimer": "Resets in {{hours}}h {{minutes}}m",
         "listPremiumOnly": "Wine list scan is a premium-only feature",
-        "premiumBadge": "PREMIUM"
+        "premiumBadge": "PREMIUM",
+        "adjustGuideLabel": "Pinch and drag to fit the label in the frame",
+        "adjustGuideList": "Pinch and drag to fit the list in the frame",
+        "adjustConfirm": "Scan this area"
     },
     "menuScanResult": {
         "header": "Menu Scan Result",
@@ -939,6 +942,7 @@
         },
         "error": {
             "limitReached": "You've used all scans for today.\nPlease try again tomorrow.",
+            "quotaNotConsumed": "Failed scans don't count toward your daily limit",
             "tooLarge": "The image is too large.\nPlease try again in a moment.",
             "recognition": "Failed to recognize the menu.\nPlease take a clearer photo and try again.",
             "recognitionLabel": "Failed to recognize the wine label.\nPlease take a clearer photo and try again.",

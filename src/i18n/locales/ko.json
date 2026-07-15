@@ -927,7 +927,10 @@
         "limitAlertMessage": "하루 {{limit}}회까지 사용할 수 있어요.\n내일 다시 시도해 주세요.",
         "resetTimer": "{{hours}}시간 {{minutes}}분 후 초기화",
         "listPremiumOnly": "와인 리스트 스캔은 프리미엄 전용이에요",
-        "premiumBadge": "PREMIUM"
+        "premiumBadge": "PREMIUM",
+        "adjustGuideLabel": "확대/이동해서 라벨을 프레임에 채워주세요",
+        "adjustGuideList": "확대/이동해서 리스트를 프레임에 채워주세요",
+        "adjustConfirm": "이 영역 스캔하기"
     },
     "menuScanResult": {
         "header": "메뉴판 스캔 결과",
@@ -939,6 +942,7 @@
         },
         "error": {
             "limitReached": "오늘 스캔 횟수를 모두 사용했습니다.\n내일 다시 시도해 주세요.",
+            "quotaNotConsumed": "실패한 스캔은 횟수가 차감되지 않아요",
             "tooLarge": "이미지 용량이 너무 큽니다.\n잠시 후 다시 시도해 주세요.",
             "recognition": "메뉴판을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",
             "recognitionLabel": "와인 라벨을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",

@@ -20,6 +20,7 @@ import { getWineTypeColor } from "../constants/wineColors";
 import client from "../api/client";
 import { useTranslation } from "react-i18next";
 import { incrementScanCount } from "./CameraScreen";
+import { useSubscription } from "../context/SubscriptionContext";
 import ScanFeedbackSheet from "../components/common/ScanFeedbackSheet";
 import GlassHeader from "../components/common/GlassHeader";
 import { addToWishlist, removeFromWishlist } from "../api/wine";
@@ -140,6 +141,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     scanType?: "label" | "list";
   };
   const { t } = useTranslation();
+  const { isPremium } = useSubscription();
   // 라벨/메뉴판 스캔이 한 화면을 공유하므로 scanType에 맞춰 안내 문구를 분기한다.
   const isLabel = scanType === "label";
   const headerTitle = t(
@@ -148,6 +150,8 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MenuScanResultDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 한도 초과(429) 에러에서는 "차감 안 됨" 안내가 오히려 혼란이라 구분한다
+  const [isLimitError, setIsLimitError] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [wishedIds, setWishedIds] = useState<Set<number>>(new Set());
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -184,8 +188,17 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         );
 
         if (cancelled) return;
-        setData(response.data.result);
-        await incrementScanCount();
+        const scanResult = response.data.result;
+        setData(scanResult);
+        // 서버가 스캔 성공 시 횟수를 차감한다(인식 실패/네트워크 오류는 차감 없음).
+        // 로컬 카운트는 /scan/remaining 조회 실패 시 폴백 표시용 — 서버와 동일하게
+        // 와인을 하나도 추출 못 한 스캔은 세지 않는다.
+        if (
+          scanResult.totalMatchedCount > 0 ||
+          (scanResult.unmatchedWines?.length ?? 0) > 0
+        ) {
+          await incrementScanCount();
+        }
         if (cancelled) return;
         feedbackTimer = setTimeout(() => setShowFeedback(true), 2000);
       } catch (e: any) {
@@ -193,6 +206,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
         const status = e?.response?.status;
         let msg: string;
         if (status === 429) {
+          setIsLimitError(true);
           msg = t("menuScanResult.error.limitReached");
         } else if (status === 413) {
           // nginx 등 게이트웨이 업로드 용량 제한 초과. "더 또렷하게 찍으세요"는
@@ -444,6 +458,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           <Text style={[styles.stateTitle, { textAlign: "center" }]}>
             {error ?? t("menuScanResult.error.unknown")}
           </Text>
+          {!isPremium && !isLimitError && (
+            <Text style={styles.quotaNotice}>
+              {t("menuScanResult.error.quotaNotConsumed")}
+            </Text>
+          )}
           <TouchableOpacity
             style={styles.retryButton}
             onPress={() => navigation.replace("Camera", { scanType })}
@@ -612,6 +631,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  quotaNotice: {
+    marginTop: 10,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: "center",
+    lineHeight: 18,
   },
   retryButton: {
     marginTop: 28,
