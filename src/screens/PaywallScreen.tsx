@@ -22,6 +22,7 @@ import {
   requestSubscription,
   getAvailablePurchases,
   getPendingPurchasesIOS,
+  clearTransactionIOS,
   Subscription,
   PurchaseError,
 } from "react-native-iap";
@@ -141,6 +142,11 @@ const PaywallScreen = () => {
               }))
             )
           );
+          // 큐에 낀 미완료 거래는 StoreKit이 새 구매 시트를 열지 못하게 막는다.
+          // (에러 없이 결제창이 조용히 안 뜨는 원인) → 진입 시 큐를 비운다.
+          if (pending.length > 0) {
+            await clearTransactionIOS();
+          }
         } catch (e) {
           console.log("[IAP][debug] getPendingPurchasesIOS failed:", e);
         }
@@ -199,6 +205,13 @@ const PaywallScreen = () => {
 
     setIsProcessing(true);
     try {
+      // 구매 직전에도 큐에 낀 미완료 거래를 비운다. 진입 시 flush가
+      // 아직 끝나지 않았거나 그 사이 거래가 쌓였을 때 결제창 미표시를 막는다.
+      try {
+        await clearTransactionIOS();
+      } catch {
+        // flush 실패는 무시하고 구매 시도는 진행
+      }
       await requestSubscription({ sku: productId });
       // Result handled in purchaseUpdatedListener
     } catch (error: any) {
