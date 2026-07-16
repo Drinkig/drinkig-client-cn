@@ -12,9 +12,9 @@ import {
   Animated,
   TouchableWithoutFeedback,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import GlassHeader from "../components/common/GlassHeader";
+import { SafeAreaView } from "react-native-safe-area-context";
 import WineImage from "../components/common/WineImage";
 import Skeleton from "../components/common/Skeleton";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -73,8 +73,6 @@ export default function WineDetailScreen() {
   const { flavorProfile } = useUser();
   const { checkFeature, isPremium } = useSubscription();
   const { t, i18n } = useTranslation();
-  const insets = useSafeAreaInsets();
-  const headerHeight = insets.top + 52;
 
   const [apiWineDetail, setApiWineDetail] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -666,15 +664,47 @@ export default function WineDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
 
+      {/* In-flow 헤더: SafeAreaView(top)가 실제 남은 인셋만큼 내려주므로 진입
+          경로/기기와 무관하게 항상 안전 영역 아래에 놓여 뒤로가기가 눌린다. */}
+      <GlassHeader
+        floating={false}
+        title={
+          isMyWineItem
+            ? t("wineDetail.myWineHeader")
+            : t("wineDetail.infoHeader")
+        }
+        left={
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
+        right={
+          !isMyWineItem ? (
+            <TouchableOpacity
+              style={styles.wishlistButton}
+              onPress={handleToggleWishlist}
+            >
+              <Ionicons
+                name={isLiked ? "heart" : "heart-outline"}
+                size={22}
+                color={isLiked ? colors.error : colors.white}
+              />
+            </TouchableOpacity>
+          ) : undefined
+        }
+      />
+
       <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingTop: headerHeight + 8 },
-        ]}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustsScrollIndicatorInsets={false}
       >
         <View style={styles.wineHeaderSection}>
           <View style={styles.imageContainer}>
@@ -996,37 +1026,6 @@ export default function WineDetailScreen() {
         pointerEvents="none"
       />
 
-      {/* Translucent frosted header — content scrolls underneath it. */}
-      <GlassHeader
-        title={
-          isMyWineItem
-            ? t("wineDetail.myWineHeader")
-            : t("wineDetail.infoHeader")
-        }
-        left={
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-          >
-            <Ionicons name="arrow-back" size={22} color={colors.white} />
-          </TouchableOpacity>
-        }
-        right={
-          !isMyWineItem ? (
-            <TouchableOpacity
-              style={styles.wishlistButton}
-              onPress={handleToggleWishlist}
-            >
-              <Ionicons
-                name={isLiked ? "heart" : "heart-outline"}
-                size={22}
-                color={isLiked ? colors.error : colors.white}
-              />
-            </TouchableOpacity>
-          ) : undefined
-        }
-      />
-
       {isMyWineItem ? (
         <View style={styles.bottomButtonContainer}>
           <TouchableOpacity
@@ -1151,7 +1150,7 @@ export default function WineDetailScreen() {
         selectedVintage={selectedVintage}
         onSelect={setSelectedVintage}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

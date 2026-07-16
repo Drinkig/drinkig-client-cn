@@ -260,6 +260,10 @@ const ProfileScreen = () => {
           { paddingTop: headerHeight + 12 },
         ]}
         showsVerticalScrollIndicator={false}
+        // paddingTop이 이미 insets.top을 포함(headerHeight = insets.top + 52)하므로
+        // iOS 기본(automatic)의 safe-area top 인셋 이중 적용을 막는다.
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustsScrollIndicatorInsets={false}
       >
         <View style={styles.profileSection}>
           <View style={styles.avatarContainer}>

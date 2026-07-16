@@ -940,7 +940,8 @@
         "loading": {
             "title": "Analyzing your menu...",
             "titleLabel": "Analyzing the label...",
-            "subtitle": "Finding wines that match your taste..."
+            "subtitle": "Finding wines that match your taste...",
+            "ready": "Your results are ready"
         },
         "error": {
             "limitReached": "You've used all scans for today.\nPlease try again tomorrow.",

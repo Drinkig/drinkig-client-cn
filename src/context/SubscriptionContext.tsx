@@ -9,6 +9,7 @@ import React, {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getSubscriptionStatus,
+  setDevPremium,
   SubscriptionFeatures,
 } from "../api/subscription";
 import { isDevAccessEnabled } from "../utils/devAccess";
@@ -171,6 +172,14 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         await AsyncStorage.setItem(DEV_OVERRIDE_STORAGE_KEY, override);
       }
       setDevOverrideState(override);
+      // 서버에도 반영해 스캔 등 서버 측 제한이 프리미엄 여부와 일치하게 한다.
+      // "premium"만 부여, "free"/"none"은 dev로 부여한 프리미엄 해제(실구독은 서버가 보존).
+      // 서버가 dev 플래그로 가드하므로 prod에선 403 → 조용히 무시.
+      try {
+        await setDevPremium(override === "premium");
+      } catch (e) {
+        console.warn("dev premium 서버 동기화 실패", e);
+      }
     },
     []
   );

@@ -331,6 +331,12 @@ export default function LabelScanResultView({
     <ScrollView
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      // iOS는 기본(automatic)으로 safe-area 인셋을 contentInset(=평행이동)으로
+      // 적용한다. 실기기의 다이나믹 아일랜드 가로 폭이 수평 인셋으로 잡혀 스크롤
+      // 콘텐츠가 통째로 오른쪽으로 밀리는 문제가 있어, 상위 SafeAreaView가 이미
+      // top 인셋을 처리하므로 여기선 자동 조정을 끈다. (앱은 Portrait 고정)
+      contentInsetAdjustmentBehavior="never"
+      automaticallyAdjustsScrollIndicatorInsets={false}
     >
       {hero.kind === "matched" && renderMatchedHero(hero.wine)}
       {hero.kind === "estimated" &&

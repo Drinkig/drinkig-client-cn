@@ -1,4 +1,4 @@
-import client from './client';
+import client from "./client";
 
 export interface SubscriptionFeatures {
   unlimitedScan: boolean;
@@ -12,10 +12,10 @@ export interface SubscriptionStatusResponse {
   code: string;
   message: string;
   result: {
-    plan: 'FREE' | 'MONTHLY' | 'YEARLY';
-    status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'GRACE_PERIOD';
+    plan: "FREE" | "MONTHLY" | "YEARLY";
+    status: "ACTIVE" | "EXPIRED" | "CANCELLED" | "GRACE_PERIOD";
     expiresAt: string | null;
-    platform: 'APPLE' | 'PROMO' | null;
+    platform: "APPLE" | "PROMO" | null;
     isPremium: boolean;
     features: SubscriptionFeatures;
   };
@@ -77,41 +77,56 @@ export interface ScanUseResponse {
 }
 
 export const getSubscriptionStatus = async () => {
-  const response = await client.get<SubscriptionStatusResponse>('/subscription/status');
+  const response = await client.get<SubscriptionStatusResponse>(
+    "/subscription/status"
+  );
   return response.data;
 };
 
-export const verifyReceipt = async (transactionId: string, originalTransactionId: string, productId: string) => {
-  const response = await client.post<VerifyReceiptResponse>('/subscription/verify-receipt', {
-    transactionId,
-    originalTransactionId,
-    productId,
-  });
+export const verifyReceipt = async (
+  transactionId: string,
+  originalTransactionId: string,
+  productId: string
+) => {
+  const response = await client.post<VerifyReceiptResponse>(
+    "/subscription/verify-receipt",
+    {
+      transactionId,
+      originalTransactionId,
+      productId,
+    }
+  );
   return response.data;
 };
 
 export const restoreSubscription = async (originalTransactionId: string) => {
-  const response = await client.post<RestoreResponse>('/subscription/restore', {
+  const response = await client.post<RestoreResponse>("/subscription/restore", {
     originalTransactionId,
   });
   return response.data;
 };
 
 export const redeemPromoCode = async (code: string) => {
-  const response = await client.post<RedeemPromoResponse>('/promo/redeem', {
+  const response = await client.post<RedeemPromoResponse>("/promo/redeem", {
     code,
   });
   return response.data;
 };
 
 export const getScanRemaining = async () => {
-  const response = await client.get<ScanRemainingResponse>('/scan/remaining');
+  const response = await client.get<ScanRemainingResponse>("/scan/remaining");
   return response.data;
 };
 
 export const useScan = async () => {
-  const response = await client.post<ScanUseResponse>('/scan/use');
+  const response = await client.post<ScanUseResponse>("/scan/use");
   return response.data;
+};
+
+// [개발용] 서버 측 프리미엄을 강제 부여/해제한다. 서버가 dev 플래그로 가드하므로
+// 프로덕션에서는 403(무시). 개발/QA에서 스캔 등 서버 제한이 프리미엄과 일치하도록.
+export const setDevPremium = async (enable: boolean, days = 365) => {
+  await client.post(`/subscription/dev/premium?enable=${enable}&days=${days}`);
 };
 
 export interface CompatQuotaResponse {
@@ -136,16 +151,21 @@ export interface CompatUnlockResponse {
   };
 }
 
-export const COMPAT_QUOTA_EXCEEDED_CODE = 'COMPAT_QUOTA_EXCEEDED';
+export const COMPAT_QUOTA_EXCEEDED_CODE = "COMPAT_QUOTA_EXCEEDED";
 
 export const getCompatQuota = async () => {
-  const response = await client.get<CompatQuotaResponse>('/subscription/compat-quota');
+  const response = await client.get<CompatQuotaResponse>(
+    "/subscription/compat-quota"
+  );
   return response.data;
 };
 
 export const unlockCompat = async (wineId: number | string) => {
-  const response = await client.post<CompatUnlockResponse>('/subscription/compat-unlock', {
-    wineId: Number(wineId),
-  });
+  const response = await client.post<CompatUnlockResponse>(
+    "/subscription/compat-unlock",
+    {
+      wineId: Number(wineId),
+    }
+  );
   return response.data;
 };

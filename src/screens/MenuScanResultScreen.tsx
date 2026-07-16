@@ -13,7 +13,6 @@ import {
   SectionList,
   TouchableOpacity,
   StatusBar,
-  ActivityIndicator,
   Animated,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -47,6 +46,7 @@ import ScoreRing, {
 import AiEstimateBadge from "../components/camera/AiEstimateBadge";
 import WineRequestButton from "../components/camera/WineRequestButton";
 import LabelScanResultView from "../components/camera/LabelScanResultView";
+import AnalyzingOverlay from "../components/common/AnalyzingOverlay";
 
 // --- Section model ------------------------------------------------------------
 // 메뉴판 결과는 점수순 단일 리스트 대신 "잘 맞아요/무난해요/도전" 그룹 섹션으로
@@ -88,6 +88,9 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     isLabel ? "menuScanResult.headerLabel" : "menuScanResult.header"
   );
   const [loading, setLoading] = useState(true);
+  // 분석 연출(AnalyzingOverlay)이 100%에 도달해 끝날 때까지는 결과/에러를 감춘다.
+  // 온보딩/추천 결과 로딩과 동일한 연출을 위해 loading과 분리해서 관리한다.
+  const [analyzeDone, setAnalyzeDone] = useState(false);
   const [data, setData] = useState<MenuScanResultDTO | null>(null);
   const [error, setError] = useState<string | null>(null);
   // 한도 초과(429) 에러에서는 "차감 안 됨" 안내가 오히려 혼란이라 구분한다
@@ -537,36 +540,29 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
   );
 
   // ----- Loading state -----
-  if (loading) {
+  // 온보딩/추천 결과와 동일한 분석 연출. 데이터가 먼저 와도 연출이 100%에
+  // 도달(onDone)한 뒤에만 결과/에러로 넘어간다.
+  if (!analyzeDone) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <View style={styles.loadingContainer}>
         <StatusBar
           barStyle="light-content"
           backgroundColor={colors.background}
         />
-        <GlassHeader
-          floating={false}
-          title={headerTitle}
-          left={renderBackButton()}
-        />
-        <View style={styles.stateContainer}>
-          <ActivityIndicator
-            size="large"
-            color={accent.base}
-            style={styles.stateSpinner}
-          />
-          <Text style={styles.stateTitle}>
-            {t(
+        <AnalyzingOverlay
+          messages={[
+            t(
               isLabel
                 ? "menuScanResult.loading.titleLabel"
                 : "menuScanResult.loading.title"
-            )}
-          </Text>
-          <Text style={styles.stateSubtitle}>
-            {t("menuScanResult.loading.subtitle")}
-          </Text>
-        </View>
-      </SafeAreaView>
+            ),
+            t("menuScanResult.loading.subtitle"),
+            t("menuScanResult.loading.ready"),
+          ]}
+          complete={!loading}
+          onDone={() => setAnalyzeDone(true)}
+        />
+      </View>
     );
   }
 
@@ -664,6 +660,10 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             stickySectionHeadersEnabled={false}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            // 라벨 스캔과 동일: 실기기에서 다이나믹 아일랜드 가로 인셋이
+            // contentInset으로 잡혀 콘텐츠가 오른쪽으로 밀리는 것 방지.
+            contentInsetAdjustmentBehavior="never"
+            automaticallyAdjustsScrollIndicatorInsets={false}
             ListHeaderComponent={
               <View style={styles.resultCountContainer}>
                 <Text style={styles.resultCountText}>
@@ -721,15 +721,17 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  // 분석 연출(AnalyzingOverlay)은 absoluteFill + 자체 배경이라 flex 컨테이너만 감싼다.
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   // ── Loading / Error states ───────────────────────────────────────────────
   stateContainer: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 32,
-  },
-  stateSpinner: {
-    marginBottom: 20,
   },
   stateIcon: {
     marginBottom: 16,
