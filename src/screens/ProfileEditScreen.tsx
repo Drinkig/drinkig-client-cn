@@ -60,6 +60,9 @@ const ProfileEditScreen = () => {
     (!hasNicknameChanged && hasImageChanged && !nicknameError);
 
   const handleOpenImageOptions = () => {
+    // 닉네임 입력 중이면 키보드가 시트를 가리므로 먼저 내린다.
+    // (시트는 네이티브 Modal이 아니라 절대배치 View라 키보드 위로 올라오지 않음)
+    Keyboard.dismiss();
     setIsImageOptionsVisible(true);
   };
 
