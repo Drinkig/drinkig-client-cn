@@ -376,13 +376,15 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: -0.4,
     lineHeight: 34,
-    minHeight: 68,
+    // 한 줄 문구 기준으로만 예약해 카피와 퍼센트 사이 빈 공간을 없앤다.
+    // (2줄 문구는 자연스럽게 늘어난다 — clipping 아님)
+    minHeight: 34,
   },
   percentText: {
     color: accent.text,
     fontSize: 17,
     fontWeight: "800",
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
   percentSign: {
     color: accent.text,

@@ -3,7 +3,10 @@ import { NavigationContainer } from "@react-navigation/native";
 import React from "react";
 import { Text, TextInput } from "react-native";
 import mobileAds from "react-native-google-mobile-ads";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  initialWindowMetrics,
+} from "react-native-safe-area-context";
 import { requestTrackingPermission } from "react-native-tracking-transparency";
 
 // OS 접근성 "더 큰 텍스트" 설정으로 인한 레이아웃 깨짐 방지.
@@ -76,7 +79,7 @@ function App(): React.JSX.Element {
       <SubscriptionProvider>
         <WineProvider>
           <GlobalUIProvider>
-            <SafeAreaProvider>
+            <SafeAreaProvider initialMetrics={initialWindowMetrics}>
               <NavigationContainer>
                 <RootNavigator />
               </NavigationContainer>

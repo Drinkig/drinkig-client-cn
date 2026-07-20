@@ -15,7 +15,7 @@ import {
   StatusBar,
   Animated,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { colors } from "../constants/colors";
@@ -80,6 +80,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     scanType?: "label" | "list";
   };
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { isPremium } = useSubscription();
   const { flavorProfile } = useUser();
   // 라벨/메뉴판 스캔이 한 화면을 공유하므로 scanType에 맞춰 뷰를 분기한다.
@@ -572,9 +573,19 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
     data.matchedWines.length === 0 &&
     (data.unmatchedWines?.length ?? 0) === 0;
 
+  // NativeSafeAreaView(=SafeAreaView 컴포넌트)는 인셋을 네이티브 패딩으로 늦게
+  // 적용해, 이 화면처럼 분석 연출 이후 조건부로 늦게 마운트되면 첫 프레임이
+  // top 인셋 0으로 깨져 나오고(다이나믹 아일랜드 겹침) 다음 리렌더에야 보정된다.
+  // JS 컨텍스트를 동기로 읽는 useSafeAreaInsets로 첫 프레임부터 규격을 맞춘다.
+  const safeAreaPad = {
+    paddingTop: insets.top,
+    paddingLeft: insets.left,
+    paddingRight: insets.right,
+  };
+
   if (error || !data || isEmptyResult) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <View style={[styles.safeArea, safeAreaPad]}>
         <StatusBar
           barStyle="light-content"
           backgroundColor={colors.background}
@@ -618,13 +629,13 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
             </Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // ----- Result state -----
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+    <View style={[styles.safeArea, safeAreaPad]}>
       <StatusBar barStyle="light-content" backgroundColor={colors.background} />
       <Animated.View style={[styles.flex, { opacity: fadeAnim }]}>
         {/* Header */}
@@ -707,7 +718,7 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -7,7 +7,7 @@ import {
   ScrollView,
   Animated,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../context/UserContext";
@@ -32,6 +32,7 @@ const RecommendationResultScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const {
     user,
     completeOnboarding,
@@ -137,17 +138,27 @@ const RecommendationResultScreen = () => {
     );
   }
 
+  // NativeSafeAreaView는 인셋을 네이티브 패딩으로 늦게 적용해, 분석 연출 이후
+  // 조건부로 늦게 마운트되면 첫 프레임이 인셋 0으로 깨졌다가 다음 리렌더에야
+  // 보정된다. JS 컨텍스트를 동기로 읽는 useSafeAreaInsets로 첫 프레임을 맞춘다.
+  const safeAreaPad = {
+    paddingTop: insets.top,
+    paddingBottom: insets.bottom,
+    paddingLeft: insets.left,
+    paddingRight: insets.right,
+  };
+
   // 에러 후 "다시 시도" 재요청 중 — 연출 없이 스켈레톤 로딩만
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={[styles.container, safeAreaPad]}>
         <ListStateView state="loading" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, safeAreaPad]}>
       <View style={styles.header}>
         <Text style={styles.title}>{t("recommendationResult.header")}</Text>
         <Text style={styles.subtitle}>
@@ -274,7 +285,7 @@ const RecommendationResultScreen = () => {
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
