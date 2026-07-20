@@ -125,7 +125,8 @@ const WineRegisterScreen = () => {
 
       const requestData = {
         name: name.trim(),
-        nameEng: nameEng.trim(),
+        // 영문명은 선택 입력이므로 비어 있으면 한글명으로 대체해 보낸다.
+        nameEng: nameEng.trim() || name.trim(),
         sort,
         country: country.trim(),
         region: region.trim(),

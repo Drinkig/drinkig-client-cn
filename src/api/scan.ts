@@ -144,7 +144,8 @@ export const requestWineFromScan = async (
     "wineRegisterRequest",
     JSON.stringify({
       name: item.rawText,
-      nameEng: "",
+      // OCR 원문에는 별도 영문명이 없으므로 원문을 그대로 영문명으로 채워 보낸다.
+      nameEng: item.rawText,
       sort: est ? SORT_TO_REQUEST_LABEL[est.sort] ?? "" : "",
       country: est?.country ?? "",
       region: "",
