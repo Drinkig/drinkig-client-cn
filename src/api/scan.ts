@@ -24,6 +24,12 @@ export type AiEstimateConfidence = "HIGH" | "MEDIUM" | "LOW";
 
 /** DB 미매칭 와인에 대한 AI 추정 정보. 서버 미배포 시 없을 수 있다. */
 export interface AiEstimateDTO {
+  /** AI가 식별한 영문 와인명. 없으면 null → rawText 폴백 */
+  nameEng: string | null;
+  /** 한글명(알려진 경우). 없으면 null */
+  nameKor: string | null;
+  /** 와인 자체에 대한 한두 문장 설명 (요청 lang). 서버 미배포 시 없음 */
+  description: string | null;
   sort: WineSort;
   variety: string | null;
   country: string | null;
@@ -143,9 +149,9 @@ export const requestWineFromScan = async (
   formData.append(
     "wineRegisterRequest",
     JSON.stringify({
-      name: item.rawText,
-      // OCR 원문에는 별도 영문명이 없으므로 원문을 그대로 영문명으로 채워 보낸다.
-      nameEng: item.rawText,
+      name: est?.nameKor || item.rawText,
+      // AI가 식별한 영문명이 있으면 사용, 없으면 OCR 원문으로 폴백.
+      nameEng: est?.nameEng || item.rawText,
       sort: est ? SORT_TO_REQUEST_LABEL[est.sort] ?? "" : "",
       country: est?.country ?? "",
       region: "",

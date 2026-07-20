@@ -1002,8 +1002,11 @@
             "challenge": "Adventurous",
             "unknown": "Wines without details"
         },
+        "matchTitle": "Match with your taste",
         "label": {
-            "others": "Also recognized ({{count}})"
+            "others": "Also recognized ({{count}})",
+            "wishlist": "Save",
+            "detail": "View details"
         }
     },
     "scanFeedback": {

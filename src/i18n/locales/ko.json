@@ -1002,8 +1002,11 @@
             "challenge": "도전",
             "unknown": "정보를 찾지 못한 와인"
         },
+        "matchTitle": "내 취향과의 궁합",
         "label": {
-            "others": "함께 인식된 와인 {{count}}개"
+            "others": "함께 인식된 와인 {{count}}개",
+            "wishlist": "찜하기",
+            "detail": "상세 보기"
         }
     },
     "scanFeedback": {

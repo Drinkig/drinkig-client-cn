@@ -108,16 +108,17 @@ export default function LabelScanResultView({
   const others = entries.slice(1);
 
   // ----- Hero render -----
-  const renderVerdict = (score: number) => {
+  // 큰 중앙 링이 화면을 과하게 차지해, 히어로 헤더 우측에 얹는 소형 링으로 대체.
+  const renderCompactScore = (score: number) => {
     const tier = getScoreTier(score);
     return (
-      <View style={styles.verdictSection}>
-        <ScoreRing score={score} size={116} strokeWidth={8} />
-        <Text style={[styles.verdictHeadline, { color: scoreColor(score) }]}>
+      <View style={styles.compactScore}>
+        <ScoreRing score={score} size={52} strokeWidth={5} />
+        <Text
+          style={[styles.compactTier, { color: scoreColor(score) }]}
+          numberOfLines={1}
+        >
           {t(`menuScanResult.verdict.${tier}`)}
-        </Text>
-        <Text style={styles.verdictCaption}>
-          {t("menuScanResult.verdict.caption")}
         </Text>
       </View>
     );
@@ -141,14 +142,9 @@ export default function LabelScanResultView({
 
   const renderMatchedHero = (wine: ScannedWineItemDTO) => (
     <>
-      {renderVerdict(wine.flavorMatchScore)}
-      {/* 와인 카드 칩 → 상세 */}
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.75}
-        onPress={() => onOpenWineDetail(wine)}
-      >
-        <View style={styles.wineChipRow}>
+      <View style={styles.card}>
+        {/* 헤더: 이미지 + 영/한 이름 + 소형 점수 */}
+        <View style={styles.heroHeader}>
           {wine.imageUrl ? (
             <View style={styles.wineImageContainer}>
               <Image
@@ -164,42 +160,54 @@ export default function LabelScanResultView({
               />
             </View>
           ) : null}
-          <View style={styles.wineInfo}>
-            <Text style={styles.wineNameEng} numberOfLines={2}>
-              {wine.nameEng}
+          <View style={styles.heroTitleCol}>
+            <Text style={styles.heroNameEng} numberOfLines={2}>
+              {wine.nameEng || wine.nameKor}
             </Text>
-            <Text style={styles.wineNameKor} numberOfLines={1}>
-              {wine.nameKor}
-            </Text>
-            <Text style={styles.wineMeta} numberOfLines={1}>
+            {!!wine.nameKor && (
+              <Text style={styles.heroNameKor} numberOfLines={1}>
+                {wine.nameKor}
+              </Text>
+            )}
+            <Text style={styles.heroMeta} numberOfLines={1}>
               {[formatOrigin(wine.country, wine.region), wine.variety]
                 .filter(Boolean)
                 .join(" · ")}
             </Text>
           </View>
+          {renderCompactScore(wine.flavorMatchScore)}
+        </View>
+
+        {/* 액션: 찜 / 상세 보기 */}
+        <View style={styles.heroActions}>
           <TouchableOpacity
-            style={styles.wishlistButton}
+            style={styles.heroActionButton}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            onPress={(e) => {
-              e.stopPropagation();
-              onToggleWishlist(wine);
-            }}
+            onPress={() => onToggleWishlist(wine)}
           >
             <Ionicons
               name={wishedIds.has(wine.wineId) ? "heart" : "heart-outline"}
-              size={22}
+              size={18}
               color={
-                wishedIds.has(wine.wineId) ? colors.error : colors.textTertiary
+                wishedIds.has(wine.wineId) ? colors.error : colors.textSecondary
               }
             />
+            <Text style={styles.heroActionText}>
+              {t("menuScanResult.label.wishlist")}
+            </Text>
           </TouchableOpacity>
-          <Ionicons
-            name="chevron-forward"
-            size={18}
-            color={colors.textTertiary}
-          />
+          <TouchableOpacity
+            style={styles.heroDetailButton}
+            activeOpacity={0.75}
+            onPress={() => onOpenWineDetail(wine)}
+          >
+            <Text style={styles.heroDetailText}>
+              {t("menuScanResult.label.detail")}
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.white} />
+          </TouchableOpacity>
         </View>
-      </TouchableOpacity>
+      </View>
       {renderAxisCompare(wine.profile ?? null)}
     </>
   );
@@ -210,22 +218,50 @@ export default function LabelScanResultView({
       est.variety,
       est.country,
     ].filter(Boolean) as string[];
+    const nameEng = est.nameEng || item.rawText;
     return (
       <>
-        {renderVerdict(est.flavorMatchScore)}
         <View style={styles.card}>
-          <AiEstimateBadge confidence={est.confidence} />
-          <Text style={styles.estimateName}>{item.rawText}</Text>
-          {chips.length > 0 && (
-            <View style={styles.chipRow}>
-              {chips.map((chip, i) => (
-                <View key={i} style={styles.metaChip}>
-                  <Text style={styles.metaChipText}>{chip}</Text>
-                </View>
-              ))}
+          {/* 헤더: 영/한 이름 + 소형 점수 */}
+          <View style={styles.heroHeader}>
+            <View style={styles.heroTitleCol}>
+              <Text style={styles.heroNameEng} numberOfLines={2}>
+                {nameEng}
+              </Text>
+              {!!est.nameKor && (
+                <Text style={styles.heroNameKor} numberOfLines={1}>
+                  {est.nameKor}
+                </Text>
+              )}
+            </View>
+            {renderCompactScore(est.flavorMatchScore)}
+          </View>
+
+          {/* 타입/품종/국가 칩 + AI 추정 배지 */}
+          <View style={styles.chipRow}>
+            <AiEstimateBadge confidence={est.confidence} />
+            {chips.map((chip, i) => (
+              <View key={i} style={styles.metaChip}>
+                <Text style={styles.metaChipText}>{chip}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* 와인 설명 (한두 줄) */}
+          {!!est.description && (
+            <Text style={styles.descText}>{est.description}</Text>
+          )}
+
+          {/* 내 취향과의 궁합 */}
+          {!!est.reason && (
+            <View style={styles.matchBlock}>
+              <Text style={styles.matchLabel}>
+                {t("menuScanResult.matchTitle")}
+              </Text>
+              <Text style={styles.reasonText}>{est.reason}</Text>
             </View>
           )}
-          {!!est.reason && <Text style={styles.reasonText}>{est.reason}</Text>}
+
           <View style={styles.requestCtaContainer}>
             <WineRequestButton
               large
@@ -374,21 +410,6 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 48,
   },
-  // ── Verdict (판정 헤드라인) ─────────────────────────────────────────────
-  verdictSection: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  verdictHeadline: {
-    marginTop: 16,
-    fontSize: 22,
-    fontWeight: "800",
-  },
-  verdictCaption: {
-    marginTop: 6,
-    fontSize: 13,
-    color: colors.textSecondary,
-  },
   // ── Cards ────────────────────────────────────────────────────────────────
   card: {
     backgroundColor: colors.surface1,
@@ -404,19 +425,52 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: 12,
   },
-  // ── Matched wine chip ────────────────────────────────────────────────────
-  wineChipRow: {
+  // ── Hero header (이름 + 소형 점수) ────────────────────────────────────────
+  heroHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    gap: 12,
   },
+  heroTitleCol: {
+    flex: 1,
+    gap: 3,
+    justifyContent: "center",
+  },
+  heroNameEng: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.white,
+    lineHeight: 24,
+  },
+  heroNameKor: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  heroMeta: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginTop: 2,
+  },
+  // ── Compact score (소형 링 + 티어) ───────────────────────────────────────
+  compactScore: {
+    alignItems: "center",
+    gap: 4,
+    flexShrink: 0,
+    width: 60,
+  },
+  compactTier: {
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  // ── Matched hero image ───────────────────────────────────────────────────
   wineImageContainer: {
-    width: 56,
-    height: 64,
+    width: 52,
+    height: 60,
     borderRadius: 8,
     backgroundColor: surfaces.imageWell,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 14,
     overflow: "hidden",
     flexShrink: 0,
   },
@@ -433,29 +487,54 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 8,
     borderBottomRightRadius: 8,
   },
-  wineInfo: {
-    flex: 1,
-    gap: 3,
-    justifyContent: "center",
+  // ── Matched hero actions ─────────────────────────────────────────────────
+  heroActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  wineNameEng: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: colors.white,
-    lineHeight: 20,
+  heroActionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  wineNameKor: {
+  heroActionText: {
     fontSize: 13,
+    fontWeight: "600",
     color: colors.textSecondary,
   },
-  wineMeta: {
-    fontSize: 11,
-    color: colors.textTertiary,
+  heroDetailButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
   },
-  wishlistButton: {
-    marginLeft: 8,
-    padding: 4,
-    flexShrink: 0,
+  heroDetailText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.white,
+  },
+  // ── Description / taste-match ─────────────────────────────────────────────
+  descText: {
+    marginTop: 14,
+    fontSize: 14,
+    color: colors.textPrimary,
+    lineHeight: 21,
+  },
+  matchBlock: {
+    marginTop: 14,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  matchLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: colors.textSecondary,
+    marginBottom: 6,
   },
   // ── Estimated / unknown hero ────────────────────────────────────────────
   estimateName: {
@@ -483,10 +562,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   reasonText: {
-    marginTop: 10,
-    fontSize: 13,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 19,
+    lineHeight: 21,
   },
   requestCtaContainer: {
     marginTop: 14,
@@ -504,6 +582,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   unknownHeroDesc: {
+    marginTop: 10,
     textAlign: "center",
   },
   // ── Others (접힌 리스트) ─────────────────────────────────────────────────
