@@ -1513,5 +1513,15 @@
         "title": "알림",
         "emptyTitle": "새로운 알림이 없어요",
         "emptySubtitle": "와인 추천과 새 소식이 도착하면 여기에 모아드릴게요."
+    },
+    "contentReport": {
+        "reviewTitle": "리뷰 신고",
+        "priceTitle": "가격 정보 신고",
+        "promptMessage": "신고 사유를 입력해 주세요. (선택)",
+        "confirmMessage": "이 내용을 신고할까요?",
+        "cancel": "취소",
+        "submit": "신고하기",
+        "success": "신고가 접수되었어요. 검토 후 조치할게요.",
+        "error": "신고 접수에 실패했어요. 잠시 후 다시 시도해 주세요."
     }
 }

@@ -1513,5 +1513,15 @@
         "title": "Notifications",
         "emptyTitle": "No notifications yet",
         "emptySubtitle": "Wine picks and updates will show up here when they arrive."
+    },
+    "contentReport": {
+        "reviewTitle": "Report review",
+        "priceTitle": "Report price info",
+        "promptMessage": "Tell us why you're reporting this. (optional)",
+        "confirmMessage": "Report this content?",
+        "cancel": "Cancel",
+        "submit": "Report",
+        "success": "Report submitted. We'll review it shortly.",
+        "error": "Failed to submit the report. Please try again later."
     }
 }

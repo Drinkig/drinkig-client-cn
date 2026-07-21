@@ -11,7 +11,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import PriceStats from "../PriceStats";
 import { getPriceHistory, PriceHistoryDTO } from "../../../api/wine";
-import { sendReportEmail } from "../../../utils/reportUtils";
+import { sendContentReport } from "../../../utils/reportUtils";
 import { useGlobalUI } from "../../../context/GlobalUIContext";
 import { colors } from "../../../constants/colors";
 import { surfaces, accent } from "../../../constants/theme";
@@ -116,7 +116,7 @@ export default function PriceTab({
         <TouchableOpacity
           style={styles.reportBtn}
           onPress={() =>
-            sendReportEmail(
+            sendContentReport(
               "PRICE",
               {
                 vintage: item.vintage ? String(item.vintage) : "NV",
@@ -124,13 +124,11 @@ export default function PriceTab({
                 price: item.price,
                 purchaseDate: item.purchaseDate,
               },
-              (reason) => {
-                showToast(
-                  reason === "UNSUPPORTED"
-                    ? "메일 앱을 열 수 없습니다."
-                    : "메일 앱을 실행하는 중 문제가 발생했습니다.",
-                  { type: "error" }
-                );
+              {
+                onSuccess: () =>
+                  showToast(t("contentReport.success"), { type: "success" }),
+                onError: () =>
+                  showToast(t("contentReport.error"), { type: "error" }),
               }
             )
           }
