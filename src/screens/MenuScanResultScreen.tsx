@@ -152,6 +152,11 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           // nginx 등 게이트웨이 업로드 용량 제한 초과. "더 또렷하게 찍으세요"는
           // 오해를 부르므로 용량 문제임을 별도로 안내한다.
           msg = t("menuScanResult.error.tooLarge");
+        } else if (e?.response?.data?.code === "MENU_SCAN4002") {
+          // 서버가 HEIC 등 미지원 포맷을 명시적으로 거부(400). 재촬영 유도가 아니라
+          // 포맷 문제임을 안내한다. (정상 경로는 모두 JPEG 재인코딩을 거치므로
+          // 이 에러는 재인코딩을 건너뛴 예외 케이스에서만 발생)
+          msg = t("menuScanResult.error.unsupportedFormat");
         } else if (
           !e?.response ||
           e?.code === "ECONNABORTED" ||

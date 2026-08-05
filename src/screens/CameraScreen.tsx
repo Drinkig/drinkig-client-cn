@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Dimensions,
+  Image,
   Linking,
   Platform,
   StatusBar,
@@ -246,18 +247,27 @@ export default function CameraScreen({ navigation, route }: Props) {
     try {
       // 갤러리 사진은 프레임 구도가 없으므로 조정 화면에서 사용자가 직접
       // 라벨/리스트를 프레임에 맞춘 뒤(핀치 확대/이동) 그 영역만 크롭해 보낸다.
-      if (asset.width && asset.height) {
-        navigation.navigate("ScanAdjust", {
-          imageUri: asset.uri,
-          imageWidth: asset.width,
-          imageHeight: asset.height,
-          scanType,
-        });
-        return;
+      // 크기 메타데이터가 없는 에셋은 Image.getSize로 보완한다 — 원본을 그대로
+      // 서버에 보내면 JPEG 재인코딩(PhotoManipulator)을 건너뛰어 HEIC이
+      // 그대로 전송되고, 서버가 400(MENU_SCAN4002)으로 거부한다.
+      let imgWidth = asset.width;
+      let imgHeight = asset.height;
+      if (!imgWidth || !imgHeight) {
+        ({ imgWidth, imgHeight } = await new Promise<{
+          imgWidth: number;
+          imgHeight: number;
+        }>((resolve, reject) =>
+          Image.getSize(
+            asset.uri!,
+            (w, h) => resolve({ imgWidth: w, imgHeight: h }),
+            reject
+          )
+        ));
       }
-      // 크기 정보가 없으면(일부 에셋) 조정이 불가능하므로 원본 그대로 서버에 맡긴다.
-      navigation.replace("MenuScanResult", {
+      navigation.navigate("ScanAdjust", {
         imageUri: asset.uri,
+        imageWidth: imgWidth,
+        imageHeight: imgHeight,
         scanType,
       });
     } catch (e) {

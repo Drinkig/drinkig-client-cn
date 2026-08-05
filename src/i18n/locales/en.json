@@ -947,6 +947,7 @@
             "limitReached": "You've used all scans for today.\nPlease try again tomorrow.",
             "quotaNotConsumed": "Failed scans don't count toward your daily limit",
             "tooLarge": "The image is too large.\nPlease try again in a moment.",
+            "unsupportedFormat": "This photo format is not supported.\nPlease convert it to JPEG and try again.",
             "recognition": "Failed to recognize the menu.\nPlease take a clearer photo and try again.",
             "recognitionLabel": "Failed to recognize the wine label.\nPlease take a clearer photo and try again.",
             "unknown": "An unknown error occurred.",
