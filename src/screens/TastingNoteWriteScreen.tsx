@@ -34,7 +34,11 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent, surfaces } from "../constants/theme";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import {
+  getWinePlaceholderImage,
+  getWineTypeColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import {
   saveDraft,
@@ -544,9 +548,11 @@ export default function TastingNoteWriteScreen() {
               resizeMode="contain"
             />
           ) : (
-            <View style={styles.selectedWineImagePlaceholder}>
-              <Icon name="wine" size={28} color={colors.textTertiary} />
-            </View>
+            <Image
+              source={getWinePlaceholderImage(selectedWine.wineType)}
+              style={styles.selectedWineImage}
+              resizeMode="contain"
+            />
           )}
           <View style={styles.selectedWineInfo}>
             <Text style={styles.selectedWineName} numberOfLines={2}>
@@ -615,7 +621,11 @@ export default function TastingNoteWriteScreen() {
                         resizeMode="contain"
                       />
                     ) : (
-                      <Icon name="wine" size={20} color={accent.text} />
+                      <Image
+                        source={getWinePlaceholderImage(item.sort)}
+                        style={styles.resultImage}
+                        resizeMode="contain"
+                      />
                     )}
                   </View>
                   <View style={styles.resultText}>
@@ -1136,14 +1146,6 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: radius.sm,
     backgroundColor: surfaces.imageWell,
-  },
-  selectedWineImagePlaceholder: {
-    width: 60,
-    height: 72,
-    borderRadius: radius.sm,
-    backgroundColor: surfaces.imageWell,
-    justifyContent: "center",
-    alignItems: "center",
   },
   selectedWineInfo: {
     flex: 1,

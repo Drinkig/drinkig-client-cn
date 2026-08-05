@@ -33,7 +33,11 @@ import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
 import { surfaces } from "../constants/theme";
 import GlassHeader from "../components/common/GlassHeader";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import {
+  getWinePlaceholderImage,
+  getWineTypeColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 
@@ -381,7 +385,11 @@ const WineAddScreen = () => {
               resizeMode="contain"
             />
           ) : (
-            <Icon name="wine" size={20} color={colors.primary} />
+            <Image
+              source={getWinePlaceholderImage(item.sort)}
+              style={styles.resultImage}
+              resizeMode="contain"
+            />
           )}
         </View>
         <View style={styles.resultTextContainer}>

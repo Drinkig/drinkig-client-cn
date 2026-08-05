@@ -23,7 +23,11 @@ import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent, surfaces } from "../constants/theme";
-import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
+import {
+  getWinePlaceholderImage,
+  getWineTypeColor,
+  WINE_TYPE_ON_COLOR,
+} from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 import ActionMenuSheet from "../components/common/ActionMenuSheet";
@@ -179,7 +183,11 @@ export default function TastingNoteDetailScreen() {
                 resizeMode="contain"
               />
             ) : (
-              <Ionicons name="wine" size={40} color={colors.textTertiary} />
+              <Image
+                source={getWinePlaceholderImage(note.sort)}
+                style={styles.heroImage}
+                resizeMode="contain"
+              />
             )}
           </View>
 

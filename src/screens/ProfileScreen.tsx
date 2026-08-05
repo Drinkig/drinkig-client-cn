@@ -23,6 +23,7 @@ import {
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
 import { surfaces, accent, radius } from "../constants/theme";
+import { getWinePlaceholderImage } from "../constants/wineColors";
 import GlassHeader, {
   useGlassHeaderHeight,
 } from "../components/common/GlassHeader";
@@ -179,18 +180,10 @@ const ProfileScreen = () => {
             resizeMode="contain"
           />
         ) : (
-          <View
-            style={[
-              styles.noteImage,
-              {
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: surfaces.raised,
-              },
-            ]}
-          >
-            <Icon name="wine" size={24} color={colors.textTertiary} />
-          </View>
+          <Image
+            source={getWinePlaceholderImage(item.sort)}
+            style={styles.noteImage}
+          />
         )}
       </View>
       <View style={styles.listNoteInfo}>
@@ -223,18 +216,10 @@ const ProfileScreen = () => {
             resizeMode="contain"
           />
         ) : (
-          <View
-            style={[
-              styles.noteImage,
-              {
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: surfaces.raised,
-              },
-            ]}
-          >
-            <Icon name="wine" size={28} color={colors.textTertiary} />
-          </View>
+          <Image
+            source={getWinePlaceholderImage(item.sort)}
+            style={styles.noteImage}
+          />
         )}
         <View style={styles.cardRatingBadge}>
           <Icon name="star" size={10} color={colors.ratingGold} />

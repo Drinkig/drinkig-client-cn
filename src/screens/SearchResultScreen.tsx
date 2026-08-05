@@ -240,14 +240,12 @@ export default function SearchResultScreen() {
         activeOpacity={0.85}
       >
         <View style={styles.resultImageWell}>
-          {/* 로딩 스켈레톤 → 페이드인, 404 등 실패 시 아이콘 폴백 (WineImage 공용) */}
+          {/* 로딩 스켈레톤 → 페이드인, 404 등 실패 시 타입별 기본 병 (WineImage 공용) */}
           <WineImage
             uri={item.imageUri}
             style={styles.resultImage}
             resizeMode="contain"
-            fallbackIcon={
-              <Icon name="wine" size={36} color={surfaces.onImageWell} />
-            }
+            wineType={item.type}
           />
         </View>
         <View style={styles.resultTextContainer}>

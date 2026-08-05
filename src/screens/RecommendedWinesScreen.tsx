@@ -18,6 +18,7 @@ import { WineDBItem } from "../types/Wine";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces } from "../constants/theme";
 import {
+  getWinePlaceholderImage,
   getWineTypeColor,
   getWineTypeLabel,
   WINE_TYPE_ON_COLOR,
@@ -54,7 +55,11 @@ const RecommendedWinesScreen = () => {
             }
           />
         ) : (
-          <Icon name="wine" size={26} color={surfaces.onImageWell} />
+          <Image
+            source={getWinePlaceholderImage(item.type)}
+            style={styles.wineImage}
+            resizeMode="contain"
+          />
         )}
       </View>
       <View style={styles.wineTextContainer}>

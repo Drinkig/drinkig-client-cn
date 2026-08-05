@@ -7,7 +7,6 @@ import {
   ScrollView,
   Animated,
 } from "react-native";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 import { WineDBItem } from "../../types/Wine";
@@ -108,13 +107,7 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
                     uri={wine.imageUri}
                     style={styles.wineImage}
                     resizeMode="contain"
-                    fallbackIcon={
-                      <MaterialCommunityIcons
-                        name="bottle-wine"
-                        size={40}
-                        color={colors.textTertiary}
-                      />
-                    }
+                    wineType={wine.type}
                   />
                 </View>
                 <View style={styles.wineInfo}>

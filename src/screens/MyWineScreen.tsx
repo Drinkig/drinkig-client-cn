@@ -24,6 +24,7 @@ import {
 } from "../api/wine";
 import { colors } from "../constants/colors";
 import { surfaces } from "../constants/theme";
+import { getWinePlaceholderImage } from "../constants/wineColors";
 import { useTranslation, Trans } from "react-i18next";
 import ListStateView from "../components/common/ListStateView";
 import { getErrorMessageKey } from "../utils/apiError";
@@ -186,9 +187,11 @@ const MyWineScreen = () => {
         {item.wineImageUrl ? (
           <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
         ) : (
-          <View style={styles.placeholderImage}>
-            <Icon name="wine" size={24} color={colors.textTertiary} />
-          </View>
+          <Image
+            source={getWinePlaceholderImage(item.wineSort)}
+            style={styles.wineImage}
+            resizeMode="contain"
+          />
         )}
       </View>
       <View style={styles.listInfo}>
@@ -217,9 +220,11 @@ const MyWineScreen = () => {
         {item.wineImageUrl ? (
           <Image source={{ uri: item.wineImageUrl }} style={styles.wineImage} />
         ) : (
-          <View style={styles.placeholderImage}>
-            <Icon name="wine" size={28} color={colors.textTertiary} />
-          </View>
+          <Image
+            source={getWinePlaceholderImage(item.wineSort)}
+            style={styles.wineImage}
+            resizeMode="contain"
+          />
         )}
         <View style={styles.cardPeriodBadge}>
           <Text style={styles.cardPeriodText}>D+{item.period}</Text>
@@ -652,11 +657,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     resizeMode: "contain",
-  },
-  placeholderImage: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   // list view
   listItem: {

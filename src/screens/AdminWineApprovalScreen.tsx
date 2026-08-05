@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { colors } from "../constants/colors";
 import { surfaces } from "../constants/theme";
 import {
+  getWinePlaceholderImage,
   getWineTypeColor as getTypeColor,
   WINE_TYPE_ON_COLOR,
 } from "../constants/wineColors";
@@ -142,9 +143,11 @@ const AdminWineApprovalScreen = () => {
             resizeMode="contain"
           />
         ) : (
-          <View style={styles.cardImagePlaceholder}>
-            <Icon name="wine-outline" size={24} color={colors.textSecondary} />
-          </View>
+          <Image
+            source={getWinePlaceholderImage(item.sort)}
+            style={styles.cardImage}
+            resizeMode="contain"
+          />
         )}
         <View style={styles.cardInfo}>
           <Text style={styles.cardName} numberOfLines={2}>
@@ -384,14 +387,6 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: 8,
     backgroundColor: surfaces.imageWell,
-  },
-  cardImagePlaceholder: {
-    width: 56,
-    height: 72,
-    borderRadius: 8,
-    backgroundColor: surfaces.imageWell,
-    justifyContent: "center",
-    alignItems: "center",
   },
   cardInfo: {
     flex: 1,

@@ -11,7 +11,10 @@ import { useTranslation } from "react-i18next";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { colors } from "../../constants/colors";
 import { radius, surfaces } from "../../constants/theme";
-import { getWineTypeColor } from "../../constants/wineColors";
+import {
+  getWinePlaceholderImage,
+  getWineTypeColor,
+} from "../../constants/wineColors";
 import { formatOrigin } from "../../utils/wineUtils";
 import { FlavorProfile } from "../onboarding/FlavorProfileStep";
 import {
@@ -145,21 +148,23 @@ export default function LabelScanResultView({
       <View style={styles.card}>
         {/* 헤더: 이미지 + 영/한 이름 + 소형 점수 */}
         <View style={styles.heroHeader}>
-          {wine.imageUrl ? (
-            <View style={styles.wineImageContainer}>
-              <Image
-                source={{ uri: wine.imageUrl }}
-                style={styles.wineImage}
-                resizeMode="contain"
-              />
-              <View
-                style={[
-                  styles.sortBar,
-                  { backgroundColor: getWineTypeColor(wine.sort) },
-                ]}
-              />
-            </View>
-          ) : null}
+          <View style={styles.wineImageContainer}>
+            <Image
+              source={
+                wine.imageUrl
+                  ? { uri: wine.imageUrl }
+                  : getWinePlaceholderImage(wine.sort)
+              }
+              style={styles.wineImage}
+              resizeMode="contain"
+            />
+            <View
+              style={[
+                styles.sortBar,
+                { backgroundColor: getWineTypeColor(wine.sort) },
+              ]}
+            />
+          </View>
           <View style={styles.heroTitleCol}>
             <Text style={styles.heroNameEng} numberOfLines={2}>
               {wine.nameEng || wine.nameKor}

@@ -1,3 +1,5 @@
+import { ImageSourcePropType } from "react-native";
+
 /**
  * Single source of truth for wine-type accent colors.
  *
@@ -48,6 +50,32 @@ export function getWineTypeLabel(
   if (s.includes("디저트") || s.includes("dessert"))
     return t("wineType.dessert");
   return type;
+}
+
+// 이미지 없는 와인에 쓰는 기본 병 일러스트 — 흰 웰 + 아이콘 폴백을 대체한다.
+// 전용 에셋은 레드/화이트/스파클링 3종뿐이라 로제·포트·주정강화는 레드,
+// 디저트는 화이트로 폴백하고, 타입 미상이면 가장 흔한 레드를 쓴다.
+const winePlaceholderImages = {
+  red: require("../assets/wine_placeholder/red.png"),
+  white: require("../assets/wine_placeholder/white.png"),
+  sparkling: require("../assets/wine_placeholder/sparkling.png"),
+} as const;
+
+export function getWinePlaceholderImage(
+  type?: string | null
+): ImageSourcePropType {
+  if (!type) return winePlaceholderImages.red;
+  const t = type.toLowerCase();
+  if (t.includes("스파클링") || t.includes("sparkling"))
+    return winePlaceholderImages.sparkling;
+  if (
+    t.includes("화이트") ||
+    t.includes("white") ||
+    t.includes("디저트") ||
+    t.includes("dessert")
+  )
+    return winePlaceholderImages.white;
+  return winePlaceholderImages.red;
 }
 
 export function getWineTypeColor(type?: string | null): string {

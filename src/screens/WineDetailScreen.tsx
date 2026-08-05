@@ -721,13 +721,7 @@ export default function WineDetailScreen() {
                 uri={imageUri}
                 style={styles.wineImage}
                 resizeMode="contain"
-                fallbackIcon={
-                  <MaterialCommunityIcons
-                    name="image-off-outline"
-                    size={32}
-                    color={colors.textSecondary}
-                  />
-                }
+                wineType={type}
               />
             )}
           </View>

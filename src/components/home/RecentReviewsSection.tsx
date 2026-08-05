@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { colors } from "../../constants/colors";
 import { spacing, radius, surfaces, accent } from "../../constants/theme";
+import { getWinePlaceholderImage } from "../../constants/wineColors";
 import { getRecentReviews, HomeRecentReviewDTO } from "../../api/wine";
 import { RootStackParamList } from "../../types";
 
@@ -82,7 +83,11 @@ export const RecentReviewsSection = () => {
           >
             <View style={styles.imageWrap}>
               <Image
-                source={{ uri: review.wineImageUrl }}
+                source={
+                  review.wineImageUrl
+                    ? { uri: review.wineImageUrl }
+                    : getWinePlaceholderImage()
+                }
                 style={styles.image}
                 resizeMode="contain"
               />

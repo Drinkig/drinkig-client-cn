@@ -20,7 +20,10 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { colors } from "../constants/colors";
 import { radius, accent, surfaces } from "../constants/theme";
-import { getWineTypeColor } from "../constants/wineColors";
+import {
+  getWinePlaceholderImage,
+  getWineTypeColor,
+} from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import { incrementScanCount } from "./CameraScreen";
 import { useSubscription } from "../context/SubscriptionContext";
@@ -367,22 +370,24 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
           </View>
         )}
         <View style={styles.wineCardRow}>
-          {/* Wine image + sort color bar */}
-          {wine.imageUrl ? (
-            <View style={styles.wineImageContainer}>
-              <Image
-                source={{ uri: wine.imageUrl }}
-                style={styles.wineImage}
-                resizeMode="contain"
-              />
-              <View
-                style={[
-                  styles.sortBar,
-                  { backgroundColor: getWineTypeColor(wine.sort) },
-                ]}
-              />
-            </View>
-          ) : null}
+          {/* Wine image + sort color bar — 이미지 없으면 타입별 기본 병 */}
+          <View style={styles.wineImageContainer}>
+            <Image
+              source={
+                wine.imageUrl
+                  ? { uri: wine.imageUrl }
+                  : getWinePlaceholderImage(wine.sort)
+              }
+              style={styles.wineImage}
+              resizeMode="contain"
+            />
+            <View
+              style={[
+                styles.sortBar,
+                { backgroundColor: getWineTypeColor(wine.sort) },
+              ]}
+            />
+          </View>
 
           {/* Wine info */}
           <View style={styles.wineInfo}>

@@ -20,7 +20,7 @@ import ListStateView from "../components/common/ListStateView";
 import WineImage from "../components/common/WineImage";
 import { getErrorMessageKey } from "../utils/apiError";
 import { colors } from "../constants/colors";
-import { spacing, radius, surfaces, accent } from "../constants/theme";
+import { spacing, radius, surfaces } from "../constants/theme";
 import { getWineTypeColor, WINE_TYPE_ON_COLOR } from "../constants/wineColors";
 
 export default function WishlistScreen() {
@@ -94,7 +94,7 @@ export default function WishlistScreen() {
           uri={item.imageUrl}
           style={styles.image}
           resizeMode="contain"
-          fallbackIcon={<Icon name="wine" size={26} color={accent.text} />}
+          wineType={item.sort}
         />
       </View>
       <View style={styles.infoContainer}>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Image,
   ImageResizeMode,
   ImageStyle,
   StyleProp,
@@ -8,6 +9,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { getWinePlaceholderImage } from "../../constants/wineColors";
 import Skeleton from "./Skeleton";
 
 interface WineImageProps {
@@ -15,8 +17,8 @@ interface WineImageProps {
   /** 기존 Image에 주던 스타일 그대로 전달 (크기/absoluteFill 등) */
   style?: StyleProp<ImageStyle>;
   resizeMode?: ImageResizeMode;
-  /** 로드 실패/URL 없음 시 표시 — 각 사용처의 기존 폴백 아이콘 유지용 */
-  fallbackIcon?: React.ReactNode;
+  /** 로드 실패/URL 없음 시 타입별 기본 병 일러스트 선택용 (레드/화이트/스파클링) */
+  wineType?: string | null;
   skeletonBorderRadius?: number;
 }
 
@@ -26,14 +28,14 @@ const SKELETON_HIGHLIGHT_LIGHT = "rgba(255,255,255,0.6)";
 
 /**
  * 공용 와인 이미지 래퍼: 로딩 중 스켈레톤 셔머 → 로드 완료 시 250ms 페이드인,
- * 실패/URL 없음 시 폴백 아이콘. 사용처마다 흩어져 있던
+ * 실패/URL 없음 시 타입별 기본 병 일러스트. 사용처마다 흩어져 있던
  * failedImageIds/imageLoadFailed 패턴을 대체한다.
  */
 const WineImage = ({
   uri,
   style,
   resizeMode = "contain",
-  fallbackIcon,
+  wineType,
   skeletonBorderRadius = 0,
 }: WineImageProps) => {
   const [failed, setFailed] = useState(false);
@@ -59,7 +61,11 @@ const WineImage = ({
   if (!uri || failed) {
     return (
       <View style={[styles.fallback, style as StyleProp<ViewStyle>]}>
-        {fallbackIcon}
+        <Image
+          source={getWinePlaceholderImage(wineType)}
+          style={styles.placeholderImage}
+          resizeMode="contain"
+        />
       </View>
     );
   }
@@ -89,6 +95,10 @@ const styles = StyleSheet.create({
   fallback: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  placeholderImage: {
+    width: "100%",
+    height: "100%",
   },
 });
 

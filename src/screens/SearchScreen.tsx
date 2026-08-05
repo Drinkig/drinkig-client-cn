@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import {
   useNavigation,
@@ -24,9 +25,12 @@ import { WineDBItem } from "../types/Wine";
 import { searchWinesPublic, WineUserDTO } from "../api/wine";
 import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
-import { getWineTypeColor } from "../constants/wineColors";
+import {
+  getWinePlaceholderImage,
+  getWineTypeColor,
+} from "../constants/wineColors";
 import HighlightedText from "../components/common/HighlightedText";
-import { spacing, radius, surfaces, accent } from "../constants/theme";
+import { spacing, radius, surfaces } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
 import { getErrorMessageKey } from "../utils/apiError";
@@ -323,44 +327,58 @@ export default function SearchScreen() {
             <View style={styles.recentWineContainer}>
               <Text style={styles.sectionTitle}>{t("search.recentWine")}</Text>
               {recentWines.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.recentWineList}
-                >
-                  {recentWines.map((wine) => (
-                    <TouchableOpacity
-                      key={wine.id}
-                      style={styles.recentWineItem}
-                      onPress={() =>
-                        navigation.navigate("WineDetail", { wine })
-                      }
-                    >
-                      <View style={styles.recentWineImageContainer}>
-                        {wine.imageUri && !failedImageIds.has(wine.id) ? (
-                          <Image
-                            source={{ uri: wine.imageUri }}
-                            style={styles.recentWineImage}
-                            resizeMode="contain"
-                            onError={() =>
-                              setFailedImageIds((prev) =>
-                                new Set(prev).add(wine.id)
-                              )
-                            }
-                          />
-                        ) : (
-                          <Icon name="wine" size={30} color={accent.base} />
-                        )}
-                      </View>
-                      <Text style={styles.recentWineName} numberOfLines={2}>
-                        {i18n.language === "en"
-                          ? wine.nameEng || wine.nameKor
-                          : wine.nameKor}
-                      </Text>
-                      <Text style={styles.recentWineType}>{wine.type}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                <View>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.recentWineList}
+                  >
+                    {recentWines.map((wine) => (
+                      <TouchableOpacity
+                        key={wine.id}
+                        style={styles.recentWineItem}
+                        onPress={() =>
+                          navigation.navigate("WineDetail", { wine })
+                        }
+                      >
+                        <View style={styles.recentWineImageContainer}>
+                          {wine.imageUri && !failedImageIds.has(wine.id) ? (
+                            <Image
+                              source={{ uri: wine.imageUri }}
+                              style={styles.recentWineImage}
+                              resizeMode="contain"
+                              onError={() =>
+                                setFailedImageIds((prev) =>
+                                  new Set(prev).add(wine.id)
+                                )
+                              }
+                            />
+                          ) : (
+                            <Image
+                              source={getWinePlaceholderImage(wine.type)}
+                              style={styles.recentWineImage}
+                              resizeMode="contain"
+                            />
+                          )}
+                        </View>
+                        <Text style={styles.recentWineName} numberOfLines={2}>
+                          {i18n.language === "en"
+                            ? wine.nameEng || wine.nameKor
+                            : wine.nameKor}
+                        </Text>
+                        <Text style={styles.recentWineType}>{wine.type}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                  {/* 스크롤로 잘리는 오른쪽 경계가 배경색으로 자연스럽게 녹도록 */}
+                  <LinearGradient
+                    colors={[`${colors.background}00`, colors.background]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.recentWineFade}
+                    pointerEvents="none"
+                  />
+                </View>
               ) : (
                 <Text style={styles.emptyRecentText}>
                   {t("search.emptyRecentWine")}
@@ -483,6 +501,13 @@ const styles = StyleSheet.create({
   recentWineList: {
     gap: spacing.lg,
     paddingRight: spacing.xxl,
+  },
+  recentWineFade: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 40,
   },
   recentWineItem: {
     width: 100,

@@ -26,6 +26,7 @@ import MenuBottomSheet from "../components/common/MenuBottomSheet";
 import SelectionModal from "../components/common/SelectionModal";
 import { colors } from "../constants/colors";
 import { spacing, radius, surfaces, accent } from "../constants/theme";
+import { getWinePlaceholderImage } from "../constants/wineColors";
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 
@@ -138,13 +139,11 @@ export default function MyWineDetailScreen() {
       );
     }
     return (
-      <View style={styles.imagePlaceholder}>
-        <MaterialCommunityIcons
-          name="bottle-wine"
-          size={48}
-          color={colors.textTertiary}
-        />
-      </View>
+      <Image
+        source={getWinePlaceholderImage(wine.wineSort)}
+        style={styles.wineImage}
+        resizeMode="contain"
+      />
     );
   };
 
@@ -399,14 +398,6 @@ const styles = StyleSheet.create({
   wineImage: {
     width: "100%",
     height: "100%",
-  },
-  imagePlaceholder: {
-    width: 80,
-    height: 120,
-    borderRadius: radius.sm,
-    backgroundColor: surfaces.raised,
-    justifyContent: "center",
-    alignItems: "center",
   },
   headerInfo: {
     flex: 1,
