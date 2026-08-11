@@ -178,7 +178,8 @@
     "profile": {
         "headerTitle": "Profile",
         "guest": "Guest",
-        "wineCountText": "{{count}} wines tasted",
+        "followCounts": "{{followers}} followers · {{following}} following",
+        "privateAccount": "Private account",
         "editBtn": "Edit",
         "tasteTitle": "My Taste Profile",
         "chartLinkTitle": "Recommended Styles",

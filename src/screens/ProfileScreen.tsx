@@ -16,6 +16,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { useUser } from "../context/UserContext";
 import { getMyTastingNotes, TastingNotePreviewDTO } from "../api/wine";
+import { getMyFollowCounts } from "../api/follow";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
 import { surfaces, accent, radius } from "../constants/theme";
@@ -31,7 +32,8 @@ const ProfileScreen = () => {
   const { user: userInfo, flavorProfile } = useUser();
 
   const [selectedType, setSelectedType] = React.useState("전체");
-  const [wineCount, setWineCount] = React.useState(0);
+  const [followerCount, setFollowerCount] = React.useState(0);
+  const [followingCount, setFollowingCount] = React.useState(0);
   const [tastingNotes, setTastingNotes] = React.useState<
     TastingNotePreviewDTO[]
   >([]);
@@ -64,11 +66,25 @@ const ProfileScreen = () => {
         }
 
         setTastingNotes(notes);
-        setWineCount(notes.length);
       }
     } catch (error) {
       console.error("Failed to fetch my data:", error);
       setTastingNotes([]);
+    }
+
+    // 팔로우 카운트는 별도 실패 허용 — 구서버(404)나 게스트(401)면 0 유지
+    try {
+      const followResponse = await getMyFollowCounts();
+      if (followResponse.isSuccess && followResponse.result) {
+        setFollowerCount(followResponse.result.followerCount || 0);
+        setFollowingCount(followResponse.result.followingCount || 0);
+      }
+    } catch (error) {
+      // 404/401은 예상된 상황(엔드포인트 미배포/미로그인)이라 로그 생략
+      const status = (error as any)?.response?.status;
+      if (status !== 404 && status !== 401) {
+        console.error("Failed to fetch follow counts:", error);
+      }
     }
   };
 
@@ -270,11 +286,24 @@ const ProfileScreen = () => {
             />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.nickname}>
-              {userInfo?.nickname || t("profile.guest")}
-            </Text>
-            <Text style={styles.wineCountText}>
-              {t("profile.wineCountText", { count: wineCount || 0 })}
+            <View style={styles.nicknameRow}>
+              <Text style={styles.nickname}>
+                {userInfo?.nickname || t("profile.guest")}
+              </Text>
+              {userInfo?.isProfilePublic === false && (
+                <Icon
+                  name="lock-closed"
+                  size={15}
+                  color={colors.textSecondary}
+                  accessibilityLabel={t("profile.privateAccount")}
+                />
+              )}
+            </View>
+            <Text style={styles.followCountText}>
+              {t("profile.followCounts", {
+                followers: followerCount,
+                following: followingCount,
+              })}
             </Text>
           </View>
           <TouchableOpacity
@@ -530,13 +559,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
+  nicknameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+  },
   nickname: {
     fontSize: 24,
     fontWeight: "bold",
     color: colors.white,
-    marginBottom: 4,
   },
-  wineCountText: {
+  followCountText: {
     fontSize: 14,
     color: colors.textSecondary,
     fontWeight: "600",

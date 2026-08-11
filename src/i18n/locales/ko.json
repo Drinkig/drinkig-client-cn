@@ -178,7 +178,8 @@
     "profile": {
         "headerTitle": "마이페이지",
         "guest": "게스트",
-        "wineCountText": "마신 와인 {{count}}병",
+        "followCounts": "팔로워 {{followers}} · 팔로잉 {{following}}",
+        "privateAccount": "비공개 계정",
         "editBtn": "수정",
         "tasteTitle": "내 와인 취향",
         "chartLinkTitle": "추천 와인 스타일",
