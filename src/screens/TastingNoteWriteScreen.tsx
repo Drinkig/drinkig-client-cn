@@ -999,15 +999,10 @@ export default function TastingNoteWriteScreen() {
               accessibilityLabel={t("tastingNoteWrite.photo.add")}
             >
               <Icon
-                name={
-                  isProcessingPhoto ? "hourglass-outline" : "camera-outline"
-                }
-                size={22}
+                name={isProcessingPhoto ? "hourglass-outline" : "add"}
+                size={28}
                 color={colors.textTertiary}
               />
-              <Text style={styles.photoAddText}>
-                {t("tastingNoteWrite.photo.add")}
-              </Text>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -1479,11 +1474,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.xs,
-  },
-  photoAddText: {
-    color: colors.textTertiary,
-    fontSize: 11,
-    fontWeight: "600",
   },
   textArea: {
     backgroundColor: surfaces.card,

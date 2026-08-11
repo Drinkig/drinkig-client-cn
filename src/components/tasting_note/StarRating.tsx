@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { colors } from "../../constants/colors";
-import { spacing, surfaces } from "../../constants/theme";
+import { accent, spacing, surfaces } from "../../constants/theme";
 import { useTranslation } from "react-i18next";
 
 interface StarRatingProps {
@@ -11,7 +11,8 @@ interface StarRatingProps {
 }
 
 const STAR = 44;
-const STAR_GOLD = colors.ratingGold;
+// 브랜드 바이올렛의 다크 배경용 티어 — 골드/흰색 대신 앱 아이덴티티에 맞춘다
+const STAR_ACTIVE = accent.text;
 
 export default function StarRating({
   rating,
@@ -32,7 +33,7 @@ export default function StarRating({
         <Icon
           name={iconName}
           size={STAR}
-          color={rating >= index - 0.5 ? STAR_GOLD : surfaces.hairlineStrong}
+          color={rating >= index - 0.5 ? STAR_ACTIVE : surfaces.hairlineStrong}
         />
         <View style={styles.touchOverlay}>
           <TouchableOpacity
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: surfaces.card,
   },
   scorePillActive: {
-    backgroundColor: "rgba(245,197,24,0.16)",
+    backgroundColor: accent.soft,
   },
   scoreText: {
     color: colors.textTertiary,
@@ -127,6 +128,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   scoreTextActive: {
-    color: STAR_GOLD,
+    color: STAR_ACTIVE,
   },
 });
