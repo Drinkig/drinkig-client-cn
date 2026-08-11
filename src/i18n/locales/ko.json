@@ -189,7 +189,7 @@
             "desc": "온보딩을 완료하거나 와인을 더 많이 즐겨보세요!"
         },
         "historyTitle": "내가 마신 와인",
-        "historyCountText": "총 <0>{{count}}</0>병",
+        "historyCount": "{{count}}병",
         "emptyNotes": {
             "title": "아직 기록된 와인이 없습니다.",
             "desc": "마신 와인을 기록해보세요!"

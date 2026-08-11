@@ -189,7 +189,7 @@
             "desc": "Complete onboarding to see your taste analysis!"
         },
         "historyTitle": "Tasting History",
-        "historyCountText": "<0>{{count}}</0> bottles",
+        "historyCount": "{{count}}",
         "emptyNotes": {
             "title": "No tasting notes yet.",
             "desc": "Start recording the wines you drink!"

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  LayoutAnimation,
   Modal,
   TouchableWithoutFeedback,
   Dimensions,
@@ -24,7 +25,7 @@ import { getWinePlaceholderImage } from "../constants/wineColors";
 import GlassHeader, {
   useGlassHeaderHeight,
 } from "../components/common/GlassHeader";
-import { useTranslation, Trans } from "react-i18next";
+import { useTranslation } from "react-i18next";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -41,6 +42,13 @@ const ProfileScreen = () => {
   const [sortType, setSortType] = React.useState("latest");
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<"list" | "card">("list");
+  // 취향 차트는 공간을 많이 차지해 기본 접힘
+  const [isTasteExpanded, setIsTasteExpanded] = React.useState(false);
+
+  const toggleTasteSection = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsTasteExpanded((prev) => !prev);
+  };
   const { t, i18n } = useTranslation();
   const headerHeight = useGlassHeaderHeight();
 
@@ -315,11 +323,23 @@ const ProfileScreen = () => {
         </View>
 
         <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
+          <TouchableOpacity
+            style={[styles.sectionHeader, styles.collapsibleHeader]}
+            onPress={toggleTasteSection}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: isTasteExpanded }}
+            accessibilityLabel={t("profile.tasteTitle")}
+          >
             <Text style={styles.sectionTitle}>{t("profile.tasteTitle")}</Text>
-          </View>
+            <Icon
+              name={isTasteExpanded ? "chevron-up" : "chevron-down"}
+              size={20}
+              color={colors.textSecondary}
+            />
+          </TouchableOpacity>
 
-          {flavorProfile ? (
+          {isTasteExpanded && flavorProfile ? (
             <TouchableOpacity
               style={styles.chartContainer}
               onPress={() => navigation.navigate("RecommendationList" as never)}
@@ -337,7 +357,7 @@ const ProfileScreen = () => {
                 </View>
               </View>
             </TouchableOpacity>
-          ) : (
+          ) : isTasteExpanded ? (
             <View style={styles.emptyWrapper}>
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>
@@ -348,12 +368,15 @@ const ProfileScreen = () => {
                 </Text>
               </View>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
+          <View style={[styles.sectionHeader, styles.sectionTitleRow]}>
             <Text style={styles.sectionTitle}>{t("profile.historyTitle")}</Text>
+            <Text style={styles.sectionTitleCount}>
+              {t("profile.historyCount", { count: processedNotes.length })}
+            </Text>
           </View>
 
           <ScrollView
@@ -390,14 +413,6 @@ const ProfileScreen = () => {
               processedNotes.length === 0 && styles.countAndSortContainerFlat,
             ]}
           >
-            <Text style={styles.countText}>
-              <Trans
-                i18nKey="profile.historyCountText"
-                values={{ count: processedNotes.length }}
-                components={[<Text style={styles.countValue} />]}
-              />
-            </Text>
-
             {!Array.isArray(tastingNotes) ||
             tastingNotes.length === 0 ? null : (
               <View style={styles.sortAndViewContainer}>
@@ -601,9 +616,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.white,
   },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  collapsibleHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionTitleCount: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.textSecondary,
+  },
   countAndSortContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     alignItems: "center",
     paddingHorizontal: 24,
     paddingBottom: 8,
@@ -620,14 +650,6 @@ const styles = StyleSheet.create({
     shadowRadius: 0,
     shadowOffset: { width: 0, height: 0 },
     elevation: 0,
-  },
-  countText: {
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-  countValue: {
-    color: colors.white,
-    fontWeight: "bold",
   },
   sortButton: {
     flexDirection: "row",
