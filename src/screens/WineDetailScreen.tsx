@@ -742,7 +742,7 @@ export default function WineDetailScreen() {
               <MaterialCommunityIcons
                 name="star"
                 size={16}
-                color={userRating ? colors.ratingGold : colors.textSecondary}
+                color={userRating ? colors.ratingStar : colors.textSecondary}
               />
               <Text style={styles.ratingText}>
                 {userRating ? userRating.avg.toFixed(1) : "-"}

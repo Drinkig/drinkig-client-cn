@@ -147,7 +147,7 @@ export default function UserProfileScreen() {
             resizeMode="cover"
           />
           <View style={styles.gridRatingBadge}>
-            <Icon name="star" size={10} color={colors.ratingGold} />
+            <Icon name="star" size={10} color={colors.ratingStar} />
             <Text style={styles.gridRatingText}>{item.rating.toFixed(1)}</Text>
           </View>
         </>
@@ -160,7 +160,7 @@ export default function UserProfileScreen() {
           </Text>
           <View>
             <View style={styles.gridInfoRatingRow}>
-              <Icon name="star" size={11} color={colors.ratingGold} />
+              <Icon name="star" size={11} color={colors.ratingStar} />
               <Text style={styles.gridInfoRating}>
                 {item.rating.toFixed(1)}
               </Text>

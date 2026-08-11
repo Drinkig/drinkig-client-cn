@@ -76,7 +76,7 @@ export const FeedSection = () => {
                 resizeMode="cover"
               />
               <View style={styles.rating}>
-                <Icon name="star" size={11} color={colors.ratingGold} />
+                <Icon name="star" size={11} color={colors.ratingStar} />
                 <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
               </View>
             </View>

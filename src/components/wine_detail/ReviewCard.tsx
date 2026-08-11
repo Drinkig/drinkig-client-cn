@@ -68,7 +68,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           ) : null}
         </View>
         <View style={styles.ratingContainer}>
-          <Ionicons name="star" size={14} color={colors.ratingGold} />
+          <Ionicons name="star" size={14} color={colors.ratingStar} />
           <Text style={styles.ratingText}>{review.rating.toFixed(1)}</Text>
         </View>
       </View>

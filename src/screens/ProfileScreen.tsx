@@ -213,7 +213,7 @@ const ProfileScreen = () => {
         <Text style={styles.listNoteDate}>{item.tasteDate}</Text>
       </View>
       <View style={styles.listRatingBadge}>
-        <Icon name="star" size={12} color={colors.ratingGold} />
+        <Icon name="star" size={12} color={colors.ratingStar} />
         <Text style={styles.listRatingText}>{item.rating.toFixed(1)}</Text>
       </View>
     </TouchableOpacity>
@@ -242,7 +242,7 @@ const ProfileScreen = () => {
             resizeMode="cover"
           />
           <View style={styles.cardRatingBadge}>
-            <Icon name="star" size={10} color={colors.ratingGold} />
+            <Icon name="star" size={10} color={colors.ratingStar} />
             <Text style={styles.cardRatingText}>{item.rating.toFixed(1)}</Text>
           </View>
         </>
@@ -256,7 +256,7 @@ const ProfileScreen = () => {
           </Text>
           <View>
             <View style={styles.gridInfoRatingRow}>
-              <Icon name="star" size={11} color={colors.ratingGold} />
+              <Icon name="star" size={11} color={colors.ratingStar} />
               <Text style={styles.gridInfoRating}>
                 {item.rating.toFixed(1)}
               </Text>

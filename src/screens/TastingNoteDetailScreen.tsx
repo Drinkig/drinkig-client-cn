@@ -45,7 +45,7 @@ import GlassHeader from "../components/common/GlassHeader";
 import ActionMenuSheet from "../components/common/ActionMenuSheet";
 import { sendContentReport } from "../utils/reportUtils";
 
-const RATING_GOLD = colors.ratingGold;
+const RATING_STAR = colors.ratingStar;
 
 type TastingNoteDetailRouteProp = RouteProp<
   RootStackParamList,
@@ -508,7 +508,7 @@ export default function TastingNoteDetailScreen() {
               {t("tastingNoteWrite.conclusion.ratingLabel")}
             </Text>
             <View style={styles.statValueRow}>
-              <Ionicons name="star" size={20} color={RATING_GOLD} />
+              <Ionicons name="star" size={20} color={RATING_STAR} />
               <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
             </View>
           </View>

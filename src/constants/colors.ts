@@ -12,9 +12,10 @@ export const colors = {
   // WCAG AA: 기존 #666567은 배경(#1A191B) 위 대비 3.02:1로 미달이라 상향(≈5.3:1).
   // placeholder/힌트 텍스트에도 이 색이 표준으로 쓰이므로 가독성에 직접 영향.
   textTertiary: "#8E8D90", // Icons/Disabled
-  // 별점 골드 단일 소스 — 화면마다 4종(#E8C94A/#F5C518/#f1c40f/#FFD86B)이
-  // 혼용되던 것을 통일. 별점/평점 표시에는 반드시 이 토큰을 쓴다.
-  ratingGold: "#E8C94A",
+  // 별점 단일 소스 — 별점/평점 표시에는 반드시 이 토큰을 쓴다.
+  // 골드(#E8C94A)에서 브랜드 라이트 바이올렛으로 교체(2026-08-11, accent.text와 동일값.
+  // theme.ts가 colors를 import하므로 순환 참조 방지 위해 값을 직접 기재).
+  ratingStar: "#C795E5",
   border: "#38363A", // Dividers
   white: "#FFFFFF",
   black: "#000000",

@@ -122,7 +122,7 @@ export const RecommendedSection: React.FC<RecommendedSectionProps> = ({
                     </Text>
                     {!!wine.vivinoRating && (
                       <View style={styles.ratingContainer}>
-                        <Icon name="star" size={10} color={colors.ratingGold} />
+                        <Icon name="star" size={10} color={colors.ratingStar} />
                         <Text style={styles.ratingText}>
                           {wine.vivinoRating.toFixed(1)}
                         </Text>
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     fontSize: 11,
-    color: colors.ratingGold,
+    color: colors.ratingStar,
     fontWeight: "700",
   },
 });
