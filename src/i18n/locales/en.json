@@ -60,6 +60,9 @@
         "recentReviews": {
             "title": "Recent Reviews"
         },
+        "feed": {
+            "title": "What everyone's drinking"
+        },
         "banner": {
             "noticeTag": "NOTICE",
             "noticeTitle": "How to use\nthe new Drinkig",
@@ -584,10 +587,25 @@
             "closeDiscard": "Discard"
         }
     },
+    "userProfile": {
+        "notes": "Notes",
+        "followers": "Followers",
+        "followingCount": "Following",
+        "follow": "Follow",
+        "following": "Following",
+        "privateTitle": "This account is private",
+        "privateDesc": "Their tasting notes are private.",
+        "empty": "No notes yet.",
+        "error": {
+            "fetchFail": "Couldn't load this profile.",
+            "followFail": "Couldn't update follow. Please try again."
+        }
+    },
     "tastingNoteDetail": {
         "header": "Tasting Note",
         "menu": {
             "delete": "Delete",
+            "report": "Report",
             "cancel": "Cancel"
         },
         "photo": {

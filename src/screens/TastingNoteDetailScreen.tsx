@@ -43,6 +43,7 @@ import {
 import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 import ActionMenuSheet from "../components/common/ActionMenuSheet";
+import { sendContentReport } from "../utils/reportUtils";
 
 const RATING_GOLD = colors.ratingGold;
 
@@ -211,6 +212,24 @@ export default function TastingNoteDetailScreen() {
     });
   };
 
+  // 타인 노트 신고 — 기존 리뷰 신고 플로우(사유 입력 → POST /report) 재사용
+  const handleReport = () => {
+    if (!note) return;
+    sendContentReport(
+      "REVIEW",
+      {
+        writerName: note.authorName || "-",
+        reviewDate: note.tasteDate,
+        reviewContent: note.review,
+      },
+      {
+        onSuccess: () =>
+          showToast(t("contentReport.success"), { type: "success" }),
+        onError: () => showToast(t("contentReport.error"), { type: "error" }),
+      }
+    );
+  };
+
   const handleDelete = () => {
     showAlert({
       title: t("tastingNoteDetail.delete.title"),
@@ -269,6 +288,8 @@ export default function TastingNoteDetailScreen() {
 
   const { finishTags, reviewText } = parseReview(note.review);
   const photos = note.images ?? [];
+  // 구 서버는 mine을 안 내려주므로 undefined면 내 노트로 취급 (기존 동작 보존)
+  const isMine = note.mine !== false;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -350,100 +371,136 @@ export default function TastingNoteDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.photoHeaderRow}>
-            <Text style={styles.cardTitle}>
-              {t("tastingNoteDetail.photo.title")} ({photos.length}/
-              {NOTE_PHOTO_MAX_COUNT})
+        {!isMine && note.authorName ? (
+          <TouchableOpacity
+            style={styles.authorRow}
+            onPress={() =>
+              note.authorId &&
+              navigation.navigate("UserProfile", { memberId: note.authorId })
+            }
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel={note.authorName}
+          >
+            <Image
+              source={
+                note.authorImageUrl
+                  ? { uri: note.authorImageUrl }
+                  : require("../assets/Standard_profile.png")
+              }
+              style={styles.authorAvatar}
+            />
+            <Text style={styles.authorName} numberOfLines={1}>
+              {note.authorName}
             </Text>
-            {photos.length < NOTE_PHOTO_MAX_COUNT && (
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={colors.textTertiary}
+            />
+          </TouchableOpacity>
+        ) : null}
+
+        {(isMine || photos.length > 0) && (
+          <View style={styles.card}>
+            <View style={styles.photoHeaderRow}>
+              <Text style={styles.cardTitle}>
+                {t("tastingNoteDetail.photo.title")} ({photos.length}/
+                {NOTE_PHOTO_MAX_COUNT})
+              </Text>
+              {isMine && photos.length < NOTE_PHOTO_MAX_COUNT && (
+                <TouchableOpacity
+                  onPress={handleAddPhotos}
+                  disabled={isUploadingPhotos}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("tastingNoteWrite.photo.add")}
+                >
+                  {isUploadingPhotos ? (
+                    <ActivityIndicator size="small" color={accent.text} />
+                  ) : (
+                    <Ionicons name="add" size={22} color={accent.text} />
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {photos.length > 0 ? (
+              <View onLayout={(e) => setPagerWidth(e.nativeEvent.layout.width)}>
+                {pagerWidth > 0 && (
+                  <FlatList
+                    data={photos}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(img) => String(img.imageId)}
+                    onMomentumScrollEnd={(e) =>
+                      setPhotoPage(
+                        Math.round(e.nativeEvent.contentOffset.x / pagerWidth)
+                      )
+                    }
+                    renderItem={({ item }) => (
+                      <View style={{ width: pagerWidth }}>
+                        <Image
+                          source={{ uri: item.imageUrl }}
+                          style={styles.photoPageImage}
+                          resizeMode="cover"
+                        />
+                        {isMine && (
+                          <TouchableOpacity
+                            style={styles.photoDeleteBadge}
+                            onPress={() => handleDeletePhoto(item.imageId)}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            accessibilityRole="button"
+                            accessibilityLabel={t(
+                              "tastingNoteWrite.photo.remove"
+                            )}
+                          >
+                            <Ionicons
+                              name="trash-outline"
+                              size={14}
+                              color={colors.white}
+                            />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    )}
+                  />
+                )}
+                {photos.length > 1 && (
+                  <View style={styles.photoDots}>
+                    {photos.map((img, index) => (
+                      <View
+                        key={img.imageId}
+                        style={[
+                          styles.photoDot,
+                          index === photoPage && styles.photoDotActive,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            ) : (
               <TouchableOpacity
+                style={styles.photoEmpty}
                 onPress={handleAddPhotos}
                 disabled={isUploadingPhotos}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
                 accessibilityLabel={t("tastingNoteWrite.photo.add")}
               >
-                {isUploadingPhotos ? (
-                  <ActivityIndicator size="small" color={accent.text} />
-                ) : (
-                  <Ionicons name="add" size={22} color={accent.text} />
-                )}
+                <Ionicons
+                  name="camera-outline"
+                  size={24}
+                  color={colors.textTertiary}
+                />
+                <Text style={styles.emptyText}>
+                  {t("tastingNoteDetail.photo.empty")}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
-
-          {photos.length > 0 ? (
-            <View onLayout={(e) => setPagerWidth(e.nativeEvent.layout.width)}>
-              {pagerWidth > 0 && (
-                <FlatList
-                  data={photos}
-                  horizontal
-                  pagingEnabled
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={(img) => String(img.imageId)}
-                  onMomentumScrollEnd={(e) =>
-                    setPhotoPage(
-                      Math.round(e.nativeEvent.contentOffset.x / pagerWidth)
-                    )
-                  }
-                  renderItem={({ item }) => (
-                    <View style={{ width: pagerWidth }}>
-                      <Image
-                        source={{ uri: item.imageUrl }}
-                        style={styles.photoPageImage}
-                        resizeMode="cover"
-                      />
-                      <TouchableOpacity
-                        style={styles.photoDeleteBadge}
-                        onPress={() => handleDeletePhoto(item.imageId)}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        accessibilityRole="button"
-                        accessibilityLabel={t("tastingNoteWrite.photo.remove")}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={14}
-                          color={colors.white}
-                        />
-                      </TouchableOpacity>
-                    </View>
-                  )}
-                />
-              )}
-              {photos.length > 1 && (
-                <View style={styles.photoDots}>
-                  {photos.map((img, index) => (
-                    <View
-                      key={img.imageId}
-                      style={[
-                        styles.photoDot,
-                        index === photoPage && styles.photoDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.photoEmpty}
-              onPress={handleAddPhotos}
-              disabled={isUploadingPhotos}
-              accessibilityRole="button"
-              accessibilityLabel={t("tastingNoteWrite.photo.add")}
-            >
-              <Ionicons
-                name="camera-outline"
-                size={24}
-                color={colors.textTertiary}
-              />
-              <Text style={styles.emptyText}>
-                {t("tastingNoteDetail.photo.empty")}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        )}
 
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
@@ -540,14 +597,25 @@ export default function TastingNoteDetailScreen() {
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
         cancelLabel={t("tastingNoteDetail.menu.cancel")}
-        actions={[
-          {
-            label: t("tastingNoteDetail.menu.delete"),
-            icon: "trash-outline",
-            destructive: true,
-            onPress: handleDelete,
-          },
-        ]}
+        actions={
+          isMine
+            ? [
+                {
+                  label: t("tastingNoteDetail.menu.delete"),
+                  icon: "trash-outline",
+                  destructive: true,
+                  onPress: handleDelete,
+                },
+              ]
+            : [
+                {
+                  label: t("tastingNoteDetail.menu.report"),
+                  icon: "flag-outline",
+                  destructive: true,
+                  onPress: handleReport,
+                },
+              ]
+        }
       />
     </SafeAreaView>
   );
@@ -709,6 +777,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: spacing.sm,
+  },
+
+  // 타인 노트 작성자 행
+  authorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    backgroundColor: surfaces.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  authorAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: surfaces.raised,
+  },
+  authorName: {
+    flex: 1,
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "700",
   },
 
   // Photos

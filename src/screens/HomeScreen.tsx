@@ -16,7 +16,6 @@ import Icon from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RootStackParamList } from "../types";
 import { WineDBItem } from "../types/Wine";
 import { HeroSection } from "../components/home/HeroSection";
@@ -33,7 +32,7 @@ import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { useSubscription } from "../context/SubscriptionContext";
 import { useUser, RecommendedWine } from "../context/UserContext";
-import { RecentReviewsSection } from "../components/home/RecentReviewsSection";
+import { FeedSection } from "../components/home/FeedSection";
 import { RecommendedSection } from "../components/home/RecommendedSection";
 
 const FLIP_DURATION = 550;
@@ -102,7 +101,6 @@ export default function HomeScreen() {
   const [recommendedWines, setRecommendedWines] = useState<WineDBItem[] | null>(
     null
   );
-  const [recentWines, setRecentWines] = useState<WineDBItem[]>([]);
 
   // 온보딩/취향 재설정에서 받아둔 추천 스타일로 실제 와인을 찾아 보여준다.
   useEffect(() => {
@@ -174,22 +172,6 @@ export default function HomeScreen() {
       alive = false;
     };
   }, [recommendations, isUserLoading]);
-
-  // 최근 본 와인 (검색/상세에서 이미 저장 중인 recent_wines 재사용)
-  useEffect(() => {
-    if (!isFocused) return;
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem("recent_wines");
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) setRecentWines(parsed);
-        }
-      } catch (e) {
-        console.warn("Failed to load recent wines for home:", e);
-      }
-    })();
-  }, [isFocused]);
 
   // Flip transition state
   const heroRef = useRef<View>(null);
@@ -372,14 +354,8 @@ export default function HomeScreen() {
             onPressWine={(wine) => navigation.navigate("WineDetail", { wine })}
           />
 
-          <RecommendedSection
-            data={recentWines}
-            title={t("home.recentWines.title")}
-            onPressWine={(wine) => navigation.navigate("WineDetail", { wine })}
-          />
-
-          {/* Discovery feed sits below the user's own tools. */}
-          <RecentReviewsSection />
+          {/* 소셜 피드 — 최근 본 와인·최근 리뷰 섹션을 대체한다 */}
+          <FeedSection />
         </ScrollView>
       </SafeAreaView>
 

@@ -643,6 +643,59 @@ export const deleteTastingNoteImage = async (
   return response.data;
 };
 
+// 소셜 피드 — 공개 계정의 사진 있는 노트 최신순 (본인 제외)
+export interface TastingNoteFeedItemDTO {
+  noteId: number;
+  wineName: string;
+  wineNameEng?: string;
+  sort?: string;
+  rating: number;
+  tasteDate: string;
+  thumbnailUrl: string;
+  authorId: number;
+  authorName: string;
+  authorImageUrl?: string | null;
+}
+
+export interface TastingNoteFeedResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: TastingNoteFeedItemDTO[];
+}
+
+export const getTastingNoteFeed = async (size: number = 20) => {
+  const response = await client.get<TastingNoteFeedResponse>(
+    "/tasting-note/feed",
+    { params: { size } }
+  );
+  return response.data;
+};
+
+// 특정 유저(공개 계정)의 노트 목록 — 비공개면 MEMBER4014
+export interface MemberTastingNotesResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    content: TastingNotePreviewDTO[];
+    pageNumber?: number;
+    totalPages?: number;
+  };
+}
+
+export const getMemberTastingNotes = async (
+  memberId: number,
+  page: number = 0,
+  size: number = 30
+) => {
+  const response = await client.get<MemberTastingNotesResponse>(
+    `/tasting-note/member/${memberId}`,
+    { params: { page, size } }
+  );
+  return response.data;
+};
+
 export const getTastingNoteDetail = async (noteId: number) => {
   const response = await client.get<TastingNoteDetailResponse>(
     `/tasting-note/${noteId}`
@@ -678,6 +731,11 @@ export interface TastingNoteDTO {
   sort?: string;
   // 유저가 첨부한 사진 목록(정렬순). 구 서버 응답에는 없다.
   images?: TastingNoteImageDTO[];
+  // 열람자 기준 정보 — 구 서버는 안 내려주므로 undefined면 내 노트로 취급
+  mine?: boolean;
+  authorId?: number | null;
+  authorName?: string | null;
+  authorImageUrl?: string | null;
 }
 export interface TastingNoteDeleteResponse {
   isSuccess: boolean;

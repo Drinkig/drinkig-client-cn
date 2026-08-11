@@ -99,6 +99,10 @@ export default function RootNavigator() {
               component={TastingNoteDetailScreen}
             />
             <Stack.Screen
+              name="UserProfile"
+              component={require("../screens/UserProfileScreen").default}
+            />
+            <Stack.Screen
               name="WithdrawRetention"
               component={require("../screens/WithdrawRetentionScreen").default}
             />

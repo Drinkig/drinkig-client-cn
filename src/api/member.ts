@@ -182,6 +182,32 @@ export const getMemberInfo = async () => {
   return response.data;
 };
 
+// 타인 공개 프로필 — 비공개 계정도 헤더(닉네임·카운트)는 조회 가능
+export interface MemberProfileResult {
+  memberId: number;
+  name: string;
+  imageUrl?: string | null;
+  isProfilePublic?: boolean;
+  isFollowing?: boolean;
+  followerCount: number;
+  followingCount: number;
+  noteCount: number;
+}
+
+export interface MemberProfileApiResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: MemberProfileResult;
+}
+
+export const getMemberProfile = async (memberId: number) => {
+  const response = await client.get<MemberProfileApiResponse>(
+    `/member/profile/${memberId}`
+  );
+  return response.data;
+};
+
 // 부분 업데이트 — undefined인 필드는 서버가 기존 값을 유지한다.
 export const updateMemberInfo = async (
   name?: string,

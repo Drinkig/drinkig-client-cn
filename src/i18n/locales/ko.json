@@ -60,6 +60,9 @@
         "recentReviews": {
             "title": "최근 리뷰"
         },
+        "feed": {
+            "title": "요즘 다들 이렇게 마셔요"
+        },
         "banner": {
             "noticeTag": "NOTICE",
             "noticeTitle": "새롭게 단장한 드링키지\n사용법 정리",
@@ -584,10 +587,25 @@
             "closeDiscard": "저장 안 함"
         }
     },
+    "userProfile": {
+        "notes": "노트",
+        "followers": "팔로워",
+        "followingCount": "팔로잉",
+        "follow": "팔로우",
+        "following": "팔로잉",
+        "privateTitle": "비공개 계정입니다",
+        "privateDesc": "이 계정의 테이스팅 노트는 비공개예요.",
+        "empty": "아직 작성한 노트가 없어요.",
+        "error": {
+            "fetchFail": "프로필을 불러오지 못했어요.",
+            "followFail": "팔로우 처리에 실패했어요. 다시 시도해주세요."
+        }
+    },
     "tastingNoteDetail": {
         "header": "테이스팅 노트",
         "menu": {
             "delete": "삭제",
+            "report": "신고",
             "cancel": "취소"
         },
         "photo": {

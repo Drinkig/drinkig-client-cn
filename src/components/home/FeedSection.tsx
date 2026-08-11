@@ -12,38 +12,35 @@ import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTranslation } from "react-i18next";
 import { colors } from "../../constants/colors";
-import { spacing, radius, surfaces, accent } from "../../constants/theme";
-import { getWinePlaceholderImage } from "../../constants/wineColors";
-import { getRecentReviews, HomeRecentReviewDTO } from "../../api/wine";
+import { spacing, radius, surfaces } from "../../constants/theme";
+import { getTastingNoteFeed, TastingNoteFeedItemDTO } from "../../api/wine";
 import { RootStackParamList } from "../../types";
 
-const RECENT_REVIEW_COUNT = 10;
+const FEED_COUNT = 20;
 
 /**
- * 홈 피드: 다른 사용자들의 최신 리뷰를 가로 스크롤 카드로 보여준다.
- * 와인 이미지를 카드의 주인공으로 삼는 이미지 중심 구성이라, 대표 이미지가
- * 있는 리뷰만 노출한다(`wineImageUrl` 보유분만 필터). 백엔드가 recent 응답에
- * 와인 이미지를 포함하기 전까진 필터 결과가 비어 섹션이 조용히 숨겨진다.
+ * 홈 소셜 피드: 공개 계정 유저들이 사진과 함께 남긴 테이스팅 노트.
+ * 사진 있는 노트만 서버가 내려주므로 카드가 항상 이미지 중심이다.
+ * 카드 탭 → 노트 보기(읽기 전용), 작성자 탭 → 유저 프로필 → 팔로우.
  */
-export const RecentReviewsSection = () => {
+export const FeedSection = () => {
   const { t } = useTranslation();
   const isFocused = useIsFocused();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [reviews, setReviews] = useState<HomeRecentReviewDTO[]>([]);
+  const [items, setItems] = useState<TastingNoteFeedItemDTO[]>([]);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const res = await getRecentReviews(RECENT_REVIEW_COUNT);
+        const res = await getTastingNoteFeed(FEED_COUNT);
         if (alive && res.isSuccess && Array.isArray(res.result)) {
-          // 이미지 있는 와인 리뷰 우선 — 대표 이미지가 없는 리뷰는 제외한다.
-          setReviews(res.result.filter((r) => !!r.wineImageUrl));
+          setItems(res.result);
         }
       } catch {
-        // 엔드포인트 미준비/네트워크 오류 시 섹션을 숨긴다.
-        if (alive) setReviews([]);
+        // 엔드포인트 미배포/네트워크 오류 시 섹션을 조용히 숨긴다.
+        if (alive) setItems([]);
       }
     })();
     return () => {
@@ -51,66 +48,66 @@ export const RecentReviewsSection = () => {
     };
   }, [isFocused]);
 
-  if (reviews.length === 0) return null;
-
-  const openWine = (review: HomeRecentReviewDTO) => {
-    navigation.navigate("WineDetail", {
-      wine: {
-        id: review.wineId,
-        nameKor: review.wineName,
-        nameEng: review.wineNameEng ?? "",
-        type: "",
-        country: "",
-        grape: "",
-      },
-    });
-  };
+  if (items.length === 0) return null;
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("home.recentReviews.title")}</Text>
+      <Text style={styles.sectionTitle}>{t("home.feed.title")}</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.list}
       >
-        {reviews.map((review, index) => (
+        {items.map((item) => (
           <TouchableOpacity
-            key={`${review.wineId}-${index}`}
+            key={item.noteId}
             style={styles.card}
             activeOpacity={0.85}
-            onPress={() => openWine(review)}
+            onPress={() =>
+              navigation.navigate("TastingNoteDetail", {
+                tastingNoteId: item.noteId,
+              })
+            }
           >
             <View style={styles.imageWrap}>
               <Image
-                source={
-                  review.wineImageUrl
-                    ? { uri: review.wineImageUrl }
-                    : getWinePlaceholderImage()
-                }
+                source={{ uri: item.thumbnailUrl }}
                 style={styles.image}
-                resizeMode="contain"
+                resizeMode="cover"
               />
               <View style={styles.rating}>
-                <Icon name="star" size={11} color={accent.base} />
-                <Text style={styles.ratingText}>
-                  {review.rating.toFixed(1)}
-                </Text>
+                <Icon name="star" size={11} color={colors.ratingGold} />
+                <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
               </View>
             </View>
 
             <View style={styles.body}>
               <Text style={styles.wineName} numberOfLines={1}>
-                {review.wineName}
+                {item.wineName}
               </Text>
-
-              <Text style={styles.reviewText} numberOfLines={3}>
-                {review.review}
-              </Text>
-
-              <Text style={styles.name} numberOfLines={1}>
-                {review.name}
-              </Text>
+              <TouchableOpacity
+                style={styles.authorRow}
+                onPress={() =>
+                  navigation.navigate("UserProfile", {
+                    memberId: item.authorId,
+                  })
+                }
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                accessibilityRole="button"
+                accessibilityLabel={item.authorName}
+              >
+                <Image
+                  source={
+                    item.authorImageUrl
+                      ? { uri: item.authorImageUrl }
+                      : require("../../assets/Standard_profile.png")
+                  }
+                  style={styles.authorAvatar}
+                />
+                <Text style={styles.authorName} numberOfLines={1}>
+                  {item.authorName}
+                </Text>
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         ))}
@@ -136,7 +133,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   card: {
-    width: 208,
+    width: 156,
     backgroundColor: surfaces.card,
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -145,7 +142,7 @@ const styles = StyleSheet.create({
   },
   imageWrap: {
     width: "100%",
-    height: 132,
+    aspectRatio: 3 / 4,
     backgroundColor: surfaces.imageWell,
   },
   image: {
@@ -165,29 +162,35 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
   },
   ratingText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: 12,
     fontWeight: "700",
   },
   body: {
-    padding: spacing.lg,
+    padding: spacing.md,
+    gap: spacing.sm,
   },
   wineName: {
     color: colors.textPrimary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
     letterSpacing: -0.2,
   },
-  reviewText: {
-    color: colors.textSecondary,
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: spacing.sm,
+  authorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
-  name: {
-    color: accent.text,
+  authorAvatar: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: surfaces.raised,
+  },
+  authorName: {
+    flex: 1,
+    color: colors.textTertiary,
     fontSize: 12,
     fontWeight: "600",
-    marginTop: spacing.md,
   },
 });
