@@ -550,6 +550,8 @@ export interface TastingNotePreviewDTO {
   wineNameEng?: string;
   vintageYear: number;
   imageUrl?: string;
+  // 유저가 첨부한 대표 사진(1번째 사진). 없으면 imageUrl(라벨)로 폴백.
+  thumbnailUrl?: string | null;
   tasteDate: string;
   rating: number;
   createdAt: string;
@@ -582,13 +584,61 @@ export interface TastingNoteResponse {
   isSuccess: boolean;
   code: string;
   message: string;
-  result: string;
+  // 신 서버는 생성된 noteId(number)를, 구 서버는 안내 문자열을 내려준다.
+  result: number | string;
 }
 
 export const createTastingNote = async (data: TastingNoteRequest) => {
   const response = await client.post<TastingNoteResponse>(
     "/tasting-note/new-note",
     data
+  );
+  return response.data;
+};
+
+export interface TastingNoteImageDTO {
+  imageId: number;
+  imageUrl: string;
+}
+
+export interface TastingNoteImagesResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: TastingNoteImageDTO[];
+}
+
+// 노트에 사진 첨부(누적 최대 5장). 사진은 항상 JPEG로 재인코딩 후 호출할 것.
+export const uploadTastingNoteImages = async (
+  noteId: number,
+  imageUris: string[]
+) => {
+  const formData = new FormData();
+  imageUris.forEach((uri, index) => {
+    formData.append("images", {
+      uri,
+      name: `note_photo_${index}.jpg`,
+      type: "image/jpeg",
+    } as any);
+  });
+
+  const response = await client.post<TastingNoteImagesResponse>(
+    `/tasting-note/${noteId}/images`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
+    }
+  );
+  return response.data;
+};
+
+export const deleteTastingNoteImage = async (
+  noteId: number,
+  imageId: number
+) => {
+  const response = await client.delete<TastingNoteImagesResponse>(
+    `/tasting-note/${noteId}/images/${imageId}`
   );
   return response.data;
 };
@@ -626,6 +676,8 @@ export interface TastingNoteDTO {
   createdAt: string;
   imageUrl?: string;
   sort?: string;
+  // 유저가 첨부한 사진 목록(정렬순). 구 서버 응답에는 없다.
+  images?: TastingNoteImageDTO[];
 }
 export interface TastingNoteDeleteResponse {
   isSuccess: boolean;

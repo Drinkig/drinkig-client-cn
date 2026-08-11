@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -52,12 +53,20 @@ const ProfileEditScreen = () => {
   const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
+  const [isProfilePublic, setIsProfilePublic] = useState(
+    user?.isProfilePublic ?? false
+  );
+
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = profileImage !== (user?.profileImage || null);
+  const hasVisibilityChanged =
+    isProfilePublic !== (user?.isProfilePublic ?? false);
 
   const canSave =
     (hasNicknameChanged && nicknameAvailable && !isCheckingNickname) ||
-    (!hasNicknameChanged && hasImageChanged && !nicknameError);
+    (!hasNicknameChanged &&
+      (hasImageChanged || hasVisibilityChanged) &&
+      !nicknameError);
 
   const handleOpenImageOptions = () => {
     // 닉네임 입력 중이면 키보드가 시트를 가리므로 먼저 내린다.
@@ -170,10 +179,12 @@ const ProfileEditScreen = () => {
         if (!deleteResponse.isSuccess) throw new Error("Image delete failed");
       }
 
-      if (nickname !== user?.nickname) {
-        const updateResponse = await updateMemberInfo(nickname);
-        if (!updateResponse.isSuccess)
-          throw new Error("Nickname update failed");
+      if (hasNicknameChanged || hasVisibilityChanged) {
+        const updateResponse = await updateMemberInfo(
+          hasNicknameChanged ? nickname : undefined,
+          hasVisibilityChanged ? isProfilePublic : undefined
+        );
+        if (!updateResponse.isSuccess) throw new Error("Member update failed");
       }
 
       await refreshUserInfo();
@@ -290,6 +301,29 @@ const ProfileEditScreen = () => {
                   ) : null}
                 </View>
                 <Text style={styles.counterText}>{nickname.length}/10</Text>
+              </View>
+            </View>
+
+            <View style={styles.visibilitySection}>
+              <View style={styles.visibilityRow}>
+                <View style={styles.visibilityTextWrapper}>
+                  <Text style={styles.visibilityLabel}>
+                    {t("profileEdit.visibility.label")}
+                  </Text>
+                  <Text style={styles.visibilityDesc}>
+                    {t("profileEdit.visibility.desc")}
+                  </Text>
+                </View>
+                <Switch
+                  value={isProfilePublic}
+                  onValueChange={setIsProfilePublic}
+                  trackColor={{
+                    false: surfaces.hairlineStrong,
+                    true: accent.base,
+                  }}
+                  ios_backgroundColor={surfaces.hairlineStrong}
+                  accessibilityLabel={t("profileEdit.visibility.label")}
+                />
               </View>
             </View>
 
@@ -442,6 +476,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textTertiary,
     marginLeft: spacing.sm,
+  },
+  visibilitySection: {
+    marginBottom: spacing.xxl,
+  },
+  visibilityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    backgroundColor: surfaces.raised,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairlineStrong,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  visibilityTextWrapper: {
+    flex: 1,
+    gap: 2,
+  },
+  visibilityLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.white,
+  },
+  visibilityDesc: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    lineHeight: 16,
   },
   footer: {
     marginTop: "auto",

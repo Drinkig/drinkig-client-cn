@@ -26,6 +26,9 @@ export interface TastingNoteDraft {
   finish: string;
   rating: number;
   review: string;
+  // 첨부 사진의 로컬 JPEG URI 목록. 캐시 정리로 파일이 사라질 수 있어
+  // 복원은 best-effort — 렌더 실패한 항목은 사용자가 지우고 다시 첨부한다.
+  photos?: string[];
   savedAt: string;
 }
 

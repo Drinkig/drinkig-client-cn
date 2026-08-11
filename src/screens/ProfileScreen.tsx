@@ -15,11 +15,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { useUser } from "../context/UserContext";
-import {
-  getMyWines,
-  getMyTastingNotes,
-  TastingNotePreviewDTO,
-} from "../api/wine";
+import { getMyTastingNotes, TastingNotePreviewDTO } from "../api/wine";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { colors } from "../constants/colors";
 import { surfaces, accent, radius } from "../constants/theme";
@@ -155,9 +151,7 @@ const ProfileScreen = () => {
   }, [tastingNotes, selectedType, sortType]);
 
   const { width } = Dimensions.get("window");
-  const cardGap = 12;
-  const cardPadding = 20;
-  const cardItemWidth = (width - cardPadding * 2 - cardGap) / 2;
+  const gridItemWidth = width / 3;
 
   const navigateToNote = (item: TastingNotePreviewDTO) => {
     navigation.navigate("TastingNoteDetail", {
@@ -201,39 +195,52 @@ const ProfileScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderCardItem = (item: TastingNotePreviewDTO) => (
+  // 인스타그램식 3열 사진 그리드 셀. 유저 사진은 정방형 cover 크롭,
+  // 사진이 없으면 라벨(또는 타입 플레이스홀더)을 배경 웰 위에 contain으로 구분 표시.
+  const renderGridItem = (item: TastingNotePreviewDTO) => (
     <TouchableOpacity
       key={item.tastingNoteId || (item as any).noteId}
-      style={[styles.cardItem, { width: cardItemWidth }]}
+      style={[styles.gridItem, { width: gridItemWidth }]}
       onPress={() => navigateToNote(item)}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={
+        i18n.language === "en"
+          ? item.wineNameEng || item.wineName
+          : item.wineName
+      }
     >
-      <View style={styles.cardImageWrapper}>
-        {item.imageUrl ? (
+      {item.thumbnailUrl ? (
+        <>
           <Image
-            source={{ uri: item.imageUrl }}
-            style={styles.noteImage}
-            resizeMode="contain"
+            source={{ uri: item.thumbnailUrl }}
+            style={styles.gridPhoto}
+            resizeMode="cover"
           />
-        ) : (
-          <Image
-            source={getWinePlaceholderImage(item.sort)}
-            style={styles.noteImage}
-          />
-        )}
-        <View style={styles.cardRatingBadge}>
-          <Icon name="star" size={10} color={colors.ratingGold} />
-          <Text style={styles.cardRatingText}>{item.rating.toFixed(1)}</Text>
+          <View style={styles.cardRatingBadge}>
+            <Icon name="star" size={10} color={colors.ratingGold} />
+            <Text style={styles.cardRatingText}>{item.rating.toFixed(1)}</Text>
+          </View>
+        </>
+      ) : (
+        // 사진이 없으면 회색 텍스트 셀 — 와인명·별점·날짜
+        <View style={styles.gridInfoCell}>
+          <Text style={styles.gridInfoName} numberOfLines={4}>
+            {i18n.language === "en"
+              ? item.wineNameEng || item.wineName
+              : item.wineName}
+          </Text>
+          <View>
+            <View style={styles.gridInfoRatingRow}>
+              <Icon name="star" size={11} color={colors.ratingGold} />
+              <Text style={styles.gridInfoRating}>
+                {item.rating.toFixed(1)}
+              </Text>
+            </View>
+            <Text style={styles.gridInfoDate}>{item.tasteDate}</Text>
+          </View>
         </View>
-      </View>
-      <View style={styles.cardNoteInfo}>
-        <Text style={styles.cardNoteName} numberOfLines={2}>
-          {i18n.language === "en"
-            ? item.wineNameEng || item.wineName
-            : item.wineName}
-        </Text>
-        <Text style={styles.cardNoteDate}>{item.tasteDate}</Text>
-      </View>
+      )}
     </TouchableOpacity>
   );
 
@@ -401,8 +408,8 @@ const ProfileScreen = () => {
                 {processedNotes.map((item) => renderListItem(item))}
               </View>
             ) : (
-              <View style={styles.cardGrid}>
-                {processedNotes.map((item) => renderCardItem(item))}
+              <View style={styles.photoGrid}>
+                {processedNotes.map((item) => renderGridItem(item))}
               </View>
             )
           ) : (
@@ -727,29 +734,48 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
-  // card view
-  cardGrid: {
+  // photo grid view (3열 인스타그램식 — 3:4 세로 타일, full-bleed·여백/라운딩 없음)
+  photoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    gap: 12,
   },
-  cardItem: {
-    marginBottom: 0,
-    backgroundColor: surfaces.card,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: surfaces.hairline,
+  gridItem: {
+    aspectRatio: 3 / 4,
     overflow: "hidden",
-  },
-  cardImageWrapper: {
-    width: "100%",
-    aspectRatio: 1,
     backgroundColor: surfaces.raised,
-    justifyContent: "center",
-    alignItems: "center",
+  },
+  gridPhoto: {
+    width: "100%",
+    height: "100%",
+  },
+  gridInfoCell: {
+    flex: 1,
+    backgroundColor: surfaces.raised,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: surfaces.hairline,
     padding: 10,
+    justifyContent: "space-between",
+  },
+  gridInfoName: {
+    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 16,
+  },
+  gridInfoRatingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginBottom: 2,
+  },
+  gridInfoRating: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "bold",
+  },
+  gridInfoDate: {
+    color: colors.textTertiary,
+    fontSize: 10,
   },
   cardRatingBadge: {
     position: "absolute",
@@ -769,20 +795,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 10,
     fontWeight: "bold",
-  },
-  cardNoteInfo: {
-    padding: 10,
-  },
-  cardNoteName: {
-    color: colors.white,
-    fontSize: 13,
-    fontWeight: "bold",
-    marginBottom: 3,
-    lineHeight: 18,
-  },
-  cardNoteDate: {
-    color: colors.textTertiary,
-    fontSize: 11,
   },
   emptyWrapper: {
     paddingHorizontal: 24,

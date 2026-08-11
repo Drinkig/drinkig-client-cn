@@ -79,6 +79,8 @@ export interface MemberInfoResponse {
     alcohol?: number;
     // 마지막 취향 재설정 시각(ISO). 구버전 서버는 안 내려주므로 optional.
     lastTasteResetAt?: string | null;
+    // 프로필 공개 여부. 구버전 서버는 안 내려주므로 optional(미지원 = 비공개 취급).
+    isProfilePublic?: boolean;
   };
 }
 
@@ -180,11 +182,16 @@ export const getMemberInfo = async () => {
   return response.data;
 };
 
-export const updateMemberInfo = async (name: string) => {
+// 부분 업데이트 — undefined인 필드는 서버가 기존 값을 유지한다.
+export const updateMemberInfo = async (
+  name?: string,
+  isProfilePublic?: boolean
+) => {
   const response = await client.patch<UpdateMemberInfoResponse>(
     "/member/info",
     {
       name,
+      isProfilePublic,
     }
   );
   return response.data;

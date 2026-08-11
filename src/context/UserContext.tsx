@@ -21,6 +21,8 @@ export interface User {
   authType?: string;
   // 서버가 기록한 마지막 취향 재설정 시각(ISO) — 쿨다운 검증의 1차 소스
   lastTasteResetAt?: string | null;
+  // 프로필 공개 여부 — 구버전 서버는 미지원이라 undefined일 수 있음(비공개 취급)
+  isProfilePublic?: boolean;
 }
 
 export interface RecommendedWine {
@@ -182,6 +184,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           email: response.result.email,
           authType: response.result.authType,
           lastTasteResetAt: response.result.lastTasteResetAt ?? null,
+          isProfilePublic: response.result.isProfilePublic ?? false,
         });
 
         if (

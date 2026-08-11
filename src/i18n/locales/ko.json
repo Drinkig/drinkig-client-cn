@@ -474,7 +474,17 @@
             "noRating": "별점을 선택해주세요.",
             "saveFail": "저장에 실패했습니다.",
             "networkFail": "네트워크 오류가 발생했습니다.",
-            "authExpired": "인증 세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요."
+            "authExpired": "인증 세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요.",
+            "photoUploadFail": "노트는 저장했지만 사진 업로드에 실패했어요. 노트 상세에서 다시 추가할 수 있어요."
+        },
+        "photo": {
+            "label": "사진 (선택)",
+            "add": "사진 추가",
+            "camera": "카메라로 촬영",
+            "gallery": "앨범에서 선택",
+            "remove": "사진 삭제",
+            "maxReached": "사진은 최대 {{max}}장까지 첨부할 수 있어요.",
+            "processFail": "사진을 불러오지 못했어요. 다른 사진을 선택해주세요."
         },
         "success": {
             "saveTitle": "성공",
@@ -534,7 +544,7 @@
         },
         "conclusion": {
             "title": "총평을 남겨주세요",
-            "subtitle": "별점과 한 줄 감상을 기록하세요",
+            "subtitle": "사진과 별점, 한 줄 감상을 기록하세요",
             "finishLabel": "피니시 (Finish)",
             "ratingLabel": "별점",
             "reviewLabel": "상세 리뷰 (선택)",
@@ -578,6 +588,14 @@
         "menu": {
             "delete": "삭제",
             "cancel": "취소"
+        },
+        "photo": {
+            "title": "사진",
+            "empty": "사진을 추가해 이 날의 와인을 남겨보세요.",
+            "uploadFail": "사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.",
+            "deleteTitle": "사진 삭제",
+            "deleteMsg": "이 사진을 삭제할까요?",
+            "deleteFail": "사진 삭제에 실패했어요."
         },
         "error": {
             "fetchFailTitle": "오류",
@@ -662,6 +680,10 @@
     },
     "profileEdit": {
         "header": "프로필 수정",
+        "visibility": {
+            "label": "프로필 공개",
+            "desc": "공개하면 다른 유저가 내 프로필과 테이스팅 노트를 볼 수 있어요."
+        },
         "nickname": {
             "label": "닉네임",
             "placeholder": "닉네임을 입력하세요",

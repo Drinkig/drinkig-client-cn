@@ -7,17 +7,29 @@ import {
   StatusBar,
   Image,
   ActivityIndicator,
+  ActionSheetIOS,
+  Alert,
+  FlatList,
+  Platform,
   ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import {
+  Asset,
+  launchCamera,
+  launchImageLibrary,
+} from "react-native-image-picker";
 import { RootStackParamList } from "../types";
 import {
   getTastingNoteDetail,
   TastingNoteDTO,
   deleteTastingNote,
+  deleteTastingNoteImage,
+  uploadTastingNoteImages,
 } from "../api/wine";
+import { NOTE_PHOTO_MAX_COUNT, prepareNotePhoto } from "../utils/notePhoto";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
@@ -49,6 +61,9 @@ export default function TastingNoteDetailScreen() {
   const [note, setNote] = useState<TastingNoteDTO | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [photoPage, setPhotoPage] = useState(0);
+  const [pagerWidth, setPagerWidth] = useState(0);
 
   useEffect(() => {
     fetchNoteDetail();
@@ -79,6 +94,121 @@ export default function TastingNoteDetailScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 첨부는 작성 화면과 동일하게 항상 JPEG 재인코딩 경로를 태운다(HEIC 서버 거부).
+  const addPickedPhotos = async (assets: Asset[]) => {
+    const remaining = NOTE_PHOTO_MAX_COUNT - (note?.images?.length ?? 0);
+    const picked = assets.slice(0, remaining);
+    if (picked.length === 0) return;
+
+    setIsUploadingPhotos(true);
+    try {
+      const prepared: string[] = [];
+      for (const asset of picked) {
+        if (!asset.uri) continue;
+        prepared.push(
+          await prepareNotePhoto(asset.uri, asset.width, asset.height)
+        );
+      }
+      if (prepared.length === 0) return;
+
+      const response = await uploadTastingNoteImages(tastingNoteId, prepared);
+      if (response.isSuccess) {
+        setNote((prev) => (prev ? { ...prev, images: response.result } : prev));
+      } else {
+        showToast(response.message || t("tastingNoteDetail.photo.uploadFail"), {
+          type: "error",
+        });
+      }
+    } catch (error) {
+      console.error("Note photo upload failed:", error);
+      showToast(t("tastingNoteDetail.photo.uploadFail"), { type: "error" });
+    } finally {
+      setIsUploadingPhotos(false);
+    }
+  };
+
+  const handleAddPhotos = () => {
+    if ((note?.images?.length ?? 0) >= NOTE_PHOTO_MAX_COUNT) {
+      showToast(
+        t("tastingNoteWrite.photo.maxReached", { max: NOTE_PHOTO_MAX_COUNT }),
+        { type: "info" }
+      );
+      return;
+    }
+
+    const openCamera = async () => {
+      const result = await launchCamera({ mediaType: "photo" });
+      if (!result.didCancel && !result.errorCode && result.assets) {
+        await addPickedPhotos(result.assets);
+      }
+    };
+
+    const openGallery = async () => {
+      const result = await launchImageLibrary({
+        mediaType: "photo",
+        selectionLimit: NOTE_PHOTO_MAX_COUNT - (note?.images?.length ?? 0),
+      });
+      if (!result.didCancel && !result.errorCode && result.assets) {
+        await addPickedPhotos(result.assets);
+      }
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [
+            t("common.cancel"),
+            t("tastingNoteWrite.photo.camera"),
+            t("tastingNoteWrite.photo.gallery"),
+          ],
+          cancelButtonIndex: 0,
+        },
+        (idx) => {
+          if (idx === 1) openCamera();
+          else if (idx === 2) openGallery();
+        }
+      );
+    } else {
+      Alert.alert(t("tastingNoteWrite.photo.add"), undefined, [
+        { text: t("tastingNoteWrite.photo.camera"), onPress: openCamera },
+        { text: t("tastingNoteWrite.photo.gallery"), onPress: openGallery },
+        { text: t("common.cancel"), style: "cancel" },
+      ]);
+    }
+  };
+
+  const handleDeletePhoto = (imageId: number) => {
+    showAlert({
+      title: t("tastingNoteDetail.photo.deleteTitle"),
+      message: t("tastingNoteDetail.photo.deleteMsg"),
+      confirmText: t("tastingNoteDetail.menu.delete"),
+      singleButton: false,
+      onConfirm: async () => {
+        try {
+          const response = await deleteTastingNoteImage(tastingNoteId, imageId);
+          if (response.isSuccess) {
+            setNote((prev) =>
+              prev ? { ...prev, images: response.result } : prev
+            );
+            setPhotoPage((prev) =>
+              Math.max(0, Math.min(prev, response.result.length - 1))
+            );
+          } else {
+            showToast(
+              response.message || t("tastingNoteDetail.photo.deleteFail"),
+              { type: "error" }
+            );
+          }
+        } catch (error) {
+          console.error("Note photo delete failed:", error);
+          showToast(t("tastingNoteDetail.photo.deleteFail"), {
+            type: "error",
+          });
+        }
+      },
+    });
   };
 
   const handleDelete = () => {
@@ -138,6 +268,7 @@ export default function TastingNoteDetailScreen() {
   };
 
   const { finishTags, reviewText } = parseReview(note.review);
+  const photos = note.images ?? [];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -217,6 +348,101 @@ export default function TastingNoteDetailScreen() {
                   })}
             </Text>
           </View>
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.photoHeaderRow}>
+            <Text style={styles.cardTitle}>
+              {t("tastingNoteDetail.photo.title")} ({photos.length}/
+              {NOTE_PHOTO_MAX_COUNT})
+            </Text>
+            {photos.length < NOTE_PHOTO_MAX_COUNT && (
+              <TouchableOpacity
+                onPress={handleAddPhotos}
+                disabled={isUploadingPhotos}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("tastingNoteWrite.photo.add")}
+              >
+                {isUploadingPhotos ? (
+                  <ActivityIndicator size="small" color={accent.text} />
+                ) : (
+                  <Ionicons name="add" size={22} color={accent.text} />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {photos.length > 0 ? (
+            <View onLayout={(e) => setPagerWidth(e.nativeEvent.layout.width)}>
+              {pagerWidth > 0 && (
+                <FlatList
+                  data={photos}
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(img) => String(img.imageId)}
+                  onMomentumScrollEnd={(e) =>
+                    setPhotoPage(
+                      Math.round(e.nativeEvent.contentOffset.x / pagerWidth)
+                    )
+                  }
+                  renderItem={({ item }) => (
+                    <View style={{ width: pagerWidth }}>
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={styles.photoPageImage}
+                        resizeMode="cover"
+                      />
+                      <TouchableOpacity
+                        style={styles.photoDeleteBadge}
+                        onPress={() => handleDeletePhoto(item.imageId)}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("tastingNoteWrite.photo.remove")}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={14}
+                          color={colors.white}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                />
+              )}
+              {photos.length > 1 && (
+                <View style={styles.photoDots}>
+                  {photos.map((img, index) => (
+                    <View
+                      key={img.imageId}
+                      style={[
+                        styles.photoDot,
+                        index === photoPage && styles.photoDotActive,
+                      ]}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.photoEmpty}
+              onPress={handleAddPhotos}
+              disabled={isUploadingPhotos}
+              accessibilityRole="button"
+              accessibilityLabel={t("tastingNoteWrite.photo.add")}
+            >
+              <Ionicons
+                name="camera-outline"
+                size={24}
+                color={colors.textTertiary}
+              />
+              <Text style={styles.emptyText}>
+                {t("tastingNoteDetail.photo.empty")}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.statsRow}>
@@ -483,6 +709,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: spacing.sm,
+  },
+
+  // Photos
+  photoHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  photoPageImage: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: radius.sm,
+  },
+  photoDeleteBadge: {
+    position: "absolute",
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoDots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  photoDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: surfaces.hairlineStrong,
+  },
+  photoDotActive: {
+    backgroundColor: accent.base,
+  },
+  photoEmpty: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.xl,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: surfaces.hairlineStrong,
   },
   chipWrap: {
     flexDirection: "row",

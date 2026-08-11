@@ -474,7 +474,17 @@
             "noRating": "Please give a rating.",
             "saveFail": "Failed to save.",
             "networkFail": "Network error occurred.",
-            "authExpired": "Session expired. Please log in again."
+            "authExpired": "Session expired. Please log in again.",
+            "photoUploadFail": "Your note was saved, but the photo upload failed. You can add photos again from the note detail."
+        },
+        "photo": {
+            "label": "Photos (Optional)",
+            "add": "Add Photo",
+            "camera": "Take Photo",
+            "gallery": "Choose from Gallery",
+            "remove": "Remove photo",
+            "maxReached": "You can attach up to {{max}} photos.",
+            "processFail": "Couldn't load that photo. Please pick another one."
         },
         "success": {
             "saveTitle": "Success",
@@ -534,7 +544,7 @@
         },
         "conclusion": {
             "title": "Leave your verdict",
-            "subtitle": "Record a rating and a short impression",
+            "subtitle": "Add photos, a rating, and a short impression",
             "finishLabel": "Finish",
             "ratingLabel": "Rating",
             "reviewLabel": "Detailed Review (Optional)",
@@ -578,6 +588,14 @@
         "menu": {
             "delete": "Delete",
             "cancel": "Cancel"
+        },
+        "photo": {
+            "title": "Photos",
+            "empty": "Add photos to remember this wine.",
+            "uploadFail": "Photo upload failed. Please try again.",
+            "deleteTitle": "Delete Photo",
+            "deleteMsg": "Delete this photo?",
+            "deleteFail": "Failed to delete the photo."
         },
         "error": {
             "fetchFailTitle": "Error",
@@ -662,6 +680,10 @@
     },
     "profileEdit": {
         "header": "Edit Profile",
+        "visibility": {
+            "label": "Public Profile",
+            "desc": "When on, other users can see your profile and tasting notes."
+        },
         "nickname": {
             "label": "Nickname",
             "placeholder": "Enter your nickname",

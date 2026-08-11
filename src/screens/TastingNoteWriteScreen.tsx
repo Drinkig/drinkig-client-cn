@@ -2,7 +2,10 @@ import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useExitGuard } from "../hooks/useExitGuard";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActionSheetIOS,
+  Alert,
   Image,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -11,6 +14,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import {
+  Asset,
+  launchCamera,
+  launchImageLibrary,
+} from "react-native-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import GlassHeader from "../components/common/GlassHeader";
@@ -20,8 +28,10 @@ import {
   createTastingNote,
   searchWinesPublic,
   TastingNoteRequest,
+  uploadTastingNoteImages,
   WineUserDTO,
 } from "../api/wine";
+import { NOTE_PHOTO_MAX_COUNT, prepareNotePhoto } from "../utils/notePhoto";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 import ColorSelector from "../components/tasting_note/ColorSelector";
@@ -166,6 +176,10 @@ export default function TastingNoteWriteScreen() {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
 
+  // 첨부 사진(로컬 JPEG URI, 최대 NOTE_PHOTO_MAX_COUNT장)
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [tipModalVisible, setTipModalVisible] = useState(false);
@@ -211,6 +225,7 @@ export default function TastingNoteWriteScreen() {
             setFinish(draft.finish);
             setRating(draft.rating);
             setReview(draft.review);
+            setPhotos(draft.photos || []);
             setDraftLoaded(true);
           },
           onCancel: () => {
@@ -246,6 +261,7 @@ export default function TastingNoteWriteScreen() {
       finish,
       rating,
       review,
+      photos,
       savedAt: new Date().toISOString(),
     }),
     [
@@ -262,6 +278,7 @@ export default function TastingNoteWriteScreen() {
       finish,
       rating,
       review,
+      photos,
     ]
   );
 
@@ -279,7 +296,8 @@ export default function TastingNoteWriteScreen() {
         tannin > 0 ||
         body > 0 ||
         alcohol > 0 ||
-        rating > 0
+        rating > 0 ||
+        photos.length > 0
       ),
     [
       selectedWine,
@@ -294,6 +312,7 @@ export default function TastingNoteWriteScreen() {
       body,
       alcohol,
       rating,
+      photos,
     ]
   );
 
@@ -372,6 +391,89 @@ export default function TastingNoteWriteScreen() {
   const resetSelection = () => {
     setSelectedWine({});
     setSearchText("");
+  };
+
+  // 어떤 출처(카메라/갤러리)든 prepareNotePhoto로 JPEG 재인코딩 후 보관.
+  // 갤러리 원본(HEIC)을 그대로 업로드하면 서버가 400으로 거부한다.
+  const addPickedPhotos = async (assets: Asset[]) => {
+    const remaining = NOTE_PHOTO_MAX_COUNT - photos.length;
+    const picked = assets.slice(0, remaining);
+    if (picked.length === 0) return;
+
+    setIsProcessingPhoto(true);
+    try {
+      const prepared: string[] = [];
+      for (const asset of picked) {
+        if (!asset.uri) continue;
+        prepared.push(
+          await prepareNotePhoto(asset.uri, asset.width, asset.height)
+        );
+      }
+      if (prepared.length > 0) {
+        setPhotos((prev) =>
+          [...prev, ...prepared].slice(0, NOTE_PHOTO_MAX_COUNT)
+        );
+      }
+    } catch (error) {
+      console.error("Note photo prepare failed:", error);
+      showToast(t("tastingNoteWrite.photo.processFail"), { type: "error" });
+    } finally {
+      setIsProcessingPhoto(false);
+    }
+  };
+
+  const handleAddPhoto = () => {
+    if (photos.length >= NOTE_PHOTO_MAX_COUNT) {
+      showToast(
+        t("tastingNoteWrite.photo.maxReached", { max: NOTE_PHOTO_MAX_COUNT }),
+        { type: "info" }
+      );
+      return;
+    }
+
+    const openCamera = async () => {
+      const result = await launchCamera({ mediaType: "photo" });
+      if (!result.didCancel && !result.errorCode && result.assets) {
+        await addPickedPhotos(result.assets);
+      }
+    };
+
+    const openGallery = async () => {
+      const result = await launchImageLibrary({
+        mediaType: "photo",
+        selectionLimit: NOTE_PHOTO_MAX_COUNT - photos.length,
+      });
+      if (!result.didCancel && !result.errorCode && result.assets) {
+        await addPickedPhotos(result.assets);
+      }
+    };
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [
+            t("common.cancel"),
+            t("tastingNoteWrite.photo.camera"),
+            t("tastingNoteWrite.photo.gallery"),
+          ],
+          cancelButtonIndex: 0,
+        },
+        (idx) => {
+          if (idx === 1) openCamera();
+          else if (idx === 2) openGallery();
+        }
+      );
+    } else {
+      Alert.alert(t("tastingNoteWrite.photo.add"), undefined, [
+        { text: t("tastingNoteWrite.photo.camera"), onPress: openCamera },
+        { text: t("tastingNoteWrite.photo.gallery"), onPress: openGallery },
+        { text: t("common.cancel"), style: "cancel" },
+      ]);
+    }
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Per-step gate for the primary "Next" button
@@ -478,13 +580,43 @@ export default function TastingNoteWriteScreen() {
       const response = await createTastingNote(requestData);
 
       if (response.isSuccess) {
+        // 사진은 노트 생성 후 별도 multipart로 업로드. 실패해도 노트 저장은
+        // 유효하므로 이탈은 그대로 진행하고 안내만 다르게 띄운다(상세에서 재첨부 가능).
+        let photoUploadFailed = false;
+        if (photos.length > 0) {
+          const noteId =
+            typeof response.result === "number"
+              ? response.result
+              : parseInt(String(response.result), 10);
+          if (Number.isFinite(noteId)) {
+            try {
+              const uploadResponse = await uploadTastingNoteImages(
+                noteId,
+                photos
+              );
+              photoUploadFailed = !uploadResponse.isSuccess;
+            } catch (uploadError) {
+              console.error("Note photo upload failed:", uploadError);
+              photoUploadFailed = true;
+            }
+          } else {
+            // 구 서버는 noteId를 반환하지 않는다 — 업로드 불가로 처리
+            photoUploadFailed = true;
+          }
+        }
+
         await clearDraft(params.wineId);
         logEvent("tasting_note_save_success");
         // Navigate back immediately; the global toast stays visible over the
         // destination screen, so we don't wait for it to auto-hide.
         skipGuardRef.current = true; // 저장 완료 — 이탈 가드 없이 나간다
         navigation.goBack();
-        showToast(t("tastingNoteWrite.success.saveMsg"), { type: "success" });
+        showToast(
+          photoUploadFailed
+            ? t("tastingNoteWrite.error.photoUploadFail")
+            : t("tastingNoteWrite.success.saveMsg"),
+          { type: photoUploadFailed ? "info" : "success" }
+        );
       } else {
         showToast(response.message || t("tastingNoteWrite.error.saveFail"), {
           type: "error",
@@ -829,6 +961,57 @@ export default function TastingNoteWriteScreen() {
         t("tastingNoteWrite.conclusion.title"),
         t("tastingNoteWrite.conclusion.subtitle")
       )}
+
+      <View style={styles.photoSection}>
+        <View style={styles.photoLabelRow}>
+          <Text style={[styles.fieldLabel, styles.photoLabelText]}>
+            {t("tastingNoteWrite.photo.label")}
+          </Text>
+          <Text style={styles.photoCount}>
+            {photos.length}/{NOTE_PHOTO_MAX_COUNT}
+          </Text>
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.photoRow}
+        >
+          {photos.map((uri, index) => (
+            <View key={`${uri}-${index}`} style={styles.photoTile}>
+              <Image source={{ uri }} style={styles.photoTileImage} />
+              <TouchableOpacity
+                style={styles.photoRemoveBadge}
+                onPress={() => handleRemovePhoto(index)}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("tastingNoteWrite.photo.remove")}
+              >
+                <Icon name="close" size={12} color={colors.white} />
+              </TouchableOpacity>
+            </View>
+          ))}
+          {photos.length < NOTE_PHOTO_MAX_COUNT && (
+            <TouchableOpacity
+              style={styles.photoAddTile}
+              onPress={handleAddPhoto}
+              disabled={isProcessingPhoto}
+              accessibilityRole="button"
+              accessibilityLabel={t("tastingNoteWrite.photo.add")}
+            >
+              <Icon
+                name={
+                  isProcessingPhoto ? "hourglass-outline" : "camera-outline"
+                }
+                size={22}
+                color={colors.textTertiary}
+              />
+              <Text style={styles.photoAddText}>
+                {t("tastingNoteWrite.photo.add")}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </View>
 
       <Text style={styles.fieldLabel}>
         {t("tastingNoteWrite.conclusion.finishLabel")}
@@ -1242,6 +1425,65 @@ const styles = StyleSheet.create({
   ratingBlock: {
     marginTop: spacing.xxl,
     marginBottom: spacing.xl,
+  },
+  photoSection: {
+    marginBottom: spacing.xl,
+  },
+  photoLabelRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  photoLabelText: {
+    marginBottom: 0,
+  },
+  photoCount: {
+    color: colors.textTertiary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  photoRow: {
+    gap: spacing.md,
+  },
+  photoTile: {
+    width: 84,
+    height: 84,
+    borderRadius: radius.sm,
+    overflow: "hidden",
+    backgroundColor: surfaces.card,
+  },
+  photoTileImage: {
+    width: "100%",
+    height: "100%",
+  },
+  photoRemoveBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoAddTile: {
+    width: 84,
+    height: 84,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderStyle: "dashed",
+    borderColor: surfaces.hairlineStrong,
+    backgroundColor: surfaces.card,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.xs,
+  },
+  photoAddText: {
+    color: colors.textTertiary,
+    fontSize: 11,
+    fontWeight: "600",
   },
   textArea: {
     backgroundColor: surfaces.card,
