@@ -53,14 +53,15 @@ const ProfileEditScreen = () => {
   const [isImageOptionsVisible, setIsImageOptionsVisible] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
+  // 2026-08-13 정책: 기본 공개 — 컨텍스트에 값이 없으면 공개 취급
   const [isProfilePublic, setIsProfilePublic] = useState(
-    user?.isProfilePublic ?? false
+    user?.isProfilePublic ?? true
   );
 
   const hasNicknameChanged = nickname !== user?.nickname;
   const hasImageChanged = profileImage !== (user?.profileImage || null);
   const hasVisibilityChanged =
-    isProfilePublic !== (user?.isProfilePublic ?? false);
+    isProfilePublic !== (user?.isProfilePublic ?? true);
 
   const canSave =
     (hasNicknameChanged && nicknameAvailable && !isCheckingNickname) ||

@@ -208,8 +208,16 @@ export default function SearchScreen() {
 
       <View style={styles.headerContainer}>
         <View style={styles.headerPill}>
-          {/* 탭 루트라 뒤로 갈 곳이 없음 — back 화살표를 없애고 검색바만 노출.
-              autoFocus도 제거: 탭 전환마다 키보드가 강제로 올라오던 문제. */}
+          {/* 스택 화면(홈 검색바에서 진입) — 명시적 진입이므로 autoFocus로 바로 입력 가능 */}
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.back")}
+          >
+            <Icon name="chevron-back" size={22} color={colors.textPrimary} />
+          </TouchableOpacity>
           <View style={styles.searchBarContainer}>
             <Icon
               name="search"
@@ -224,6 +232,7 @@ export default function SearchScreen() {
               value={searchText}
               onChangeText={setSearchText}
               onSubmitEditing={handleSearchSubmit}
+              autoFocus
             />
             {searchText.length > 0 && (
               <TouchableOpacity
@@ -415,8 +424,10 @@ const styles = StyleSheet.create({
     borderColor: surfaces.hairline,
   },
   backButton: {
-    padding: spacing.sm,
-    marginRight: spacing.xs,
+    height: "100%",
+    justifyContent: "center",
+    paddingLeft: spacing.xs,
+    paddingRight: spacing.sm,
   },
   searchBarContainer: {
     flex: 1,

@@ -52,7 +52,17 @@ export const FeedSection = () => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{t("home.feed.title")}</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{t("home.feed.title")}</Text>
+        <TouchableOpacity
+          onPress={() => (navigation as any).navigate("Feed")}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel={t("home.sectionMore")}
+        >
+          <Text style={styles.sectionMore}>{t("home.sectionMore")}</Text>
+        </TouchableOpacity>
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -120,13 +130,23 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: spacing.xxl,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.lg,
+  },
   sectionTitle: {
     color: colors.textPrimary,
     fontSize: 18,
     fontWeight: "700",
     letterSpacing: -0.3,
-    paddingHorizontal: spacing.xl,
-    marginBottom: spacing.lg,
+  },
+  sectionMore: {
+    color: colors.textTertiary,
+    fontSize: 13,
+    fontWeight: "600",
   },
   list: {
     paddingHorizontal: spacing.xl,

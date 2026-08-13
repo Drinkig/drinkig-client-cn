@@ -11,6 +11,7 @@ import RecommendationListScreen from "../screens/RecommendationListScreen";
 import RecommendedWinesScreen from "../screens/RecommendedWinesScreen";
 import RecommendationResultScreen from "../screens/RecommendationResultScreen";
 import SearchResultScreen from "../screens/SearchResultScreen";
+import SearchScreen from "../screens/SearchScreen";
 import SettingScreen from "../screens/SettingScreen";
 import TasteResetScreen from "../screens/TasteResetScreen";
 import SplashScreen from "../screens/SplashScreen";
@@ -88,6 +89,8 @@ export default function RootNavigator() {
               name="RecommendedWines"
               component={RecommendedWinesScreen}
             />
+            {/* 검색은 탭에서 빠지고 스택 화면 — 홈 검색바/위시리스트 CTA에서 진입 */}
+            <Stack.Screen name="Search" component={SearchScreen} />
             <Stack.Screen name="SearchResult" component={SearchResultScreen} />
             <Stack.Screen name="Wishlist" component={WishlistScreen} />
             <Stack.Screen
@@ -101,6 +104,10 @@ export default function RootNavigator() {
             <Stack.Screen
               name="UserProfile"
               component={require("../screens/UserProfileScreen").default}
+            />
+            <Stack.Screen
+              name="FriendSearch"
+              component={require("../screens/FriendSearchScreen").default}
             />
             <Stack.Screen
               name="WithdrawRetention"

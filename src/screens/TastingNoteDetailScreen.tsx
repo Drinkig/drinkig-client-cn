@@ -29,7 +29,11 @@ import {
   deleteTastingNoteImage,
   uploadTastingNoteImages,
 } from "../api/wine";
-import { NOTE_PHOTO_MAX_COUNT, prepareNotePhoto } from "../utils/notePhoto";
+import {
+  NOTE_PHOTO_GRID_ASPECT,
+  NOTE_PHOTO_MAX_COUNT,
+  prepareNotePhoto,
+} from "../utils/notePhoto";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import PentagonRadarChart from "../components/common/PentagonRadarChart";
 import { COLOR_PALETTES } from "../components/tasting_note/constants";
@@ -44,6 +48,7 @@ import { useTranslation } from "react-i18next";
 import GlassHeader from "../components/common/GlassHeader";
 import ActionMenuSheet from "../components/common/ActionMenuSheet";
 import { sendContentReport } from "../utils/reportUtils";
+import { blockMember } from "../api/block";
 
 const RATING_STAR = colors.ratingStar;
 
@@ -227,6 +232,36 @@ export default function TastingNoteDetailScreen() {
           showToast(t("contentReport.success"), { type: "success" }),
         onError: () => showToast(t("contentReport.error"), { type: "error" }),
       }
+    );
+  };
+
+  // 타인 작성자 차단 — 차단 후에는 이 노트도 볼 수 없으므로 목록으로 돌아간다
+  const handleBlockAuthor = () => {
+    if (!note?.authorId) return;
+    const authorId = note.authorId;
+    Alert.alert(
+      t("userProfile.blockConfirmTitle"),
+      t("userProfile.blockConfirmMsg"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("userProfile.blockAction"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await blockMember(authorId);
+              if (!res.isSuccess) throw new Error(res.message);
+              showToast(t("userProfile.blockSuccess"), {
+                type: "success",
+                onHide: () => navigation.goBack(),
+              });
+            } catch (error) {
+              console.error("Failed to block author:", error);
+              showToast(t("userProfile.error.blockFail"), { type: "error" });
+            }
+          },
+        },
+      ]
     );
   };
 
@@ -614,6 +649,12 @@ export default function TastingNoteDetailScreen() {
                   destructive: true,
                   onPress: handleReport,
                 },
+                {
+                  label: t("tastingNoteDetail.menu.block"),
+                  icon: "ban-outline",
+                  destructive: true,
+                  onPress: handleBlockAuthor,
+                },
               ]
         }
       />
@@ -810,9 +851,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
+  // 마이페이지 그리드/작성 미리보기와 동일한 3:4 — 크롭으로 잡은 프레이밍이 그대로 보인다
   photoPageImage: {
     width: "100%",
-    aspectRatio: 1,
+    aspectRatio: NOTE_PHOTO_GRID_ASPECT,
     borderRadius: radius.sm,
   },
   photoDeleteBadge: {

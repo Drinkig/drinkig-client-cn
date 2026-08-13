@@ -12,7 +12,8 @@
             "timeout": "요청 시간이 초과되었어요. 잠시 후 다시 시도해 주세요.",
             "server": "일시적인 서버 오류예요. 잠시 후 다시 시도해 주세요.",
             "generic": "문제가 발생했어요. 잠시 후 다시 시도해 주세요."
-        }
+        },
+        "more": "더보기"
     },
     "photoOptions": {
         "title": "프로필 사진 설정",
@@ -22,9 +23,25 @@
     "tab": {
         "home": "홈",
         "search": "검색",
+        "feed": "피드",
         "myWine": "내 와인",
         "profile": "프로필",
         "scan": "와인 스캔"
+    },
+    "feed": {
+        "headerTitle": "피드",
+        "findFriends": "친구 찾기",
+        "empty": {
+            "title": "아직 피드가 비어 있어요",
+            "subtitle": "사진과 함께 테이스팅 노트를 남기면\n다른 사람들의 피드에 공유돼요",
+            "cta": "노트 작성하기"
+        }
+    },
+    "friendSearch": {
+        "title": "친구 찾기",
+        "placeholder": "닉네임으로 검색",
+        "hint": "닉네임으로 친구를 찾아\n팔로우해보세요",
+        "empty": "검색 결과가 없어요"
     },
     "flavorAxes": {
         "acidity": "산도",
@@ -487,8 +504,16 @@
             "camera": "카메라로 촬영",
             "gallery": "앨범에서 선택",
             "remove": "사진 삭제",
+            "adjust": "조절",
+            "processing": "사진 준비 중…",
             "maxReached": "사진은 최대 {{max}}장까지 첨부할 수 있어요.",
             "processFail": "사진을 불러오지 못했어요. 다른 사진을 선택해주세요."
+        },
+        "photoCrop": {
+            "title": "사진 위치 조절",
+            "hint": "드래그해서 그리드에 보일 영역을 맞춰주세요",
+            "apply": "적용",
+            "fail": "사진 조절에 실패했어요. 다시 시도해주세요."
         },
         "success": {
             "saveTitle": "성공",
@@ -528,7 +553,24 @@
             "placeholder": "예: 체리, 오크, 바닐라, 가죽",
             "addPlaceholder": "향 직접 입력 후 추가",
             "suggestionsTitle": "추천 향",
-            "suggestions": ["체리", "자두", "블랙베리", "딸기", "레몬", "사과", "복숭아", "꽃향", "바닐라", "오크", "후추", "계피", "가죽", "담배", "흙내음", "초콜릿"]
+            "suggestions": [
+                "체리",
+                "자두",
+                "블랙베리",
+                "딸기",
+                "레몬",
+                "사과",
+                "복숭아",
+                "꽃향",
+                "바닐라",
+                "오크",
+                "후추",
+                "계피",
+                "가죽",
+                "담배",
+                "흙내음",
+                "초콜릿"
+            ]
         },
         "palate": {
             "title": "맛은 어땠나요?",
@@ -544,7 +586,16 @@
             "placeholder": "예: 깔끔한 산미가 오래 남음, 씁쓸한 끝맛",
             "addPlaceholder": "여운 직접 입력 후 추가",
             "suggestionsTitle": "추천 여운",
-            "suggestions": ["길게 남는 여운", "깔끔한 마무리", "부드러운 끝맛", "드라이한 피니시", "산뜻한 산미", "떫은 여운", "스파이시한 끝맛", "과일 향의 여운"]
+            "suggestions": [
+                "길게 남는 여운",
+                "깔끔한 마무리",
+                "부드러운 끝맛",
+                "드라이한 피니시",
+                "산뜻한 산미",
+                "떫은 여운",
+                "스파이시한 끝맛",
+                "과일 향의 여운"
+            ]
         },
         "conclusion": {
             "title": "총평을 남겨주세요",
@@ -596,9 +647,18 @@
         "privateTitle": "비공개 계정입니다",
         "privateDesc": "이 계정의 테이스팅 노트는 비공개예요.",
         "empty": "아직 작성한 노트가 없어요.",
+        "blockAction": "차단하기",
+        "unblockAction": "차단 해제",
+        "blockConfirmTitle": "이 사용자를 차단할까요?",
+        "blockConfirmMsg": "서로의 피드와 노트가 더 이상 보이지 않고, 팔로우도 해제돼요.",
+        "blockSuccess": "차단했어요.",
+        "unblockSuccess": "차단을 해제했어요.",
+        "blockedTitle": "차단한 사용자예요",
+        "blockedDesc": "차단을 해제하면 노트를 다시 볼 수 있어요.",
         "error": {
             "fetchFail": "프로필을 불러오지 못했어요.",
-            "followFail": "팔로우 처리에 실패했어요. 다시 시도해주세요."
+            "followFail": "팔로우 처리에 실패했어요. 다시 시도해주세요.",
+            "blockFail": "요청에 실패했어요. 잠시 후 다시 시도해주세요."
         }
     },
     "tastingNoteDetail": {
@@ -606,6 +666,7 @@
         "menu": {
             "delete": "삭제",
             "report": "신고",
+            "block": "작성자 차단",
             "cancel": "취소"
         },
         "photo": {

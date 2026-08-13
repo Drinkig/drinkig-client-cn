@@ -664,10 +664,13 @@ export interface TastingNoteFeedResponse {
   result: TastingNoteFeedItemDTO[];
 }
 
-export const getTastingNoteFeed = async (size: number = 20) => {
+export const getTastingNoteFeed = async (
+  size: number = 20,
+  page: number = 0
+) => {
   const response = await client.get<TastingNoteFeedResponse>(
     "/tasting-note/feed",
-    { params: { size } }
+    { params: { size, page } }
   );
   return response.data;
 };

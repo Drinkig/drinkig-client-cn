@@ -184,7 +184,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           email: response.result.email,
           authType: response.result.authType,
           lastTasteResetAt: response.result.lastTasteResetAt ?? null,
-          isProfilePublic: response.result.isProfilePublic ?? false,
+          // 2026-08-13 정책: 기본 공개 — 구버전 서버(필드 미지원)도 공개 취급
+          isProfilePublic: response.result.isProfilePublic ?? true,
         });
 
         if (

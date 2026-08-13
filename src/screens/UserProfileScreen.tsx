@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  ActionSheetIOS,
+  Alert,
   View,
   Text,
   StyleSheet,
@@ -8,6 +10,7 @@ import {
   Image,
   ActivityIndicator,
   Dimensions,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -17,6 +20,7 @@ import { RootStackParamList } from "../types";
 import { getMemberProfile, MemberProfileResult } from "../api/member";
 import { getMemberTastingNotes, TastingNotePreviewDTO } from "../api/wine";
 import { followMember, unfollowMember } from "../api/follow";
+import { blockMember, unblockMember } from "../api/block";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent, surfaces } from "../constants/theme";
@@ -43,45 +47,43 @@ export default function UserProfileScreen() {
   const { width } = Dimensions.get("window");
   const gridItemWidth = width / 3;
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setIsLoading(true);
-        const profileRes = await getMemberProfile(memberId);
-        if (!profileRes.isSuccess || !profileRes.result) {
-          throw new Error(profileRes.message);
-        }
-        if (!alive) return;
-        setProfile(profileRes.result);
-
-        if (profileRes.result.isProfilePublic) {
-          const notesRes = await getMemberTastingNotes(memberId);
-          if (alive && notesRes.isSuccess && notesRes.result) {
-            setNotes(
-              Array.isArray(notesRes.result)
-                ? (notesRes.result as any)
-                : notesRes.result.content || []
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Failed to load user profile:", error);
-        if (alive) {
-          showToast(t("userProfile.error.fetchFail"), {
-            type: "error",
-            onHide: () => navigation.goBack(),
-          });
-        }
-      } finally {
-        if (alive) setIsLoading(false);
+  const loadProfile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const profileRes = await getMemberProfile(memberId);
+      if (!profileRes.isSuccess || !profileRes.result) {
+        throw new Error(profileRes.message);
       }
-    })();
-    return () => {
-      alive = false;
-    };
+      setProfile(profileRes.result);
+
+      // 내가 차단한 유저면 서버가 노트 조회를 거부(PROFILE_PRIVATE)하므로 건너뛴다
+      if (profileRes.result.isProfilePublic && !profileRes.result.isBlocked) {
+        const notesRes = await getMemberTastingNotes(memberId);
+        if (notesRes.isSuccess && notesRes.result) {
+          setNotes(
+            Array.isArray(notesRes.result)
+              ? (notesRes.result as any)
+              : notesRes.result.content || []
+          );
+        }
+      } else {
+        setNotes([]);
+      }
+    } catch (error) {
+      console.error("Failed to load user profile:", error);
+      showToast(t("userProfile.error.fetchFail"), {
+        type: "error",
+        onHide: () => navigation.goBack(),
+      });
+    } finally {
+      setIsLoading(false);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberId]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleToggleFollow = async () => {
     if (!profile || isFollowPending) return;
@@ -117,6 +119,86 @@ export default function UserProfileScreen() {
       showToast(t("userProfile.error.followFail"), { type: "error" });
     } finally {
       setIsFollowPending(false);
+    }
+  };
+
+  const handleBlock = () => {
+    Alert.alert(
+      t("userProfile.blockConfirmTitle"),
+      t("userProfile.blockConfirmMsg"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("userProfile.blockAction"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res = await blockMember(memberId);
+              if (!res.isSuccess) throw new Error(res.message);
+              showToast(t("userProfile.blockSuccess"), { type: "success" });
+              // 차단 시 서버가 팔로우를 양방향 해제하므로 상태를 맞춰준다
+              setProfile((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      isBlocked: true,
+                      isFollowing: false,
+                      followerCount: prev.isFollowing
+                        ? Math.max(0, prev.followerCount - 1)
+                        : prev.followerCount,
+                    }
+                  : prev
+              );
+              setNotes([]);
+            } catch (error) {
+              console.error("Failed to block member:", error);
+              showToast(t("userProfile.error.blockFail"), { type: "error" });
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleUnblock = async () => {
+    try {
+      const res = await unblockMember(memberId);
+      if (!res.isSuccess) throw new Error(res.message);
+      showToast(t("userProfile.unblockSuccess"), { type: "success" });
+      loadProfile();
+    } catch (error) {
+      console.error("Failed to unblock member:", error);
+      showToast(t("userProfile.error.blockFail"), { type: "error" });
+    }
+  };
+
+  const openMenu = () => {
+    if (!profile) return;
+    const actionLabel = profile.isBlocked
+      ? t("userProfile.unblockAction")
+      : t("userProfile.blockAction");
+    const onAction = profile.isBlocked ? handleUnblock : handleBlock;
+
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: [t("common.cancel"), actionLabel],
+          cancelButtonIndex: 0,
+          destructiveButtonIndex: profile.isBlocked ? undefined : 1,
+        },
+        (idx) => {
+          if (idx === 1) onAction();
+        }
+      );
+    } else {
+      Alert.alert(profile.name, undefined, [
+        {
+          text: actionLabel,
+          style: profile.isBlocked ? "default" : "destructive",
+          onPress: onAction,
+        },
+        { text: t("common.cancel"), style: "cancel" },
+      ]);
     }
   };
 
@@ -197,6 +279,16 @@ export default function UserProfileScreen() {
             <Icon name="arrow-back" size={22} color={colors.white} />
           </TouchableOpacity>
         }
+        right={
+          <TouchableOpacity
+            onPress={openMenu}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.more")}
+          >
+            <Icon name="ellipsis-horizontal" size={22} color={colors.white} />
+          </TouchableOpacity>
+        }
       />
 
       <ScrollView
@@ -248,36 +340,63 @@ export default function UserProfileScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.followButton,
-            profile.isFollowing && styles.followButtonActive,
-          ]}
-          onPress={handleToggleFollow}
-          disabled={isFollowPending}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-        >
-          {isFollowPending ? (
-            <ActivityIndicator
-              size="small"
-              color={profile.isFollowing ? colors.textPrimary : accent.onAccent}
-            />
-          ) : (
+        {profile.isBlocked ? (
+          <TouchableOpacity
+            style={[styles.followButton, styles.followButtonActive]}
+            onPress={handleUnblock}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+          >
             <Text
-              style={[
-                styles.followButtonText,
-                profile.isFollowing && styles.followButtonTextActive,
-              ]}
+              style={[styles.followButtonText, styles.followButtonTextActive]}
             >
-              {profile.isFollowing
-                ? t("userProfile.following")
-                : t("userProfile.follow")}
+              {t("userProfile.unblockAction")}
             </Text>
-          )}
-        </TouchableOpacity>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[
+              styles.followButton,
+              profile.isFollowing && styles.followButtonActive,
+            ]}
+            onPress={handleToggleFollow}
+            disabled={isFollowPending}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+          >
+            {isFollowPending ? (
+              <ActivityIndicator
+                size="small"
+                color={
+                  profile.isFollowing ? colors.textPrimary : accent.onAccent
+                }
+              />
+            ) : (
+              <Text
+                style={[
+                  styles.followButtonText,
+                  profile.isFollowing && styles.followButtonTextActive,
+                ]}
+              >
+                {profile.isFollowing
+                  ? t("userProfile.following")
+                  : t("userProfile.follow")}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
 
-        {isPrivate ? (
+        {profile.isBlocked ? (
+          <View style={styles.privateWrapper}>
+            <Icon name="ban-outline" size={32} color={colors.textTertiary} />
+            <Text style={styles.privateTitle}>
+              {t("userProfile.blockedTitle")}
+            </Text>
+            <Text style={styles.privateDesc}>
+              {t("userProfile.blockedDesc")}
+            </Text>
+          </View>
+        ) : isPrivate ? (
           <View style={styles.privateWrapper}>
             <Icon
               name="lock-closed-outline"

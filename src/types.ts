@@ -33,6 +33,7 @@ export type RootStackParamList = {
     | undefined;
   TastingNoteDetail: { tastingNoteId: number };
   UserProfile: { memberId: number };
+  FriendSearch: undefined;
   WithdrawRetention: { authType: string };
   WithdrawReason: { authType: string };
   SommelierChat: undefined;

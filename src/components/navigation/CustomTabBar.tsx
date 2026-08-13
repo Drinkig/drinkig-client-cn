@@ -31,7 +31,7 @@ const CAMERA_BTN_SIZE = 56;
 const CAMERA_BTN_OVERFLOW = 22; // how much it rises above the tab bar
 
 // How many regular tabs on each side of the camera button
-const LEFT_TABS = ["Home", "Search"];
+const LEFT_TABS = ["Home", "Feed"];
 const RIGHT_TABS = ["MyWine", "Profile"];
 const ALL_TABS = [...LEFT_TABS, ...RIGHT_TABS];
 
@@ -131,8 +131,8 @@ export const CustomTabBar = ({
 
     if (routeName === "Home") {
       iconName = isFocused ? "home" : "home-outline";
-    } else if (routeName === "Search") {
-      iconName = isFocused ? "search" : "search-outline";
+    } else if (routeName === "Feed") {
+      iconName = isFocused ? "people" : "people-outline";
     } else if (routeName === "MyWine") {
       IconComponent = MaterialCommunityIcons;
       iconName = isFocused ? "bottle-wine" : "bottle-wine-outline";

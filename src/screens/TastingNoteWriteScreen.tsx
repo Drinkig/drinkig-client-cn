@@ -3,7 +3,9 @@ import { useExitGuard } from "../hooks/useExitGuard";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionSheetIOS,
+  ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   Platform,
   ScrollView,
@@ -31,11 +33,16 @@ import {
   uploadTastingNoteImages,
   WineUserDTO,
 } from "../api/wine";
-import { NOTE_PHOTO_MAX_COUNT, prepareNotePhoto } from "../utils/notePhoto";
+import {
+  NOTE_PHOTO_GRID_ASPECT,
+  NOTE_PHOTO_MAX_COUNT,
+  prepareNotePhoto,
+} from "../utils/notePhoto";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
 import CalendarModal from "../components/tasting_note/CalendarModal";
 import ColorSelector from "../components/tasting_note/ColorSelector";
 import HelpModal from "../components/tasting_note/HelpModal";
+import PhotoCropModal from "../components/tasting_note/PhotoCropModal";
 import StarRating from "../components/tasting_note/StarRating";
 import StepProgress from "../components/tasting_note/StepProgress";
 import TasteLevelSelector from "../components/tasting_note/TasteLevelSelector";
@@ -69,6 +76,11 @@ const STEP_NOSE = 2;
 const STEP_PALATE = 3;
 const STEP_CONCLUSION = 4;
 const TOTAL_STEPS = 5;
+
+// 사진 캐러셀 페이지: 첨부된 사진 + (처리 중일 때) 로딩 페이지
+type PhotoPage =
+  | { key: string; type: "photo"; uri: string; index: number }
+  | { key: "processing"; type: "processing" };
 
 const splitTags = (value: string) =>
   value
@@ -179,6 +191,12 @@ export default function TastingNoteWriteScreen() {
   // 첨부 사진(로컬 JPEG URI, 최대 NOTE_PHOTO_MAX_COUNT장)
   const [photos, setPhotos] = useState<string[]>([]);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const [photoPagerWidth, setPhotoPagerWidth] = useState(0);
+  const [photoPage, setPhotoPage] = useState(0);
+  // 크롭(위치 조절) 모달이 열려 있는 사진 인덱스
+  const [cropIndex, setCropIndex] = useState<number | null>(null);
+  const photoPagerRef = useRef<FlatList<PhotoPage>>(null);
+  const prevPhotoCountRef = useRef(0);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -475,6 +493,37 @@ export default function TastingNoteWriteScreen() {
   const handleRemovePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const handleApplyCrop = (croppedUri: string) => {
+    if (cropIndex === null) return;
+    setPhotos((prev) =>
+      prev.map((uri, i) => (i === cropIndex ? croppedUri : uri))
+    );
+    setCropIndex(null);
+  };
+
+  // 사진이 추가되거나 재인코딩이 시작되면 캐러셀 끝(새 사진/로딩 페이지)이 보이게 이동.
+  // 처리 중 로딩 페이지가 화면 밖에 있으면 멈춘 것처럼 보이는 문제 방지.
+  useEffect(() => {
+    if (photos.length > prevPhotoCountRef.current || isProcessingPhoto) {
+      requestAnimationFrame(() => {
+        photoPagerRef.current?.scrollToEnd({ animated: true });
+      });
+    }
+    prevPhotoCountRef.current = photos.length;
+  }, [photos.length, isProcessingPhoto]);
+
+  const photoPages: PhotoPage[] = [
+    ...photos.map((uri, index) => ({
+      key: `${uri}-${index}`,
+      type: "photo" as const,
+      uri,
+      index,
+    })),
+    ...(isProcessingPhoto
+      ? [{ key: "processing" as const, type: "processing" as const }]
+      : []),
+  ];
 
   // Per-step gate for the primary "Next" button
   const canProceed = (() => {
@@ -967,45 +1016,122 @@ export default function TastingNoteWriteScreen() {
           <Text style={[styles.fieldLabel, styles.photoLabelText]}>
             {t("tastingNoteWrite.photo.label")}
           </Text>
-          <Text style={styles.photoCount}>
-            {photos.length}/{NOTE_PHOTO_MAX_COUNT}
-          </Text>
-        </View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.photoRow}
-        >
-          {photos.map((uri, index) => (
-            <View key={`${uri}-${index}`} style={styles.photoTile}>
-              <Image source={{ uri }} style={styles.photoTileImage} />
+          <View style={styles.photoHeaderRight}>
+            {photos.length > 0 && photos.length < NOTE_PHOTO_MAX_COUNT && (
               <TouchableOpacity
-                style={styles.photoRemoveBadge}
-                onPress={() => handleRemovePhoto(index)}
+                style={styles.photoHeaderAdd}
+                onPress={handleAddPhoto}
+                disabled={isProcessingPhoto}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
-                accessibilityLabel={t("tastingNoteWrite.photo.remove")}
+                accessibilityLabel={t("tastingNoteWrite.photo.add")}
               >
-                <Icon name="close" size={12} color={colors.white} />
+                <Icon name="add" size={18} color={accent.text} />
               </TouchableOpacity>
-            </View>
-          ))}
-          {photos.length < NOTE_PHOTO_MAX_COUNT && (
-            <TouchableOpacity
-              style={styles.photoAddTile}
-              onPress={handleAddPhoto}
-              disabled={isProcessingPhoto}
-              accessibilityRole="button"
-              accessibilityLabel={t("tastingNoteWrite.photo.add")}
-            >
-              <Icon
-                name={isProcessingPhoto ? "hourglass-outline" : "add"}
-                size={28}
-                color={colors.textTertiary}
+            )}
+            <Text style={styles.photoCount}>
+              {photos.length}/{NOTE_PHOTO_MAX_COUNT}
+            </Text>
+          </View>
+        </View>
+
+        {photoPages.length === 0 ? (
+          <TouchableOpacity
+            style={styles.photoEmptyTile}
+            onPress={handleAddPhoto}
+            disabled={isProcessingPhoto}
+            accessibilityRole="button"
+            accessibilityLabel={t("tastingNoteWrite.photo.add")}
+          >
+            <Icon name="camera-outline" size={26} color={colors.textTertiary} />
+            <Text style={styles.photoEmptyText}>
+              {t("tastingNoteWrite.photo.add")}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <View
+            onLayout={(e) => setPhotoPagerWidth(e.nativeEvent.layout.width)}
+          >
+            {photoPagerWidth > 0 && (
+              <FlatList
+                ref={photoPagerRef}
+                data={photoPages}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(page) => page.key}
+                onMomentumScrollEnd={(e) =>
+                  setPhotoPage(
+                    Math.round(e.nativeEvent.contentOffset.x / photoPagerWidth)
+                  )
+                }
+                renderItem={({ item }) => (
+                  <View style={{ width: photoPagerWidth }}>
+                    {item.type === "photo" ? (
+                      <>
+                        <Image
+                          source={{ uri: item.uri }}
+                          style={styles.photoPageImage}
+                          resizeMode="cover"
+                        />
+                        <TouchableOpacity
+                          style={styles.photoRemoveBadge}
+                          onPress={() => handleRemovePhoto(item.index)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={t(
+                            "tastingNoteWrite.photo.remove"
+                          )}
+                        >
+                          <Icon name="close" size={14} color={colors.white} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.photoAdjustPill}
+                          onPress={() => setCropIndex(item.index)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          accessibilityRole="button"
+                          accessibilityLabel={t(
+                            "tastingNoteWrite.photo.adjust"
+                          )}
+                        >
+                          <Icon
+                            name="crop-outline"
+                            size={13}
+                            color={colors.white}
+                          />
+                          <Text style={styles.photoAdjustText}>
+                            {t("tastingNoteWrite.photo.adjust")}
+                          </Text>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <View style={styles.photoProcessingTile}>
+                        <ActivityIndicator size="small" color={accent.text} />
+                        <Text style={styles.photoProcessingText}>
+                          {t("tastingNoteWrite.photo.processing")}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
               />
-            </TouchableOpacity>
-          )}
-        </ScrollView>
+            )}
+            {photoPages.length > 1 && (
+              <View style={styles.photoDots}>
+                {photoPages.map((page, index) => (
+                  <View
+                    key={page.key}
+                    style={[
+                      styles.photoDot,
+                      index === Math.min(photoPage, photoPages.length - 1) &&
+                        styles.photoDotActive,
+                    ]}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        )}
       </View>
 
       <Text style={styles.fieldLabel}>
@@ -1155,6 +1281,13 @@ export default function TastingNoteWriteScreen() {
         selectedDate={tasteDate}
         onDateSelect={setTasteDate}
         onClose={() => setCalendarVisible(false)}
+      />
+
+      <PhotoCropModal
+        visible={cropIndex !== null}
+        uri={cropIndex !== null ? photos[cropIndex] ?? null : null}
+        onClose={() => setCropIndex(null)}
+        onApply={handleApplyCrop}
       />
     </SafeAreaView>
   );
@@ -1438,42 +1571,96 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  photoRow: {
+  photoHeaderRight: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
   },
-  photoTile: {
-    width: 84,
-    height: 84,
-    borderRadius: radius.sm,
-    overflow: "hidden",
-    backgroundColor: surfaces.card,
+  photoHeaderAdd: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: accent.soft,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  photoTileImage: {
+  photoPageImage: {
     width: "100%",
-    height: "100%",
+    aspectRatio: NOTE_PHOTO_GRID_ASPECT,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.card,
   },
   photoRemoveBadge: {
     position: "absolute",
-    top: 4,
-    right: 4,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     alignItems: "center",
     justifyContent: "center",
   },
-  photoAddTile: {
-    width: 84,
-    height: 84,
+  photoAdjustPill: {
+    position: "absolute",
+    bottom: spacing.sm,
+    right: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    height: 26,
+    paddingHorizontal: spacing.md,
+    borderRadius: 13,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+  },
+  photoAdjustText: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  photoProcessingTile: {
+    width: "100%",
+    aspectRatio: NOTE_PHOTO_GRID_ASPECT,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.card,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+  },
+  photoProcessingText: {
+    color: colors.textTertiary,
+    fontSize: 12,
+  },
+  photoEmptyTile: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.xl,
     borderRadius: radius.sm,
     borderWidth: 1,
     borderStyle: "dashed",
     borderColor: surfaces.hairlineStrong,
     backgroundColor: surfaces.card,
-    alignItems: "center",
+  },
+  photoEmptyText: {
+    color: colors.textTertiary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  photoDots: {
+    flexDirection: "row",
     justifyContent: "center",
     gap: spacing.xs,
+    marginTop: spacing.md,
+  },
+  photoDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: surfaces.hairlineStrong,
+  },
+  photoDotActive: {
+    backgroundColor: accent.base,
   },
   textArea: {
     backgroundColor: surfaces.card,

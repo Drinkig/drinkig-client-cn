@@ -1,25 +1,21 @@
-import React from 'react';
-import { Platform } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
-import MyWineScreen from '../screens/MyWineScreen';
-import SearchScreen from '../screens/SearchScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { colors } from '../constants/colors';
-import { CustomTabBar } from '../components/navigation/CustomTabBar';
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import HomeScreen from "../screens/HomeScreen";
+import MyWineScreen from "../screens/MyWineScreen";
+import FeedScreen from "../screens/FeedScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import { CustomTabBar } from "../components/navigation/CustomTabBar";
 
 const Tab = createBottomTabNavigator();
 
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
 export default function MainTabNavigator() {
   const { t } = useTranslation();
 
   return (
     <Tab.Navigator
-      tabBar={props => <CustomTabBar {...props} />}
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
       }}
@@ -28,31 +24,31 @@ export default function MainTabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: t('tab.home', '홈'), // Used for accessibility in CustomTabBar
+          tabBarLabel: t("tab.home", "홈"), // Used for accessibility in CustomTabBar
         }}
       />
+      {/* 검색 탭은 스택 화면으로 이동(홈 검색바 진입) — 자리는 소셜 피드가 대체 */}
       <Tab.Screen
-        name="Search"
-        component={SearchScreen}
+        name="Feed"
+        component={FeedScreen}
         options={{
-          tabBarLabel: t('tab.search', '검색'),
+          tabBarLabel: t("tab.feed", "피드"),
         }}
       />
       <Tab.Screen
         name="MyWine"
         component={MyWineScreen}
         options={{
-          tabBarLabel: t('tab.myWine', '내 와인'),
+          tabBarLabel: t("tab.myWine", "내 와인"),
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarLabel: t('tab.profile', '마이페이지'),
+          tabBarLabel: t("tab.profile", "마이페이지"),
         }}
       />
     </Tab.Navigator>
   );
 }
-

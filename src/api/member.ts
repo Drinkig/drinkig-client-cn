@@ -189,6 +189,8 @@ export interface MemberProfileResult {
   imageUrl?: string | null;
   isProfilePublic?: boolean;
   isFollowing?: boolean;
+  // 내가 이 유저를 차단했는지 (상대가 나를 차단한 경우 서버가 비공개로 위장해 내려줌)
+  isBlocked?: boolean;
   followerCount: number;
   followingCount: number;
   noteCount: number;
@@ -205,6 +207,28 @@ export const getMemberProfile = async (memberId: number) => {
   const response = await client.get<MemberProfileApiResponse>(
     `/member/profile/${memberId}`
   );
+  return response.data;
+};
+
+// 친구 찾기 — 닉네임 부분 일치 검색 (본인 제외, 서버가 최대 20명 반환)
+export interface MemberSearchItem {
+  memberId: number;
+  name: string;
+  imageUrl?: string | null;
+  isProfilePublic?: boolean;
+}
+
+export interface MemberSearchResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: MemberSearchItem[];
+}
+
+export const searchMembers = async (keyword: string) => {
+  const response = await client.get<MemberSearchResponse>("/member/search", {
+    params: { keyword },
+  });
   return response.data;
 };
 

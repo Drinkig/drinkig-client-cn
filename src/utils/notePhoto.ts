@@ -5,6 +5,8 @@ import PhotoManipulator, { MimeType } from "react-native-photo-manipulator";
 // 갤러리 원본(HEIC)은 서버가 400으로 거부하므로(§7 2026-08-05 스캔 사례와 동일 경로),
 // 어떤 출처든 반드시 JPEG 재인코딩 + 다운사이즈를 거쳐 업로드한다.
 export const NOTE_PHOTO_MAX_COUNT = 5;
+// 마이페이지 그리드/피드 카드가 3:4(세로) cover로 렌더링되므로 크롭 프레임도 동일 비율.
+export const NOTE_PHOTO_GRID_ASPECT = 3 / 4;
 const NOTE_PHOTO_MAX_EDGE = 1600;
 const NOTE_PHOTO_QUALITY = 85;
 
@@ -37,6 +39,31 @@ export async function prepareNotePhoto(
     uri,
     [],
     { x: 0, y: 0, width: w, height: h },
+    { width: targetW, height: targetH },
+    NOTE_PHOTO_QUALITY,
+    MimeType.JPEG
+  );
+}
+
+/**
+ * 사용자가 고른 영역(원본 픽셀 기준)으로 잘라 JPEG로 저장한다.
+ * 영역은 이미 prepareNotePhoto를 거친 JPEG 기준이므로 재인코딩만 신경 쓰면 된다.
+ */
+export async function cropNotePhoto(
+  uri: string,
+  region: { x: number; y: number; width: number; height: number }
+): Promise<string> {
+  const scale = Math.min(
+    1,
+    NOTE_PHOTO_MAX_EDGE / Math.max(region.width, region.height)
+  );
+  const targetW = Math.max(1, Math.round(region.width * scale));
+  const targetH = Math.max(1, Math.round(region.height * scale));
+
+  return PhotoManipulator.batch(
+    uri,
+    [],
+    region,
     { width: targetW, height: targetH },
     NOTE_PHOTO_QUALITY,
     MimeType.JPEG

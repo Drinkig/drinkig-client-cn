@@ -199,7 +199,7 @@ export default function WishlistScreen() {
                   style={styles.emptyCta}
                   onPress={() =>
                     // @ts-ignore
-                    navigation.navigate("Main", { screen: "Search" })
+                    navigation.navigate("Search")
                   }
                 >
                   <Text style={styles.emptyCtaText}>

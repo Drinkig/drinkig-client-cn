@@ -12,7 +12,8 @@
             "timeout": "The request timed out. Please try again shortly.",
             "server": "Temporary server error. Please try again shortly.",
             "generic": "Something went wrong. Please try again shortly."
-        }
+        },
+        "more": "More"
     },
     "photoOptions": {
         "title": "Profile Photo",
@@ -22,9 +23,25 @@
     "tab": {
         "home": "Home",
         "search": "Search",
+        "feed": "Feed",
         "myWine": "My Wine",
         "profile": "Profile",
         "scan": "Scan Wine"
+    },
+    "feed": {
+        "headerTitle": "Feed",
+        "findFriends": "Find Friends",
+        "empty": {
+            "title": "The feed is empty",
+            "subtitle": "Write a tasting note with photos\nand it will show up in others' feeds",
+            "cta": "Write a Note"
+        }
+    },
+    "friendSearch": {
+        "title": "Find Friends",
+        "placeholder": "Search by nickname",
+        "hint": "Search friends by nickname\nand follow them",
+        "empty": "No users found"
     },
     "flavorAxes": {
         "acidity": "Acidity",
@@ -487,8 +504,16 @@
             "camera": "Take Photo",
             "gallery": "Choose from Gallery",
             "remove": "Remove photo",
+            "adjust": "Adjust",
+            "processing": "Preparing photo…",
             "maxReached": "You can attach up to {{max}} photos.",
             "processFail": "Couldn't load that photo. Please pick another one."
+        },
+        "photoCrop": {
+            "title": "Adjust Photo",
+            "hint": "Drag to choose what shows in the grid",
+            "apply": "Apply",
+            "fail": "Couldn't adjust the photo. Please try again."
         },
         "success": {
             "saveTitle": "Success",
@@ -528,7 +553,24 @@
             "placeholder": "e.g., Cherry, Oak, Vanilla, Leather",
             "addPlaceholder": "Type an aroma and add",
             "suggestionsTitle": "Suggested aromas",
-            "suggestions": ["Cherry", "Plum", "Blackberry", "Strawberry", "Lemon", "Apple", "Peach", "Floral", "Vanilla", "Oak", "Pepper", "Cinnamon", "Leather", "Tobacco", "Earth", "Chocolate"]
+            "suggestions": [
+                "Cherry",
+                "Plum",
+                "Blackberry",
+                "Strawberry",
+                "Lemon",
+                "Apple",
+                "Peach",
+                "Floral",
+                "Vanilla",
+                "Oak",
+                "Pepper",
+                "Cinnamon",
+                "Leather",
+                "Tobacco",
+                "Earth",
+                "Chocolate"
+            ]
         },
         "palate": {
             "title": "How did it taste?",
@@ -544,7 +586,16 @@
             "placeholder": "e.g., Clean lingering acidity, Bitter end",
             "addPlaceholder": "Type a finish note and add",
             "suggestionsTitle": "Suggested finish",
-            "suggestions": ["Long finish", "Clean finish", "Smooth finish", "Dry finish", "Crisp acidity", "Tannic finish", "Spicy finish", "Fruity finish"]
+            "suggestions": [
+                "Long finish",
+                "Clean finish",
+                "Smooth finish",
+                "Dry finish",
+                "Crisp acidity",
+                "Tannic finish",
+                "Spicy finish",
+                "Fruity finish"
+            ]
         },
         "conclusion": {
             "title": "Leave your verdict",
@@ -596,9 +647,18 @@
         "privateTitle": "This account is private",
         "privateDesc": "Their tasting notes are private.",
         "empty": "No notes yet.",
+        "blockAction": "Block",
+        "unblockAction": "Unblock",
+        "blockConfirmTitle": "Block this user?",
+        "blockConfirmMsg": "You won't see each other's feeds or notes anymore, and follows will be removed.",
+        "blockSuccess": "Blocked.",
+        "unblockSuccess": "Unblocked.",
+        "blockedTitle": "You blocked this user",
+        "blockedDesc": "Unblock to see their notes again.",
         "error": {
             "fetchFail": "Couldn't load this profile.",
-            "followFail": "Couldn't update follow. Please try again."
+            "followFail": "Couldn't update follow. Please try again.",
+            "blockFail": "Request failed. Please try again."
         }
     },
     "tastingNoteDetail": {
@@ -606,6 +666,7 @@
         "menu": {
             "delete": "Delete",
             "report": "Report",
+            "block": "Block Author",
             "cancel": "Cancel"
         },
         "photo": {
