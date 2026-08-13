@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
@@ -27,6 +28,110 @@ import { RootStackParamList } from "../types";
 
 const PAGE_SIZE = 20;
 
+// 피드 카드 — 사진은 화면 풀블리드, 여러 장이면 스와이프 캐러셀(dots + n/m 표시).
+// 작성자 행·와인명만 좌우 패딩을 갖는 인스타그램 문법.
+function FeedCard({
+  item,
+  width,
+  language,
+  onPressNote,
+  onPressAuthor,
+}: {
+  item: TastingNoteFeedItemDTO;
+  width: number;
+  language: string;
+  onPressNote: () => void;
+  onPressAuthor: () => void;
+}) {
+  const [photoPage, setPhotoPage] = useState(0);
+  // 구버전 서버는 imageUrls를 안 내려주므로 썸네일 1장으로 폴백
+  const photos = item.imageUrls?.length
+    ? item.imageUrls
+    : item.thumbnailUrl
+    ? [item.thumbnailUrl]
+    : [];
+  const wineName =
+    language === "en" ? item.wineNameEng || item.wineName : item.wineName;
+
+  return (
+    <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.authorRow}
+        onPress={onPressAuthor}
+        accessibilityRole="button"
+        accessibilityLabel={item.authorName}
+      >
+        <Image
+          source={
+            item.authorImageUrl
+              ? { uri: item.authorImageUrl }
+              : require("../assets/Standard_profile.png")
+          }
+          style={styles.authorAvatar}
+        />
+        <Text style={styles.authorName} numberOfLines={1}>
+          {item.authorName}
+        </Text>
+        <Text style={styles.tasteDate}>{item.tasteDate}</Text>
+      </TouchableOpacity>
+
+      <View style={styles.pagerWrap}>
+        <FlatList
+          data={photos}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(uri, index) => `${index}-${uri}`}
+          onMomentumScrollEnd={(e) =>
+            setPhotoPage(Math.round(e.nativeEvent.contentOffset.x / width))
+          }
+          renderItem={({ item: uri }) => (
+            <TouchableOpacity activeOpacity={0.9} onPress={onPressNote}>
+              <Image
+                source={{ uri }}
+                style={[styles.image, { width }]}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          )}
+        />
+        {photos.length > 1 && (
+          <View style={styles.photoCountPill} pointerEvents="none">
+            <Text style={styles.photoCountText}>
+              {Math.min(photoPage, photos.length - 1) + 1}/{photos.length}
+            </Text>
+          </View>
+        )}
+        <View style={styles.rating} pointerEvents="none">
+          <Icon name="star" size={12} color={colors.ratingStar} />
+          <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+        </View>
+      </View>
+
+      {photos.length > 1 && (
+        <View style={styles.photoDots}>
+          {photos.map((uri, index) => (
+            <View
+              key={`${index}-${uri}`}
+              style={[
+                styles.photoDot,
+                index === Math.min(photoPage, photos.length - 1) &&
+                  styles.photoDotActive,
+              ]}
+            />
+          ))}
+        </View>
+      )}
+
+      <TouchableOpacity activeOpacity={0.8} onPress={onPressNote}>
+        <Text style={styles.wineName} numberOfLines={2}>
+          {wineName}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 /**
  * 피드 탭: 공개 계정 유저들이 사진과 함께 남긴 테이스팅 노트 전체 목록.
  * 홈의 피드 섹션(가로 티저)의 "머무는 공간" 버전 — 세로 풀폭 카드 + 무한 스크롤.
@@ -38,6 +143,7 @@ export default function FeedScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
   const headerHeight = useGlassHeaderHeight();
+  const { width: windowWidth } = useWindowDimensions();
 
   const [items, setItems] = useState<TastingNoteFeedItemDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,61 +214,19 @@ export default function FeedScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: TastingNoteFeedItemDTO }) => {
-    const wineName =
-      i18n.language === "en"
-        ? item.wineNameEng || item.wineName
-        : item.wineName;
-    return (
-      <View style={styles.card}>
-        <TouchableOpacity
-          style={styles.authorRow}
-          onPress={() =>
-            navigation.navigate("UserProfile", { memberId: item.authorId })
-          }
-          accessibilityRole="button"
-          accessibilityLabel={item.authorName}
-        >
-          <Image
-            source={
-              item.authorImageUrl
-                ? { uri: item.authorImageUrl }
-                : require("../assets/Standard_profile.png")
-            }
-            style={styles.authorAvatar}
-          />
-          <Text style={styles.authorName} numberOfLines={1}>
-            {item.authorName}
-          </Text>
-          <Text style={styles.tasteDate}>{item.tasteDate}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() =>
-            navigation.navigate("TastingNoteDetail", {
-              tastingNoteId: item.noteId,
-            })
-          }
-        >
-          <View style={styles.imageWrap}>
-            <Image
-              source={{ uri: item.thumbnailUrl }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-            <View style={styles.rating}>
-              <Icon name="star" size={12} color={colors.ratingStar} />
-              <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
-            </View>
-          </View>
-          <Text style={styles.wineName} numberOfLines={2}>
-            {wineName}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const renderItem = ({ item }: { item: TastingNoteFeedItemDTO }) => (
+    <FeedCard
+      item={item}
+      width={windowWidth}
+      language={i18n.language}
+      onPressNote={() =>
+        navigation.navigate("TastingNoteDetail", { tastingNoteId: item.noteId })
+      }
+      onPressAuthor={() =>
+        navigation.navigate("UserProfile", { memberId: item.authorId })
+      }
+    />
+  );
 
   const renderBody = () => {
     if (isLoading) {
@@ -260,8 +324,8 @@ const styles = StyleSheet.create({
   headerButton: {
     padding: spacing.xs,
   },
+  // 사진은 풀블리드(패딩/라운딩 없음), 텍스트 행만 좌우 패딩 — 인스타그램 문법
   listContent: {
-    paddingHorizontal: spacing.xl,
     paddingBottom: 140,
     gap: spacing.xxl,
   },
@@ -275,6 +339,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
   },
   authorAvatar: {
     width: 30,
@@ -293,16 +358,26 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     fontSize: 12,
   },
-  imageWrap: {
+  pagerWrap: {
     width: "100%",
-    aspectRatio: 3 / 4,
-    borderRadius: radius.lg,
-    overflow: "hidden",
     backgroundColor: surfaces.imageWell,
   },
   image: {
-    width: "100%",
-    height: "100%",
+    aspectRatio: 3 / 4,
+  },
+  photoCountPill: {
+    position: "absolute",
+    top: spacing.md,
+    left: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
+    borderRadius: radius.pill,
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  photoCountText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "700",
   },
   rating: {
     position: "absolute",
@@ -321,11 +396,26 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
   },
+  photoDots: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: spacing.xs,
+  },
+  photoDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: surfaces.hairlineStrong,
+  },
+  photoDotActive: {
+    backgroundColor: accent.base,
+  },
   wineName: {
     color: colors.textPrimary,
     fontSize: 15,
     fontWeight: "700",
     letterSpacing: -0.2,
+    paddingHorizontal: spacing.xl,
   },
   footerLoader: {
     marginTop: spacing.lg,

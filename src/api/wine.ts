@@ -652,6 +652,8 @@ export interface TastingNoteFeedItemDTO {
   rating: number;
   tasteDate: string;
   thumbnailUrl: string;
+  // 전체 사진(sortOrder 순) — 구버전 서버는 안 내려주므로 optional(썸네일로 폴백)
+  imageUrls?: string[];
   authorId: number;
   authorName: string;
   authorImageUrl?: string | null;
