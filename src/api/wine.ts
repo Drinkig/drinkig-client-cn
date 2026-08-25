@@ -643,7 +643,7 @@ export const deleteTastingNoteImage = async (
   return response.data;
 };
 
-// 소셜 피드 — 공개 계정의 사진 있는 노트 최신순 (본인 제외)
+// 소셜 피드 — 공개 계정의 사진 있는 노트 최신순 (본인 노트 포함)
 export interface TastingNoteFeedItemDTO {
   noteId: number;
   wineName: string;
@@ -657,6 +657,8 @@ export interface TastingNoteFeedItemDTO {
   authorId: number;
   authorName: string;
   authorImageUrl?: string | null;
+  // 조회자 본인의 노트 여부 — 구버전 서버는 안 내려주므로 optional(타인 취급)
+  mine?: boolean;
 }
 
 export interface TastingNoteFeedResponse {

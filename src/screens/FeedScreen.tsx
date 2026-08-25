@@ -258,7 +258,9 @@ export default function FeedScreen() {
         navigation.navigate("TastingNoteDetail", { tastingNoteId: item.noteId })
       }
       onPressAuthor={() =>
-        navigation.navigate("UserProfile", { memberId: item.authorId })
+        item.mine
+          ? navigation.navigate("Main", { screen: "Profile" })
+          : navigation.navigate("UserProfile", { memberId: item.authorId })
       }
     />
   );

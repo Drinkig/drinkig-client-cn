@@ -1,5 +1,13 @@
+import { NavigatorScreenParams } from "@react-navigation/native";
 import { WineDBItem } from "./types/Wine";
 import { MyWine } from "./context/WineContext";
+
+export type MainTabParamList = {
+  Home: undefined;
+  Feed: undefined;
+  MyWine: undefined;
+  Profile: undefined;
+};
 
 export type RootStackParamList = {
   Login: undefined;
@@ -10,7 +18,7 @@ export type RootStackParamList = {
     | { flavorProfile?: any; nickname?: string; fromReset?: boolean }
     | undefined;
   TasteReset: undefined;
-  Main: undefined;
+  Main: NavigatorScreenParams<MainTabParamList> | undefined;
   ProfileEdit: undefined;
   Setting: undefined;
   WineAdd: { wine?: any } | undefined;

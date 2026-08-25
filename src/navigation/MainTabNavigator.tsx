@@ -5,8 +5,9 @@ import MyWineScreen from "../screens/MyWineScreen";
 import FeedScreen from "../screens/FeedScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import { CustomTabBar } from "../components/navigation/CustomTabBar";
+import { MainTabParamList } from "../types";
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 import { useTranslation } from "react-i18next";
 

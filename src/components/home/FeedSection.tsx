@@ -158,9 +158,11 @@ export const FeedSection = () => {
               <TouchableOpacity
                 style={styles.authorRow}
                 onPress={() =>
-                  navigation.navigate("UserProfile", {
-                    memberId: item.authorId,
-                  })
+                  item.mine
+                    ? navigation.navigate("Main", { screen: "Profile" })
+                    : navigation.navigate("UserProfile", {
+                        memberId: item.authorId,
+                      })
                 }
                 hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
                 accessibilityRole="button"
