@@ -85,7 +85,7 @@
             "noticeSub": "Check out our latest features",
             "eventTag": "EVENT",
             "eventTitle": "Drinkig Launch\nPartner Wanted",
-            "eventSub": "Get 1 month free advertising!"
+            "eventSub": "Get 1 month of free ad placement"
         },
         "expiryBanner": {
             "daysLeft": "Premium expires in {{days}} days",
@@ -97,7 +97,7 @@
     "sommelierChat": {
         "headerTitle": "Sommelier Drinky",
         "headerSubtitle": "Online",
-        "empty": "No recommendations found 😢",
+        "empty": "No recommendations found",
         "greeting": "Hi {{nickname}}! What are you planning to eat with your wine today?",
         "askSub": "Which type sounds good?",
         "askFood": "Nice choice! Which {{cuisine}} dish specifically?",
@@ -118,8 +118,8 @@
         "resultMatch": "These should match {{nickname}}'s taste beautifully 🍷",
         "resultChartTitle": "{{nickname}}'s taste × {{food}} match",
         "resultOutro": "Curious about another dish?",
-        "resetButton": "🔄 Ask about another dish",
-        "errorFetch": "Oops, something went wrong. Want to try again?",
+        "resetButton": "Ask about another dish",
+        "errorFetch": "Something went wrong. Want to try again?",
         "retryButton": "Retry",
         "backButton": "Back",
         "changeCuisine": "← Start over",
@@ -130,10 +130,10 @@
             "westernGeneric": "Other Western"
         },
         "upsell": {
-            "intro": "Oh — food pairing recommendations are a Premium feature 🍷",
+            "intro": "Food pairing recommendations are a Premium feature 🍷",
             "benefitsIntro": "Upgrade to Premium and unlock all of these:",
             "badge": "Drinky Premium",
-            "cardTitle": "Wine curation,\njust for you ✨",
+            "cardTitle": "Wine curation,\ntailored to your taste",
             "benefits": [
                 "Unlimited wine label scans",
                 "Wine list scan & recommendations",
@@ -205,7 +205,7 @@
         "chartLinkSubtitle": "View",
         "emptyFlavor": {
             "title": "No taste profile available.",
-            "desc": "Complete onboarding to see your taste analysis!"
+            "desc": "Complete the taste analysis or log more wines"
         },
         "historyTitle": "Tasting History",
         "historyCount": "{{count}}",
@@ -340,7 +340,7 @@
             "saving": "Saving..."
         },
         "alert": {
-            "success": "Success",
+            "success": "Done",
             "error": "Error",
             "editSuccess": "Wine info successfully updated.",
             "editFail": "Failed to update.",
@@ -435,7 +435,7 @@
             "title": "Delete Wine",
             "message": "Are you sure you want to delete this wine?",
             "confirm": "Delete",
-            "successTitle": "Success",
+            "successTitle": "Deleted",
             "successMsg": "Wine has been deleted.",
             "failMsg": "Failed to delete wine."
         },
@@ -517,7 +517,7 @@
             "fail": "Couldn't adjust the photo. Please try again."
         },
         "success": {
-            "saveTitle": "Success",
+            "saveTitle": "Saved",
             "saveMsg": "Tasting note has been saved."
         },
         "section": {
@@ -691,7 +691,7 @@
             "title": "Delete Tasting Note",
             "message": "Are you sure you want to\ndelete this tasting note?",
             "confirm": "Delete",
-            "successTitle": "Success",
+            "successTitle": "Deleted",
             "successMsg": "Tasting note has been deleted.",
             "failMsg": "Failed to delete.",
             "networkFailMsg": "Network error occurred."
@@ -786,7 +786,7 @@
         "alert": {
             "notice": "Notice",
             "needCheck": "Please check your nickname.",
-            "successTitle": "Success",
+            "successTitle": "Updated",
             "successMessage": "Profile has been updated.",
             "errorTitle": "Error",
             "errorMessage": "A problem occurred while updating the profile."
@@ -810,7 +810,7 @@
     },
     "recommendationList": {
         "header": "Recommended Styles",
-        "title": "Recommended for you, {{name}}!",
+        "title": "Styles that match your taste, {{name}}",
         "defaultName": "Member",
         "empty": "No recommended wine styles available.",
         "resetButton": "Get New Recommendations",
@@ -820,7 +820,7 @@
     },
     "recommendedWines": {
         "header": "Picked for Your Taste",
-        "intro": "Wines selected to match the taste profile from your onboarding."
+        "intro": "Wines picked to match the taste preferences you shared."
     },
     "onboarding": {
         "intro": {
@@ -1004,7 +1004,7 @@
         "analyzing1": "Picking styles that fit you",
         "analyzing2": "Your recommendations are ready",
         "header": "Taste Analysis",
-        "subtitle": "We found the perfect wine styles for you!",
+        "subtitle": "We found wine styles that fit your taste",
         "chartTitle": "{{nickname}}'s Palate Profile",
         "chartHelper": "Feeling unsure about wine?\nShow this to a sommelier or staff.",
         "rankTitle0": "Top Recommendation",
@@ -1134,7 +1134,7 @@
         },
         "commentPlaceholder": "Tell us more (optional)",
         "submit": "Send Feedback",
-        "thankYou": "Thanks for your feedback!"
+        "thankYou": "Thanks for the feedback. We'll use it to improve scanning."
     },
     "foodSelection": {
         "title": "What are you eating?",
@@ -1384,7 +1384,7 @@
             "step3": "Finding the best wine pairing..."
         },
         "heroText": "We recommend <1>{{wineSort}}</1> wine\nas the perfect match for <0>{{foodName}}</0>!",
-        "heroSubText": "We analyzed <0>{{nickname}}</0>'s taste and <1>{{foodName}}</1>'s flavors\nto prepare a fail-proof pairing.",
+        "heroSubText": "We analyzed <0>{{nickname}}</0>'s taste and <1>{{foodName}}</1>'s flavors\nto find the best-matching pairing.",
         "chartTitle": "Final Matching Result",
         "chartDescription": "If none of these varieties are available,\nshow this chart to a <0>sommelier or shop staff</0>.",
         "empty": "No recommendations found.",
@@ -1399,12 +1399,12 @@
         "questionTitle": "'s compatibility?",
         "scoreUnit": "pts",
         "defaultNickname": "Member",
-        "confirmButton": "Got it!",
+        "confirmButton": "Got it",
         "feedback": {
-            "excellent": "{{nickname}}, this wine might be your destiny! A 200% taste match — highly recommended!",
-            "good": "Not perfect, but a pretty solid choice. You might discover something new! 😉",
-            "average": "A bit far from your taste. But you might find unexpected charm — give it a try if you're curious! 🤔",
-            "poor": "Hmm... {{nickname}}, this seems a bit far from your taste. How about looking for a different wine? 😅"
+            "excellent": "An excellent match for your taste, {{nickname}} — confidently recommended.",
+            "good": "A pretty good match for your taste. It should be a solid choice.",
+            "average": "A bit different from your usual taste. A fine pick if you want to try a new style.",
+            "poor": "Quite far from your taste, {{nickname}}. We'd suggest a wine closer to your profile."
         },
         "attribute": {
             "acidity": "Acidity",
@@ -1481,7 +1481,7 @@
             "billedYearly": "{{amount}} billed yearly"
         },
         "subscribe": "Start Now",
-        "ctaMicrocopy": "Cancel anytime · No fees",
+        "ctaMicrocopy": "Cancel anytime · No hidden fees",
         "bestBadge": "MOST POPULAR",
         "monthlyEquivalent": "Only {{amount}}/mo",
         "renewalDisclosure": "Subscription automatically renews unless auto-renew is turned off at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage or cancel your subscription in your App Store account settings.",
@@ -1491,7 +1491,7 @@
         "promoToggle": "Have a promo code?",
         "promoPlaceholder": "Enter promo code",
         "promoApply": "Apply",
-        "promoSuccess": "Success",
+        "promoSuccess": "Applied",
         "promoSuccessMessage": "1 month of Premium added!",
         "promoError": "Error",
         "promoErrorGeneric": "Failed to apply promo code.",
@@ -1530,10 +1530,10 @@
         "subscriptionNoticeManage": "Manage Subscription",
         "subscriptionNoticeContinue": "Continue",
         "retention": {
-            "title": "Wait!\nAre you really leaving?",
-            "subtitle": "If you leave now,\nall your memories with Drinkig will disappear...",
+            "title": "Are you sure you want to leave?",
+            "subtitle": "Deleting your account permanently removes\nyour notes and taste data. This can't be undone.",
             "stay": "Maybe Later",
-            "leave": "I Want to Leave"
+            "leave": "Delete Account"
         },
         "reason": {
             "headerTitle": "Delete Account",
@@ -1613,7 +1613,7 @@
             "appleFailed": "Apple sign-in failed: {{reason}}",
             "appleUnknownError": "Unknown error",
             "kakaoCancelled": "Kakao sign-in was cancelled.",
-            "kakaoFailed": "Kakao sign-in failed. Please contact support.",
+            "kakaoFailed": "Kakao sign-in failed. Please try again later.",
             "emailAlreadyRegistered": "This email is already registered with a different sign-in method. Please sign in with the method you originally used."
         }
     },

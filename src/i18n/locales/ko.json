@@ -5,13 +5,13 @@
         "close": "닫기",
         "back": "뒤로",
         "retry": "다시 시도",
-        "sessionExpired": "세션이 만료되었어요. 다시 로그인해 주세요.",
+        "sessionExpired": "세션이 만료됐어요. 다시 로그인해주세요.",
         "error": {
             "loadFailed": "불러오지 못했어요",
-            "network": "네트워크 연결을 확인해 주세요.",
-            "timeout": "요청 시간이 초과되었어요. 잠시 후 다시 시도해 주세요.",
-            "server": "일시적인 서버 오류예요. 잠시 후 다시 시도해 주세요.",
-            "generic": "문제가 발생했어요. 잠시 후 다시 시도해 주세요."
+            "network": "네트워크 연결을 확인해주세요.",
+            "timeout": "요청 시간이 초과됐어요. 잠시 후 다시 시도해주세요.",
+            "server": "일시적인 서버 오류예요. 잠시 후 다시 시도해주세요.",
+            "generic": "문제가 발생했어요. 잠시 후 다시 시도해주세요."
         },
         "more": "더보기"
     },
@@ -77,27 +77,27 @@
             "title": "최근 리뷰"
         },
         "feed": {
-            "title": "요즘 다들 이렇게 마셔요"
+            "title": "요즘 다들 뭐 마셔요?"
         },
         "banner": {
             "noticeTag": "NOTICE",
             "noticeTitle": "새롭게 단장한 드링키지\n사용법 정리",
-            "noticeSub": "확 바뀐 기능들을 확인해보세요",
+            "noticeSub": "새로워진 기능을 확인해보세요",
             "eventTag": "EVENT",
             "eventTitle": "드링키지 런칭 기념\n광고주 무료 모집",
-            "eventSub": "1개월 무료로 광고해드려요!"
+            "eventSub": "1개월 무료로 게재해드려요"
         },
         "expiryBanner": {
-            "daysLeft": "프리미엄이 {{days}}일 후 만료됩니다",
-            "tomorrow": "프리미엄이 내일 만료됩니다",
-            "expired": "프리미엄이 만료되었습니다",
+            "daysLeft": "프리미엄이 {{days}}일 후 만료돼요",
+            "tomorrow": "프리미엄이 내일 만료돼요",
+            "expired": "프리미엄이 만료됐어요",
             "cta": "지금 연장하기"
         }
     },
     "sommelierChat": {
         "headerTitle": "소믈리에 드링키",
         "headerSubtitle": "온라인",
-        "empty": "추천 결과가 없어요 😢",
+        "empty": "추천 결과가 없어요",
         "greeting": "안녕하세요 {{nickname}}님! 오늘은 어떤 요리와 함께 와인을 드시나요?",
         "askSub": "어떤 종류로 할까요?",
         "askFood": "{{cuisine}} 중에서도 어떤 메뉴인가요?",
@@ -118,8 +118,8 @@
         "resultMatch": "{{nickname}}님 취향이랑 잘 어울릴 와인들이에요 🍷",
         "resultChartTitle": "{{nickname}}님의 취향 × {{food}} 매칭 그래프",
         "resultOutro": "다른 음식도 궁금하신가요?",
-        "resetButton": "🔄 다른 음식 물어보기",
-        "errorFetch": "아, 잠시 문제가 생겼어요. 다시 시도해볼까요?",
+        "resetButton": "다른 음식 물어보기",
+        "errorFetch": "잠시 문제가 생겼어요. 다시 시도해볼까요?",
         "retryButton": "다시 시도",
         "backButton": "뒤로",
         "changeCuisine": "← 처음으로",
@@ -130,10 +130,10 @@
             "westernGeneric": "기타 서양식"
         },
         "upsell": {
-            "intro": "앗, 음식 페어링 추천은 프리미엄 전용 기능이에요 🍷",
-            "benefitsIntro": "프리미엄으로 업그레이드하시면 이런 혜택을 누릴 수 있어요!",
+            "intro": "음식 페어링 추천은 프리미엄 전용 기능이에요 🍷",
+            "benefitsIntro": "프리미엄으로 업그레이드하시면 이런 혜택을 누릴 수 있어요",
             "badge": "Drinky Premium",
-            "cardTitle": "당신만을 위한\n와인 큐레이션 ✨",
+            "cardTitle": "내 취향에 맞춘\n와인 큐레이션",
             "benefits": [
                 "와인 라벨 스캔 무제한",
                 "와인 리스트 인식 및 추천",
@@ -147,20 +147,20 @@
     },
     "search": {
         "placeholder": "와인 이름, 종류 등으로 검색",
-        "emptyResult": "검색 결과가 없습니다.",
+        "emptyResult": "검색 결과가 없어요",
         "registerPrompt": "찾는 와인이 없나요?",
         "registerCta": "와인 등록 요청하기",
         "recentSearch": "최근 검색어",
-        "emptyRecentSearch": "최근 검색 기록이 없습니다.",
+        "emptyRecentSearch": "최근 검색 기록이 없어요",
         "recentWine": "최근 본 와인",
-        "emptyRecentWine": "최근 본 와인이 없습니다.",
+        "emptyRecentWine": "최근 본 와인이 없어요",
         "resultHeaderTitle": "'{{keyword}}' 검색 결과",
         "resultCount": "총 <0>{{count}}개</0>의 검색 결과",
         "compatibilityLabel": "나와의 궁합",
         "compatibilityScore": "{{score}}점",
         "compatibilityLoading": "분석 중...",
         "compatibilityNoProfile": "취향 프로필을 먼저 설정해주세요",
-        "compatibilityNoData": "궁합 데이터가 없습니다"
+        "compatibilityNoData": "궁합 데이터가 없어요"
     },
     "myWine": {
         "headerTitle": "내 와인 창고",
@@ -186,11 +186,11 @@
         "countText": "총 <0>{{count}}</0>병",
         "emptyType": {
             "title": "해당 종류의 와인이 없어요",
-            "desc": "다른 종류를 선택하거나\n새로운 와인을 기록해보세요!"
+            "desc": "다른 종류를 선택하거나\n새로운 와인을 기록해보세요"
         },
         "empty": {
             "title": "아직 기록된 와인이 없어요",
-            "desc": "우측 상단의 + 버튼을 눌러\n첫 번째 와인을 기록해보세요!",
+            "desc": "우측 상단의 + 버튼을 눌러\n첫 번째 와인을 기록해보세요",
             "addCta": "와인 기록하기"
         }
     },
@@ -204,14 +204,14 @@
         "chartLinkTitle": "추천 와인 스타일",
         "chartLinkSubtitle": "보러가기",
         "emptyFlavor": {
-            "title": "아직 분석된 취향 정보가 없습니다.",
-            "desc": "온보딩을 완료하거나 와인을 더 많이 즐겨보세요!"
+            "title": "아직 분석된 취향 정보가 없어요",
+            "desc": "취향 분석을 완료하거나 와인을 더 기록해보세요"
         },
         "historyTitle": "내가 마신 와인",
         "historyCount": "{{count}}병",
         "emptyNotes": {
-            "title": "아직 기록된 와인이 없습니다.",
-            "desc": "마신 와인을 기록해보세요!"
+            "title": "아직 기록된 와인이 없어요",
+            "desc": "마신 와인을 기록해보세요"
         },
         "sort": {
             "title": "정렬",
@@ -257,7 +257,7 @@
             "editRecord": "기록 수정하기"
         },
         "info": {
-            "empty": "등록된 상세 정보가 없습니다.",
+            "empty": "등록된 상세 정보가 없어요",
             "descTitle": "와인 설명",
             "noteTitle": "테이스팅 노트",
             "nose": "노즈",
@@ -272,12 +272,12 @@
             "purchaseShop": "구매처",
             "purchaseDate": "구매일",
             "myNote": "나의 테이스팅 노트",
-            "emptyNote": "테이스팅 노트가 기록되지 않았습니다."
+            "emptyNote": "아직 테이스팅 노트를 남기지 않았어요"
         },
         "price": {
-            "empty": "등록된 가격 정보가 없습니다.",
+            "empty": "등록된 가격 정보가 없어요",
             "statsTitle": "구매가 통계",
-            "infoNote": "삭제된 기록을 포함하여 유저들이 등록한 정보를 집계했습니다.",
+            "infoNote": "삭제된 기록을 포함해 유저들이 등록한 정보를 집계했어요.",
             "listTitle": "구매 내역 리스트",
             "headerDate": "구매일",
             "headerShop": "구매처",
@@ -288,7 +288,7 @@
             "highest": "최고"
         },
         "review": {
-            "empty": "아직 작성된 리뷰가 없습니다.",
+            "empty": "아직 작성된 리뷰가 없어요",
             "allVintage": "전체 리뷰",
             "vintageReview": "{{vintage}} 빈티지 리뷰",
             "more": "더보기",
@@ -312,7 +312,7 @@
             "title": "어떤 와인을 추가하시나요?",
             "subtitle": "와인 이름으로 검색해주세요",
             "placeholder": "와인 이름을 검색하세요",
-            "empty": "검색 결과가 없습니다.",
+            "empty": "검색 결과가 없어요",
             "registerPrompt": "찾는 와인이 없나요?",
             "registerButton": "직접 등록하기"
         },
@@ -340,20 +340,20 @@
             "saving": "저장 중..."
         },
         "alert": {
-            "success": "성공",
+            "success": "완료",
             "error": "오류",
-            "editSuccess": "와인 정보가 수정되었습니다.",
-            "editFail": "수정에 실패했습니다.",
-            "addSuccessPlural": "{{count}}병이 내 와인 창고에 추가되었습니다.",
-            "addSuccessPluralFail": "{{count}}병이 내 와인 창고에 추가되었습니다. ({{failCount}}건 실패)",
-            "addSuccessSingular": "내 와인 창고에 추가되었습니다.",
-            "addFail": "와인 등록에 실패했습니다.",
-            "networkError": "서버 통신 중 문제가 발생했습니다."
+            "editSuccess": "와인 정보를 수정했어요.",
+            "editFail": "수정에 실패했어요.",
+            "addSuccessPlural": "{{count}}병을 내 와인 창고에 추가했어요.",
+            "addSuccessPluralFail": "{{count}}병을 내 와인 창고에 추가했어요. ({{failCount}}건 실패)",
+            "addSuccessSingular": "내 와인 창고에 추가했어요.",
+            "addFail": "와인 등록에 실패했어요.",
+            "networkError": "서버 통신 중 문제가 발생했어요."
         }
     },
     "wineRegister": {
         "header": "와인 등록 신청",
-        "subtitle": "DB에 없는 와인을 직접 등록할 수 있어요.\n승인 후 정식 등록됩니다.",
+        "subtitle": "DB에 없는 와인을 직접 등록할 수 있어요.\n승인되면 정식 등록돼요.",
         "image": {
             "label": "와인 사진",
             "add": "사진 추가",
@@ -389,9 +389,9 @@
         },
         "alert": {
             "success": "등록 신청 완료",
-            "successMsg": "승인 전까지 임시 와인으로 사용할 수 있어요.\n거절 시 관련 데이터가 삭제됩니다.",
+            "successMsg": "승인 전까지 임시 와인으로 사용할 수 있어요.\n거절되면 관련 데이터는 삭제돼요.",
             "error": "오류",
-            "errorMsg": "등록 신청에 실패했습니다.",
+            "errorMsg": "등록 신청에 실패했어요.",
             "nameRequired": "와인명(한글)을 입력해주세요.",
             "sortRequired": "와인 종류를 선택해주세요.",
             "countryRequired": "국가를 입력해주세요."
@@ -428,16 +428,16 @@
         "header": "내 와인 상세",
         "error": {
             "fetchFailTitle": "오류",
-            "fetchFailMsg": "와인 정보를 불러오는데 실패했습니다.",
-            "networkFailMsg": "서버 통신 중 문제가 발생했습니다."
+            "fetchFailMsg": "와인 정보를 불러오지 못했어요.",
+            "networkFailMsg": "서버 통신 중 문제가 발생했어요."
         },
         "delete": {
             "title": "와인 삭제",
-            "message": "정말로 이 와인을 삭제하시겠습니까?",
+            "message": "이 와인을 정말 삭제할까요?",
             "confirm": "삭제",
-            "successTitle": "성공",
-            "successMsg": "와인이 삭제되었습니다.",
-            "failMsg": "와인 삭제에 실패했습니다."
+            "successTitle": "삭제 완료",
+            "successMsg": "와인을 삭제했어요.",
+            "failMsg": "와인 삭제에 실패했어요."
         },
         "section": {
             "purchaseInfo": "구매 정보",
@@ -461,7 +461,7 @@
         },
         "finishModal": {
             "title": "다 마셨어요",
-            "message": "테이스팅 노트를 작성하거나\n와인을 삭제할 수 있습니다.",
+            "message": "테이스팅 노트를 작성하거나\n와인을 삭제할 수 있어요.",
             "writeNote": "테이스팅 노트 작성",
             "delete": "와인 삭제하기"
         },
@@ -492,9 +492,9 @@
             "noColor": "와인 색상을 선택해주세요.",
             "noTaste": "모든 맛 평가 항목을 선택해주세요.",
             "noRating": "별점을 선택해주세요.",
-            "saveFail": "저장에 실패했습니다.",
-            "networkFail": "네트워크 오류가 발생했습니다.",
-            "authExpired": "인증 세션이 만료되었습니다. 로그아웃 후 다시 로그인해주세요.",
+            "saveFail": "저장에 실패했어요.",
+            "networkFail": "네트워크 오류가 발생했어요.",
+            "authExpired": "세션이 만료됐어요. 다시 로그인해주세요.",
             "photoUploadFail": "노트는 저장했지만 사진 업로드에 실패했어요. 노트 상세에서 다시 추가할 수 있어요."
         },
         "photo": {
@@ -504,7 +504,7 @@
             "gallery": "앨범에서 선택",
             "remove": "사진 삭제",
             "adjust": "조절",
-            "processing": "사진 준비 중…",
+            "processing": "사진 준비 중...",
             "maxReached": "사진은 최대 {{max}}장까지 첨부할 수 있어요.",
             "processFail": "사진을 불러오지 못했어요. 다른 사진을 선택해주세요.",
             "pageA11y": "사진 {{current}}/{{total}}",
@@ -517,8 +517,8 @@
             "fail": "사진 조절에 실패했어요. 다시 시도해주세요."
         },
         "success": {
-            "saveTitle": "성공",
-            "saveMsg": "테이스팅 노트가 저장되었습니다."
+            "saveTitle": "저장 완료",
+            "saveMsg": "테이스팅 노트를 저장했어요."
         },
         "section": {
             "wineSelection": "와인 선택",
@@ -535,7 +535,7 @@
         "wineSearch": {
             "changeButton": "와인 변경",
             "placeholder": "와인 이름을 검색하세요",
-            "noResult": "검색 결과가 없습니다."
+            "noResult": "검색 결과가 없어요"
         },
         "appearance": {
             "title": "외관을 기록하세요",
@@ -628,9 +628,9 @@
         },
         "draft": {
             "save": "임시저장",
-            "savedMsg": "임시 저장되었습니다",
+            "savedMsg": "임시 저장했어요",
             "restoreTitle": "임시 저장된 노트",
-            "restoreMsg": "이전에 작성 중이던 테이스팅 노트가 있습니다. 불러올까요?",
+            "restoreMsg": "이전에 작성 중이던 테이스팅 노트가 있어요. 불러올까요?",
             "restoreConfirm": "불러오기",
             "restoreCancel": "새로 작성",
             "closeTitle": "작성 중인 노트",
@@ -647,7 +647,7 @@
         "followingCount": "팔로잉",
         "follow": "팔로우",
         "following": "팔로잉",
-        "privateTitle": "비공개 계정입니다",
+        "privateTitle": "비공개 계정이에요",
         "privateDesc": "이 계정의 테이스팅 노트는 비공개예요.",
         "empty": "아직 작성한 노트가 없어요.",
         "blockAction": "차단하기",
@@ -684,17 +684,17 @@
         },
         "error": {
             "fetchFailTitle": "오류",
-            "fetchFailMsg": "테이스팅 노트를 불러올 수 없습니다.",
-            "networkFailMsg": "네트워크 오류가 발생했습니다."
+            "fetchFailMsg": "테이스팅 노트를 불러오지 못했어요.",
+            "networkFailMsg": "네트워크 오류가 발생했어요."
         },
         "delete": {
             "title": "테이스팅 노트 삭제",
-            "message": "정말로 이 테이스팅 노트를\n삭제하시겠습니까?",
+            "message": "이 테이스팅 노트를\n정말 삭제할까요?",
             "confirm": "삭제",
-            "successTitle": "성공",
-            "successMsg": "테이스팅 노트가 삭제되었습니다.",
-            "failMsg": "삭제에 실패했습니다.",
-            "networkFailMsg": "서버 통신 중 문제가 발생했습니다."
+            "successTitle": "삭제 완료",
+            "successMsg": "테이스팅 노트를 삭제했어요.",
+            "failMsg": "삭제에 실패했어요.",
+            "networkFailMsg": "서버 통신 중 문제가 발생했어요."
         },
         "info": {
             "vintage": "Vintage {{year}}",
@@ -704,7 +704,7 @@
             "nose": "Nose",
             "finish": "Finish",
             "review": "Review",
-            "emptyReview": "작성된 리뷰가 없습니다."
+            "emptyReview": "작성된 리뷰가 없어요"
         }
     },
     "setting": {
@@ -743,18 +743,18 @@
         },
         "alert": {
             "errorTitle": "오류",
-            "errorLink": "링크를 열 수 없습니다.",
-            "errorLinkOpen": "링크를 여는 중 문제가 발생했습니다.",
-            "mailErrorTitle": "메일 앱을 열 수 없습니다.",
-            "mailErrorMessage": "이메일 설정이 되어 있는지 확인해 주세요.\n(또는 drinkeasyy@gmail.com 으로 직접 보내주세요.)",
+            "errorLink": "링크를 열 수 없어요.",
+            "errorLinkOpen": "링크를 여는 중 문제가 발생했어요.",
+            "mailErrorTitle": "메일 앱을 열 수 없어요",
+            "mailErrorMessage": "이메일 설정이 되어 있는지 확인해주세요.\n(또는 drinkeasyy@gmail.com 으로 직접 보내주세요.)",
             "confirm": "확인",
             "logoutTitle": "로그아웃",
-            "logoutMessage": "정말로 로그아웃 하시겠습니까?",
+            "logoutMessage": "로그아웃할까요?",
             "logoutConfirm": "로그아웃",
             "deleteTitle": "회원 탈퇴",
-            "deleteMessage": "정말로 탈퇴하시겠습니까?\n모든 데이터가 삭제되며 복구할 수 없습니다.",
+            "deleteMessage": "정말 탈퇴할까요?\n모든 데이터가 삭제되고 복구할 수 없어요.",
             "deleteConfirm": "탈퇴하기",
-            "deleteError": "회원 탈퇴 처리에 실패했습니다. 잠시 후 다시 시도해주세요."
+            "deleteError": "회원 탈퇴 처리에 실패했어요. 잠시 후 다시 시도해주세요."
         },
         "mail": {
             "reportSubject": "[오류 제보] ",
@@ -776,8 +776,8 @@
             "errorLength": "닉네임은 2글자 이상이어야 해요.",
             "errorFormat": "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).",
             "errorDuplicate": "이미 사용 중인 닉네임이에요",
-            "errorCheck": "닉네임 확인 중 오류가 발생했습니다.",
-            "success": "사용 가능한 닉네임입니다."
+            "errorCheck": "닉네임 확인 중 오류가 발생했어요.",
+            "success": "사용할 수 있는 닉네임이에요."
         },
         "button": {
             "save": "저장하기",
@@ -786,18 +786,18 @@
         "alert": {
             "notice": "알림",
             "needCheck": "닉네임 확인이 필요해요.",
-            "successTitle": "성공",
-            "successMessage": "프로필이 수정되었습니다.",
+            "successTitle": "수정 완료",
+            "successMessage": "프로필을 수정했어요.",
             "errorTitle": "오류",
-            "errorMessage": "프로필 수정 중 문제가 발생했습니다."
+            "errorMessage": "프로필 수정 중 문제가 발생했어요."
         }
     },
     "wishlist": {
         "header": "위시리스트",
         "countPrefix": "총 ",
         "countSuffix": "개의 와인",
-        "emptyTitle": "위시리스트가 비어있습니다.",
-        "emptyDesc": "마음에 드는 와인을 찜해보세요!",
+        "emptyTitle": "위시리스트가 비어 있어요",
+        "emptyDesc": "마음에 드는 와인을 찜해보세요",
         "exploreCta": "와인 검색하러 가기"
     },
     "wineType": {
@@ -810,9 +810,9 @@
     },
     "recommendationList": {
         "header": "추천 와인 스타일",
-        "title": "{{name}}님에게 추천드려요!",
+        "title": "{{name}}님 취향에 맞는 스타일이에요",
         "defaultName": "회원",
-        "empty": "추천된 와인 스타일이 없습니다.",
+        "empty": "추천된 와인 스타일이 없어요",
         "resetButton": "취향 추천 다시 받기",
         "cooldown": "{{days}}일 {{hours}}시간 후 다시 받을 수 있어요",
         "cooldownHours": "{{hours}}시간 후 다시 받을 수 있어요",
@@ -820,7 +820,7 @@
     },
     "recommendedWines": {
         "header": "내 취향 추천 와인",
-        "intro": "온보딩에서 알려주신 맛 취향에 맞춰 고른 와인이에요."
+        "intro": "처음에 알려주신 맛 취향에 맞춰 고른 와인이에요."
     },
     "onboarding": {
         "intro": {
@@ -832,7 +832,7 @@
             "photoBtn": "사진 선택",
             "nicknameLabel": "닉네임",
             "nicknamePlaceholder": "닉네임을 입력하세요",
-            "nicknameAvailable": "사용 가능한 닉네임입니다.",
+            "nicknameAvailable": "사용할 수 있는 닉네임이에요.",
             "nicknameHelper": "2글자 이상 입력해주세요."
         },
         "newbieCheck": {
@@ -976,11 +976,11 @@
             "minLength": "닉네임은 2글자 이상이어야 해요.",
             "format": "올바른 닉네임 형식이 아니에요 (자음/모음 단독 사용 불가).",
             "duplicate": "이미 사용 중인 닉네임이에요",
-            "checkFail": "닉네임 확인 중 오류가 발생했습니다."
+            "checkFail": "닉네임 확인 중 오류가 발생했어요."
         },
         "error": {
             "title": "오류",
-            "saveMessage": "정보 저장 중 문제가 발생했습니다.",
+            "saveMessage": "정보 저장 중 문제가 발생했어요.",
             "imageUploadSkipped": "프로필 사진 등록에 실패했어요. 나중에 프로필 수정에서 다시 등록할 수 있어요."
         },
         "resume": {
@@ -1004,7 +1004,7 @@
         "analyzing1": "딱 맞는 스타일을 고르고 있어요",
         "analyzing2": "추천 결과가 준비됐어요",
         "header": "취향 분석 결과",
-        "subtitle": "회원님께 딱 맞는 와인 스타일을 찾았어요!",
+        "subtitle": "취향에 딱 맞는 와인 스타일을 찾았어요",
         "chartTitle": "{{nickname}}님의 입맛 취향",
         "chartHelper": "와인 고를 때 고민된다면\n소믈리에나 직원에게 보여주세요",
         "rankTitle0": "가장 추천하는 스타일",
@@ -1016,24 +1016,24 @@
         "buttonReset": "확인"
     },
     "camera": {
-        "permissionRequired": "카메라 접근 권한이 필요합니다",
+        "permissionRequired": "카메라 접근 권한이 필요해요",
         "permissionAllow": "계속",
         "permissionAlertTitle": "카메라 권한 필요",
-        "permissionAlertMessage": "설정에서 카메라 접근을 허용해 주세요.",
+        "permissionAlertMessage": "설정에서 카메라 접근을 허용해주세요.",
         "permissionOpenSettings": "설정에서 허용하기",
         "close": "닫기",
         "scanTypeLabel": "와인 라벨",
         "scanTypeList": "와인 리스트",
         "guideLabel": "와인 라벨을 프레임에 맞춰주세요",
         "guideList": "와인 리스트를 프레임에 맞춰주세요",
-        "captureError": "사진 촬영 중 오류가 발생했습니다.",
+        "captureError": "사진 촬영 중 오류가 발생했어요.",
         "errorTitle": "오류",
         "simulatorTitle": "시뮬레이터",
         "simulatorMessage": "촬영 모드: {{mode}}\n실제 기기에서 테스트해 주세요.",
         "simulatorPreview": "시뮬레이터 미리보기",
         "gallery": "갤러리",
         "limitAlertTitle": "일일 스캔 횟수 초과",
-        "limitAlertMessage": "하루 {{limit}}회까지 사용할 수 있어요.\n내일 다시 시도해 주세요.",
+        "limitAlertMessage": "하루 {{limit}}회까지 사용할 수 있어요.\n내일 다시 시도해주세요.",
         "resetTimer": "{{hours}}시간 {{minutes}}분 후 초기화",
         "listPremiumOnly": "와인 리스트 스캔은 프리미엄 전용이에요",
         "premiumBadge": "PREMIUM",
@@ -1051,17 +1051,17 @@
             "ready": "분석 결과가 준비됐어요"
         },
         "error": {
-            "limitReached": "오늘 스캔 횟수를 모두 사용했습니다.\n내일 다시 시도해 주세요.",
+            "limitReached": "오늘 스캔 횟수를 모두 사용했어요.\n내일 다시 시도해주세요.",
             "quotaNotConsumed": "실패한 스캔은 횟수가 차감되지 않아요",
-            "tooLarge": "이미지 용량이 너무 큽니다.\n잠시 후 다시 시도해 주세요.",
-            "unsupportedFormat": "지원하지 않는 사진 형식입니다.\nJPEG 형식으로 변환 후 다시 시도해 주세요.",
-            "recognition": "메뉴판을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",
-            "recognitionLabel": "와인 라벨을 인식하지 못했습니다.\n사진을 더 또렷하게 찍어 다시 시도해 주세요.",
-            "unknown": "알 수 없는 오류가 발생했습니다.",
+            "tooLarge": "이미지 용량이 너무 커요.\n잠시 후 다시 시도해주세요.",
+            "unsupportedFormat": "지원하지 않는 사진 형식이에요.\nJPEG 형식으로 변환 후 다시 시도해주세요.",
+            "recognition": "메뉴판을 인식하지 못했어요.\n사진을 더 또렷하게 찍어 다시 시도해주세요.",
+            "recognitionLabel": "와인 라벨을 인식하지 못했어요.\n사진을 더 또렷하게 찍어 다시 시도해주세요.",
+            "unknown": "알 수 없는 오류가 발생했어요.",
             "rescan": "다시 스캔하기",
             "goBack": "돌아가기"
         },
-        "bestBadge": "취향 저격",
+        "bestBadge": "가장 잘 맞아요",
         "resultCountHighlight": "{{count}}개",
         "resultCountSuffix": "의 와인을 찾았어요",
         "empty": "DB에서 일치하는 와인을 찾지 못했어요",
@@ -1073,7 +1073,7 @@
         "wishlist": {
             "added": "위시리스트에 추가했어요",
             "removed": "위시리스트에서 제거했어요",
-            "failed": "위시리스트 변경에 실패했어요. 다시 시도해 주세요."
+            "failed": "위시리스트 변경에 실패했어요. 다시 시도해주세요."
         },
         "sortLabels": {
             "RED": "레드",
@@ -1101,8 +1101,8 @@
         "request": {
             "cta": "이 와인 등록 요청하기",
             "done": "등록 요청 완료",
-            "success": "등록 요청을 보냈어요. 검토 후 추가할게요!",
-            "failed": "등록 요청에 실패했어요. 다시 시도해 주세요."
+            "success": "등록 요청을 보냈어요. 검토 후 추가할게요.",
+            "failed": "등록 요청에 실패했어요. 다시 시도해주세요."
         },
         "group": {
             "great": "잘 맞아요",
@@ -1134,7 +1134,7 @@
         },
         "commentPlaceholder": "자세한 내용을 알려주세요 (선택)",
         "submit": "의견 보내기",
-        "thankYou": "소중한 의견 감사합니다!"
+        "thankYou": "의견 감사해요. 스캔 개선에 반영할게요"
     },
     "foodSelection": {
         "title": "어떤 음식과 드시나요?",
@@ -1384,10 +1384,10 @@
             "step3": "가장 잘 어울리는 와인을 찾는 중..."
         },
         "heroText": "<0>{{foodName}}</0>{{particle}} 가장 잘 어울리는\n<1>{{wineSort}}</1> 와인을 추천해 드려요!",
-        "heroSubText": "<0>{{nickname}}</0>님의 취향과 <1>{{foodName}}</1>의 맛을 분석해\n실패 없는 페어링을 준비했어요.",
+        "heroSubText": "<0>{{nickname}}</0>님의 취향과 <1>{{foodName}}</1>의 맛을 분석해\n가장 잘 어울리는 조합을 골랐어요.",
         "chartTitle": "최종 매칭 결과 그래프",
         "chartDescription": "추천된 품종이 없다면, 이 그래프를\n<0>소믈리에나 샵 직원</0>에게 보여주세요.",
-        "empty": "추천 결과가 없습니다.",
+        "empty": "추천 결과가 없어요",
         "backButton": "홈으로 돌아가기",
         "defaultWine": "와인",
         "defaultFood": "음식",
@@ -1399,12 +1399,12 @@
         "questionTitle": "님과의 궁합은?",
         "scoreUnit": "점",
         "defaultNickname": "회원",
-        "confirmButton": "확인했어요!",
+        "confirmButton": "확인했어요",
         "feedback": {
-            "excellent": "{{nickname}}님, 이 와인은 운명일지도 몰라요. 취향저격 확률 200% 강력 추천합니다!",
-            "good": "완벽하진 않지만 꽤 괜찮은 선택이 될 거예요. 새로운 발견이 될 수도? 😉",
-            "average": "취향과는 조금 거리가 있어요. 하지만 의외의 매력을 발견할 수도 있으니 궁금하다면 도전! 🤔",
-            "poor": "음... {{nickname}}님의 취향과는 거리가 좀 있어 보여요. 다른 와인을 찾아보시는 건 어떨까요? 😅"
+            "excellent": "{{nickname}}님 취향과 아주 잘 맞아요. 자신 있게 추천해요.",
+            "good": "취향과 꽤 잘 맞는 편이에요. 좋은 선택이 될 거예요.",
+            "average": "취향과는 조금 거리가 있어요. 새로운 스타일을 시도해보고 싶다면 괜찮은 선택이에요.",
+            "poor": "{{nickname}}님 취향과는 거리가 있어요. 비슷한 조건의 다른 와인을 추천해요."
         },
         "attribute": {
             "acidity": "산미",
@@ -1447,7 +1447,7 @@
         },
         "error": {
             "title": "오류",
-            "message": "취향 저장 중 문제가 발생했습니다."
+            "message": "취향 저장 중 문제가 발생했어요."
         },
         "button": {
             "next": "다음",
@@ -1481,7 +1481,7 @@
             "billedYearly": "연 {{amount}} 청구"
         },
         "subscribe": "지금 시작하기",
-        "ctaMicrocopy": "언제든 취소 가능 · 위약금 없음",
+        "ctaMicrocopy": "언제든 해지 가능 · 추가 비용 없음",
         "bestBadge": "가장 인기",
         "monthlyEquivalent": "한 달에 {{amount}}",
         "renewalDisclosure": "구독은 현재 기간 종료 최소 24시간 전에 자동 갱신을 해제하지 않으면 자동으로 갱신됩니다. 현재 기간 종료 24시간 이내에 갱신 요금이 청구됩니다. 구독은 App Store 계정 설정에서 관리하거나 해지할 수 있습니다.",
@@ -1491,22 +1491,22 @@
         "promoToggle": "프로모션 코드가 있으신가요?",
         "promoPlaceholder": "프로모션 코드 입력",
         "promoApply": "적용",
-        "promoSuccess": "성공",
-        "promoSuccessMessage": "1개월 프리미엄이 적용되었습니다!",
+        "promoSuccess": "적용 완료",
+        "promoSuccessMessage": "1개월 프리미엄이 적용됐어요!",
         "promoError": "오류",
-        "promoErrorGeneric": "프로모션 코드 적용에 실패했습니다.",
-        "subscribeSuccess": "프리미엄 회원이 되었습니다!",
-        "verifyFailed": "결제 확인에 실패했습니다. 다시 시도해주세요.",
-        "purchaseFailed": "결제에 실패했습니다. 다시 시도해주세요.",
-        "productNotFound": "상품을 불러올 수 없습니다. 나중에 다시 시도해주세요.",
-        "priceLoadFailed": "가격 정보를 불러오지 못했어요.\n네트워크 연결을 확인해 주세요.",
+        "promoErrorGeneric": "프로모션 코드 적용에 실패했어요.",
+        "subscribeSuccess": "프리미엄 구독이 시작됐어요!",
+        "verifyFailed": "결제 확인에 실패했어요. 다시 시도해주세요.",
+        "purchaseFailed": "결제에 실패했어요. 다시 시도해주세요.",
+        "productNotFound": "상품을 불러오지 못했어요. 나중에 다시 시도해주세요.",
+        "priceLoadFailed": "가격 정보를 불러오지 못했어요.\n네트워크 연결을 확인해주세요.",
         "priceLoadRetry": "다시 시도",
         "restoreEmpty": "구매 내역 없음",
-        "restoreEmptyMessage": "이 계정에 이전 구독 내역이 없습니다.",
-        "restoreSuccessMessage": "구독이 복원되었습니다!",
-        "restoreFailed": "구매 복원에 실패했습니다. 다시 시도해주세요.",
+        "restoreEmptyMessage": "이 계정에 이전 구독 내역이 없어요.",
+        "restoreSuccessMessage": "구독을 복원했어요!",
+        "restoreFailed": "구매 복원에 실패했어요. 다시 시도해주세요.",
         "premiumRequired": "프리미엄 기능",
-        "premiumRequiredMessage": "이 기능은 프리미엄 회원만 이용할 수 있습니다.",
+        "premiumRequiredMessage": "이 기능은 프리미엄 회원만 이용할 수 있어요.",
         "upgrade": "업그레이드",
         "illust": {
             "chatQuestion": "스테이크에 어울리는"
@@ -1526,18 +1526,18 @@
     },
     "withdraw": {
         "subscriptionNoticeTitle": "구독 해지 안내",
-        "subscriptionNoticeMessage": "계정을 삭제해도 App Store 구독은 자동으로 해지되지 않아요.\n\n과금이 계속되지 않도록 App Store에서 구독을 먼저 해지해 주세요.",
+        "subscriptionNoticeMessage": "계정을 삭제해도 App Store 구독은 자동으로 해지되지 않아요.\n\n과금이 계속되지 않도록 App Store에서 구독을 먼저 해지해주세요.",
         "subscriptionNoticeManage": "구독 관리 열기",
         "subscriptionNoticeContinue": "계속 진행",
         "retention": {
-            "title": "잠시만요!\n정말 떠나시나요?",
-            "subtitle": "지금 탈퇴하시면\n드링키지와 함께한 추억이 모두 사라져요...",
+            "title": "정말 탈퇴하시겠어요?",
+            "subtitle": "탈퇴하면 기록한 노트와 취향 데이터가\n모두 삭제되고 복구할 수 없어요.",
             "stay": "다음에 하기",
-            "leave": "탈퇴할래요"
+            "leave": "탈퇴하기"
         },
         "reason": {
             "headerTitle": "회원 탈퇴",
-            "question": "떠나시는 이유를 알려주세요.\n더 나은 서비스를 만드는 데 도움이 됩니다.",
+            "question": "떠나시는 이유를 알려주세요.\n더 나은 서비스를 만드는 데 도움이 돼요.",
             "multiSelectHint": "(중복 선택 가능)",
             "reasons": {
                 "notOften": "앱을 자주 사용하지 않아요",
@@ -1551,10 +1551,10 @@
             "withdrawButton": "탈퇴하기",
             "toastEnterOtherReason": "기타 사유를 입력해주세요.",
             "confirmTitle": "회원 탈퇴",
-            "confirmMessage": "정말 탈퇴하시겠습니까?\n삭제된 계정은 복구할 수 없습니다.",
+            "confirmMessage": "정말 탈퇴할까요?\n삭제된 계정은 복구할 수 없어요.",
             "confirmButton": "탈퇴하기",
             "toastWithdrawFailed": "회원 탈퇴 실패: {{message}}",
-            "toastWithdrawError": "회원 탈퇴 처리 중 문제가 발생했습니다.",
+            "toastWithdrawError": "회원 탈퇴 처리 중 문제가 발생했어요.",
             "toastAppleFailed": "Apple 인증/탈퇴 실패: {{message}}",
             "unknownError": "알 수 없는 오류"
         }
@@ -1567,7 +1567,7 @@
         "expiresAt": "{{date}}까지",
         "promoApplied": "프로모션 적용",
         "enterPromo": "프로모션 코드 입력",
-        "promoDescription": "코드 1개당 1개월이 현재 구독 만료일에 추가됩니다.",
+        "promoDescription": "코드 1개당 1개월이 현재 구독 만료일에 추가돼요.",
         "cancel": "취소"
     },
     "premiumWelcome": {
@@ -1612,9 +1612,9 @@
         "toast": {
             "appleFailed": "Apple 로그인 실패: {{reason}}",
             "appleUnknownError": "알 수 없는 오류",
-            "kakaoCancelled": "카카오 로그인이 취소되었습니다.",
-            "kakaoFailed": "카카오 로그인에 실패했습니다. 관리자에게 문의하세요.",
-            "emailAlreadyRegistered": "이미 다른 방식으로 가입된 이메일이에요. 처음 가입한 로그인 방식으로 로그인해 주세요."
+            "kakaoCancelled": "카카오 로그인이 취소됐어요.",
+            "kakaoFailed": "카카오 로그인에 실패했어요. 잠시 후 다시 시도해주세요.",
+            "emailAlreadyRegistered": "이미 다른 방식으로 가입된 이메일이에요. 처음 가입한 로그인 방식으로 로그인해주세요."
         }
     },
     "notification": {
@@ -1625,11 +1625,11 @@
     "contentReport": {
         "reviewTitle": "리뷰 신고",
         "priceTitle": "가격 정보 신고",
-        "promptMessage": "신고 사유를 입력해 주세요. (선택)",
+        "promptMessage": "신고 사유를 입력해주세요. (선택)",
         "confirmMessage": "이 내용을 신고할까요?",
         "cancel": "취소",
         "submit": "신고하기",
         "success": "신고가 접수되었어요. 검토 후 조치할게요.",
-        "error": "신고 접수에 실패했어요. 잠시 후 다시 시도해 주세요."
+        "error": "신고 접수에 실패했어요. 잠시 후 다시 시도해주세요."
     }
 }
