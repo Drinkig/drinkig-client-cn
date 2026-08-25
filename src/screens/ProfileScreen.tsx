@@ -44,7 +44,8 @@ const ProfileScreen = () => {
 
   const [sortType, setSortType] = React.useState("latest");
   const [isSortModalVisible, setIsSortModalVisible] = React.useState(false);
-  const [viewMode, setViewMode] = React.useState<"list" | "card">("list");
+  // 기본은 피드(3열 그리드) 형태 — 리스트는 토글로 전환
+  const [viewMode, setViewMode] = React.useState<"list" | "card">("card");
   // 취향 차트는 공간을 많이 차지해 기본 접힘
   const [isTasteExpanded, setIsTasteExpanded] = React.useState(false);
 
