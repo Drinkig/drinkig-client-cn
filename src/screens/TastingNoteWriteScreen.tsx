@@ -36,6 +36,9 @@ import {
 import {
   NOTE_PHOTO_GRID_ASPECT,
   NOTE_PHOTO_MAX_COUNT,
+  NotePhoto,
+  NotePhotoRegion,
+  notePhotoDisplayUri,
   prepareNotePhoto,
 } from "../utils/notePhoto";
 import { rankWineUserDTOByRelevance } from "../utils/searchRelevance";
@@ -188,8 +191,12 @@ export default function TastingNoteWriteScreen() {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
 
-  // 첨부 사진(로컬 JPEG URI, 최대 NOTE_PHOTO_MAX_COUNT장)
-  const [photos, setPhotos] = useState<string[]>([]);
+  // 첨부 사진(원본 JPEG + 선택적 크롭, 최대 NOTE_PHOTO_MAX_COUNT장)
+  const [photos, setPhotos] = useState<NotePhoto[]>([]);
+  // 캐시 정리 등으로 파일이 사라져 렌더에 실패한 사진 URI들 — 깨짐 표시 + 업로드 제외
+  const [brokenPhotoUris, setBrokenPhotoUris] = useState<Set<string>>(
+    () => new Set()
+  );
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const [photoPagerWidth, setPhotoPagerWidth] = useState(0);
   const [photoPage, setPhotoPage] = useState(0);
@@ -364,6 +371,17 @@ export default function TastingNoteWriteScreen() {
   // 하드웨어 백/스와이프 백/헤더 백 모두 여기서 가로채 확인 다이얼로그를 띄운다
   const confirmExit = useCallback(
     (proceed: () => void) => {
+      // 제출 중에는 노트가 이미 서버에 생성되는 중 — "저장 안 하고 나가기"가
+      // 거짓말이 되므로 이탈을 잠시 막고 진행 중임을 알린다
+      if (isSubmitting) {
+        showAlert({
+          title: t("tastingNoteWrite.draft.submittingTitle"),
+          message: t("tastingNoteWrite.draft.submittingMsg"),
+          singleButton: true,
+          confirmText: t("common.confirm"),
+        });
+        return;
+      }
       showAlert({
         title: t("tastingNoteWrite.draft.closeTitle"),
         message: t("tastingNoteWrite.draft.closeMsg"),
@@ -380,7 +398,7 @@ export default function TastingNoteWriteScreen() {
         },
       });
     },
-    [getCurrentDraft, params.wineId, showAlert, t]
+    [getCurrentDraft, isSubmitting, params.wineId, showAlert, t]
   );
 
   const skipGuardRef = useExitGuard(draftLoaded && hasAnyData(), confirmExit);
@@ -417,15 +435,22 @@ export default function TastingNoteWriteScreen() {
     const remaining = NOTE_PHOTO_MAX_COUNT - photos.length;
     const picked = assets.slice(0, remaining);
     if (picked.length === 0) return;
+    // 잔여 슬롯보다 많이 골랐으면 일부만 첨부된다는 걸 미리 알려준다
+    if (picked.length < assets.length) {
+      showToast(
+        t("tastingNoteWrite.photo.maxReached", { max: NOTE_PHOTO_MAX_COUNT }),
+        { type: "info" }
+      );
+    }
 
     setIsProcessingPhoto(true);
     try {
-      const prepared: string[] = [];
+      const prepared: NotePhoto[] = [];
       for (const asset of picked) {
         if (!asset.uri) continue;
-        prepared.push(
-          await prepareNotePhoto(asset.uri, asset.width, asset.height)
-        );
+        prepared.push({
+          uri: await prepareNotePhoto(asset.uri, asset.width, asset.height),
+        });
       }
       if (prepared.length > 0) {
         setPhotos((prev) =>
@@ -450,7 +475,12 @@ export default function TastingNoteWriteScreen() {
     }
 
     const openCamera = async () => {
-      const result = await launchCamera({ mediaType: "photo" });
+      // 촬영본을 갤러리에도 남긴다 — 업로드가 실패하면 임시 폴더 원본은
+      // 재첨부할 방법이 없어 사진이 영구 유실된다
+      const result = await launchCamera({
+        mediaType: "photo",
+        saveToPhotos: true,
+      });
       if (!result.didCancel && !result.errorCode && result.assets) {
         await addPickedPhotos(result.assets);
       }
@@ -491,13 +521,24 @@ export default function TastingNoteWriteScreen() {
   };
 
   const handleRemovePhoto = (index: number) => {
+    const removed = photos[index];
     setPhotos((prev) => prev.filter((_, i) => i !== index));
+    if (removed && brokenPhotoUris.has(removed.uri)) {
+      setBrokenPhotoUris((prev) => {
+        const next = new Set(prev);
+        next.delete(removed.uri);
+        return next;
+      });
+    }
   };
 
-  const handleApplyCrop = (croppedUri: string) => {
+  // 비파괴 크롭 — 원본은 유지하고 크롭본/영역만 갈아끼워 언제든 재조정 가능
+  const handleApplyCrop = (croppedUri: string, region: NotePhotoRegion) => {
     if (cropIndex === null) return;
     setPhotos((prev) =>
-      prev.map((uri, i) => (i === cropIndex ? croppedUri : uri))
+      prev.map((photo, i) =>
+        i === cropIndex ? { ...photo, croppedUri, cropRegion: region } : photo
+      )
     );
     setCropIndex(null);
   };
@@ -514,10 +555,10 @@ export default function TastingNoteWriteScreen() {
   }, [photos.length, isProcessingPhoto]);
 
   const photoPages: PhotoPage[] = [
-    ...photos.map((uri, index) => ({
-      key: `${uri}-${index}`,
+    ...photos.map((photo, index) => ({
+      key: `${photo.uri}-${index}`,
       type: "photo" as const,
-      uri,
+      uri: notePhotoDisplayUri(photo),
       index,
     })),
     ...(isProcessingPhoto
@@ -633,22 +674,29 @@ export default function TastingNoteWriteScreen() {
         // 유효하므로 이탈은 그대로 진행하고 안내만 다르게 띄운다(상세에서 재첨부 가능).
         let photoUploadFailed = false;
         if (photos.length > 0) {
+          // 파일이 사라져 렌더가 깨진 사진은 업로드에서 제외 — 한 장 때문에
+          // 전체 multipart가 실패하는 것을 막고, 안내는 실패 토스트로 대신한다
+          const uploadUris = photos
+            .filter((photo) => !brokenPhotoUris.has(photo.uri))
+            .map(notePhotoDisplayUri);
+          photoUploadFailed = uploadUris.length < photos.length;
           const noteId =
             typeof response.result === "number"
               ? response.result
               : parseInt(String(response.result), 10);
-          if (Number.isFinite(noteId)) {
+          if (Number.isFinite(noteId) && uploadUris.length > 0) {
             try {
               const uploadResponse = await uploadTastingNoteImages(
                 noteId,
-                photos
+                uploadUris
               );
-              photoUploadFailed = !uploadResponse.isSuccess;
+              photoUploadFailed =
+                photoUploadFailed || !uploadResponse.isSuccess;
             } catch (uploadError) {
               console.error("Note photo upload failed:", uploadError);
               photoUploadFailed = true;
             }
-          } else {
+          } else if (!Number.isFinite(noteId)) {
             // 구 서버는 noteId를 반환하지 않는다 — 업로드 불가로 처리
             photoUploadFailed = true;
           }
@@ -1066,14 +1114,47 @@ export default function TastingNoteWriteScreen() {
                   )
                 }
                 renderItem={({ item }) => (
-                  <View style={{ width: photoPagerWidth }}>
+                  <View
+                    style={{ width: photoPagerWidth }}
+                    accessible={item.type === "photo"}
+                    accessibilityLabel={
+                      item.type === "photo"
+                        ? t("tastingNoteWrite.photo.pageA11y", {
+                            current: item.index + 1,
+                            total: photos.length,
+                          })
+                        : undefined
+                    }
+                  >
                     {item.type === "photo" ? (
                       <>
                         <Image
                           source={{ uri: item.uri }}
                           style={styles.photoPageImage}
                           resizeMode="cover"
+                          onError={() => {
+                            const original = photos[item.index]?.uri;
+                            if (!original) return;
+                            setBrokenPhotoUris((prev) =>
+                              new Set(prev).add(original)
+                            );
+                          }}
                         />
+                        {brokenPhotoUris.has(photos[item.index]?.uri ?? "") && (
+                          <View
+                            style={styles.photoBrokenOverlay}
+                            pointerEvents="none"
+                          >
+                            <Icon
+                              name="image-outline"
+                              size={24}
+                              color={colors.textTertiary}
+                            />
+                            <Text style={styles.photoBrokenText}>
+                              {t("tastingNoteWrite.photo.broken")}
+                            </Text>
+                          </View>
+                        )}
                         <TouchableOpacity
                           style={styles.photoRemoveBadge}
                           onPress={() => handleRemovePhoto(item.index)}
@@ -1285,7 +1366,10 @@ export default function TastingNoteWriteScreen() {
 
       <PhotoCropModal
         visible={cropIndex !== null}
-        uri={cropIndex !== null ? photos[cropIndex] ?? null : null}
+        uri={cropIndex !== null ? photos[cropIndex]?.uri ?? null : null}
+        initialRegion={
+          cropIndex !== null ? photos[cropIndex]?.cropRegion ?? null : null
+        }
         onClose={() => setCropIndex(null)}
         onApply={handleApplyCrop}
       />
@@ -1597,7 +1681,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: surfaces.scrim,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1611,7 +1695,22 @@ const styles = StyleSheet.create({
     height: 26,
     paddingHorizontal: spacing.md,
     borderRadius: 13,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: surfaces.scrim,
+  },
+  photoBrokenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: radius.sm,
+    backgroundColor: surfaces.card,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xl,
+  },
+  photoBrokenText: {
+    color: colors.textTertiary,
+    fontSize: 12,
+    textAlign: "center",
+    lineHeight: 17,
   },
   photoAdjustText: {
     color: colors.white,

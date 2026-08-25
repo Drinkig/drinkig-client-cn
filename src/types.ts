@@ -14,12 +14,10 @@ export type RootStackParamList = {
   ProfileEdit: undefined;
   Setting: undefined;
   WineAdd: { wine?: any } | undefined;
-  Notification: undefined;
   Wishlist: undefined;
-  Search: { returnScreen?: keyof RootStackParamList } | undefined;
+  Search: undefined;
   SearchResult: {
     searchKeyword: string;
-    returnScreen?: keyof RootStackParamList;
   };
   WineDetail: { wine: WineDBItem | MyWine };
   MyWineDetail: { wineId: number; wineImageUrl?: string };

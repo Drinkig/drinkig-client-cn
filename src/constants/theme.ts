@@ -39,7 +39,22 @@ export const surfaces = {
   // 맞춰 이미지와 배경이 이어져 보이게 한다. 폴백 아이콘은 onImageWell 사용.
   imageWell: "#FFFFFF",
   onImageWell: "#9C9BA1", // fallback icons/placeholders on the white well
+  // 사진 위 다크 오버레이(평점 뱃지·사진 카운트 필 등) 공용 스크림.
+  // 화면마다 rgba 리터럴이 0.55/0.6으로 갈라지던 것을 단일 토큰으로 통일.
+  scrim: "rgba(0,0,0,0.55)",
+  onScrimHairline: "rgba(255,255,255,0.2)", // 스크림 뱃지 위 1px 보더
 } as const;
+
+// hex 색상에 알파를 입힌 rgba 문자열을 만든다. 배경/토큰 색의 반투명 변형이
+// 필요한 곳(그라디언트 스크림 등)에서 리터럴 복제 대신 사용해, 원본 토큰이
+// 바뀌어도 함께 따라가게 한다.
+export const withAlpha = (hex: string, alpha: number): string => {
+  const raw = hex.replace("#", "");
+  const r = parseInt(raw.slice(0, 2), 16);
+  const g = parseInt(raw.slice(2, 4), 16);
+  const b = parseInt(raw.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+};
 
 // Vivid violet accent with explicit emphasis tiers. The old #B98CE6 lavender
 // read washed-out and flat, so everything looked equally (un)important. These

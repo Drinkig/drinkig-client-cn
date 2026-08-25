@@ -7,6 +7,28 @@ import PhotoManipulator, { MimeType } from "react-native-photo-manipulator";
 export const NOTE_PHOTO_MAX_COUNT = 5;
 // 마이페이지 그리드/피드 카드가 3:4(세로) cover로 렌더링되므로 크롭 프레임도 동일 비율.
 export const NOTE_PHOTO_GRID_ASPECT = 3 / 4;
+
+// 원본 픽셀 기준 크롭 영역
+export interface NotePhotoRegion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// 작성 화면의 첨부 사진 한 장. 크롭은 비파괴 — 원본(uri)을 계속 들고 있어야
+// "조정"을 다시 눌렀을 때 프레이밍을 되살리거나 다르게 다시 자를 수 있다.
+export interface NotePhoto {
+  /** prepareNotePhoto를 거친 JPEG 원본. 크롭의 기준이자 크롭 미적용 시 업로드본 */
+  uri: string;
+  /** 크롭 적용본 — 미리보기·업로드에 우선 사용 */
+  croppedUri?: string;
+  /** 크롭 모달 재진입 시 프레이밍 복원용 영역(원본 픽셀 기준) */
+  cropRegion?: NotePhotoRegion;
+}
+
+export const notePhotoDisplayUri = (photo: NotePhoto): string =>
+  photo.croppedUri ?? photo.uri;
 const NOTE_PHOTO_MAX_EDGE = 1600;
 const NOTE_PHOTO_QUALITY = 85;
 

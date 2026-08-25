@@ -14,7 +14,7 @@ import { BlurView } from "@react-native-community/blur";
 import LinearGradient from "react-native-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../../constants/colors";
-import { surfaces, accent } from "../../constants/theme";
+import { surfaces, accent, withAlpha } from "../../constants/theme";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
@@ -140,7 +140,7 @@ export const CustomTabBar = ({
       iconName = isFocused ? "person" : "person-outline";
     }
 
-    const tint = isFocused ? accent.text : "#8A8F98";
+    const tint = isFocused ? accent.text : colors.textSecondary;
 
     return (
       <TouchableOpacity
@@ -171,7 +171,11 @@ export const CustomTabBar = ({
       {/* Bottom scrim: content scrolling behind the floating pill fades into the
           background instead of hard-stopping at the screen edge. */}
       <LinearGradient
-        colors={["rgba(26,25,27,0)", "rgba(26,25,27,0.85)", colors.background]}
+        colors={[
+          withAlpha(colors.background, 0),
+          withAlpha(colors.background, 0.85),
+          colors.background,
+        ]}
         locations={[0, 0.45, 1]}
         style={[styles.bottomScrim, { bottom: -bottomOffset }]}
         pointerEvents="none"

@@ -46,7 +46,7 @@ const PAGE_SIZE = 50;
 export default function SearchResultScreen() {
   const navigation = useNavigation();
   const route = useRoute<SearchResultScreenRouteProp>();
-  const { searchKeyword, returnScreen } = route.params;
+  const { searchKeyword } = route.params;
   const { t, i18n } = useTranslation();
   const { flavorProfile } = useUser();
   const { isPremium } = useSubscription();
@@ -215,16 +215,7 @@ export default function SearchResultScreen() {
   }, [searchResults, flavorProfile, isPremium]);
 
   const handleWinePress = (item: WineDBItem) => {
-    if (returnScreen === "TastingNoteWrite") {
-      navigation.navigate("TastingNoteWrite", {
-        wineId: item.id,
-        wineName: item.nameKor,
-        wineImage: item.imageUri,
-        wineType: item.type,
-      });
-    } else {
-      navigation.navigate("WineDetail", { wine: item });
-    }
+    navigation.navigate("WineDetail", { wine: item });
   };
 
   // 라벨 이미지가 주인공인 큰 카드 — 좌측 정보 컬럼 + 우측 대형 화이트 이미지 웰.

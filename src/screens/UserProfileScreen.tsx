@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   ActionSheetIOS,
   Alert,
@@ -14,13 +14,20 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import {
+  useNavigation,
+  useRoute,
+  useFocusEffect,
+  RouteProp,
+} from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import { RootStackParamList } from "../types";
 import { getMemberProfile, MemberProfileResult } from "../api/member";
 import { getMemberTastingNotes, TastingNotePreviewDTO } from "../api/wine";
 import { followMember, unfollowMember } from "../api/follow";
 import { blockMember, unblockMember } from "../api/block";
+import { getApiErrorCode } from "../utils/apiError";
+import { appEvents } from "../utils/appEvents";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { colors } from "../constants/colors";
 import { spacing, radius, accent, surfaces } from "../constants/theme";
@@ -41,23 +48,25 @@ export default function UserProfileScreen() {
 
   const [profile, setProfile] = useState<MemberProfileResult | null>(null);
   const [notes, setNotes] = useState<TastingNotePreviewDTO[]>([]);
+  const [notesError, setNotesError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowPending, setIsFollowPending] = useState(false);
+  const [isBlockPending, setIsBlockPending] = useState(false);
 
   const { width } = Dimensions.get("window");
   const gridItemWidth = width / 3;
 
-  const loadProfile = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const profileRes = await getMemberProfile(memberId);
-      if (!profileRes.isSuccess || !profileRes.result) {
-        throw new Error(profileRes.message);
+  // 노트 로드 실패는 프로필 실패와 분리 — 헤더는 멀쩡한데 goBack당하거나
+  // 실패가 "노트 없음" 빈 상태로 위장되지 않게 한다.
+  const loadNotes = useCallback(
+    async (profileResult: MemberProfileResult) => {
+      // 내가 차단한 유저·비공개 계정이면 서버가 노트 조회를 거부하므로 건너뛴다
+      if (!profileResult.isProfilePublic || profileResult.isBlocked) {
+        setNotes([]);
+        setNotesError(false);
+        return;
       }
-      setProfile(profileRes.result);
-
-      // 내가 차단한 유저면 서버가 노트 조회를 거부(PROFILE_PRIVATE)하므로 건너뛴다
-      if (profileRes.result.isProfilePublic && !profileRes.result.isBlocked) {
+      try {
         const notesRes = await getMemberTastingNotes(memberId);
         if (notesRes.isSuccess && notesRes.result) {
           setNotes(
@@ -65,25 +74,63 @@ export default function UserProfileScreen() {
               ? (notesRes.result as any)
               : notesRes.result.content || []
           );
+          setNotesError(false);
+        } else {
+          setNotesError(true);
         }
-      } else {
-        setNotes([]);
+      } catch (error) {
+        console.error("Failed to load member notes:", error);
+        setNotesError(true);
       }
-    } catch (error) {
-      console.error("Failed to load user profile:", error);
-      showToast(t("userProfile.error.fetchFail"), {
-        type: "error",
-        onHide: () => navigation.goBack(),
-      });
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberId]);
+    },
+    [memberId]
+  );
 
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+  const loadProfile = useCallback(
+    async (silent: boolean) => {
+      try {
+        if (!silent) setIsLoading(true);
+        const profileRes = await getMemberProfile(memberId);
+        if (!profileRes.isSuccess || !profileRes.result) {
+          throw new Error(profileRes.message);
+        }
+        setProfile(profileRes.result);
+        await loadNotes(profileRes.result);
+      } catch (error) {
+        console.error("Failed to load user profile:", error);
+        // 조용한 재검증 실패는 보고 있던 화면을 유지한다
+        if (!silent) {
+          showToast(t("userProfile.error.fetchFail"), {
+            type: "error",
+            onHide: () => navigation.goBack(),
+          });
+        }
+      } finally {
+        if (!silent) setIsLoading(false);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [memberId, loadNotes]
+  );
+
+  // 최초 진입은 스피너와 함께, 복귀는 조용히 재검증 — 노트 상세에서 작성자를
+  // 차단하고 back으로 돌아오는 경우 등 이 화면 밖에서 상태가 바뀔 수 있다.
+  const didInitialLoad = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile(didInitialLoad.current);
+      didInitialLoad.current = true;
+    }, [loadProfile])
+  );
+
+  // 차단 관계(BLOCK 계열)는 재시도해도 영원히 실패하므로
+  // "다시 시도해주세요" 대신 전용 카피로 안내한다
+  const showFollowError = (code?: string) => {
+    const key = code?.startsWith("BLOCK")
+      ? "userProfile.error.followBlocked"
+      : "userProfile.error.followFail";
+    showToast(t(key), { type: "error" });
+  };
 
   const handleToggleFollow = async () => {
     if (!profile || isFollowPending) return;
@@ -91,7 +138,10 @@ export default function UserProfileScreen() {
     try {
       if (profile.isFollowing) {
         const res = await unfollowMember(memberId);
-        if (!res.isSuccess) throw new Error(res.message);
+        if (!res.isSuccess) {
+          showFollowError(res.code);
+          return;
+        }
         setProfile((prev) =>
           prev
             ? {
@@ -103,7 +153,10 @@ export default function UserProfileScreen() {
         );
       } else {
         const res = await followMember(memberId);
-        if (!res.isSuccess) throw new Error(res.message);
+        if (!res.isSuccess) {
+          showFollowError(res.code);
+          return;
+        }
         setProfile((prev) =>
           prev
             ? {
@@ -116,7 +169,7 @@ export default function UserProfileScreen() {
       }
     } catch (error) {
       console.error("Failed to toggle follow:", error);
-      showToast(t("userProfile.error.followFail"), { type: "error" });
+      showFollowError(getApiErrorCode(error));
     } finally {
       setIsFollowPending(false);
     }
@@ -132,10 +185,14 @@ export default function UserProfileScreen() {
           text: t("userProfile.blockAction"),
           style: "destructive",
           onPress: async () => {
+            if (isBlockPending) return;
+            setIsBlockPending(true);
             try {
               const res = await blockMember(memberId);
               if (!res.isSuccess) throw new Error(res.message);
               showToast(t("userProfile.blockSuccess"), { type: "success" });
+              // 이미 렌더된 피드 목록에서도 이 작성자의 카드를 걷어낸다
+              appEvents.emit("memberBlocked", memberId);
               // 차단 시 서버가 팔로우를 양방향 해제하므로 상태를 맞춰준다
               setProfile((prev) =>
                 prev
@@ -153,6 +210,8 @@ export default function UserProfileScreen() {
             } catch (error) {
               console.error("Failed to block member:", error);
               showToast(t("userProfile.error.blockFail"), { type: "error" });
+            } finally {
+              setIsBlockPending(false);
             }
           },
         },
@@ -161,14 +220,19 @@ export default function UserProfileScreen() {
   };
 
   const handleUnblock = async () => {
+    // 연타 시 DELETE 중복 전송 → 두 번째가 실패해 성공/실패 토스트가 겹치는 것 방지
+    if (isBlockPending) return;
+    setIsBlockPending(true);
     try {
       const res = await unblockMember(memberId);
       if (!res.isSuccess) throw new Error(res.message);
       showToast(t("userProfile.unblockSuccess"), { type: "success" });
-      loadProfile();
+      loadProfile(false);
     } catch (error) {
       console.error("Failed to unblock member:", error);
       showToast(t("userProfile.error.blockFail"), { type: "error" });
+    } finally {
+      setIsBlockPending(false);
     }
   };
 
@@ -257,7 +321,7 @@ export default function UserProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={accent.text} />
       </View>
     );
   }
@@ -275,6 +339,8 @@ export default function UserProfileScreen() {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.back")}
           >
             <Icon name="arrow-back" size={22} color={colors.white} />
           </TouchableOpacity>
@@ -344,14 +410,19 @@ export default function UserProfileScreen() {
           <TouchableOpacity
             style={[styles.followButton, styles.followButtonActive]}
             onPress={handleUnblock}
+            disabled={isBlockPending}
             activeOpacity={0.85}
             accessibilityRole="button"
           >
-            <Text
-              style={[styles.followButtonText, styles.followButtonTextActive]}
-            >
-              {t("userProfile.unblockAction")}
-            </Text>
+            {isBlockPending ? (
+              <ActivityIndicator size="small" color={colors.textPrimary} />
+            ) : (
+              <Text
+                style={[styles.followButtonText, styles.followButtonTextActive]}
+              >
+                {t("userProfile.unblockAction")}
+              </Text>
+            )}
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -409,6 +480,24 @@ export default function UserProfileScreen() {
             <Text style={styles.privateDesc}>
               {t("userProfile.privateDesc")}
             </Text>
+          </View>
+        ) : notesError ? (
+          <View style={styles.privateWrapper}>
+            <Icon
+              name="alert-circle-outline"
+              size={32}
+              color={colors.textTertiary}
+            />
+            <Text style={styles.privateDesc}>
+              {t("common.error.loadFailed")}
+            </Text>
+            <TouchableOpacity
+              onPress={() => profile && loadNotes(profile)}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.retry")}
+            >
+              <Text style={styles.notesRetryText}>{t("common.retry")}</Text>
+            </TouchableOpacity>
           </View>
         ) : notes.length > 0 ? (
           <View style={styles.photoGrid}>
@@ -522,7 +611,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: surfaces.scrim,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -530,7 +619,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 2,
     borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
+    borderColor: surfaces.onScrimHairline,
   },
   gridRatingText: {
     color: colors.white,
@@ -582,5 +671,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     lineHeight: 19,
+  },
+  notesRetryText: {
+    color: accent.text,
+    fontSize: 14,
+    fontWeight: "700",
+    padding: spacing.sm,
   },
 });

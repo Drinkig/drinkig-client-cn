@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,7 +20,7 @@ import { MemberSearchItem, searchMembers } from "../api/member";
 import { getErrorMessageKey } from "../utils/apiError";
 import { logScreen } from "utils/analytics";
 import { colors } from "../constants/colors";
-import { radius, spacing, surfaces } from "../constants/theme";
+import { accent, radius, spacing, surfaces } from "../constants/theme";
 import { RootStackParamList } from "../types";
 
 /**
@@ -36,12 +36,17 @@ export default function FriendSearchScreen() {
   const [results, setResults] = useState<MemberSearchItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  // 응답 레이스 가드 — 이전 키워드의 늦은 응답이 최신 결과를 덮어쓰거나
+  // 진행 중인 검색의 스피너를 꺼버리지 않도록 최신 요청만 반영한다
+  const requestSeq = useRef(0);
 
   useEffect(() => {
     logScreen("friend_search");
   }, []);
 
   useEffect(() => {
+    const seq = ++requestSeq.current;
     const trimmed = keyword.trim();
     if (trimmed.length > 0) {
       // 디바운스+응답 대기 동안 "결과 없음"이 먼저 보이지 않도록 검색 중 상태를 켠다
@@ -56,21 +61,23 @@ export default function FriendSearchScreen() {
       }
       try {
         const res = await searchMembers(trimmed);
+        if (seq !== requestSeq.current) return;
         if (res.isSuccess && Array.isArray(res.result)) {
           setResults(res.result);
         } else {
           setErrorKey("common.error.loadFailed");
         }
       } catch (error) {
+        if (seq !== requestSeq.current) return;
         console.error("Member search failed:", error);
         setErrorKey(getErrorMessageKey(error));
       } finally {
-        setIsSearching(false);
+        if (seq === requestSeq.current) setIsSearching(false);
       }
     }, 400);
 
     return () => clearTimeout(timer);
-  }, [keyword]);
+  }, [keyword, reloadKey]);
 
   const renderItem = ({ item }: { item: MemberSearchItem }) => (
     <TouchableOpacity
@@ -112,7 +119,7 @@ export default function FriendSearchScreen() {
     if (isSearching) {
       return (
         <View style={styles.stateContainer}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={accent.text} />
         </View>
       );
     }
@@ -129,6 +136,15 @@ export default function FriendSearchScreen() {
         <Text style={styles.stateText}>
           {errorKey ? t(errorKey) : t("friendSearch.empty")}
         </Text>
+        {errorKey && (
+          <TouchableOpacity
+            onPress={() => setReloadKey((k) => k + 1)}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.retry")}
+          >
+            <Text style={styles.retryText}>{t("common.retry")}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -277,5 +293,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 14,
     textAlign: "center",
+  },
+  retryText: {
+    color: accent.text,
+    fontSize: 14,
+    fontWeight: "700",
+    padding: spacing.sm,
   },
 });

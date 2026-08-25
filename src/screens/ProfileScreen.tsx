@@ -33,8 +33,11 @@ const ProfileScreen = () => {
   const { user: userInfo, flavorProfile } = useUser();
 
   const [selectedType, setSelectedType] = React.useState("전체");
-  const [followerCount, setFollowerCount] = React.useState(0);
-  const [followingCount, setFollowingCount] = React.useState(0);
+  // null = 아직 못 불러옴 — 실패를 "팔로워 0"으로 위장하지 않도록 "-"로 표시
+  const [followerCount, setFollowerCount] = React.useState<number | null>(null);
+  const [followingCount, setFollowingCount] = React.useState<number | null>(
+    null
+  );
   const [tastingNotes, setTastingNotes] = React.useState<
     TastingNotePreviewDTO[]
   >([]);
@@ -309,8 +312,8 @@ const ProfileScreen = () => {
             </View>
             <Text style={styles.followCountText}>
               {t("profile.followCounts", {
-                followers: followerCount,
-                following: followingCount,
+                followers: followerCount ?? "-",
+                following: followingCount ?? "-",
               })}
             </Text>
           </View>

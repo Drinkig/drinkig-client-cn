@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NotePhoto } from "./notePhoto";
 
 // 특정 와인으로 바로 진입한 작성(딥링크/상세→작성)과 일반 진입 작성이
 // 서로의 드래프트를 덮어쓰지 않도록 와인별로 키를 분리한다.
@@ -26,9 +27,9 @@ export interface TastingNoteDraft {
   finish: string;
   rating: number;
   review: string;
-  // 첨부 사진의 로컬 JPEG URI 목록. 캐시 정리로 파일이 사라질 수 있어
-  // 복원은 best-effort — 렌더 실패한 항목은 사용자가 지우고 다시 첨부한다.
-  photos?: string[];
+  // 첨부 사진(원본 URI + 선택적 크롭 정보). 캐시 정리로 파일이 사라질 수 있어
+  // 복원은 best-effort — 렌더 실패한 항목은 깨짐 표시 후 사용자가 지우고 다시 첨부한다.
+  photos?: NotePhoto[];
   savedAt: string;
 }
 
@@ -49,7 +50,14 @@ export const loadDraft = async (
   try {
     const json = await AsyncStorage.getItem(keyFor(draftId));
     if (json) {
-      return JSON.parse(json) as TastingNoteDraft;
+      const draft = JSON.parse(json) as TastingNoteDraft;
+      // 크롭 도입 전 드래프트는 URI 문자열 배열이었다 — 객체 형태로 정규화
+      if (draft.photos) {
+        draft.photos = (draft.photos as unknown as (string | NotePhoto)[]).map(
+          (photo) => (typeof photo === "string" ? { uri: photo } : photo)
+        );
+      }
+      return draft;
     }
     return null;
   } catch (error) {

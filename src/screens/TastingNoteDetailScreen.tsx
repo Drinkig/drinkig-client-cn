@@ -25,10 +25,13 @@ import { RootStackParamList } from "../types";
 import {
   getTastingNoteDetail,
   TastingNoteDTO,
+  TastingNoteImageDTO,
   deleteTastingNote,
   deleteTastingNoteImage,
   uploadTastingNoteImages,
 } from "../api/wine";
+import { getApiErrorCode } from "../utils/apiError";
+import { appEvents } from "../utils/appEvents";
 import {
   NOTE_PHOTO_GRID_ASPECT,
   NOTE_PHOTO_MAX_COUNT,
@@ -104,9 +107,17 @@ export default function TastingNoteDetailScreen() {
 
   // 첨부는 작성 화면과 동일하게 항상 JPEG 재인코딩 경로를 태운다(HEIC 서버 거부).
   const addPickedPhotos = async (assets: Asset[]) => {
-    const remaining = NOTE_PHOTO_MAX_COUNT - (note?.images?.length ?? 0);
+    const prevCount = note?.images?.length ?? 0;
+    const remaining = NOTE_PHOTO_MAX_COUNT - prevCount;
     const picked = assets.slice(0, remaining);
     if (picked.length === 0) return;
+    // 잔여 슬롯보다 많이 골랐으면 일부만 첨부된다는 걸 미리 알려준다
+    if (picked.length < assets.length) {
+      showToast(
+        t("tastingNoteWrite.photo.maxReached", { max: NOTE_PHOTO_MAX_COUNT }),
+        { type: "info" }
+      );
+    }
 
     setIsUploadingPhotos(true);
     try {
@@ -122,6 +133,9 @@ export default function TastingNoteDetailScreen() {
       const response = await uploadTastingNoteImages(tastingNoteId, prepared);
       if (response.isSuccess) {
         setNote((prev) => (prev ? { ...prev, images: response.result } : prev));
+        showToast(t("tastingNoteDetail.photo.uploadSuccess"), {
+          type: "success",
+        });
       } else {
         showToast(response.message || t("tastingNoteDetail.photo.uploadFail"), {
           type: "error",
@@ -129,6 +143,31 @@ export default function TastingNoteDetailScreen() {
       }
     } catch (error) {
       console.error("Note photo upload failed:", error);
+      // 한도 초과(NOTE4004)는 재시도해도 소용없으니 전용 안내
+      if (getApiErrorCode(error) === "NOTE4004") {
+        showToast(
+          t("tastingNoteWrite.photo.maxReached", { max: NOTE_PHOTO_MAX_COUNT }),
+          { type: "info" }
+        );
+        return;
+      }
+      // 타임아웃 등에서는 서버 트랜잭션이 뒤늦게 완료됐을 수 있다 —
+      // 실패로 안내하기 전에 실제 저장 여부를 재조회로 확인 (중복 재첨부 방지)
+      try {
+        const refreshed = await getTastingNoteDetail(tastingNoteId);
+        if (
+          refreshed.isSuccess &&
+          (refreshed.result.images?.length ?? 0) > prevCount
+        ) {
+          setNote(refreshed.result);
+          showToast(t("tastingNoteDetail.photo.uploadSuccess"), {
+            type: "success",
+          });
+          return;
+        }
+      } catch {
+        // 재조회도 실패 — 아래 일반 실패 안내로
+      }
       showToast(t("tastingNoteDetail.photo.uploadFail"), { type: "error" });
     } finally {
       setIsUploadingPhotos(false);
@@ -145,7 +184,12 @@ export default function TastingNoteDetailScreen() {
     }
 
     const openCamera = async () => {
-      const result = await launchCamera({ mediaType: "photo" });
+      // 촬영본을 갤러리에도 남긴다 — 업로드가 실패하면 임시 폴더 원본은
+      // 재첨부할 방법이 없어 사진이 영구 유실된다
+      const result = await launchCamera({
+        mediaType: "photo",
+        saveToPhotos: true,
+      });
       if (!result.didCancel && !result.errorCode && result.assets) {
         await addPickedPhotos(result.assets);
       }
@@ -251,6 +295,8 @@ export default function TastingNoteDetailScreen() {
             try {
               const res = await blockMember(authorId);
               if (!res.isSuccess) throw new Error(res.message);
+              // 이미 렌더된 피드 목록에서도 이 작성자의 카드를 걷어낸다
+              appEvents.emit("memberBlocked", authorId);
               showToast(t("userProfile.blockSuccess"), {
                 type: "success",
                 onHide: () => navigation.goBack(),
@@ -298,7 +344,7 @@ export default function TastingNoteDetailScreen() {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={accent.text} />
       </View>
     );
   }
@@ -323,6 +369,10 @@ export default function TastingNoteDetailScreen() {
 
   const { finishTags, reviewText } = parseReview(note.review);
   const photos = note.images ?? [];
+  // 업로드(재인코딩 포함, 수십 초 가능) 동안 페이저 끝에 처리 중 페이지를 붙여
+  // 헤더의 작은 스피너만으로는 안 보이던 진행 상태를 사진 영역에서도 보여준다
+  const PROCESSING_PAGE: TastingNoteImageDTO = { imageId: -1, imageUrl: "" };
+  const pagerData = isUploadingPhotos ? [...photos, PROCESSING_PAGE] : photos;
   // 구 서버는 mine을 안 내려주므로 undefined면 내 노트로 취급 (기존 동작 보존)
   const isMine = note.mine !== false;
 
@@ -337,6 +387,8 @@ export default function TastingNoteDetailScreen() {
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.back")}
           >
             <Ionicons name="arrow-back" size={22} color={colors.white} />
           </TouchableOpacity>
@@ -346,6 +398,8 @@ export default function TastingNoteDetailScreen() {
             onPress={() => setMenuVisible(true)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             style={{ padding: 4 }}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.more")}
           >
             <Ionicons
               name="ellipsis-horizontal"
@@ -464,7 +518,7 @@ export default function TastingNoteDetailScreen() {
               <View onLayout={(e) => setPagerWidth(e.nativeEvent.layout.width)}>
                 {pagerWidth > 0 && (
                   <FlatList
-                    data={photos}
+                    data={pagerData}
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
@@ -474,32 +528,51 @@ export default function TastingNoteDetailScreen() {
                         Math.round(e.nativeEvent.contentOffset.x / pagerWidth)
                       )
                     }
-                    renderItem={({ item }) => (
-                      <View style={{ width: pagerWidth }}>
-                        <Image
-                          source={{ uri: item.imageUrl }}
-                          style={styles.photoPageImage}
-                          resizeMode="cover"
-                        />
-                        {isMine && (
-                          <TouchableOpacity
-                            style={styles.photoDeleteBadge}
-                            onPress={() => handleDeletePhoto(item.imageId)}
-                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                            accessibilityRole="button"
-                            accessibilityLabel={t(
-                              "tastingNoteWrite.photo.remove"
-                            )}
-                          >
-                            <Ionicons
-                              name="trash-outline"
-                              size={14}
-                              color={colors.white}
-                            />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    )}
+                    renderItem={({ item, index }) =>
+                      item.imageId === -1 ? (
+                        <View
+                          style={[
+                            styles.photoPageImage,
+                            styles.photoProcessingPage,
+                            { width: pagerWidth },
+                          ]}
+                        >
+                          <ActivityIndicator size="small" color={accent.text} />
+                        </View>
+                      ) : (
+                        <View
+                          style={{ width: pagerWidth }}
+                          accessible
+                          accessibilityLabel={t(
+                            "tastingNoteWrite.photo.pageA11y",
+                            { current: index + 1, total: photos.length }
+                          )}
+                        >
+                          <Image
+                            source={{ uri: item.imageUrl }}
+                            style={styles.photoPageImage}
+                            resizeMode="cover"
+                          />
+                          {isMine && (
+                            <TouchableOpacity
+                              style={styles.photoDeleteBadge}
+                              onPress={() => handleDeletePhoto(item.imageId)}
+                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                              accessibilityRole="button"
+                              accessibilityLabel={t(
+                                "tastingNoteWrite.photo.remove"
+                              )}
+                            >
+                              <Ionicons
+                                name="trash-outline"
+                                size={14}
+                                color={colors.white}
+                              />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      )
+                    }
                   />
                 )}
                 {photos.length > 1 && (
@@ -524,11 +597,15 @@ export default function TastingNoteDetailScreen() {
                 accessibilityRole="button"
                 accessibilityLabel={t("tastingNoteWrite.photo.add")}
               >
-                <Ionicons
-                  name="camera-outline"
-                  size={24}
-                  color={colors.textTertiary}
-                />
+                {isUploadingPhotos ? (
+                  <ActivityIndicator size="small" color={accent.text} />
+                ) : (
+                  <Ionicons
+                    name="camera-outline"
+                    size={24}
+                    color={colors.textTertiary}
+                  />
+                )}
                 <Text style={styles.emptyText}>
                   {t("tastingNoteDetail.photo.empty")}
                 </Text>
@@ -864,7 +941,12 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    backgroundColor: surfaces.scrim,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  photoProcessingPage: {
+    backgroundColor: surfaces.raised,
     alignItems: "center",
     justifyContent: "center",
   },

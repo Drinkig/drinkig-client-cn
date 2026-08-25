@@ -14,46 +14,24 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
-import {
-  useNavigation,
-  useFocusEffect,
-  useRoute,
-  RouteProp,
-} from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WineDBItem } from "../types/Wine";
 import { searchWinesPublic, WineUserDTO } from "../api/wine";
-import { RootStackParamList } from "../types";
 import { colors } from "../constants/colors";
 import {
   getWinePlaceholderImage,
   getWineTypeColor,
 } from "../constants/wineColors";
 import HighlightedText from "../components/common/HighlightedText";
-import { spacing, radius, surfaces } from "../constants/theme";
+import { spacing, radius, surfaces, accent } from "../constants/theme";
 import { useTranslation } from "react-i18next";
 import { rankByRelevance } from "../utils/searchRelevance";
 import { getErrorMessageKey } from "../utils/apiError";
 
-type SearchScreenRouteProp = RouteProp<RootStackParamList, "Search">;
-
 export default function SearchScreen() {
   const navigation = useNavigation();
-  const route = useRoute<SearchScreenRouteProp>();
   const { t, i18n } = useTranslation();
-  const [returnScreen, setReturnScreen] = useState<
-    keyof RootStackParamList | undefined
-  >(undefined);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (route.params?.returnScreen) {
-        setReturnScreen(route.params.returnScreen);
-      } else {
-        setReturnScreen(undefined);
-      }
-    }, [route.params])
-  );
 
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState<WineDBItem[]>([]);
@@ -161,7 +139,6 @@ export default function SearchScreen() {
       );
       navigation.navigate("SearchResult", {
         searchKeyword: trimmedText,
-        returnScreen,
       });
     }
   };
@@ -265,7 +242,7 @@ export default function SearchScreen() {
             ListEmptyComponent={
               isSearching ? (
                 <View style={styles.emptyContainer}>
-                  <ActivityIndicator color={colors.primary} />
+                  <ActivityIndicator color={accent.text} />
                 </View>
               ) : (
                 <View style={styles.emptyContainer}>

@@ -4,7 +4,6 @@ import { useUser } from "../context/UserContext";
 import SommelierChatScreen from "../screens/SommelierChatScreen";
 import LoginScreen from "../screens/LoginScreen";
 import MyWineDetailScreen from "../screens/MyWineDetailScreen";
-import NotificationScreen from "../screens/NotificationScreen";
 import OnboardingScreen from "../screens/OnboardingScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen";
 import RecommendationListScreen from "../screens/RecommendationListScreen";
@@ -65,7 +64,6 @@ export default function RootNavigator() {
             <Stack.Screen name="Main" component={MainTabNavigator} />
             <Stack.Screen name="WineDetail" component={WineDetailScreen} />
             <Stack.Screen name="MyWineDetail" component={MyWineDetailScreen} />
-            <Stack.Screen name="Notification" component={NotificationScreen} />
             <Stack.Screen
               name="WineAdd"
               component={WineAddScreen}

@@ -617,7 +617,9 @@ export default function MenuScanResultScreen({ route, navigation }: Props) {
               ? t("menuScanResult.empty")
               : error ?? t("menuScanResult.error.unknown")}
           </Text>
-          {!isPremium && !isLimitError && !isEmptyResult && (
+          {/* 인식 0건도 서버는 차감하지 않는다(와인 추출 성공 시에만 useScan 기록)
+              — 무료 유저가 빈 결과 후 잔여 횟수를 걱정하지 않도록 동일하게 안내 */}
+          {!isPremium && !isLimitError && (
             <Text style={styles.quotaNotice}>
               {t("menuScanResult.error.quotaNotConsumed")}
             </Text>

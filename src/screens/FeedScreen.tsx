@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -11,7 +11,11 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import {
+  useIsFocused,
+  useNavigation,
+  useScrollToTop,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
@@ -21,6 +25,8 @@ import GlassHeader, {
 import ListStateView from "../components/common/ListStateView";
 import { getTastingNoteFeed, TastingNoteFeedItemDTO } from "../api/wine";
 import { getErrorMessageKey } from "../utils/apiError";
+import { appEvents } from "../utils/appEvents";
+import { useGlobalUI } from "../context/GlobalUIContext";
 import { logScreen } from "utils/analytics";
 import { colors } from "../constants/colors";
 import { accent, radius, spacing, surfaces } from "../constants/theme";
@@ -144,40 +150,67 @@ export default function FeedScreen() {
   const isFocused = useIsFocused();
   const headerHeight = useGlassHeaderHeight();
   const { width: windowWidth } = useWindowDimensions();
+  const { showToast } = useGlobalUI();
 
   const [items, setItems] = useState<TastingNoteFeedItemDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreFailed, setLoadMoreFailed] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+
+  // 탭 재선택 시 최상단으로 (다른 탭·타 앱과 동일한 표준 기대 동작)
+  const listRef = useRef<FlatList<TastingNoteFeedItemDTO>>(null);
+  useScrollToTop(listRef);
 
   useEffect(() => {
     logScreen("feed");
   }, []);
 
-  const loadFirstPage = useCallback(async (viaRefresh: boolean) => {
-    if (viaRefresh) setIsRefreshing(true);
-    else setIsLoading(true);
-    setErrorKey(null);
-    try {
-      const res = await getTastingNoteFeed(PAGE_SIZE, 0);
-      if (res.isSuccess && Array.isArray(res.result)) {
-        setItems(res.result);
-        setPage(0);
-        setHasMore(res.result.length >= PAGE_SIZE);
-      } else {
-        setErrorKey("common.error.loadFailed");
+  // 노트 상세/프로필에서 작성자를 차단하면 이미 렌더된 피드에서도 즉시 걷어낸다
+  useEffect(
+    () =>
+      appEvents.on("memberBlocked", (memberId) =>
+        setItems((prev) => prev.filter((it) => it.authorId !== memberId))
+      ),
+    []
+  );
+
+  const loadFirstPage = useCallback(
+    async (viaRefresh: boolean) => {
+      if (viaRefresh) setIsRefreshing(true);
+      else setIsLoading(true);
+      if (!viaRefresh) setErrorKey(null);
+      try {
+        const res = await getTastingNoteFeed(PAGE_SIZE, 0);
+        if (res.isSuccess && Array.isArray(res.result)) {
+          setItems(res.result);
+          setPage(0);
+          setHasMore(res.result.length >= PAGE_SIZE);
+          setLoadMoreFailed(false);
+          setErrorKey(null);
+        } else if (viaRefresh) {
+          // 보고 있던 목록을 에러 화면으로 갈아치우지 않는다 — 토스트로만 알림
+          showToast(t("common.error.loadFailed"), { type: "error" });
+        } else {
+          setErrorKey("common.error.loadFailed");
+        }
+      } catch (error) {
+        console.error("Feed load failed:", error);
+        if (viaRefresh) {
+          showToast(t(getErrorMessageKey(error)), { type: "error" });
+        } else {
+          setErrorKey(getErrorMessageKey(error));
+        }
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
       }
-    } catch (error) {
-      console.error("Feed load failed:", error);
-      setErrorKey(getErrorMessageKey(error));
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  }, []);
+    },
+    [showToast, t]
+  );
 
   useEffect(() => {
     loadFirstPage(false);
@@ -194,6 +227,7 @@ export default function FeedScreen() {
   const loadMore = async () => {
     if (isLoading || isLoadingMore || isRefreshing || !hasMore) return;
     setIsLoadingMore(true);
+    setLoadMoreFailed(false);
     try {
       const nextPage = page + 1;
       const res = await getTastingNoteFeed(PAGE_SIZE, nextPage);
@@ -208,7 +242,8 @@ export default function FeedScreen() {
       }
     } catch (error) {
       console.error("Feed load more failed:", error);
-      // 추가 로드 실패는 치명적이지 않다 — 스크롤 재시도에 맡긴다
+      // 리스트 끝에 머문 상태면 onEndReached가 다시 안 울리므로 footer에 재시도 노출
+      setLoadMoreFailed(true);
     } finally {
       setIsLoadingMore(false);
     }
@@ -249,6 +284,7 @@ export default function FeedScreen() {
     }
     return (
       <FlatList
+        ref={listRef}
         data={items}
         renderItem={renderItem}
         keyExtractor={(item) => String(item.noteId)}
@@ -285,6 +321,18 @@ export default function FeedScreen() {
               color={accent.text}
               style={styles.footerLoader}
             />
+          ) : loadMoreFailed ? (
+            <TouchableOpacity
+              style={styles.footerRetry}
+              onPress={loadMore}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.retry")}
+            >
+              <Text style={styles.footerRetryTitle}>
+                {t("common.error.loadFailed")}
+              </Text>
+              <Text style={styles.footerRetryAction}>{t("common.retry")}</Text>
+            </TouchableOpacity>
           ) : null
         }
       />
@@ -372,7 +420,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 4,
     borderRadius: radius.pill,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: surfaces.scrim,
   },
   photoCountText: {
     color: colors.white,
@@ -389,7 +437,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: 4,
     borderRadius: radius.pill,
-    backgroundColor: "rgba(0,0,0,0.55)",
+    backgroundColor: surfaces.scrim,
   },
   ratingText: {
     color: colors.white,
@@ -419,5 +467,20 @@ const styles = StyleSheet.create({
   },
   footerLoader: {
     marginTop: spacing.lg,
+  },
+  footerRetry: {
+    alignItems: "center",
+    gap: spacing.xs,
+    marginTop: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  footerRetryTitle: {
+    color: colors.textTertiary,
+    fontSize: 13,
+  },
+  footerRetryAction: {
+    color: accent.text,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

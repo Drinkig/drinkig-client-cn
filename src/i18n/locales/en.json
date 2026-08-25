@@ -22,7 +22,6 @@
     },
     "tab": {
         "home": "Home",
-        "search": "Search",
         "feed": "Feed",
         "myWine": "My Wine",
         "profile": "Profile",
@@ -507,7 +506,9 @@
             "adjust": "Adjust",
             "processing": "Preparing photo…",
             "maxReached": "You can attach up to {{max}} photos.",
-            "processFail": "Couldn't load that photo. Please pick another one."
+            "processFail": "Couldn't load that photo. Please pick another one.",
+            "pageA11y": "Photo {{current}} of {{total}}",
+            "broken": "Couldn't load this photo.\nRemove it and attach again."
         },
         "photoCrop": {
             "title": "Adjust Photo",
@@ -635,7 +636,9 @@
             "closeTitle": "Unsaved Note",
             "closeMsg": "Would you like to save your progress as a draft?",
             "closeSave": "Save Draft",
-            "closeDiscard": "Discard"
+            "closeDiscard": "Discard",
+            "submittingTitle": "Saving",
+            "submittingMsg": "Your note is being saved. Please wait a moment."
         }
     },
     "userProfile": {
@@ -658,6 +661,7 @@
         "error": {
             "fetchFail": "Couldn't load this profile.",
             "followFail": "Couldn't update follow. Please try again.",
+            "followBlocked": "You can't follow this account right now.",
             "blockFail": "Request failed. Please try again."
         }
     },
@@ -673,6 +677,7 @@
             "title": "Photos",
             "empty": "Add photos to remember this wine.",
             "uploadFail": "Photo upload failed. Please try again.",
+            "uploadSuccess": "Photos added.",
             "deleteTitle": "Delete Photo",
             "deleteMsg": "Delete this photo?",
             "deleteFail": "Failed to delete the photo."

@@ -13,16 +13,23 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/Ionicons";
 import { useTranslation } from "react-i18next";
 import { colors } from "../../constants/colors";
-import { spacing, radius, accent } from "../../constants/theme";
+import { spacing, radius, accent, withAlpha } from "../../constants/theme";
 import { useGlobalUI } from "../../context/GlobalUIContext";
-import { cropNotePhoto, NOTE_PHOTO_GRID_ASPECT } from "../../utils/notePhoto";
+import {
+  cropNotePhoto,
+  NOTE_PHOTO_GRID_ASPECT,
+  NotePhotoRegion,
+} from "../../utils/notePhoto";
 
 interface PhotoCropModalProps {
   visible: boolean;
+  /** 크롭 기준이 되는 원본 URI — 이미 크롭된 사진이 아닌 원본을 넘겨야 재크롭이 된다 */
   uri: string | null;
+  /** 이전에 적용한 크롭 영역 — 있으면 그 프레이밍에서 이어서 조정한다 */
+  initialRegion?: NotePhotoRegion | null;
   onClose: () => void;
-  /** 크롭이 적용된 새 로컬 JPEG URI를 돌려준다. */
-  onApply: (croppedUri: string) => void;
+  /** 크롭이 적용된 새 로컬 JPEG URI와 원본 픽셀 기준 영역을 돌려준다. */
+  onApply: (croppedUri: string, region: NotePhotoRegion) => void;
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -35,6 +42,7 @@ const clamp = (value: number, min: number, max: number) =>
 export default function PhotoCropModal({
   visible,
   uri,
+  initialRegion,
   onClose,
   onApply,
 }: PhotoCropModalProps) {
@@ -97,14 +105,20 @@ export default function PhotoCropModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, uri]);
 
-  // 새 사진/새 레이아웃마다 중앙 정렬로 시작
+  // 새 사진/새 레이아웃마다 초기 위치 잡기 — 이전 크롭 영역이 있으면 그
+  // 프레이밍을 복원하고, 없으면 중앙 정렬로 시작
   useEffect(() => {
     if (!layout) return;
     boundsRef.current = { minX: layout.minX, minY: layout.minY };
-    const centered = { x: layout.minX / 2, y: layout.minY / 2 };
-    offsetRef.current = centered;
-    setOffset(centered);
-  }, [layout]);
+    const start = initialRegion
+      ? {
+          x: clamp(-initialRegion.x * layout.scale, layout.minX, 0),
+          y: clamp(-initialRegion.y * layout.scale, layout.minY, 0),
+        }
+      : { x: layout.minX / 2, y: layout.minY / 2 };
+    offsetRef.current = start;
+    setOffset(start);
+  }, [layout, initialRegion]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -159,8 +173,9 @@ export default function PhotoCropModal({
         imageSize.height - y
       );
 
-      const croppedUri = await cropNotePhoto(uri, { x, y, width, height });
-      onApply(croppedUri);
+      const region = { x, y, width, height };
+      const croppedUri = await cropNotePhoto(uri, region);
+      onApply(croppedUri, region);
     } catch (error) {
       console.error("Note photo crop failed:", error);
       showToast(t("tastingNoteWrite.photoCrop.fail"), { type: "error" });
@@ -297,14 +312,14 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255, 255, 255, 0.35)",
+    backgroundColor: withAlpha(colors.white, 0.35),
   },
   gridLineH: {
     position: "absolute",
     left: 0,
     right: 0,
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "rgba(255, 255, 255, 0.35)",
+    backgroundColor: withAlpha(colors.white, 0.35),
   },
   hint: {
     color: colors.textTertiary,

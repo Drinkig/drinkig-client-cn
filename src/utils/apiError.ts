@@ -13,6 +13,15 @@ export const getErrorMessageKey = (error: unknown): string => {
   return "common.error.generic";
 };
 
+// 서버 에러 코드(BLOCK4004, NOTE4004 등)를 꺼낸다. axios가 4xx를 throw하면
+// 코드가 error.response.data.code에 실려 오므로, 재시도해도 소용없는 정책성
+// 실패(차단·한도 초과)를 일반 "다시 시도" 카피와 구분할 때 사용.
+export const getApiErrorCode = (error: unknown): string | undefined => {
+  const e = error as AxiosError<{ code?: string }>;
+  if (!e || !e.isAxiosError || !e.response) return undefined;
+  return e.response.data?.code;
+};
+
 // 소셜 로그인 시 "이미 다른 방식으로 가입된 이메일" 충돌.
 // 백엔드가 /login/apple, /login/kakao/firebase에서 409 + code "MEMBER4091"로 내려준다.
 // (status 409만으로 잡아도 되지만 code로 정확히 구분한다.)

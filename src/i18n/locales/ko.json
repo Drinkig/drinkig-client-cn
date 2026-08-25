@@ -22,7 +22,6 @@
     },
     "tab": {
         "home": "홈",
-        "search": "검색",
         "feed": "피드",
         "myWine": "내 와인",
         "profile": "프로필",
@@ -507,7 +506,9 @@
             "adjust": "조절",
             "processing": "사진 준비 중…",
             "maxReached": "사진은 최대 {{max}}장까지 첨부할 수 있어요.",
-            "processFail": "사진을 불러오지 못했어요. 다른 사진을 선택해주세요."
+            "processFail": "사진을 불러오지 못했어요. 다른 사진을 선택해주세요.",
+            "pageA11y": "사진 {{current}}/{{total}}",
+            "broken": "사진을 불러올 수 없어요.\n지우고 다시 첨부해주세요."
         },
         "photoCrop": {
             "title": "사진 위치 조절",
@@ -635,7 +636,9 @@
             "closeTitle": "작성 중인 노트",
             "closeMsg": "작성 중인 내용을 임시 저장할까요?",
             "closeSave": "임시 저장",
-            "closeDiscard": "저장 안 함"
+            "closeDiscard": "저장 안 함",
+            "submittingTitle": "저장 중이에요",
+            "submittingMsg": "노트를 저장하고 있어요. 잠시만 기다려주세요."
         }
     },
     "userProfile": {
@@ -658,6 +661,7 @@
         "error": {
             "fetchFail": "프로필을 불러오지 못했어요.",
             "followFail": "팔로우 처리에 실패했어요. 다시 시도해주세요.",
+            "followBlocked": "지금은 이 계정을 팔로우할 수 없어요.",
             "blockFail": "요청에 실패했어요. 잠시 후 다시 시도해주세요."
         }
     },
@@ -673,6 +677,7 @@
             "title": "사진",
             "empty": "사진을 추가해 이 날의 와인을 남겨보세요.",
             "uploadFail": "사진 업로드에 실패했어요. 잠시 후 다시 시도해주세요.",
+            "uploadSuccess": "사진을 추가했어요.",
             "deleteTitle": "사진 삭제",
             "deleteMsg": "이 사진을 삭제할까요?",
             "deleteFail": "사진 삭제에 실패했어요."
