@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,8 +10,10 @@ import {
   ActionSheetIOS,
   Alert,
   FlatList,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -29,8 +31,14 @@ import {
   deleteTastingNote,
   deleteTastingNoteImage,
   uploadTastingNoteImages,
+  likeTastingNote,
+  unlikeTastingNote,
+  getNoteComments,
+  addNoteComment,
+  deleteNoteComment,
+  NoteCommentDTO,
 } from "../api/wine";
-import { getApiErrorCode } from "../utils/apiError";
+import { getApiErrorCode, getErrorMessageKey } from "../utils/apiError";
 import { appEvents } from "../utils/appEvents";
 import {
   NOTE_PHOTO_GRID_ASPECT,
@@ -73,11 +81,38 @@ export default function TastingNoteDetailScreen() {
   const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
   const [photoPage, setPhotoPage] = useState(0);
   const [pagerWidth, setPagerWidth] = useState(0);
+  // 좋아요/댓글 — 구 서버는 소셜 필드를 안 내려주므로(likeCount undefined) 전부 미노출
+  const likePendingRef = useRef(false);
+  const [comments, setComments] = useState<NoteCommentDTO[]>([]);
+  const [commentCount, setCommentCount] = useState(0);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [commentsErrored, setCommentsErrored] = useState(false);
+  const [commentInput, setCommentInput] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     fetchNoteDetail();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tastingNoteId]);
+
+  // v1은 전체 로드(최대 100) — 노트당 댓글 규모가 작아 페이지네이션 생략
+  const loadComments = async () => {
+    setIsLoadingComments(true);
+    setCommentsErrored(false);
+    try {
+      const res = await getNoteComments(tastingNoteId, 0, 100);
+      if (!res.isSuccess || !res.result) {
+        throw new Error(res.message);
+      }
+      setComments(res.result.content);
+      setCommentCount(res.result.commentCount);
+    } catch (error) {
+      console.error("Failed to load note comments:", error);
+      setCommentsErrored(true);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
 
   const fetchNoteDetail = async () => {
     try {
@@ -85,6 +120,10 @@ export default function TastingNoteDetailScreen() {
       const response = await getTastingNoteDetail(tastingNoteId);
       if (response.isSuccess) {
         setNote(response.result);
+        if (response.result.likeCount != null) {
+          setCommentCount(response.result.commentCount ?? 0);
+          loadComments();
+        }
       } else {
         showToast(
           response.message || t("tastingNoteDetail.error.fetchFailMsg"),
@@ -261,6 +300,119 @@ export default function TastingNoteDetailScreen() {
     });
   };
 
+  const handleToggleLike = async () => {
+    if (!note || note.likeCount == null || likePendingRef.current) {
+      return;
+    }
+    likePendingRef.current = true;
+    const wasLiked = !!note.likedByMe;
+    const prevCount = note.likeCount;
+    // 낙관적 반영 — 실패 시 원복
+    setNote((prev) =>
+      prev
+        ? {
+            ...prev,
+            likedByMe: !wasLiked,
+            likeCount: Math.max(0, prevCount + (wasLiked ? -1 : 1)),
+          }
+        : prev
+    );
+    try {
+      const res = wasLiked
+        ? await unlikeTastingNote(tastingNoteId)
+        : await likeTastingNote(tastingNoteId);
+      if (!res.isSuccess || !res.result) {
+        throw new Error(res.message);
+      }
+      const { likedByMe, likeCount } = res.result;
+      setNote((prev) => (prev ? { ...prev, likedByMe, likeCount } : prev));
+      // 피드 카드 카운트 동기화
+      appEvents.emit("noteLikeChanged", {
+        noteId: tastingNoteId,
+        likedByMe,
+        likeCount,
+      });
+    } catch (error) {
+      console.error("Note like toggle failed:", error);
+      setNote((prev) =>
+        prev ? { ...prev, likedByMe: wasLiked, likeCount: prevCount } : prev
+      );
+      showToast(t(getErrorMessageKey(error)), { type: "error" });
+    } finally {
+      likePendingRef.current = false;
+    }
+  };
+
+  const handleSubmitComment = async () => {
+    const content = commentInput.trim();
+    if (!content || isSubmittingComment) {
+      return;
+    }
+    setIsSubmittingComment(true);
+    try {
+      const res = await addNoteComment(tastingNoteId, content);
+      if (!res.isSuccess || !res.result) {
+        throw new Error(res.message);
+      }
+      setCommentInput("");
+      setCommentCount(res.result.commentCount);
+      appEvents.emit("noteCommentCountChanged", {
+        noteId: tastingNoteId,
+        commentCount: res.result.commentCount,
+      });
+      await loadComments();
+    } catch (error) {
+      console.error("Failed to add note comment:", error);
+      showToast(t("noteComments.addFail"), { type: "error" });
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = (comment: NoteCommentDTO) => {
+    showAlert({
+      title: t("noteComments.deleteTitle"),
+      message: t("noteComments.deleteMsg"),
+      confirmText: t("tastingNoteDetail.menu.delete"),
+      singleButton: false,
+      onConfirm: async () => {
+        try {
+          const res = await deleteNoteComment(tastingNoteId, comment.commentId);
+          if (!res.isSuccess || !res.result) {
+            throw new Error(res.message);
+          }
+          setCommentCount(res.result.commentCount);
+          setComments((prev) =>
+            prev.filter((c) => c.commentId !== comment.commentId)
+          );
+          appEvents.emit("noteCommentCountChanged", {
+            noteId: tastingNoteId,
+            commentCount: res.result.commentCount,
+          });
+        } catch (error) {
+          console.error("Failed to delete note comment:", error);
+          showToast(t("noteComments.deleteFail"), { type: "error" });
+        }
+      },
+    });
+  };
+
+  const handleReportComment = (comment: NoteCommentDTO) => {
+    sendContentReport(
+      "COMMENT",
+      {
+        writerName: comment.authorName,
+        commentContent: comment.content,
+        targetId: comment.commentId,
+      },
+      {
+        onSuccess: () =>
+          showToast(t("contentReport.success"), { type: "success" }),
+        onError: () => showToast(t("contentReport.error"), { type: "error" }),
+      }
+    );
+  };
+
   // 타인 노트 신고 — 기존 리뷰 신고 플로우(사유 입력 → POST /report) 재사용
   const handleReport = () => {
     if (!note) return;
@@ -410,300 +562,469 @@ export default function TastingNoteDetailScreen() {
         }
       />
 
-      <ScrollView
+      <KeyboardAvoidingView
         style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={styles.hero}>
-          <View style={styles.heroImageBox}>
-            {note.imageUrl ? (
-              <Image
-                source={{ uri: note.imageUrl }}
-                style={styles.heroImage}
-                resizeMode="contain"
-              />
-            ) : (
-              <Image
-                source={getWinePlaceholderImage(note.sort)}
-                style={styles.heroImage}
-                resizeMode="contain"
-              />
-            )}
-          </View>
-
-          <View style={styles.heroInfo}>
-            <View style={styles.heroTopRow}>
-              <View
-                style={[
-                  styles.typeBadge,
-                  { backgroundColor: getWineTypeColor(note.sort || "") },
-                ]}
-              >
-                <Text style={styles.typeText}>{note.sort || "Wine"}</Text>
-              </View>
-              <Text style={styles.dateText}>{note.tasteDate}</Text>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.hero}>
+            <View style={styles.heroImageBox}>
+              {note.imageUrl ? (
+                <Image
+                  source={{ uri: note.imageUrl }}
+                  style={styles.heroImage}
+                  resizeMode="contain"
+                />
+              ) : (
+                <Image
+                  source={getWinePlaceholderImage(note.sort)}
+                  style={styles.heroImage}
+                  resizeMode="contain"
+                />
+              )}
             </View>
 
-            <Text style={styles.wineName} numberOfLines={3}>
-              {i18n.language === "en"
-                ? note.wineNameEng || note.wineName
-                : note.wineName}
-            </Text>
-            <Text style={styles.vintageText}>
-              {note.vintageYear === 0
-                ? t("tastingNoteDetail.info.nv")
-                : t("tastingNoteDetail.info.vintage", {
-                    year: note.vintageYear,
-                  })}
-            </Text>
-          </View>
-        </View>
+            <View style={styles.heroInfo}>
+              <View style={styles.heroTopRow}>
+                <View
+                  style={[
+                    styles.typeBadge,
+                    { backgroundColor: getWineTypeColor(note.sort || "") },
+                  ]}
+                >
+                  <Text style={styles.typeText}>{note.sort || "Wine"}</Text>
+                </View>
+                <Text style={styles.dateText}>{note.tasteDate}</Text>
+              </View>
 
-        {!isMine && note.authorName ? (
-          <TouchableOpacity
-            style={styles.authorRow}
-            onPress={() =>
-              note.authorId &&
-              navigation.navigate("UserProfile", { memberId: note.authorId })
-            }
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel={note.authorName}
-          >
-            <Image
-              source={
-                note.authorImageUrl
-                  ? { uri: note.authorImageUrl }
-                  : require("../assets/Standard_profile.png")
-              }
-              style={styles.authorAvatar}
-            />
-            <Text style={styles.authorName} numberOfLines={1}>
-              {note.authorName}
-            </Text>
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={colors.textTertiary}
-            />
-          </TouchableOpacity>
-        ) : null}
-
-        {(isMine || photos.length > 0) && (
-          <View style={styles.card}>
-            <View style={styles.photoHeaderRow}>
-              <Text style={styles.cardTitle}>
-                {t("tastingNoteDetail.photo.title")} ({photos.length}/
-                {NOTE_PHOTO_MAX_COUNT})
+              <Text style={styles.wineName} numberOfLines={3}>
+                {i18n.language === "en"
+                  ? note.wineNameEng || note.wineName
+                  : note.wineName}
               </Text>
-              {isMine && photos.length < NOTE_PHOTO_MAX_COUNT && (
+              <Text style={styles.vintageText}>
+                {note.vintageYear === 0
+                  ? t("tastingNoteDetail.info.nv")
+                  : t("tastingNoteDetail.info.vintage", {
+                      year: note.vintageYear,
+                    })}
+              </Text>
+            </View>
+          </View>
+
+          {!isMine && note.authorName ? (
+            <TouchableOpacity
+              style={styles.authorRow}
+              onPress={() =>
+                note.authorId &&
+                navigation.navigate("UserProfile", { memberId: note.authorId })
+              }
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={note.authorName}
+            >
+              <Image
+                source={
+                  note.authorImageUrl
+                    ? { uri: note.authorImageUrl }
+                    : require("../assets/Standard_profile.png")
+                }
+                style={styles.authorAvatar}
+              />
+              <Text style={styles.authorName} numberOfLines={1}>
+                {note.authorName}
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={colors.textTertiary}
+              />
+            </TouchableOpacity>
+          ) : null}
+
+          {(isMine || photos.length > 0) && (
+            <View style={styles.card}>
+              <View style={styles.photoHeaderRow}>
+                <Text style={styles.cardTitle}>
+                  {t("tastingNoteDetail.photo.title")} ({photos.length}/
+                  {NOTE_PHOTO_MAX_COUNT})
+                </Text>
+                {isMine && photos.length < NOTE_PHOTO_MAX_COUNT && (
+                  <TouchableOpacity
+                    onPress={handleAddPhotos}
+                    disabled={isUploadingPhotos}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("tastingNoteWrite.photo.add")}
+                  >
+                    {isUploadingPhotos ? (
+                      <ActivityIndicator size="small" color={accent.text} />
+                    ) : (
+                      <Ionicons name="add" size={22} color={accent.text} />
+                    )}
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {photos.length > 0 ? (
+                <View
+                  onLayout={(e) => setPagerWidth(e.nativeEvent.layout.width)}
+                >
+                  {pagerWidth > 0 && (
+                    <FlatList
+                      data={pagerData}
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      keyExtractor={(img) => String(img.imageId)}
+                      onMomentumScrollEnd={(e) =>
+                        setPhotoPage(
+                          Math.round(e.nativeEvent.contentOffset.x / pagerWidth)
+                        )
+                      }
+                      renderItem={({ item, index }) =>
+                        item.imageId === -1 ? (
+                          <View
+                            style={[
+                              styles.photoPageImage,
+                              styles.photoProcessingPage,
+                              { width: pagerWidth },
+                            ]}
+                          >
+                            <ActivityIndicator
+                              size="small"
+                              color={accent.text}
+                            />
+                          </View>
+                        ) : (
+                          <View
+                            style={{ width: pagerWidth }}
+                            accessible
+                            accessibilityLabel={t(
+                              "tastingNoteWrite.photo.pageA11y",
+                              { current: index + 1, total: photos.length }
+                            )}
+                          >
+                            <Image
+                              source={{ uri: item.imageUrl }}
+                              style={styles.photoPageImage}
+                              resizeMode="cover"
+                            />
+                            {isMine && (
+                              <TouchableOpacity
+                                style={styles.photoDeleteBadge}
+                                onPress={() => handleDeletePhoto(item.imageId)}
+                                hitSlop={{
+                                  top: 8,
+                                  bottom: 8,
+                                  left: 8,
+                                  right: 8,
+                                }}
+                                accessibilityRole="button"
+                                accessibilityLabel={t(
+                                  "tastingNoteWrite.photo.remove"
+                                )}
+                              >
+                                <Ionicons
+                                  name="trash-outline"
+                                  size={14}
+                                  color={colors.white}
+                                />
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        )
+                      }
+                    />
+                  )}
+                  {photos.length > 1 && (
+                    <View style={styles.photoDots}>
+                      {photos.map((img, index) => (
+                        <View
+                          key={img.imageId}
+                          style={[
+                            styles.photoDot,
+                            index === photoPage && styles.photoDotActive,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                  )}
+                </View>
+              ) : (
                 <TouchableOpacity
+                  style={styles.photoEmpty}
                   onPress={handleAddPhotos}
                   disabled={isUploadingPhotos}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="button"
                   accessibilityLabel={t("tastingNoteWrite.photo.add")}
                 >
                   {isUploadingPhotos ? (
                     <ActivityIndicator size="small" color={accent.text} />
                   ) : (
-                    <Ionicons name="add" size={22} color={accent.text} />
+                    <Ionicons
+                      name="camera-outline"
+                      size={24}
+                      color={colors.textTertiary}
+                    />
                   )}
+                  <Text style={styles.emptyText}>
+                    {t("tastingNoteDetail.photo.empty")}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
+          )}
 
-            {photos.length > 0 ? (
-              <View onLayout={(e) => setPagerWidth(e.nativeEvent.layout.width)}>
-                {pagerWidth > 0 && (
-                  <FlatList
-                    data={pagerData}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={(img) => String(img.imageId)}
-                    onMomentumScrollEnd={(e) =>
-                      setPhotoPage(
-                        Math.round(e.nativeEvent.contentOffset.x / pagerWidth)
-                      )
-                    }
-                    renderItem={({ item, index }) =>
-                      item.imageId === -1 ? (
-                        <View
-                          style={[
-                            styles.photoPageImage,
-                            styles.photoProcessingPage,
-                            { width: pagerWidth },
-                          ]}
-                        >
-                          <ActivityIndicator size="small" color={accent.text} />
-                        </View>
-                      ) : (
-                        <View
-                          style={{ width: pagerWidth }}
-                          accessible
-                          accessibilityLabel={t(
-                            "tastingNoteWrite.photo.pageA11y",
-                            { current: index + 1, total: photos.length }
-                          )}
-                        >
-                          <Image
-                            source={{ uri: item.imageUrl }}
-                            style={styles.photoPageImage}
-                            resizeMode="cover"
-                          />
-                          {isMine && (
-                            <TouchableOpacity
-                              style={styles.photoDeleteBadge}
-                              onPress={() => handleDeletePhoto(item.imageId)}
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                              accessibilityRole="button"
-                              accessibilityLabel={t(
-                                "tastingNoteWrite.photo.remove"
-                              )}
-                            >
-                              <Ionicons
-                                name="trash-outline"
-                                size={14}
-                                color={colors.white}
-                              />
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      )
-                    }
-                  />
+          {note.likeCount != null && (
+            <View style={styles.socialRow}>
+              <TouchableOpacity
+                style={styles.socialItem}
+                onPress={handleToggleLike}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={t("feed.like")}
+                accessibilityState={{ selected: !!note.likedByMe }}
+              >
+                <Ionicons
+                  name={note.likedByMe ? "heart" : "heart-outline"}
+                  size={26}
+                  color={note.likedByMe ? accent.base : colors.textPrimary}
+                />
+                {(note.likeCount ?? 0) > 0 && (
+                  <Text style={styles.socialCount}>{note.likeCount}</Text>
                 )}
-                {photos.length > 1 && (
-                  <View style={styles.photoDots}>
-                    {photos.map((img, index) => (
-                      <View
-                        key={img.imageId}
-                        style={[
-                          styles.photoDot,
-                          index === photoPage && styles.photoDotActive,
-                        ]}
-                      />
-                    ))}
-                  </View>
+              </TouchableOpacity>
+              <View style={styles.socialItem}>
+                <Ionicons
+                  name="chatbubble-outline"
+                  size={23}
+                  color={colors.textPrimary}
+                />
+                {commentCount > 0 && (
+                  <Text style={styles.socialCount}>{commentCount}</Text>
                 )}
               </View>
-            ) : (
-              <TouchableOpacity
-                style={styles.photoEmpty}
-                onPress={handleAddPhotos}
-                disabled={isUploadingPhotos}
-                accessibilityRole="button"
-                accessibilityLabel={t("tastingNoteWrite.photo.add")}
-              >
-                {isUploadingPhotos ? (
-                  <ActivityIndicator size="small" color={accent.text} />
-                ) : (
-                  <Ionicons
-                    name="camera-outline"
-                    size={24}
-                    color={colors.textTertiary}
-                  />
-                )}
-                <Text style={styles.emptyText}>
-                  {t("tastingNoteDetail.photo.empty")}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>
-              {t("tastingNoteWrite.conclusion.ratingLabel")}
-            </Text>
-            <View style={styles.statValueRow}>
-              <Ionicons name="star" size={20} color={RATING_STAR} />
-              <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
             </View>
-          </View>
+          )}
 
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>
-              {t("tastingNoteDetail.info.color")}
-            </Text>
-            <View style={styles.statValueRow}>
-              <View
-                style={[
-                  styles.colorSwatch,
-                  { backgroundColor: getHexColorFromValue(note.color) },
-                ]}
-              />
-              <Text style={styles.colorLabel} numberOfLines={1}>
-                {getColorLabel(note.color) || "-"}
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>
+                {t("tastingNoteWrite.conclusion.ratingLabel")}
               </Text>
+              <View style={styles.statValueRow}>
+                <Ionicons name="star" size={20} color={RATING_STAR} />
+                <Text style={styles.ratingValue}>{note.rating.toFixed(1)}</Text>
+              </View>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statLabel}>
+                {t("tastingNoteDetail.info.color")}
+              </Text>
+              <View style={styles.statValueRow}>
+                <View
+                  style={[
+                    styles.colorSwatch,
+                    { backgroundColor: getHexColorFromValue(note.color) },
+                  ]}
+                />
+                <Text style={styles.colorLabel} numberOfLines={1}>
+                  {getColorLabel(note.color) || "-"}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {t("tastingNoteDetail.info.palate")}
-          </Text>
-          <View style={styles.chartContainer}>
-            <PentagonRadarChart
-              data={{
-                acidity: note.acidity / 20,
-                sweetness: note.sweetness / 20,
-                tannin: note.tannin / 20,
-                body: note.body / 20,
-                alcohol: note.alcohol / 20,
-              }}
-              size={180}
-            />
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              {t("tastingNoteDetail.info.palate")}
+            </Text>
+            <View style={styles.chartContainer}>
+              <PentagonRadarChart
+                data={{
+                  acidity: note.acidity / 20,
+                  sweetness: note.sweetness / 20,
+                  tannin: note.tannin / 20,
+                  body: note.body / 20,
+                  alcohol: note.alcohol / 20,
+                }}
+                size={180}
+              />
+            </View>
           </View>
-        </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {t("tastingNoteDetail.info.nose")}
-          </Text>
-          <View style={styles.chipWrap}>
-            {note.noseList && note.noseList.length > 0 ? (
-              note.noseList.map((scent, index) => (
-                <View key={index} style={styles.chip}>
-                  <Text style={styles.chipText}>{scent}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>-</Text>
-            )}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              {t("tastingNoteDetail.info.nose")}
+            </Text>
+            <View style={styles.chipWrap}>
+              {note.noseList && note.noseList.length > 0 ? (
+                note.noseList.map((scent, index) => (
+                  <View key={index} style={styles.chip}>
+                    <Text style={styles.chipText}>{scent}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyText}>-</Text>
+              )}
+            </View>
           </View>
-        </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {t("tastingNoteDetail.info.finish")}
-          </Text>
-          <View style={styles.chipWrap}>
-            {finishTags.length > 0 ? (
-              finishTags.map((tag, index) => (
-                <View key={index} style={styles.chip}>
-                  <Text style={styles.chipText}>{tag}</Text>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.emptyText}>-</Text>
-            )}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              {t("tastingNoteDetail.info.finish")}
+            </Text>
+            <View style={styles.chipWrap}>
+              {finishTags.length > 0 ? (
+                finishTags.map((tag, index) => (
+                  <View key={index} style={styles.chip}>
+                    <Text style={styles.chipText}>{tag}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={styles.emptyText}>-</Text>
+              )}
+            </View>
           </View>
-        </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {t("tastingNoteDetail.info.review")}
-          </Text>
-          <Text style={styles.bodyText}>
-            {reviewText || t("tastingNoteDetail.info.emptyReview")}
-          </Text>
-        </View>
-      </ScrollView>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
+              {t("tastingNoteDetail.info.review")}
+            </Text>
+            <Text style={styles.bodyText}>
+              {reviewText || t("tastingNoteDetail.info.emptyReview")}
+            </Text>
+          </View>
+
+          {note.likeCount != null && (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>
+                {t("noteComments.title")}
+                {commentCount > 0 ? ` (${commentCount})` : ""}
+              </Text>
+
+              {isLoadingComments ? (
+                <ActivityIndicator size="small" color={accent.text} />
+              ) : commentsErrored ? (
+                <TouchableOpacity
+                  style={styles.commentsError}
+                  onPress={loadComments}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("common.retry")}
+                >
+                  <Text style={styles.emptyText}>
+                    {t("noteComments.loadFail")}
+                  </Text>
+                  <Text style={styles.commentsRetryText}>
+                    {t("common.retry")}
+                  </Text>
+                </TouchableOpacity>
+              ) : comments.length === 0 ? (
+                <Text style={styles.emptyText}>{t("noteComments.empty")}</Text>
+              ) : (
+                comments.map((comment) => (
+                  <View key={comment.commentId} style={styles.commentRow}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        comment.mine
+                          ? navigation.navigate("Main", { screen: "Profile" })
+                          : navigation.navigate("UserProfile", {
+                              memberId: comment.authorId,
+                            })
+                      }
+                      accessibilityRole="button"
+                      accessibilityLabel={comment.authorName}
+                    >
+                      <Image
+                        source={
+                          comment.authorImageUrl
+                            ? { uri: comment.authorImageUrl }
+                            : require("../assets/Standard_profile.png")
+                        }
+                        style={styles.commentAvatar}
+                      />
+                    </TouchableOpacity>
+                    <View style={styles.commentBody}>
+                      <View style={styles.commentMetaRow}>
+                        <Text style={styles.commentAuthor} numberOfLines={1}>
+                          {comment.authorName}
+                        </Text>
+                        <Text style={styles.commentDate}>
+                          {comment.createdAt?.slice(0, 10)}
+                        </Text>
+                      </View>
+                      <Text style={styles.commentContent}>
+                        {comment.content}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.commentAction}
+                      onPress={() =>
+                        comment.canDelete
+                          ? handleDeleteComment(comment)
+                          : handleReportComment(comment)
+                      }
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        comment.canDelete
+                          ? t("noteComments.deleteTitle")
+                          : t("contentReport.commentTitle")
+                      }
+                    >
+                      <Ionicons
+                        name={
+                          comment.canDelete ? "trash-outline" : "flag-outline"
+                        }
+                        size={15}
+                        color={colors.textTertiary}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+
+              <View style={styles.commentInputRow}>
+                <TextInput
+                  style={styles.commentInput}
+                  value={commentInput}
+                  onChangeText={setCommentInput}
+                  placeholder={t("noteComments.inputPlaceholder")}
+                  placeholderTextColor={colors.textTertiary}
+                  maxLength={300}
+                  multiline
+                />
+                <TouchableOpacity
+                  onPress={handleSubmitComment}
+                  disabled={!commentInput.trim() || isSubmittingComment}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("noteComments.send")}
+                >
+                  {isSubmittingComment ? (
+                    <ActivityIndicator size="small" color={accent.text} />
+                  ) : (
+                    <Ionicons
+                      name="arrow-up-circle"
+                      size={30}
+                      color={
+                        commentInput.trim() ? accent.base : colors.textTertiary
+                      }
+                    />
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       <ActionMenuSheet
         visible={menuVisible}
@@ -1001,5 +1322,90 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 14,
     lineHeight: 22,
+  },
+
+  // 좋아요/댓글
+  socialRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xl,
+    paddingHorizontal: spacing.xs,
+  },
+  socialItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  socialCount: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  commentRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.md,
+  },
+  commentAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: surfaces.raised,
+  },
+  commentBody: {
+    flex: 1,
+    gap: 2,
+  },
+  commentMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
+  commentAuthor: {
+    flexShrink: 1,
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  commentDate: {
+    color: colors.textTertiary,
+    fontSize: 11,
+  },
+  commentContent: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  commentAction: {
+    paddingTop: 2,
+  },
+  commentsError: {
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+  },
+  commentsRetryText: {
+    color: accent.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  commentInputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  commentInput: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 100,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: surfaces.hairline,
+    backgroundColor: surfaces.raised,
+    color: colors.textPrimary,
+    fontSize: 14,
   },
 });

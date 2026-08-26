@@ -151,6 +151,10 @@ export default function UserProfileScreen() {
               }
             : prev
         );
+        appEvents.emit("memberFollowChanged", {
+          memberId,
+          isFollowing: false,
+        });
       } else {
         const res = await followMember(memberId);
         if (!res.isSuccess) {
@@ -166,6 +170,10 @@ export default function UserProfileScreen() {
               }
             : prev
         );
+        appEvents.emit("memberFollowChanged", {
+          memberId,
+          isFollowing: true,
+        });
       }
     } catch (error) {
       console.error("Failed to toggle follow:", error);

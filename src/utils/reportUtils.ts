@@ -2,7 +2,7 @@ import { Alert, Platform } from "react-native";
 import i18n from "../i18n";
 import { submitReport } from "../api/report";
 
-type ReportType = "REVIEW" | "PRICE";
+type ReportType = "REVIEW" | "PRICE" | "COMMENT";
 
 interface ReportData {
   // Review Report Data
@@ -15,6 +15,11 @@ interface ReportData {
   shopName?: string;
   price?: number;
   purchaseDate?: string;
+
+  // Comment Report Data
+  commentContent?: string;
+  // 어드민에서 대상 식별용 (댓글 id 등)
+  targetId?: number;
 }
 
 // 어드민이 신고 시점의 대상을 식별할 수 있도록 남기는 스냅샷 (서버 500자 제한)
@@ -24,6 +29,12 @@ const buildTargetSummary = (type: ReportType, data: ReportData): string => {
       `작성자: ${data.writerName || "-"}`,
       `작성일: ${data.reviewDate || "-"}`,
       `내용: ${(data.reviewContent || "").substring(0, 150)}`,
+    ].join(" / ");
+  }
+  if (type === "COMMENT") {
+    return [
+      `작성자: ${data.writerName || "-"}`,
+      `내용: ${(data.commentContent || "").substring(0, 200)}`,
     ].join(" / ");
   }
   return [
@@ -42,13 +53,18 @@ export const sendContentReport = (
   callbacks?: { onSuccess?: () => void; onError?: () => void }
 ) => {
   const title = i18n.t(
-    type === "REVIEW" ? "contentReport.reviewTitle" : "contentReport.priceTitle"
+    type === "REVIEW"
+      ? "contentReport.reviewTitle"
+      : type === "COMMENT"
+      ? "contentReport.commentTitle"
+      : "contentReport.priceTitle"
   );
 
   const submit = async (reason?: string) => {
     try {
       await submitReport({
         type,
+        targetId: data.targetId ?? null,
         targetSummary: buildTargetSummary(type, data).substring(0, 500),
         reason: reason?.trim() ? reason.trim().substring(0, 500) : null,
       });

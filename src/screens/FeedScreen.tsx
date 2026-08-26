@@ -23,8 +23,14 @@ import GlassHeader, {
   useGlassHeaderHeight,
 } from "../components/common/GlassHeader";
 import ListStateView from "../components/common/ListStateView";
-import { getTastingNoteFeed, TastingNoteFeedItemDTO } from "../api/wine";
-import { getErrorMessageKey } from "../utils/apiError";
+import {
+  getTastingNoteFeed,
+  likeTastingNote,
+  unlikeTastingNote,
+  TastingNoteFeedItemDTO,
+} from "../api/wine";
+import { followMember } from "../api/follow";
+import { getApiErrorCode, getErrorMessageKey } from "../utils/apiError";
 import { appEvents } from "../utils/appEvents";
 import { useGlobalUI } from "../context/GlobalUIContext";
 import { logScreen } from "utils/analytics";
@@ -40,14 +46,26 @@ function FeedCard({
   item,
   width,
   language,
+  followLabel,
+  likeA11y,
+  commentA11y,
   onPressNote,
   onPressAuthor,
+  onPressFollow,
+  followPending,
+  onToggleLike,
 }: {
   item: TastingNoteFeedItemDTO;
   width: number;
   language: string;
+  followLabel: string;
+  likeA11y: string;
+  commentA11y: string;
   onPressNote: () => void;
   onPressAuthor: () => void;
+  onPressFollow: () => void;
+  followPending: boolean;
+  onToggleLike: () => void;
 }) {
   const [photoPage, setPhotoPage] = useState(0);
   // 구버전 서버는 imageUrls를 안 내려주므로 썸네일 1장으로 폴백
@@ -58,28 +76,50 @@ function FeedCard({
     : [];
   const wineName =
     language === "en" ? item.wineNameEng || item.wineName : item.wineName;
+  // 소셜 필드는 구버전 서버에선 undefined → 팔로우 버튼/액션 행 미노출로 폴백
+  const showFollow = item.isFollowing === false && !item.mine;
+  const hasSocial = item.likeCount != null;
 
   return (
     <View style={styles.card}>
-      <TouchableOpacity
-        style={styles.authorRow}
-        onPress={onPressAuthor}
-        accessibilityRole="button"
-        accessibilityLabel={item.authorName}
-      >
-        <Image
-          source={
-            item.authorImageUrl
-              ? { uri: item.authorImageUrl }
-              : require("../assets/Standard_profile.png")
-          }
-          style={styles.authorAvatar}
-        />
-        <Text style={styles.authorName} numberOfLines={1}>
-          {item.authorName}
-        </Text>
-        <Text style={styles.tasteDate}>{item.tasteDate}</Text>
-      </TouchableOpacity>
+      <View style={styles.authorRow}>
+        <TouchableOpacity
+          style={styles.authorTouch}
+          onPress={onPressAuthor}
+          accessibilityRole="button"
+          accessibilityLabel={item.authorName}
+        >
+          <Image
+            source={
+              item.authorImageUrl
+                ? { uri: item.authorImageUrl }
+                : require("../assets/Standard_profile.png")
+            }
+            style={styles.authorAvatar}
+          />
+          <View style={styles.authorMeta}>
+            <Text style={styles.authorName} numberOfLines={1}>
+              {item.authorName}
+            </Text>
+            <Text style={styles.tasteDate}>{item.tasteDate}</Text>
+          </View>
+        </TouchableOpacity>
+        {showFollow && (
+          <TouchableOpacity
+            style={styles.followButton}
+            onPress={onPressFollow}
+            disabled={followPending}
+            accessibilityRole="button"
+            accessibilityLabel={followLabel}
+          >
+            {followPending ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={styles.followButtonText}>{followLabel}</Text>
+            )}
+          </TouchableOpacity>
+        )}
+      </View>
 
       <View style={styles.pagerWrap}>
         <FlatList
@@ -114,19 +154,71 @@ function FeedCard({
         </View>
       </View>
 
-      {photos.length > 1 && (
-        <View style={styles.photoDots}>
-          {photos.map((uri, index) => (
-            <View
-              key={`${index}-${uri}`}
-              style={[
-                styles.photoDot,
-                index === Math.min(photoPage, photos.length - 1) &&
-                  styles.photoDotActive,
-              ]}
+      {hasSocial ? (
+        <View style={styles.actionRow}>
+          {photos.length > 1 && (
+            <View style={styles.actionDots} pointerEvents="none">
+              {photos.map((uri, index) => (
+                <View
+                  key={`${index}-${uri}`}
+                  style={[
+                    styles.photoDot,
+                    index === Math.min(photoPage, photos.length - 1) &&
+                      styles.photoDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={onToggleLike}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={likeA11y}
+            accessibilityState={{ selected: !!item.likedByMe }}
+          >
+            <Icon
+              name={item.likedByMe ? "heart" : "heart-outline"}
+              size={24}
+              color={item.likedByMe ? accent.base : colors.textPrimary}
             />
-          ))}
+            {(item.likeCount ?? 0) > 0 && (
+              <Text style={styles.actionCount}>{item.likeCount}</Text>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionItem}
+            onPress={onPressNote}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel={commentA11y}
+          >
+            <Icon
+              name="chatbubble-outline"
+              size={22}
+              color={colors.textPrimary}
+            />
+            {(item.commentCount ?? 0) > 0 && (
+              <Text style={styles.actionCount}>{item.commentCount}</Text>
+            )}
+          </TouchableOpacity>
         </View>
+      ) : (
+        photos.length > 1 && (
+          <View style={styles.photoDots}>
+            {photos.map((uri, index) => (
+              <View
+                key={`${index}-${uri}`}
+                style={[
+                  styles.photoDot,
+                  index === Math.min(photoPage, photos.length - 1) &&
+                    styles.photoDotActive,
+                ]}
+              />
+            ))}
+          </View>
+        )
       )}
 
       <TouchableOpacity activeOpacity={0.8} onPress={onPressNote}>
@@ -160,6 +252,12 @@ export default function FeedScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  // 연타로 인한 중복 요청 방지 — 좋아요는 아이콘이 item 상태를 따르므로 ref로 충분,
+  // 팔로우 버튼은 스피너를 그려야 해서 state
+  const pendingLikeIds = useRef<Set<number>>(new Set());
+  const [pendingFollowIds, setPendingFollowIds] = useState<Set<number>>(
+    new Set()
+  );
 
   // 탭 재선택 시 최상단으로 (다른 탭·타 앱과 동일한 표준 기대 동작)
   const listRef = useRef<FlatList<TastingNoteFeedItemDTO>>(null);
@@ -174,6 +272,49 @@ export default function FeedScreen() {
     () =>
       appEvents.on("memberBlocked", (memberId) =>
         setItems((prev) => prev.filter((it) => it.authorId !== memberId))
+      ),
+    []
+  );
+
+  // 프로필 화면 등 다른 곳에서 팔로우 상태가 바뀌면 카드 버튼도 동기화
+  useEffect(
+    () =>
+      appEvents.on("memberFollowChanged", ({ memberId, isFollowing }) =>
+        setItems((prev) =>
+          prev.map((it) =>
+            it.authorId === memberId && it.isFollowing != null
+              ? { ...it, isFollowing }
+              : it
+          )
+        )
+      ),
+    []
+  );
+
+  // 노트 상세에서 좋아요/댓글이 바뀌면 카드 카운트도 동기화 (본 화면의 낙관적 업데이트도 이 이벤트를 탄다)
+  useEffect(
+    () =>
+      appEvents.on("noteLikeChanged", ({ noteId, likedByMe, likeCount }) =>
+        setItems((prev) =>
+          prev.map((it) =>
+            it.noteId === noteId && it.likeCount != null
+              ? { ...it, likedByMe, likeCount }
+              : it
+          )
+        )
+      ),
+    []
+  );
+  useEffect(
+    () =>
+      appEvents.on("noteCommentCountChanged", ({ noteId, commentCount }) =>
+        setItems((prev) =>
+          prev.map((it) =>
+            it.noteId === noteId && it.commentCount != null
+              ? { ...it, commentCount }
+              : it
+          )
+        )
       ),
     []
   );
@@ -249,11 +390,85 @@ export default function FeedScreen() {
     }
   };
 
+  const handleToggleLike = async (item: TastingNoteFeedItemDTO) => {
+    if (item.likeCount == null || pendingLikeIds.current.has(item.noteId)) {
+      return;
+    }
+    const wasLiked = !!item.likedByMe;
+    const prevCount = item.likeCount;
+    pendingLikeIds.current.add(item.noteId);
+    // 낙관적 반영 — 실패 시 원복
+    appEvents.emit("noteLikeChanged", {
+      noteId: item.noteId,
+      likedByMe: !wasLiked,
+      likeCount: Math.max(0, prevCount + (wasLiked ? -1 : 1)),
+    });
+    try {
+      const res = wasLiked
+        ? await unlikeTastingNote(item.noteId)
+        : await likeTastingNote(item.noteId);
+      if (!res.isSuccess || !res.result) {
+        throw new Error(res.message);
+      }
+      // 서버 카운트가 정본 — 다른 유저의 좋아요가 겹쳐도 여기서 보정된다
+      appEvents.emit("noteLikeChanged", {
+        noteId: item.noteId,
+        likedByMe: res.result.likedByMe,
+        likeCount: res.result.likeCount,
+      });
+    } catch (error) {
+      console.error("Feed like toggle failed:", error);
+      appEvents.emit("noteLikeChanged", {
+        noteId: item.noteId,
+        likedByMe: wasLiked,
+        likeCount: prevCount,
+      });
+      showToast(t(getErrorMessageKey(error)), { type: "error" });
+    } finally {
+      pendingLikeIds.current.delete(item.noteId);
+    }
+  };
+
+  const handleFollow = async (item: TastingNoteFeedItemDTO) => {
+    const memberId = item.authorId;
+    if (pendingFollowIds.has(memberId)) {
+      return;
+    }
+    setPendingFollowIds((prev) => new Set(prev).add(memberId));
+    try {
+      const res = await followMember(memberId);
+      if (!res.isSuccess) {
+        throw new Error(res.message);
+      }
+      appEvents.emit("memberFollowChanged", { memberId, isFollowing: true });
+    } catch (error) {
+      console.error("Feed follow failed:", error);
+      const code = getApiErrorCode(error);
+      if (code === "FOLLOW4002") {
+        // 이미 팔로우 중(다른 화면에서 먼저 누른 경우) — 에러가 아니라 상태 동기화
+        appEvents.emit("memberFollowChanged", { memberId, isFollowing: true });
+      } else if (code?.startsWith("BLOCK")) {
+        showToast(t("userProfile.error.followBlocked"), { type: "error" });
+      } else {
+        showToast(t("userProfile.error.followFail"), { type: "error" });
+      }
+    } finally {
+      setPendingFollowIds((prev) => {
+        const next = new Set(prev);
+        next.delete(memberId);
+        return next;
+      });
+    }
+  };
+
   const renderItem = ({ item }: { item: TastingNoteFeedItemDTO }) => (
     <FeedCard
       item={item}
       width={windowWidth}
       language={i18n.language}
+      followLabel={t("userProfile.follow")}
+      likeA11y={t("feed.like")}
+      commentA11y={t("feed.comment")}
       onPressNote={() =>
         navigation.navigate("TastingNoteDetail", { tastingNoteId: item.noteId })
       }
@@ -262,6 +477,9 @@ export default function FeedScreen() {
           ? navigation.navigate("Main", { screen: "Profile" })
           : navigation.navigate("UserProfile", { memberId: item.authorId })
       }
+      onPressFollow={() => handleFollow(item)}
+      followPending={pendingFollowIds.has(item.authorId)}
+      onToggleLike={() => handleToggleLike(item)}
     />
   );
 
@@ -388,17 +606,26 @@ const styles = StyleSheet.create({
   authorRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: spacing.md,
     paddingHorizontal: spacing.xl,
   },
+  authorTouch: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+  },
   authorAvatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: surfaces.raised,
   },
-  authorName: {
+  authorMeta: {
     flex: 1,
+    gap: 1,
+  },
+  authorName: {
     color: colors.textPrimary,
     fontSize: 14,
     fontWeight: "700",
@@ -407,6 +634,47 @@ const styles = StyleSheet.create({
   tasteDate: {
     color: colors.textTertiary,
     fontSize: 12,
+  },
+  followButton: {
+    minWidth: 64,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.lg,
+    paddingVertical: 6,
+    borderRadius: radius.pill,
+    backgroundColor: accent.base,
+  },
+  followButtonText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xl,
+    paddingHorizontal: spacing.xl,
+  },
+  actionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  actionCount: {
+    color: colors.textPrimary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  actionDots: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: spacing.xs,
   },
   pagerWrap: {
     width: "100%",

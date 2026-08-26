@@ -34,7 +34,9 @@
             "title": "The feed is empty",
             "subtitle": "Write a tasting note with photos\nand it will show up in others' feeds",
             "cta": "Write a Note"
-        }
+        },
+        "like": "Like",
+        "comment": "Comments"
     },
     "friendSearch": {
         "title": "Find Friends",
@@ -1630,6 +1632,18 @@
         "cancel": "Cancel",
         "submit": "Report",
         "success": "Report submitted. We'll review it shortly.",
-        "error": "Failed to submit the report. Please try again later."
+        "error": "Failed to submit the report. Please try again later.",
+        "commentTitle": "Report Comment"
+    },
+    "noteComments": {
+        "title": "Comments",
+        "inputPlaceholder": "Add a comment",
+        "send": "Post",
+        "empty": "No comments yet. Be the first to comment",
+        "loadFail": "Couldn't load comments",
+        "addFail": "Failed to post your comment. Please try again.",
+        "deleteTitle": "Delete Comment",
+        "deleteMsg": "Delete this comment?",
+        "deleteFail": "Failed to delete the comment."
     }
 }

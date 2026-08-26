@@ -659,6 +659,11 @@ export interface TastingNoteFeedItemDTO {
   authorImageUrl?: string | null;
   // 조회자 본인의 노트 여부 — 구버전 서버는 안 내려주므로 optional(타인 취급)
   mine?: boolean;
+  // 소셜 필드 — 구버전 서버는 안 내려주므로 전부 optional(미노출로 폴백)
+  isFollowing?: boolean;
+  likeCount?: number;
+  likedByMe?: boolean;
+  commentCount?: number;
 }
 
 export interface TastingNoteFeedResponse {
@@ -675,6 +680,96 @@ export const getTastingNoteFeed = async (
   const response = await client.get<TastingNoteFeedResponse>(
     "/tasting-note/feed",
     { params: { size, page } }
+  );
+  return response.data;
+};
+
+// 노트 좋아요 — 토글 결과의 정본은 서버 카운트
+export interface NoteLikeResult {
+  noteId: number;
+  likedByMe: boolean;
+  likeCount: number;
+}
+
+export interface NoteLikeResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: NoteLikeResult;
+}
+
+export const likeTastingNote = async (noteId: number) => {
+  const response = await client.post<NoteLikeResponse>(
+    `/tasting-note/${noteId}/like`
+  );
+  return response.data;
+};
+
+export const unlikeTastingNote = async (noteId: number) => {
+  const response = await client.delete<NoteLikeResponse>(
+    `/tasting-note/${noteId}/like`
+  );
+  return response.data;
+};
+
+// 노트 댓글
+export interface NoteCommentDTO {
+  commentId: number;
+  content: string;
+  createdAt: string;
+  authorId: number;
+  authorName: string;
+  authorImageUrl?: string | null;
+  // 내가 쓴 댓글 여부 / 삭제 가능 여부(내 댓글 또는 내 노트의 댓글)
+  mine: boolean;
+  canDelete: boolean;
+}
+
+export interface NoteCommentListResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    content: NoteCommentDTO[];
+    commentCount: number;
+    pageNumber?: number;
+    totalPages?: number;
+  };
+}
+
+export interface NoteCommentActionResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    commentId?: number;
+    commentCount: number;
+  };
+}
+
+export const getNoteComments = async (
+  noteId: number,
+  page: number = 0,
+  size: number = 30
+) => {
+  const response = await client.get<NoteCommentListResponse>(
+    `/tasting-note/${noteId}/comments`,
+    { params: { page, size } }
+  );
+  return response.data;
+};
+
+export const addNoteComment = async (noteId: number, content: string) => {
+  const response = await client.post<NoteCommentActionResponse>(
+    `/tasting-note/${noteId}/comments`,
+    { content }
+  );
+  return response.data;
+};
+
+export const deleteNoteComment = async (noteId: number, commentId: number) => {
+  const response = await client.delete<NoteCommentActionResponse>(
+    `/tasting-note/${noteId}/comments/${commentId}`
   );
   return response.data;
 };
@@ -743,6 +838,10 @@ export interface TastingNoteDTO {
   authorId?: number | null;
   authorName?: string | null;
   authorImageUrl?: string | null;
+  // 소셜 필드 — 구 서버는 안 내려주므로 optional(미노출로 폴백)
+  likeCount?: number;
+  likedByMe?: boolean;
+  commentCount?: number;
 }
 export interface TastingNoteDeleteResponse {
   isSuccess: boolean;

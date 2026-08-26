@@ -1,6 +1,6 @@
 import client from "./client";
 
-export type ContentReportType = "REVIEW" | "PRICE" | "OTHER";
+export type ContentReportType = "REVIEW" | "PRICE" | "COMMENT" | "OTHER";
 
 export interface ReportCreateRequest {
   type: ContentReportType;
